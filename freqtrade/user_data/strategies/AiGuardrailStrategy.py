@@ -28,7 +28,7 @@ class AiGuardrailStrategy(IStrategy):
     }
 
     # Stoploss: Hard 5% stop loss to protect the account if AI makes a huge mistake
-    stoploss = -0.05
+    stoploss = -0.03
 
     # Trailing stop: Secure profits dynamically as the price rises
     trailing_stop = True
