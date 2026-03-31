@@ -2,3 +2,7 @@
 n8n/n8n_data/
 .env
 n8n/n8n_data/
+freqtrade/user_data/logs/
+freqtrade/user_data/data/
+freqtrade/user_data/tradesv3.sqlite*
+freqtrade/user_data/notebooks/
