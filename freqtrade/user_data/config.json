@@ -76,5 +76,6 @@
     "strategy_path": "user_data/strategies",
     "internals": {
         "process_throttle_secs": 5
-    }
+    },
+    "stoploss": -0.03
 }
