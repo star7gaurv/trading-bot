@@ -1,0 +1,63 @@
+{
+  "_comment": "Jarvis strategy registry. Every signal references a strategy_id from here. The Karpathy loop promotes/demotes strategies by editing this file.",
+  "schema_version": "1.0",
+
+  "strategies": [
+    {
+      "strategy_id": "rsi_macd_ai_v1",
+      "name": "RSI + MACD + AI filter v1",
+      "description": "Baseline strategy currently running in N8N v3. RSI and MACD classical signals confirmed by an AI (Groq Llama 3.3 70B) decision layer.",
+      "status": "active",
+      "promoted_at": "2026-04-21",
+      "timeframe": "15m",
+      "indicators": ["RSI_14", "MACD_12_26_9", "ATR_14"],
+      "ai_layer": {
+        "provider": "groq",
+        "model": "llama-3.3-70b-versatile"
+      },
+      "backtest": {
+        "status": "pending_walk_forward",
+        "last_validated": null,
+        "win_rate": null,
+        "sharpe": null,
+        "max_drawdown": null
+      },
+      "_note": "Current production strategy. Walk-forward validation required before graduating to 'validated' status."
+    },
+    {
+      "strategy_id": "hmm_regime_adaptive_v1",
+      "name": "HMM Regime-Adaptive v1 (placeholder)",
+      "description": "Planned strategy that adapts entry/exit rules based on HMM regime classification. Not yet implemented.",
+      "status": "planned",
+      "promoted_at": null,
+      "timeframe": "15m",
+      "indicators": [],
+      "backtest": {
+        "status": "not_started"
+      },
+      "_note": "Implementation blocked on HMM engine build."
+    },
+    {
+      "strategy_id": "turtle_breakout_v1",
+      "name": "Turtle Breakout (Donchian 20/55) v1 (placeholder)",
+      "description": "Classical Turtle Trading breakout with 2% ATR-based position sizing. Planned.",
+      "status": "planned",
+      "promoted_at": null,
+      "timeframe": "1h",
+      "indicators": ["DONCHIAN_20", "DONCHIAN_55", "ATR_14"],
+      "backtest": {
+        "status": "not_started"
+      },
+      "_note": "Baseline quantitative strategy — expected to be the first walk-forward validated candidate."
+    }
+  ],
+
+  "status_legend": {
+    "planned": "Not implemented yet.",
+    "in_development": "Code exists, not validated.",
+    "backtesting": "Walk-forward validation in progress.",
+    "paper_trading": "Running live on paper trades for track record.",
+    "active": "Emitting real signals that the executor acts on.",
+    "deprecated": "No longer emits signals. Kept for historical reference."
+  }
+}
