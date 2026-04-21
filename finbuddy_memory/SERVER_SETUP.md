@@ -5,7 +5,7 @@
 SSH into the Oracle server and run:
 ```bash
 cd /home/ubuntu/var/www/html/trade
-git pull origin main
+git pull origin master
 ls finbuddy_memory/
 # Should show: CONTEXT.md  SERVER_SETUP.md  regimes/  research/  scripts/  signals/  strategies/
 ```
