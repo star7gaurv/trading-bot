@@ -16,6 +16,6 @@ fi
 
 git add finbuddy_memory/
 git commit -m "chore: finbuddy memory update $(date +%Y-%m-%d\ %H:%M)"
-git push origin main
+git push origin master
 
 echo "$(date): ✅ finbuddy_memory pushed to GitHub"
