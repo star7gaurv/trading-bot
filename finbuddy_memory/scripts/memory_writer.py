@@ -15,7 +15,7 @@ import os
 from datetime import datetime
 
 # Paths (relative to repo root)
-REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 MEMORY_ROOT = os.path.join(REPO_ROOT, "finbuddy_memory")
 RESEARCH_DIR = os.path.join(MEMORY_ROOT, "research")
 SIGNALS_LOG = os.path.join(MEMORY_ROOT, "signals", "log.md")
