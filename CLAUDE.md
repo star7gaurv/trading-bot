@@ -67,7 +67,7 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 - Whitelist: ~20 Binance pairs on 15-minute timeframe
 - First dry-run trade opened: BTC/USDT @ 67,206.72 USDT
 
-### N8N v3 Pipeline
+### N8N v4 Pipeline (active — v3 is superseded)
 - Cron every 15 minutes
 - Fetches Binance OHLCV data → calculates RSI(14), MACD(12,26,9), ATR(14)
 - Full trade-context awareness:
@@ -75,6 +75,7 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
   - Open trade → AI receives entry price, current price, P&L → decides SELL or HOLD
 - Calls Groq API with full context → parses signal → if confidence ≥ 65% → calls FreqTrade forceenter/forceexit
 - Telegram notifications fire with real RSI, MACD, P&L data
+- v2 and v3 workflows still exist in N8N but are inactive — to be deleted in Task 0.4
 
 ### OpenClaw ("Jack")
 - Running at `jack.star7gaurav.in`, port 18789 (UI), port 18791 (ACP WebSocket bridge)
@@ -83,9 +84,18 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 - Contains working OpenRouter API key in openclaw.json (OpenRouter dropped for N8N but key still valid)
 
 ### Telegram Notifications
-- Bot Token: `7799143446:AAElV1Yk6Mk7fBMCCaOfakGWQ0cheIcmIGU`
-- Chat ID: `5622292536`
-- Currently wired into N8N pipeline, NOT yet wired into FreqTrade config directly
+Two separate bots, both posting to the same chat:
+
+**FreqTrade Bot** (wired directly into FreqTrade config.json on server):
+- Token: `8557119080:AAH9KPMIZSGP7Gsn9wbJGVNaNRyEQHISR_o`
+- Status: ✅ LIVE — FreqTrade sends trade notifications directly
+- Note: This token is intentionally NOT committed to the repo config.json (repo has empty credentials). Lives only on server.
+
+**N8N / FinBuddy Signal Bot** (used by N8N v4 pipeline for signal notifications):
+- Token: `7799143446:AAElV1Yk6Mk7fBMCCaOfakGWQ0cheIcmIGU`
+- Status: ✅ LIVE — N8N fires Telegram with RSI/MACD/P&L data on every signal
+
+Both bots post to Chat ID: `5622292536`
 
 ### Obsidian Memory Vault
 - Location: `finbuddy_memory/` in this repo
@@ -124,7 +134,7 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 - Confidence threshold: 65%
 - Position sizing: 200 USDT fixed (to be replaced by ATR-based 2% rule)
 - Walk-forward backtest: **pending — not yet validated**
-- Status: Active in production N8N v3 pipeline
+- Status: Active in production N8N v4 pipeline
 
 ### Planned (Not Yet Implemented)
 
@@ -218,23 +228,30 @@ Full doc in `docs/ADR-001-multi-tenant-architecture.md`. Summary:
 
 ## Pending Tasks (In Priority Order)
 
-1. **Complete Trade Event Handler** — The N8N workflow was imported but not activated. Missing step: grab the Production Webhook URL from the FreqTrade Webhook node in N8N → paste it into FreqTrade's `config.json` under the webhook section. This closes out v3 and gives a clean baseline.
+> Phase 0 live audit completed 2026-04-26 by Claude Code on server. Updated statuses below.
 
-2. **Build HMM five-regime detection engine** — Python script that classifies current market regime as CRASH/BEAR/NEUTRAL/BULL/EUPHORIA. Feeds output into FinBuddy memory vault and N8N signal prompt.
+### Phase 0 Remaining (Blocking)
 
-3. **Implement Karpathy auto-research loop** — Continuous background process. Gemini researches, DeepSeek reasons, hypotheses are backtested, winners are promoted automatically.
+1. **Pairlist audit** (Task 0.3) — Add to `pair_blacklist` in FreqTrade `config.json`: D/USDT, CHIP/USDT, SOMI/USDT, ZBT/USDT. These come from VolumePairList dynamically and are suspicious tokens. Requires docker restart after edit.
 
-4. **Activate FreqAI** — Already installed inside the FreqTrade container but completely unused. The `freqaimodels/` directory is empty — a green-field opportunity. In the Option C architecture, FreqAI lives inside the central brain as a signal source, not per-user.
+2. **N8N cleanup** (Task 0.4) — Delete dead workflows: "Dify Trade Executor" (Dify gone from server), "Freqtrade AI Core Trading Loop v2", "Freqtrade AI Core Trading Loop v3" (both superseded by v4), "My workflow 3" (unknown, no activity). Go to `https://n8n.star7gaurav.in`. After cleanup: document surviving workflows in `n8n/workflows/README.md`.
 
-5. **Pairlist audit** — Remove suspicious/scam tokens. Tokens with Chinese characters in their names were flagged as potentially fraudulent. Clean the whitelist.
+3. **Investigate Trade Event Handler runtime error** — workflow shows `n8n.workflow.failed` on 2026-04-26. The wiring (webhook URL → config.json) is correct; the failure is inside the workflow logic. Check N8N execution log at `https://n8n.star7gaurav.in` → Executions.
 
-6. **Telegram credentials** — Wire Telegram bot token and chat ID into FreqTrade's `config.json` so FreqTrade itself can send trade notifications (separate from N8N notifications).
+### Phase 1+ (After Phase 0 Complete)
 
-7. **N8N cleanup** — Remove dead-weight workflows: Dify executor (Dify is gone), duplicate v1 flows, unrelated video generation flows that somehow ended up in the workspace.
+4. **Activate FreqAI** — `freqaimodels/` directory is empty — green field. Build `FinBuddyFreqAI.py` with LightGBM baseline first, then add custom IFreqaiModel that calls Groq for confirmation layer. See `tasks/phase-1-freqai-brain.md`.
 
-8. **Create users/ config directory** — `users/user_01_gaurav.json` with: Binance API key (env var reference), capital_usd, max_risk_per_trade_pct (2%), max_drawdown_pct, active_strategies list, telegram_chat_id. Everything personal lives here — nothing hardcoded in workflows.
+5. **Build HMM five-regime detection engine** — Python script classifying CRASH/BEAR/NEUTRAL/BULL/EUPHORIA. Feeds into FinBuddy memory vault and signal prompts. See `tasks/phase-3-hmm-regime.md`.
 
-9. **Build minimal Python executor** — ~300–500 LOC. Reads user config, receives signals via HTTP webhook on localhost:8787, dedupes on signal_id, sizes positions using 2% ATR rule, places orders via ccxt, logs to SQLite. Runs alongside FreqTrade.
+6. **Implement Karpathy auto-research loop** — Gemini researches, DeepSeek reasons, hypotheses are backtested, winners promoted automatically. See `tasks/phase-5-karpathy-loop.md`.
+
+7. **Build minimal Python executor** — ~300–500 LOC. Reads user config, receives signals via HTTP webhook on localhost:8787, dedupes on signal_id, sizes positions using 2% ATR rule, places orders via ccxt, logs to SQLite. See `tasks/phase-7-executor.md`.
+
+### Already Done (Phase 0)
+- ✅ Trade Event Handler wired and active in N8N (webhook URL in FreqTrade config.json)
+- ✅ FreqTrade Telegram configured directly on server (token 8557119080:...)
+- ✅ `users/user_01_gaurav.json` created with full user config
 
 ---
 
@@ -288,7 +305,8 @@ These are excluded from git:
 | N8N admin user | `admin` |
 | N8N admin password | `REDACTED-N8N_ADMIN_PASSWORD` |
 | OpenClaw UI | `https://jack.star7gaurav.in` (port 18789 local) |
-| Telegram Bot Token | `7799143446:AAElV1Yk6Mk7fBMCCaOfakGWQ0cheIcmIGU` |
+| Telegram Bot Token (FreqTrade) | `8557119080:AAH9KPMIZSGP7Gsn9wbJGVNaNRyEQHISR_o` — live on server, NOT in repo |
+| Telegram Bot Token (N8N/FinBuddy) | `7799143446:AAElV1Yk6Mk7fBMCCaOfakGWQ0cheIcmIGU` |
 | Telegram Chat ID | `5622292536` |
 | Docker Compose path | `/home/ubuntu/var/www/html/trade/` |
 | Strategy file | `freqtrade/user_data/strategies/AiGuardrailStrategy.py` |
@@ -379,7 +397,7 @@ All free, no paid APIs needed:
 
 ---
 
-### April 27, 2026 (Cowork Planning Session)
+### April 27, 2026 (Cowork Planning Session + Live Audit)
 - Confirmed project name is FinBuddy permanently — Jarvis retired
 - Confirmed FinBuddy is an autonomous AI brain, NOT a bot — framing locked
 - Confirmed this is a fluid system — tools/models can be dropped or added freely
@@ -391,6 +409,15 @@ All free, no paid APIs needed:
 - Created full 7-phase task roadmap in tasks/ directory
 - Created this CLAUDE.md as master project context
 - Created session_log_2026-04-27.md with full conversation decisions
+
+**Live Audit Results (Claude Code on server, April 27):**
+- Active N8N pipeline is **v4**, NOT v3 as previously documented — all references updated
+- FreqTrade Telegram IS live on server (token 8557119080:...) — repo config intentionally has empty credentials
+- Two Telegram bots confirmed: FreqTrade bot (8557119080:...) and N8N/FinBuddy bot (7799143446:...)
+- Trade Event Handler: wired correctly but has `n8n.workflow.failed` runtime error on 2026-04-26 — needs investigation
+- Suspicious pairlist tokens confirmed: D/USDT, CHIP/USDT, SOMI/USDT, ZBT/USDT — need blacklisting
+- Dead N8N workflows confirmed: Dify Executor, v2 loop, v3 loop, "My workflow 3" — need deletion
+- Phase 0 status: 3/5 tasks complete, Tasks 0.3 and 0.4 remaining
 
 ---
 
