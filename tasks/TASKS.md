@@ -10,8 +10,8 @@
 
 | Phase | File | Status | Description |
 |---|---|---|---|
-| 0 | [phase-0-foundation.md](phase-0-foundation.md) | 🔴 In Progress | Fix loose ends, clean up, wire everything together |
-| 1 | [phase-1-freqai-brain.md](phase-1-freqai-brain.md) | ⬜ Pending | Make FreqAI the signal brain — replace N8N Groq calls |
+| 0 | [phase-0-foundation.md](phase-0-foundation.md) | ✅ Complete | Fix loose ends, clean up, wire everything together |
+| 1 | [phase-1-freqai-brain.md](phase-1-freqai-brain.md) | 🔴 In Progress | Make FreqAI the signal brain — replace N8N Groq calls |
 | 2 | [phase-2-data-enrichment.md](phase-2-data-enrichment.md) | ⬜ Pending | Feed free external data (sentiment, news, on-chain) into FreqAI |
 | 3 | [phase-3-hmm-regime.md](phase-3-hmm-regime.md) | ⬜ Pending | Build 5-regime HMM engine, wire into strategy and memory vault |
 | 4 | [phase-4-obsidian-memory.md](phase-4-obsidian-memory.md) | ⬜ Pending | Complete Obsidian vault auto-write pipeline |
@@ -35,4 +35,4 @@
 ---
 
 ## Current Focus
-**Start with Phase 0.** Nothing in later phases works cleanly until Phase 0 is done.
+**Phase 0 complete.** Ready for **Phase 1: FreqAI Brain** — convert signal generation from N8N Groq to FreqAI LightGBM + custom LLM layer.
