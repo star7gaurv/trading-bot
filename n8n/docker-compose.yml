@@ -19,6 +19,7 @@ services:
       - TZ=Asia/Kolkata
     volumes:
       - ./n8n_data:/home/node/.n8n
+      - ../finbuddy_memory:/data/finbuddy_memory:ro
     networks:
       - n8n-net
 
