@@ -41,22 +41,57 @@
             "BTC/USDT"
         ],
         "pair_blacklist": [
-            "BNB/.*"
+            "BNB/.*",
+            "GIGGLE/USDT",
+            "BARD/USDT",
+            "BIO/USDT",
+            "WLFI/USDT",
+            "\u5e01\u5b89\u4eba\u751f/USDT",
+            "D/USDT",
+            "CHIP/USDT",
+            "SOMI/USDT",
+            "ZBT/USDT"
         ]
     },
     "pairlists": [
         {
             "method": "VolumePairList",
-            "number_assets": 20,
+            "number_assets": 30,
             "sort_key": "quoteVolume",
-            "min_value": 0,
+            "min_value": 5000000,
             "refresh_period": 1800
+        },
+        {
+            "method": "SpreadFilter",
+            "max_spread_ratio": 0.005
+        },
+        {
+            "method": "PriceFilter",
+            "low_price_ratio": 0.01,
+            "min_price": 0.01
+        },
+        {
+            "method": "RangeStabilityFilter",
+            "lookback_days": 3,
+            "min_rate_of_change": 0.05,
+            "refresh_period": 1440
+        },
+        {
+            "method": "VolatilityFilter",
+            "lookback_days": 3,
+            "min_volatility": 0.02,
+            "max_volatility": 0.75,
+            "refresh_period": 86400
+        },
+        {
+            "method": "ShuffleFilter",
+            "seed": 42
         }
     ],
     "telegram": {
-        "enabled": false,
-        "token": "",
-        "chat_id": ""
+        "enabled": true,
+        "token": "8557119080:AAH9KPMIZSGP7Gsn9wbJGVNaNRyEQHISR_o",
+        "chat_id": "5622292536"
     },
     "api_server": {
         "enabled": true,
@@ -64,7 +99,7 @@
         "listen_port": 8080,
         "verbosity": "error",
         "enable_openapi": true,
-        "jwt_secret_key": "your-secret-key-change-this",
+        "jwt_secret_key": "57dcf97ac3d5c933cd317d50ffd8ddf26422a99da3086a2518e31531ff5e6d95",
         "username": "bot",
         "password": "bot123"
     },
@@ -76,5 +111,26 @@
     "internals": {
         "process_throttle_secs": 5
     },
-    "stoploss": -0.03
+    "stoploss": -0.03,
+    "webhook": {
+        "enabled": true,
+        "url": "https://n8n.star7gaurav.in/webhook/freqtrade-events",
+        "webhookbuy": {
+            "type": "buy",
+            "pair": "{pair}",
+            "open_rate": "{open_rate}",
+            "stake_amount": "{stake_amount}"
+        },
+        "webhooksell": {
+            "type": "sell",
+            "pair": "{pair}",
+            "profit_ratio": "{profit_ratio}",
+            "profit_abs": "{profit_abs}",
+            "close_rate": "{close_rate}"
+        },
+        "webhookstatus": {
+            "type": "status",
+            "status": "{status}"
+        }
+    }
 }
