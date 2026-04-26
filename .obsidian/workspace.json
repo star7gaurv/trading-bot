@@ -11,10 +11,14 @@
             "id": "4b5e124607140b70",
             "type": "leaf",
             "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
+              "type": "markdown",
+              "state": {
+                "file": "finbuddy_memory/CONTEXT.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "CONTEXT"
             }
           }
         ]
@@ -178,6 +182,10 @@
   },
   "active": "4b5e124607140b70",
   "lastOpenFiles": [
+    "finbuddy_memory/research/2026-04-27-planning-session.md",
+    "finbuddy_memory/regimes/current.md",
+    "finbuddy_memory/CONTEXT.md",
+    "session_log_2026-04-27.md",
     "finbuddy_memory/scripts/setup.sh",
     "finbuddy_memory/scripts/auto_commit.sh",
     "finbuddy_memory/scripts/memory_writer.py",
