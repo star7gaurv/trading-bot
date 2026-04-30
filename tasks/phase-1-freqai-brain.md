@@ -9,17 +9,11 @@
 
 ---
 
-## ⚠️ BLOCKING ISSUE (2026-04-30)
+## Status as of 2026-04-30
 
-**FreqTrade v2026.3 (stable) does not include LightGBMRegressor** in its FreqAI module.
+**RESOLVED:** Docker image upgraded to `freqtradeorg/freqtrade:develop_freqai` — includes LightGBM, XGBoost, scikit-learn pre-installed. FreqAI + LightGBMRegressor now loads and trains successfully.
 
-**Options to resolve:**
-1. **Upgrade FreqTrade container** to latest dev build (may have breaking changes)
-2. **Use sklearn RandomForestRegressor** — available in all versions, slower but works
-3. **Use built-in PyTorch MLP** — no external deps, flexible
-4. **Delay Phase 1** until upgrading infrastructure
-
-Current recommendation: **Use RandomForestRegressor (Option 2)** — keep Phase 1 moving without container changes.
+**Current blocker:** Strategy uses TA signals for entry/exit. FreqAI IS training but strategy is not yet consuming `&-s_close` ML predictions. Task 1.1 is partially complete — infrastructure works, ML signal integration still needed.
 
 ---
 
@@ -67,21 +61,28 @@ Current recommendation: **Use RandomForestRegressor (Option 2)** — keep Phase 
 
 ---
 
-## Task 1.1 — Build First FreqAI Strategy (LightGBM)
-**Status:** ✅ In Progress (Blocked)  
-**Effort:** 30 min (creation), blocked on FreqTrade FreqAI module compatibility  
-**File:** `freqtrade/user_data/strategies/FinBuddyFreqAI.py` — ✅ Created
+## Task 1.1 — Build First FreqAI Strategy with LightGBM
+**Status:** 🔄 Partial — infrastructure working, ML signal integration remaining  
+**File:** `freqtrade/user_data/strategies/FinBuddyFreqAI.py`
 
 **What's Done:**
-- ✅ Strategy class created with 16+ technical indicators (RSI, MACD, EMA, Bollinger, ATR, Volume, Time features)
-- ✅ FreqAI configuration added to config.json (LightGBMRegressor model, 30-day training, 4-hour retrain)
-- ✅ Indicator population complete, entry/exit hooks ready
-- ✅ datasieve module installed (FreqAI dependency)
+- ✅ Strategy with 14+ TA indicators (RSI 14/7, MACD, EMA 9/21/50/200, Bollinger, ATR, Volume, Price position)
+- ✅ Real entry signals: RSI 35–65 + MACD building + EMA 9>21 + price >EMA50 + volume + BB position
+- ✅ Real exit signals: RSI >75 / EMA21 cross / MACD flip / BB upper
+- ✅ Safety gate in confirm_trade_entry: rejects below 200 EMA and RSI >78
+- ✅ Docker image upgraded to `develop_freqai` — LightGBM, XGBoost, scikit-learn included
+- ✅ FreqAI enabled: LightGBMRegressor loads, downloads 30d training data on startup
+- ✅ All config restored: telegram ✅ webhook ✅ api_server ✅ freqai ✅
+- ✅ Container RUNNING, Telegram active, dashboard working
+- ✅ N8N's force_entry trade (#25) closed — confirmed via enter_tag proof
+- ✅ N8N Trading Loop v4 disabled by user — FreqTrade now sole signal source
 
-**Blocker:**
-- ❌ FreqTrade version (2026.3 stable) does not have LightGBMRegressor available
-- Error: "Impossible to load FreqaiModel 'LightGBMRegressor'. This class does not exist or contains Python code errors."
-- This is a container version issue, not a code issue
+**What's Still Missing (to fully complete 1.1):**
+- ❌ `set_freqai_targets()` method — tells FreqAI what to predict (`&-s_close`)
+- ❌ Entry/exit using `dataframe["&-s_close"]` (ML output) instead of pure TA
+- ❌ This requires FreqAI to complete its first training run first
+
+**Next action:** Let FreqAI train for a few candles, then wire `&-s_close` into entry logic.
 
 A FreqAI strategy that uses LightGBM trained on OHLCV + indicators to predict price direction.
 
@@ -224,8 +225,11 @@ Keep `AiGuardrailStrategy.py` — don't delete it. Archive, don't remove.
 ---
 
 ## Phase 1 Complete When
-- [ ] `FinBuddyFreqAI.py` strategy exists and runs without errors
-- [ ] LightGBM model trains and predicts on live data
-- [ ] Walk-forward backtest passes acceptance criteria
+- [x] `FinBuddyFreqAI.py` strategy exists and runs without errors
+- [ ] `set_freqai_targets()` implemented — ML predicts `&-s_close`
+- [ ] Entry/exit uses ML predictions (`dataframe["&-s_close"]`) not just TA
+- [ ] LightGBM model trains and predicts on live data (in progress)
+- [ ] Walk-forward backtest passes: win rate >50%, Sharpe >0.5, drawdown <20%, profit factor >1.2
 - [ ] Strategy listed as `validated` in `strategies/registry.json`
-- [ ] Dry run switched to `FinBuddyFreqAI`
+- [x] Dry run switched to `FinBuddyFreqAI` (done)
+- [ ] Task 1.2: Custom IFreqaiModel with Groq LLM confirmation layer

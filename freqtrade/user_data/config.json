@@ -38,7 +38,8 @@
         "ccxt_config": {},
         "ccxt_async_config": {},
         "pair_whitelist": [
-            "BTC/USDT"
+            "BTC/USDT",
+            "ETH/USDT"
         ],
         "pair_blacklist": [
             "BNB/.*",
@@ -106,7 +107,7 @@
     "bot_name": "freqtrade",
     "initial_state": "running",
     "force_entry_enable": true,
-    "strategy": "AiGuardrailStrategy",
+    "strategy": "FinBuddyFreqAI",
     "strategy_path": "user_data/strategies",
     "internals": {
         "process_throttle_secs": 5
@@ -115,22 +116,53 @@
     "webhook": {
         "enabled": true,
         "url": "https://n8n.star7gaurav.in/webhook/freqtrade-events",
-        "webhookbuy": {
+        "webhookstatus": {
+            "type": "status",
+            "status": "{status}"
+        },
+        "webhookentry": {
             "type": "buy",
             "pair": "{pair}",
             "open_rate": "{open_rate}",
             "stake_amount": "{stake_amount}"
         },
-        "webhooksell": {
+        "webhookexit": {
             "type": "sell",
             "pair": "{pair}",
             "profit_ratio": "{profit_ratio}",
             "profit_abs": "{profit_abs}",
             "close_rate": "{close_rate}"
-        },
-        "webhookstatus": {
-            "type": "status",
-            "status": "{status}"
         }
-    }
+    },
+    "freqai": {
+        "enabled": true,
+        "purge_old_models": true,
+        "train_period_days": 30,
+        "backtest_period_days": 7,
+        "live_retrain_hours": 4,
+        "identifier": "finbuddy_lgbm_v1",
+        "feature_parameters": {
+            "include_timeframes": [
+                "15m"
+            ],
+            "include_corr_pairlist": [
+                "BTC/USDT"
+            ],
+            "label_period_candles": 3,
+            "include_shifted_candles": 2,
+            "indicator_periods_candles": [
+                10,
+                20,
+                50
+            ]
+        },
+        "data_split_parameters": {
+            "test_size": 0.15
+        },
+        "model_training_parameters": {
+            "n_estimators": 100,
+            "learning_rate": 0.05
+        }
+    },
+    "freqaimodel": "LightGBMRegressor"
 }

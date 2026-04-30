@@ -42,3 +42,17 @@
 - Timeline: 2-3 days
 - Blockers: None — Phase 0 fully done
 - Next: Read `tasks/phase-1-freqai-brain.md` to begin
+**Phase 0:** ✅ Complete  
+**Phase 1:** 🔄 In Progress
+
+What's done:
+- FinBuddyFreqAI strategy running with TA signals + FreqAI LightGBM training
+- Docker image: `develop_freqai` (LightGBM included)
+- All config working: telegram, webhook, api_server, freqai all enabled
+- N8N Trading Loop v4 disabled — FreqTrade is now autonomous signal source
+- N8N Trade Event Handler still active (receives webhooks, sends Telegram)
+
+What's remaining:
+- Wire `set_freqai_targets()` + `&-s_close` ML predictions into entry/exit (Task 1.1 final step)
+- Task 1.2: Custom FreqAI model with Groq LLM confirmation layer
+- Task 1.3: Walk-forward backtest validation
