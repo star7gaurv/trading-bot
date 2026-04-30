@@ -35,4 +35,6 @@
 ---
 
 ## Current Focus
-**Phase 0 complete.** Ready for **Phase 1: FreqAI Brain** — convert signal generation from N8N Groq to FreqAI LightGBM + custom LLM layer.
+**Phase 0:** ✅ Complete  
+**Phase 1:** 🔄 In Progress — Task 1.1 MVP complete (FinBuddyFreqAI strategy + indicators running). Full ML integration pending infrastructure upgrade.  
+**Next:** Task 1.2 (Custom FreqAI + Groq LLM layer) or Phase 2 (data enrichment)
