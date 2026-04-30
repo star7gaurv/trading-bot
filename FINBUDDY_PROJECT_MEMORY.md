@@ -2,8 +2,8 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status:** ✅ Phase 0 Complete — Phase 1 In Progress (Task 1.2 complete)  
-**Last Updated:** 2026-05-01 (Task 1.2 committed by Perplexity AI)
+**Status:** 🟡 Phase 1 In Progress — Task 1.2 NEEDS REVIEW  
+**Last Updated:** 2026-05-01 by Perplexity AI
 
 ---
 
@@ -19,25 +19,51 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 ## 🚀 Current State
 
-| Component | Status |
-|---|---|
-| **FreqTrade** | ✅ Running, dry-run, FinBuddyFreqAI strategy |
-| **LightGBM (FreqAI)** | ✅ Live — training per pair, predicting &-s_close |
-| **N8N v4 Pipeline** | 🔴 Disabled — FreqAI is now sole signal source |
-| **Groq AI** | ✅ Wired via FinBuddyLLMModel (Task 1.2 complete) |
-| **FinBuddyLLMModel** | ✅ Committed — awaiting deployment + activation |
-| **Strategy Registry** | ✅ rsi_macd_ai_v1 → replaced by FinBuddyFreqAI |
-| **Memory Vault** | ✅ Obsidian structure ready |
-| **Phase 1** | 🟡 In Progress — Task 1.3 (backtest) remaining |
+| Component | Status | Who Verified |
+|---|---|---|
+| **FreqTrade** | ✅ Running, dry-run, FinBuddyFreqAI | Claude Code (2026-04-30) |
+| **LightGBM (FreqAI)** | ✅ Live — training per pair | Claude Code (2026-04-30) |
+| **N8N v4 Pipeline** | 🔴 Disabled — FreqAI is sole signal source | Claude Code (2026-04-30) |
+| **FinBuddyLLMModel.py** | ⚠️ Committed to GitHub — NOT deployed | Perplexity AI (2026-05-01) |
+| **Groq LLM Layer** | ⚠️ Code ready — NOT live on server yet | Perplexity AI (2026-05-01) |
+| **Walk-forward Backtest** | ⬜ Blocked on Task 1.2 deploy | — |
 
 ---
 
-## 📋 Phase 1 Status
+## ⚠️ Status Legend
 
-- [x] Task 1.1 — FinBuddyFreqAI.py — LightGBM ML brain live (2026-04-30)
-- [x] Task 1.2 — FinBuddyLLMModel.py — Groq LLM confirmation layer (2026-05-01)
-- [ ] Task 1.3 — Walk-forward backtest (win rate >50%, Sharpe >0.5, drawdown <20%, PF >1.2)
-- [ ] Registry — mark rsi_macd_ai_v1 as `validated` after backtest passes
+| Icon | Meaning |
+|---|---|
+| ✅ COMPLETE | Verified live on server by Claude Code |
+| ⚠️ NEEDS REVIEW | Code written by Perplexity AI, in GitHub, NOT yet on server |
+| 🟡 IN PROGRESS | Being actively worked on |
+| ⬜ PENDING | Not started |
+
+---
+
+## 🗺️ 7-Phase Roadmap
+
+| Phase | Focus | Status |
+|---|---|---|
+| 0 | Foundation | ✅ 5/5 Complete (2026-04-27) |
+| 1 | FreqAI brain | 🟡 Task 1.2 ⚠️ NEEDS REVIEW, 1.3–1.4 pending |
+| 2 | External data | ⬜ Pending |
+| 3 | HMM regime | ⬜ Pending |
+| 4 | Memory auto-write | ⬜ Pending |
+| 5 | Karpathy loop | ⬜ Pending |
+| 6 | TradingView | ⬜ Pending |
+| 7 | Python executor | ⬜ Pending |
+
+---
+
+## 💬 Who Does What
+
+| Tool | Can Do | Cannot Do |
+|---|---|---|
+| **Perplexity AI** | Write + commit code to GitHub, update docs, read files, run Python in sandbox | SSH into server, docker restart, read live logs |
+| **Claude Code** | SSH into server, deploy, docker commands, live log checking, fix runtime errors | — |
+
+**Workflow:** Perplexity writes → commits to `gaurav` branch → Claude Code pulls → reviews → deploys → verifies → updates status to ✅ COMPLETE
 
 ---
 
@@ -45,12 +71,12 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 | What | Where |
 |---|---|
-| **Full project context** | `CLAUDE.md` in repo root |
-| **Phase tasks** | `tasks/phase-0-foundation.md` through `tasks/phase-7-executor.md` |
-| **Memory vault** | `finbuddy_memory/` (Obsidian vault) |
-| **Strategy registry** | `strategies/registry.json` |
+| **Handoff note for Claude Code** | `CLAUDE_HANDOFF.md` ← READ THIS FIRST |
+| **Full project context** | `CLAUDE.md` |
+| **Phase 1 tasks** | `tasks/phase-1-freqai-brain.md` |
 | **FreqAI strategy** | `freqtrade/user_data/strategies/FinBuddyFreqAI.py` |
-| **LLM model** | `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` |
+| **LLM model (needs review)** | `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` |
+| **Strategy registry** | `strategies/registry.json` |
 | **Server** | Oracle Free Tier, REDACTED-SERVER_IP |
 | **FreqTrade UI** | https://trade.star7gaurav.in |
 | **N8N UI** | https://n8n.star7gaurav.in |
@@ -71,84 +97,38 @@ Status     : HMM engine not yet built (Phase 3)
 
 ```
 Name       : FinBuddyFreqAI
-ML Model   : LightGBMRegressor (FreqAI)
-LLM Layer  : FinBuddyLLMModel → Groq Llama 3.3 70B (confidence > 0.6%)
+ML Model   : LightGBMRegressor (live, training per pair)
+LLM Layer  : FinBuddyLLMModel → Groq Llama 3.3 70B
+             Status: CODE READY — NOT YET DEPLOYED
 Timeframe  : 15 minutes
-Target     : &-s_close > 0.8% (3-candle = 45 min prediction)
+Target     : &-s_close > 0.8% (3-candle / 45 min prediction)
 Blend      : LightGBM 60% + LLM 40%
-Status     : Live (dry-run) — PENDING walk-forward backtest
+Status     : Dry-run RUNNING with LightGBM only
+             Upgrade to LLM blend pending Task 1.2 deployment
 ```
 
 ---
 
-## 🗺️ 7-Phase Roadmap
+## 🎃 Next Action for Claude Code
 
-| Phase | Focus | Status | ETA |
-|---|---|---|---|
-| 0 | Foundation | ✅ 5/5 Complete | Done (2026-04-27) |
-| 1 | FreqAI brain | 🟡 Task 1.3 remaining | ~1 day |
-| 2 | External data | ⬜ Pending | ~1 day |
-| 3 | HMM regime | ⬜ Pending | ~2-3 days |
-| 4 | Memory auto-write | ⬜ Pending | Parallel |
-| 5 | Karpathy loop | ⬜ Pending | ~2-3 days |
-| 6 | TradingView | ⬜ Pending | Parallel |
-| 7 | Python executor | ⬜ Pending | Last |
+1. Read `CLAUDE_HANDOFF.md` — full step-by-step
+2. `git pull origin gaurav` on the server
+3. Review + deploy `FinBuddyLLMModel.py`
+4. Verify Groq calls appear in FreqTrade logs
+5. Run Task 1.3 backtest
+6. Update this file — mark Task 1.2 as ✅ COMPLETE after live verification
+7. Delete `CLAUDE_HANDOFF.md` after all steps done
 
 ---
 
 ## 🎓 Key Decisions (Locked)
 
-✅ **FreqAI = The signal brain** (Phase 1)
-- Replaces N8N → Groq call
-- LightGBM trains on OHLCV + 14 TA indicators
-- FinBuddyLLMModel adds Groq LLM confirmation on high-confidence signals
-- Can call any external API (Groq, Gemini, DeepSeek)
-
-✅ **This is a fluid system**
-- Tools dropped: OpenRouter, Dify, N8N (now disabled)
-- Always optimize for moving the brain forward
-
-✅ **Multi-tenant SaaS shape from day one**
-- Signal-as-a-Service architecture (one brain, many users)
-- Phase 1 = single user (Gaurav), multi-tenant-shaped code
-- Phase 2+ = add signup, billing, dashboard
+✅ FreqAI = The signal brain (LightGBM trains locally, Groq confirms remotely)  
+✅ This is a fluid system — N8N dropped, always optimize for brain forward  
+✅ Multi-tenant SaaS shape from day one (Phase 2+ adds signup, billing, dashboard)  
+✅ Cost ceiling: $0–5/month — zero paid infra  
 
 ---
 
-## 💰 Cost Ceiling
-
-**Target: $3–5/month total**
-
-| Service | Cost |
-|---|---|
-| Oracle Free Tier | Free |
-| Groq (6000 req/day) | Free |
-| Gemini 2.5 Flash | Free tier |
-| DeepSeek | Near-free |
-| CoinGecko, CryptoPanic, DefiLlama | Free tier |
-| TradingView | Free (1 alert) |
-
-**Zero paid infra.**
-
----
-
-## 🎬 Next Action
-
-**Task 1.3 — Walk-Forward Backtest**
-
-Task 1.2 complete. FinBuddyLLMModel.py committed to gaurav branch.
-
-**Before activating FinBuddyLLMModel, complete these steps on the server:**
-1. `cd /home/ubuntu/var/www/html/trade/freqtrade && git pull`
-2. Set `GROQ_API_KEY` in docker-compose.yml environment section
-3. Add `freqtrade/user_data/freqaimodels/` to docker-compose volumes
-4. In `config.json`: change `"freqaimodel": "FinBuddyLLMModel"`
-5. `docker restart freqtrade`
-6. Run Task 1.3 backtest to validate
-
-**Next:** Run `tasks/phase-1-freqai-brain.md` → Task 1.3 backtest command.
-
----
-
-*This file serves as the master reference for FinBuddy project state.*  
-*For detailed session logs, see session_log files in repo root.*
+*Always update this file after completing any task on the server.*  
+*Last updated: Perplexity AI — 2026-05-01 01:00 IST*
