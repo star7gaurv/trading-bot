@@ -1,194 +1,163 @@
 # 🤝 FinBuddy — Handoff Note for Claude Code
 
 **Written by:** Perplexity AI  
-**Date:** 2026-05-01 ~01:00 IST  
+**Date:** 2026-05-01 ~01:30 IST  
 **For:** Claude Code (next session after usage reset at 2:40 AM IST)  
 **Branch:** `gaurav`
 
-> **READ THIS FIRST** before doing anything on the server.
-> This file tells you exactly what Perplexity AI did while you were rate-limited,
-> what needs your review, and what to do next. Delete this file after you’ve completed the handoff tasks.
+> Read this entire file before doing anything on the server.
+> Complete tasks in ORDER. Delete this file only after all steps are done.
 
 ---
 
-## 📦 What Perplexity AI Did (Code Written, NOT Deployed)
+## 📊 What Perplexity Built This Session
 
-### Task 1.2 — FinBuddyLLMModel.py
-**Status: ⚠️ NEEDS REVIEW + DEPLOYMENT**  
-**Commit:** [55848d7](https://github.com/star7gaurv/trading-bot/commit/55848d79305557914a5ef72f68dfad56d283f422)  
-**File:** `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py`
-
-Perplexity wrote the `FinBuddyLLMModel` custom FreqAI model. It has **NOT been pulled to the server, NOT been deployed, NOT been tested**. The file only exists in GitHub.
-
-**What the code does:**
-```
-Market data + indicators
-        ↓
-  LightGBM predict() [inherited from LightGBMRegressor]
-        ↓
-  If abs(&-s_close prediction) > 0.006 AND per-pair cooldown elapsed:
-    → Call Groq Llama 3.3 70B with market context
-    → Parse response: CONFIRM / REJECT / HOLD
-    → Final signal = LightGBM * 0.60 + LightGBM * multiplier * 0.40
-      CONFIRM multiplier = 1.30  (amplify)
-      REJECT  multiplier = 0.15  (near-zero)
-      HOLD    multiplier = 0.50  (dampen)
-  Else:
-    → Raw LightGBM signal used unchanged
-```
-
-**Safety features already in the code:**
-- 4-second Groq timeout (never blocks a trade decision)
-- 60-min per-pair cooldown (rate limit protection)
-- Graceful fallback on any Groq error → LightGBM signal used as-is
-- 429 rate limit → auto-extends cooldown to 2 hours
-- Works if `requests` library is missing (disables LLM silently)
-- Works if `GROQ_API_KEY` env var is missing (disables LLM, logs warning)
+| # | What | Files | Status |
+|---|---|---|---|
+| 1 | FinBuddyLLMModel (Task 1.2) | `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` | ⚠️ Deploy + test |
+| 2 | Backtest runner (Task 1.3) | `scripts/run_backtest.sh`, `scripts/backtest_config.json`, `scripts/parse_backtest.py` | ⚠️ Run after #1 |
+| 3 | Phase 2 data fetchers | `scripts/phase2/*.py` | ⚠️ Install cron after Phase 1 complete |
+| 4 | Phase 4 memory writer | `scripts/phase4/memory_writer.py`, `scripts/phase4/setup_cron.sh` | ⚠️ Install cron after Phase 2 live |
 
 ---
 
-## ✅ Your Job — Step by Step
+## ✅ Task Sequence — Do In This Order
 
-### Step 1: Review the code
-```bash
-# Read the file Perplexity wrote
-cat /home/ubuntu/var/www/html/trade/freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py
-# (after git pull below)
-```
-Check for:
-- Any FreqAI API incompatibilities with current `develop_freqai` image version
-- Correct base class import (`LightGBMRegressor` path may differ in your version)
-- Any syntax issues
+---
 
-### Step 2: Pull the latest code
+### STEP 1 — Pull Latest
 ```bash
 cd /home/ubuntu/var/www/html/trade/freqtrade
 git pull origin gaurav
 ```
 
-### Step 3: Verify the file exists
+Verify these files exist:
 ```bash
-ls -la user_data/freqaimodels/
-# Should show: FinBuddyLLMModel.py
+ls user_data/freqaimodels/FinBuddyLLMModel.py    # Task 1.2
+ls scripts/run_backtest.sh                        # Task 1.3
+ls scripts/phase2/external_data_aggregator.py    # Phase 2
+ls scripts/phase4/memory_writer.py               # Phase 4
 ```
 
-### Step 4: Add GROQ_API_KEY to docker-compose.yml
+---
+
+### STEP 2 — Deploy Task 1.2 (FinBuddyLLMModel)
+
+**2a. Add GROQ_API_KEY to docker-compose.yml**
 ```bash
-# Open and add under freqtrade service > environment:
 nano docker-compose.yml
-
-# Add this line under environment:
-#   - GROQ_API_KEY=gsk_your_actual_key_here
-
-# Get key from: https://console.groq.com
-# Gaurav already has a Groq account and key
+# Under freqtrade service > environment, add:
+#   - GROQ_API_KEY=gsk_your_key_here
 ```
 
-### Step 5: Ensure freqaimodels volume is mounted
+**2b. Ensure freqaimodels volume is mounted**
 ```bash
-# Check if freqaimodels is in volumes section of docker-compose.yml
 grep -n 'freqaimodels' docker-compose.yml
-
-# If NOT present, add this line under volumes:
+# If not found, add under volumes:
 #   - ./user_data/freqaimodels:/freqtrade/user_data/freqaimodels
 ```
 
-### Step 6: Test the model loads (dry run first)
+**2c. Test import**
 ```bash
-# DON'T change config.json yet. First test that the model file is importable:
 docker exec freqtrade python -c "
 import sys
 sys.path.insert(0, '/freqtrade/user_data/freqaimodels')
 from FinBuddyLLMModel import FinBuddyLLMModel
-print('FinBuddyLLMModel import OK')
+print('OK')
 "
 ```
 
-### Step 7: If import test passes — switch config
+**2d. If import OK — switch config**
 ```bash
-# Change freqaimodel in config.json
-jq '.freqaimodel = "FinBuddyLLMModel"' user_data/config.json > /tmp/config_new.json \
-  && mv /tmp/config_new.json user_data/config.json
-
-# Verify
-grep freqaimodel user_data/config.json
-# Expected: "freqaimodel": "FinBuddyLLMModel"
-```
-
-### Step 8: Restart and verify
-```bash
+jq '.freqaimodel = "FinBuddyLLMModel"' user_data/config.json > /tmp/c.json \
+  && mv /tmp/c.json user_data/config.json
 docker restart freqtrade
 sleep 10
-docker logs freqtrade --tail=80
-
-# Look for:
-# ✅ Good: "FinBuddyLLMModel" in startup logs
-# ✅ Good: "[FinBuddyLLMModel] ... LGBM=x.xxxx | LLM=CONFIRM | Blended=x.xxxx"
-# ✅ Good: "[FinBuddyLLMModel] GROQ_API_KEY not set" (if key not added yet, still runs)
-# ❌ Bad: ImportError, ModuleNotFoundError, AttributeError
+docker logs freqtrade --tail=50
+# Look for: FinBuddyLLMModel in startup logs
 ```
 
-### Step 9: If import fails — rollback and fix
+**2e. If import FAILS — rollback**
 ```bash
-# Rollback to LightGBMRegressor
-jq '.freqaimodel = "LightGBMRegressor"' user_data/config.json > /tmp/config_new.json \
-  && mv /tmp/config_new.json user_data/config.json
+jq '.freqaimodel = "LightGBMRegressor"' user_data/config.json > /tmp/c.json \
+  && mv /tmp/c.json user_data/config.json
 docker restart freqtrade
-
-# Then fix the error in FinBuddyLLMModel.py and retry from Step 6
+# Fix error in FinBuddyLLMModel.py, then retry
 ```
+
+**After Step 2:** Mark Task 1.2 as ✅ COMPLETE in `tasks/phase-1-freqai-brain.md`
 
 ---
 
-## 🚦 What Comes After (Task 1.3)
-
-Once FinBuddyLLMModel is running and you've verified Groq calls appear in logs:
+### STEP 3 — Run Task 1.3 Backtest
 
 ```bash
-# Run walk-forward backtest
-docker exec -it freqtrade freqtrade backtesting \
-  --strategy FinBuddyFreqAI \
-  --freqaimodel FinBuddyLLMModel \
-  --timerange 20250101-20260401 \
-  --timeframe 15m
+cd /home/ubuntu/var/www/html/trade/freqtrade
+chmod +x scripts/run_backtest.sh
+./scripts/run_backtest.sh
 ```
 
-**Accept if:**
-- Win rate > 50%
-- Sharpe ratio > 0.5
-- Max drawdown < 20%
-- Profit factor > 1.2
+The script:
+1. Downloads historical data (BTC, ETH, SOL, BNB, XRP)
+2. Runs walk-forward backtest
+3. Auto-grades PASS/FAIL with color output
 
-If backtest passes → update `strategies/registry.json` status to `validated`.
+**Accept if:** Win rate >50%, Sharpe >0.5, Drawdown <20%, Profit Factor >1.2
 
----
-
-## 💬 How to Use Perplexity Going Forward
-
-Perplexity AI can:
-- ✅ Write Python code and commit directly to GitHub (no SSH needed)
-- ✅ Update task files, memory vault, session logs
-- ✅ Answer questions about the project state, read any file
-- ❌ Cannot SSH into the server
-- ❌ Cannot restart Docker containers
-- ❌ Cannot read live logs
-
-**Best workflow:**
-- Perplexity writes code → commits to `gaurav` branch
-- Claude Code reviews, deploys (`git pull` + `docker restart`), verifies
-- Claude Code updates task status after live verification
+**After Step 3:** Mark Task 1.3 as ✅ COMPLETE if criteria pass.
 
 ---
 
-## 🗑️ Delete This File
+### STEP 4 — Task 1.4: Switch dry-run strategy
 
-Once you’ve completed all steps above and verified FinBuddyLLMModel is running on the server, delete this file:
+```bash
+sed -i 's/AiGuardrailStrategy/FinBuddyFreqAI/' \
+  /home/ubuntu/var/www/html/trade/freqtrade/docker-compose.yml
+docker restart freqtrade
+# Keep AiGuardrailStrategy.py — archive, don't delete
+```
+
+**After Step 4:** Phase 1 is COMPLETE. Mark in `tasks/phase-1-freqai-brain.md`.
+
+---
+
+### STEP 5 — Phase 2 External Data (after Phase 1 complete)
+
+```bash
+# Install pytrends inside container
+docker exec freqtrade pip install pytrends
+
+# Test all fetchers
+docker exec freqtrade python /freqtrade/scripts/phase2/external_data_aggregator.py
+
+# If all 5 sources return OK — install cron
+cd /home/ubuntu/var/www/html/trade/freqtrade
+chmod +x scripts/phase4/setup_cron.sh
+./scripts/phase4/setup_cron.sh
+```
+
+---
+
+### STEP 6 — Phase 4 Memory Writer (after Phase 2 cron running)
+
+The `setup_cron.sh` in Step 5 installs the memory writer cron automatically.
+Just verify it's running:
+```bash
+crontab -l | grep memory_writer
+tail -20 /tmp/finbuddy_memory_writer.log
+# Should show vault updates every 15 min
+```
+
+---
+
+## 🗑️ Delete This File When Done
+
 ```bash
 git rm CLAUDE_HANDOFF.md
-git commit -m "chore: remove handoff note — Task 1.2 deployed and verified"
+git commit -m "chore: remove handoff — all steps complete"
 git push origin gaurav
 ```
 
 ---
 
-*Generated by Perplexity AI — 2026-05-01*
+*Generated by Perplexity AI — 2026-05-01 ~01:30 IST*

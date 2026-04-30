@@ -2,31 +2,18 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status:** 🟡 Phase 1 In Progress — Task 1.2 NEEDS REVIEW  
-**Last Updated:** 2026-05-01 by Perplexity AI
+**Status:** 🟡 Phase 1 In Progress — Task 1.2 + 1.3 scripts NEED REVIEW  
+**Last Updated:** 2026-05-01 01:30 IST by Perplexity AI
 
 ---
 
 ## 🧠 What Is FinBuddy?
 
 An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
-- Observes markets, forms hypotheses, tests them
+- Observes markets, forms hypotheses, tests them via walk-forward backtest
 - Promotes winning strategies, retires losers
 - Gets smarter over time without manual intervention
 - FreqTrade is just the hands (execution); the brain is the product
-
----
-
-## 🚀 Current State
-
-| Component | Status | Who Verified |
-|---|---|---|
-| **FreqTrade** | ✅ Running, dry-run, FinBuddyFreqAI | Claude Code (2026-04-30) |
-| **LightGBM (FreqAI)** | ✅ Live — training per pair | Claude Code (2026-04-30) |
-| **N8N v4 Pipeline** | 🔴 Disabled — FreqAI is sole signal source | Claude Code (2026-04-30) |
-| **FinBuddyLLMModel.py** | ⚠️ Committed to GitHub — NOT deployed | Perplexity AI (2026-05-01) |
-| **Groq LLM Layer** | ⚠️ Code ready — NOT live on server yet | Perplexity AI (2026-05-01) |
-| **Walk-forward Backtest** | ⬜ Blocked on Task 1.2 deploy | — |
 
 ---
 
@@ -35,9 +22,23 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 | Icon | Meaning |
 |---|---|
 | ✅ COMPLETE | Verified live on server by Claude Code |
-| ⚠️ NEEDS REVIEW | Code written by Perplexity AI, in GitHub, NOT yet on server |
+| ⚠️ NEEDS REVIEW | Code written by Perplexity AI, committed to GitHub, NOT yet on server |
 | 🟡 IN PROGRESS | Being actively worked on |
 | ⬜ PENDING | Not started |
+
+---
+
+## 🚀 Current State
+
+| Component | Status | Verified By |
+|---|---|---|
+| **FreqTrade** | ✅ Running, dry-run, FinBuddyFreqAI | Claude Code (2026-04-30) |
+| **LightGBM (Task 1.1)** | ✅ Live — training per pair | Claude Code (2026-04-30) |
+| **N8N v4 Pipeline** | 🔴 Disabled — FreqAI is sole signal source | Claude Code (2026-04-30) |
+| **FinBuddyLLMModel.py (Task 1.2)** | ⚠️ In GitHub — NOT deployed | Perplexity (2026-05-01) |
+| **Backtest script (Task 1.3)** | ⚠️ In GitHub — NOT run yet | Perplexity (2026-05-01) |
+| **Phase 2 Data Fetchers** | ⚠️ In GitHub — NOT installed | Perplexity (2026-05-01) |
+| **Phase 4 Memory Writer** | ⚠️ In GitHub — NOT installed | Perplexity (2026-05-01) |
 
 ---
 
@@ -46,24 +47,43 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 | Phase | Focus | Status |
 |---|---|---|
 | 0 | Foundation | ✅ 5/5 Complete (2026-04-27) |
-| 1 | FreqAI brain | 🟡 Task 1.2 ⚠️ NEEDS REVIEW, 1.3–1.4 pending |
-| 2 | External data | ⬜ Pending |
-| 3 | HMM regime | ⬜ Pending |
-| 4 | Memory auto-write | ⬜ Pending |
-| 5 | Karpathy loop | ⬜ Pending |
-| 6 | TradingView | ⬜ Pending |
-| 7 | Python executor | ⬜ Pending |
+| 1 | FreqAI brain | 🟡 Task 1.2 ⚠️, 1.3–1.4 pending |
+| 2 | External data | ⚠️ Code ready — needs cron install |
+| 3 | HMM regime | ⬜ Not started |
+| 4 | Memory auto-write | ⚠️ Code ready — needs cron install |
+| 5 | Karpathy loop | ⬜ Not started |
+| 6 | TradingView | ⬜ Not started |
+| 7 | Python executor | ⬜ Not started |
 
 ---
 
-## 💬 Who Does What
+## 📦 What Perplexity Built This Session (2026-05-01)
 
-| Tool | Can Do | Cannot Do |
+### Option C — Task 1.3 Backtest Scripts
+| File | Purpose |
+|---|---|
+| `scripts/run_backtest.sh` | One-command backtest runner with pre-flight checks |
+| `scripts/backtest_config.json` | Isolated backtest config (no live keys, Telegram off) |
+| `scripts/parse_backtest.py` | Auto-reads result JSON, prints PASS/FAIL with color |
+| `scripts/README.md` | Script usage guide |
+
+### Option A — Phase 2 External Data Fetchers
+| File | Source | Features Added to FreqAI |
 |---|---|---|
-| **Perplexity AI** | Write + commit code to GitHub, update docs, read files, run Python in sandbox | SSH into server, docker restart, read live logs |
-| **Claude Code** | SSH into server, deploy, docker commands, live log checking, fix runtime errors | — |
+| `scripts/phase2/fetch_fear_greed.py` | Alternative.me | `ext_fear_greed`, `ext_fear_greed_regime`, `ext_fear_greed_trend_7d` |
+| `scripts/phase2/fetch_coingecko.py` | CoinGecko | `ext_btc_dominance`, `ext_btc_dom_normalized`, `ext_mcap_signal` |
+| `scripts/phase2/fetch_cryptopanic.py` | CryptoPanic | `ext_news_sentiment`, `ext_news_bull_ratio`, `ext_news_bear_ratio` |
+| `scripts/phase2/fetch_defillama.py` | DefiLlama | `ext_defi_tvl_billions`, `ext_defi_tvl_signal_24h`, `ext_defi_tvl_signal_7d` |
+| `scripts/phase2/fetch_google_trends.py` | pytrends | `ext_trends_btc`, `ext_trends_contrarian`, `ext_trends_7d_change` |
+| `scripts/phase2/external_data_aggregator.py` | All 5 combined | `ext_composite_score` (-1 to +1) |
 
-**Workflow:** Perplexity writes → commits to `gaurav` branch → Claude Code pulls → reviews → deploys → verifies → updates status to ✅ COMPLETE
+### Option B — Phase 4 Memory Auto-Writer
+| File | Purpose |
+|---|---|
+| `scripts/phase4/memory_writer.py` | Reads FreqTrade API, writes vault entries, git commits |
+| `scripts/phase4/setup_cron.sh` | Installs 2 cron jobs (every 15 min) |
+| `finbuddy_memory/signals/log.md` | Signal audit log (initialized) |
+| `finbuddy_memory/regimes/current.md` | Current regime tracker (initialized) |
 
 ---
 
@@ -71,64 +91,27 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 | What | Where |
 |---|---|
-| **Handoff note for Claude Code** | `CLAUDE_HANDOFF.md` ← READ THIS FIRST |
+| **🚨 Handoff for Claude Code** | `CLAUDE_HANDOFF.md` ← READ THIS FIRST |
 | **Full project context** | `CLAUDE.md` |
 | **Phase 1 tasks** | `tasks/phase-1-freqai-brain.md` |
-| **FreqAI strategy** | `freqtrade/user_data/strategies/FinBuddyFreqAI.py` |
-| **LLM model (needs review)** | `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` |
-| **Strategy registry** | `strategies/registry.json` |
+| **LLM model (needs deploy)** | `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` |
+| **Backtest runner** | `scripts/run_backtest.sh` |
+| **External data fetchers** | `scripts/phase2/` |
+| **Memory writer** | `scripts/phase4/memory_writer.py` |
 | **Server** | Oracle Free Tier, 140.245.17.121 |
 | **FreqTrade UI** | https://trade.star7gaurav.in |
-| **N8N UI** | https://n8n.star7gaurav.in |
 
 ---
 
-## 🔷 Current Regime
+## 💬 Who Does What
 
-```
-Regime     : UNKNOWN
-Confidence : —
-Status     : HMM engine not yet built (Phase 3)
-```
+| Tool | Can Do | Cannot Do |
+|---|---|---|
+| **Perplexity AI** | Write + commit code/docs to GitHub | SSH, docker restart, live logs |
+| **Claude Code** | SSH, deploy, docker, live verification | — |
 
----
-
-## 📈 Active Strategy
-
-```
-Name       : FinBuddyFreqAI
-ML Model   : LightGBMRegressor (live, training per pair)
-LLM Layer  : FinBuddyLLMModel → Groq Llama 3.3 70B
-             Status: CODE READY — NOT YET DEPLOYED
-Timeframe  : 15 minutes
-Target     : &-s_close > 0.8% (3-candle / 45 min prediction)
-Blend      : LightGBM 60% + LLM 40%
-Status     : Dry-run RUNNING with LightGBM only
-             Upgrade to LLM blend pending Task 1.2 deployment
-```
+**Workflow:** Perplexity writes → marks ⚠️ NEEDS REVIEW → Claude Code deploys → verifies → marks ✅ COMPLETE
 
 ---
 
-## 🎃 Next Action for Claude Code
-
-1. Read `CLAUDE_HANDOFF.md` — full step-by-step
-2. `git pull origin gaurav` on the server
-3. Review + deploy `FinBuddyLLMModel.py`
-4. Verify Groq calls appear in FreqTrade logs
-5. Run Task 1.3 backtest
-6. Update this file — mark Task 1.2 as ✅ COMPLETE after live verification
-7. Delete `CLAUDE_HANDOFF.md` after all steps done
-
----
-
-## 🎓 Key Decisions (Locked)
-
-✅ FreqAI = The signal brain (LightGBM trains locally, Groq confirms remotely)  
-✅ This is a fluid system — N8N dropped, always optimize for brain forward  
-✅ Multi-tenant SaaS shape from day one (Phase 2+ adds signup, billing, dashboard)  
-✅ Cost ceiling: $0–5/month — zero paid infra  
-
----
-
-*Always update this file after completing any task on the server.*  
-*Last updated: Perplexity AI — 2026-05-01 01:00 IST*
+*Last updated: Perplexity AI — 2026-05-01 ~01:30 IST*
