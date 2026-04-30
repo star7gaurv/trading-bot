@@ -70,13 +70,14 @@ class FinBuddyFreqAI(IStrategy):
         dataframe["price_position"] = (dataframe["close"] - dataframe["low_24"]) / (dataframe["high_24"] - dataframe["low_24"] + 1e-10)
 
         # Time features (cyclical encoding)
-        dataframe["hour"] = dataframe.index.hour
-        dataframe["hour_sin"] = np.sin(2 * np.pi * dataframe["hour"] / 24)
-        dataframe["hour_cos"] = np.cos(2 * np.pi * dataframe["hour"] / 24)
+        # Note: Temporarily disabled due to dataframe index type issue
+        # dataframe["hour"] = dataframe.index.hour
+        # dataframe["hour_sin"] = np.sin(2 * np.pi * dataframe["hour"] / 24)
+        # dataframe["hour_cos"] = np.cos(2 * np.pi * dataframe["hour"] / 24)
 
-        dataframe["dayofweek"] = dataframe.index.dayofweek
-        dataframe["day_sin"] = np.sin(2 * np.pi * dataframe["dayofweek"] / 7)
-        dataframe["day_cos"] = np.cos(2 * np.pi * dataframe["dayofweek"] / 7)
+        # dataframe["dayofweek"] = dataframe.index.dayofweek
+        # dataframe["day_sin"] = np.sin(2 * np.pi * dataframe["dayofweek"] / 7)
+        # dataframe["day_cos"] = np.cos(2 * np.pi * dataframe["dayofweek"] / 7)
 
         return dataframe
 
