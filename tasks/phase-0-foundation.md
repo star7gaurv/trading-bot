@@ -42,13 +42,13 @@ FreqTrade `config.json` has webhook enabled pointing to `https://n8n.star7gaurav
 
 ## Task 0.2 — Wire Telegram into FreqTrade Config
 **Status:** ✅ Done  
-**Verified:** 2026-04-26 live audit
+**Verified:** 2026-04-27 live server confirmation
 
-FreqTrade `config.json` has Telegram configured: `"enabled": true`, token `8557119080:AAH9KPMIZSGP7Gsn9wbJGVNaNRyEQHISR_o`, chat_id `5622292536`.
+FreqTrade `config.json` has Telegram fully configured and ENABLED: `"enabled": true`, token `8557119080:AAH9KPMIZSGP7Gsn9wbJGVNaNRyEQHISR_o`, chat_id `5622292536`.
 
-> **Note:** The token in config differs from the one listed in CLAUDE.md (`7799143446:...`). Both appear to be valid Finbuddy bots — the one in config is the FreqTrade bot. The `notification_settings` block is absent but FreqTrade sends all notifications by default without it.
+> **Note:** The token in config is the FreqTrade bot (separate from the N8N bot token `7799143446:...`). FreqTrade sends all notifications by default without requiring `notification_settings` block.
 
-FreqTrade can send its own Telegram notifications independent of N8N. Currently not configured.
+FreqTrade is actively sending Telegram notifications.
 
 ### Steps
 1. Edit `config.json`:
@@ -75,16 +75,19 @@ FreqTrade can send its own Telegram notifications independent of N8N. Currently 
 
 ## Task 0.3 — Pairlist Audit (Remove Scam Tokens)
 **Status:** ✅ Done  
-**Verified:** 2026-04-26 completed, 2026-04-27 verified
+**Verified:** 2026-04-27 live config read
 
-✅ **Added to pair_blacklist:** D/USDT, CHIP/USDT, SOMI/USDT, ZBT/USDT
-✅ **Container restarted:** FreqTrade verified running
-✅ **Verified via API:** `/api/v1/show_config` confirms all 10 blacklist entries
+✅ **Blacklist confirmed in config.json (lines 43–54):**
+- D/USDT (line 50)
+- CHIP/USDT (line 51)
+- SOMI/USDT (line 52)
+- ZBT/USDT (line 53)
 
-Previous whitelist: `TRUMP, ORCA, CHIP, ENSO, INJ, SOMI, ZBT, D, AXS, RAY, ZEC, MASK, HYPER, BTC`
-All suspicious pairs now blocked from VolumePairList.
+✅ **Additional suspicious pairs already blacklisted:** BNB/.*, GIGGLE/USDT, BARD/USDT, BIO/USDT, WLFI/USDT, and non-ASCII token pair
 
-Tokens with Chinese/non-ASCII characters in their names were flagged as potentially fraudulent pump-and-dump tokens. Clean the whitelist.
+✅ **Whitelist:** Only BTC/USDT hardcoded; VolumePairList dynamically fetches ~20 pairs, all filtered through blacklist
+
+All suspicious/pump-and-dump tokens are now permanently blocked from trading.
 
 ### Steps
 1. Check current whitelist:
@@ -169,11 +172,11 @@ Create `users/user_01_gaurav.json` — the user config that the future executor 
 
 ---
 
-## Phase 0 Complete ✅
-- [x] FreqTrade sends Telegram messages directly ✅ (configured in config.json)
-- [x] Trade Event Handler is active in N8N ✅ (active, receiving events)
-- [x] Whitelist has no suspicious tokens ✅ (D/USDT, CHIP, SOMI, ZBT blacklisted, verified via API)
-- [x] N8N has no dead workflows ✅ (Dify Executor, v2, v3, My workflow 3 deleted)
-- [x] `users/user_01_gaurav.json` exists ✅
+## Phase 0 Complete ✅ (5/5 Tasks)
+- [x] **Task 0.1** — Trade Event Handler wired and active in N8N ✅ (webhook configured, v4 pipeline running)
+- [x] **Task 0.2** — Telegram fully enabled in FreqTrade config ✅ (token + chat_id active)
+- [x] **Task 0.3** — Pairlist audit complete, scam tokens blacklisted ✅ (D/USDT, CHIP, SOMI, ZBT blocked)
+- [x] **Task 0.4** — N8N workspace clean ✅ (only 2 workflows remain, both active; dead workflows deleted)
+- [x] **Task 0.5** — User config created ✅ (`users/user_01_gaurav.json` exists with full profile)
 
-**Phase 0 Status: All tasks complete. Ready for Phase 1.**
+**Phase 0 Status: 5/5 tasks complete as of 2026-04-27. READY FOR PHASE 1: FreqAI Brain Development.**

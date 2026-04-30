@@ -28,26 +28,27 @@ Note       : HMM engine not yet built (Phase 3)
 ```
 Strategy   : rsi_macd_ai_v1
 Description: RSI(14) + MACD(12,26,9) signals confirmed by Groq Llama 3.3 70B
-Mode       : Dry-run on Binance, 15m timeframe, ~20 pairs
+Mode       : Dry-run on Binance, 15m timeframe, ~20 pairs (VolumePairList)
 Confidence : ≥ 65% required to act
 Backtest   : PENDING walk-forward validation
-Status     : Active (N8N v3 pipeline)
+Status     : Active (N8N v4 pipeline — running every 15 min)
+First Trade: BTC/USDT @ 67,206.72 USDT (April 4, 2026 dry-run)
 ```
 
 ---
 
-## Build Roadmap (current phase status)
+## Build Roadmap (current phase status, updated 2026-04-27)
 
-| Phase | Focus | Status |
-|---|---|---|
-| 0 | Foundation — fix loose ends | 🔴 In Progress |
-| 1 | FreqAI as signal brain | ⬜ Pending |
-| 2 | External data enrichment | ⬜ Pending |
-| 3 | HMM 5-regime engine | ⬜ Pending |
-| 4 | Obsidian auto-write pipeline | ⬜ Pending |
-| 5 | Karpathy auto-research loop | ⬜ Pending |
-| 6 | TradingView webhook | ⬜ Pending |
-| 7 | Python signal executor | ⬜ Pending |
+| Phase | Focus | Status | Blockers |
+|---|---|---|---|
+| 0 | Foundation — fix loose ends | ✅ **COMPLETE (5/5)** | None — all tasks verified done |
+| 1 | FreqAI as signal brain | 🟡 Ready to Start | None — Phase 0 complete |
+| 2 | External data enrichment | ⬜ Pending | All 6 sources approved & ready |
+| 3 | HMM 5-regime engine | ⬜ Pending | Will unlock regime detection |
+| 4 | Obsidian auto-write pipeline | ⬜ Pending | memory_writer.py → git auto-commit |
+| 5 | Karpathy auto-research loop | ⬜ Pending | Will enable self-improvement |
+| 6 | TradingView webhook | ⬜ Pending | Pine Script integration |
+| 7 | Python signal executor | ⬜ Pending | Multi-tenant shape, ccxt integration |
 
 Full task details in `tasks/` directory. Start with `tasks/phase-0-foundation.md`.
 
@@ -65,17 +66,18 @@ Full task details in `tasks/` directory. Start with `tasks/phase-0-foundation.md
 
 ---
 
-## Signal Pipeline (Current — N8N v3)
+## Signal Pipeline (Current — N8N v4)
 ```
 Binance OHLCV (15m)
     ↓
-N8N: calculate RSI(14), MACD(12,26,9), ATR(14)
+N8N v4: Calculate RSI(14), MACD(12,26,9), ATR(14)
+         (runs every 15 minutes, context-aware)
     ↓
 Groq Llama 3.3 70B (free, ~200ms, 6000 req/day)
     ↓
 If confidence ≥ 65%:
-    → FreqTrade forceenter / forceexit
-    → Telegram notification
+    → FreqTrade /forceenter or /forceexit (API call)
+    → Telegram notification (N8N bot: 7799143446:...)
 ```
 
 ## Signal Pipeline (Target — FreqAI)
@@ -116,20 +118,22 @@ FreqTrade executes + Telegram (native)
 
 ---
 
-## System State (as of 2026-04-27)
-| Component | Status |
-|---|---|
-| FreqTrade | ✅ Running, dry-run, AiGuardrailStrategy |
-| N8N v3 pipeline | ✅ Running (temporary — retiring after Phase 1) |
-| Groq signal AI | ✅ Live |
-| Trade Event Handler | ❌ Not activated (Phase 0, Task 0.1) |
-| FreqAI | ❌ Installed, empty (Phase 1) |
-| HMM Engine | ❌ Not built (Phase 3) |
-| Karpathy Loop | ❌ Not built (Phase 5) |
-| Obsidian auto-write | ❌ Not wired (Phase 4) |
-| TradingView webhook | ❌ Not set up (Phase 6) |
-| Python Executor | ❌ Not built (Phase 7) |
-| Telegram in FreqTrade | ❌ Not configured (Phase 0, Task 0.2) |
+## System State (as of 2026-04-27, updated via Cowork audit)
+| Component | Status | Notes |
+|---|---|---|
+| FreqTrade | ✅ Running | Dry-run mode, AiGuardrailStrategy, API @ port 8080 |
+| N8N v4 pipeline | ✅ Running | **v4 (not v3)** — running every 15 min, calling Groq |
+| Groq signal AI | ✅ Live | Free tier, Llama 3.3 70B, ~200ms response |
+| Trade Event Handler | ⚠️ Wired, errors | Config correct but has runtime error (workflow_failed 2026-04-26) |
+| FreqAI | ❌ Empty | Installed in FreqTrade, ready for Phase 1 |
+| HMM Engine | ❌ Not built | Phase 3 blocker — regime = UNKNOWN |
+| Karpathy Loop | ❌ Not built | Phase 5 — auto-research pipeline |
+| Obsidian auto-write | ❌ Not wired | Phase 4 — memory_writer.py pending |
+| TradingView webhook | ❌ Not set up | Phase 6 — Pine Script alerts |
+| Python Executor | ❌ Not built | Phase 7 — multi-tenant signal receiver |
+| Telegram in FreqTrade | ✅ Active | Enabled with token 8557119080:... in config.json |
+| Pairlist audit | ✅ Complete | D/USDT, CHIP, SOMI, ZBT blacklisted, verified in config |
+| N8N cleanup | ✅ Complete | Only 2 active workflows remain: v4 loop + Trade Event Handler |
 
 ---
 

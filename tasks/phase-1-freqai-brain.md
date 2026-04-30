@@ -4,15 +4,52 @@
 > FreqAI lives inside FreqTrade, trains on rolling market data, and produces ML-powered signals.
 > Custom files in user_data/ are NEVER deleted on FreqTrade upgrades (Docker volume mount).
 
+**Reference:** [FreqAI Architecture Guide](../finbuddy_memory/research/2026-04-27-freqai-architecture-guide.md)  
+**Official Docs:** https://www.freqtrade.io/en/stable/freqai/
+
 ---
 
-## Why FreqAI Instead of N8N + Groq
+## Core Benefits of FreqAI (vs. N8N + Groq)
 
-- FreqAI continuously retrains models on fresh data — it learns from what happened
-- Supports LightGBM, XGBoost, CatBoost, PyTorch, Reinforcement Learning natively
-- Custom `IFreqaiModel` can call any external API (Groq, Gemini) inside predict()
-- Walk-forward validation is built in — no separate backtesting pipeline needed
-- One system, not two (FreqAI + FreqTrade vs FreqTrade + N8N + Groq)
+### 1. **Unified In-Process Signals**
+- ✅ Latency: ~50ms (vs. N8N Groq = 500–800ms)
+- ✅ No external service dependencies (no N8N, no webhook complexity)
+- ✅ Single source of truth: strategy code calls FreqAI predictions directly
+- ✅ Zero network failure modes (model lives in FreqTrade process)
+
+### 2. **Automatic Data Pipeline**
+- ✅ Fetches OHLCV data from exchange automatically
+- ✅ Manages feature engineering (calculates indicators, normalizes)
+- ✅ Handles data splits for training/validation
+- ✅ Retrains on schedule (hourly, daily, weekly) — no manual intervention
+- ✅ Proper handling of train/test leakage
+
+### 3. **Walk-Forward Validation Built-In**
+- ✅ Tests model on unseen future data (prevents overfitting)
+- ✅ Mimics live trading: train on past, validate on future in rolling windows
+- ✅ Reports Sharpe, Sortino, max drawdown, win rate, profit factor
+- ✅ Mandatory validation gate before going live
+
+### 4. **Multiple ML Algorithms**
+- ✅ **LightGBM** — Fast, powerful, recommended baseline (tabular data)
+- ✅ **XGBoost** — Gradient boosting with regularization
+- ✅ **CatBoost** — Handles categorical features natively
+- ✅ **PyTorch MLP** — Neural networks for complex patterns
+- ✅ **Reinforcement Learning** — Stable Baselines3 (learn from trade outcomes)
+- ✅ **Custom IFreqaiModel** — Any model, any library, can call external APIs (Groq, Gemini, DeepSeek)
+
+### 5. **Scalability & Maintainability**
+- ✅ Handles 1000+ pairs (N8N breaks at ~100)
+- ✅ Model versioning tracked automatically
+- ✅ Hyperparameter optimization built-in
+- ✅ Feature importance scoring (know which inputs matter)
+- ✅ Simple debugging: just read FreqTrade logs
+
+### 6. **Production-Ready Infrastructure**
+- ✅ Model caching per candle (no redundant inference)
+- ✅ Graceful fallback if model fails (use previous signal)
+- ✅ Persistent model storage (trained models saved to disk)
+- ✅ Live prediction on new data with proper feature alignment
 
 ---
 
