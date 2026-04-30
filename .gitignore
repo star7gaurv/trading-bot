@@ -7,3 +7,4 @@ freqtrade/user_data/data/
 freqtrade/user_data/tradesv3.sqlite*
 freqtrade/user_data/notebooks/
 .claude/
+freqtrade/user_data/models/
