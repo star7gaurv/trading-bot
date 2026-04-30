@@ -6,6 +6,20 @@
 
 ---
 
+## ⚠️ BLOCKING ISSUE (2026-04-30)
+
+**FreqTrade v2026.3 (stable) does not include LightGBMRegressor** in its FreqAI module.
+
+**Options to resolve:**
+1. **Upgrade FreqTrade container** to latest dev build (may have breaking changes)
+2. **Use sklearn RandomForestRegressor** — available in all versions, slower but works
+3. **Use built-in PyTorch MLP** — no external deps, flexible
+4. **Delay Phase 1** until upgrading infrastructure
+
+Current recommendation: **Use RandomForestRegressor (Option 2)** — keep Phase 1 moving without container changes.
+
+---
+
 ## Why FreqAI Instead of N8N + Groq
 
 - FreqAI continuously retrains models on fresh data — it learns from what happened
@@ -17,9 +31,20 @@
 ---
 
 ## Task 1.1 — Build First FreqAI Strategy (LightGBM)
-**Status:** ⬜ Pending  
-**Effort:** 2–3 hours  
-**File:** `freqtrade/user_data/strategies/FinBuddyFreqAI.py`
+**Status:** ✅ In Progress (Blocked)  
+**Effort:** 30 min (creation), blocked on FreqTrade FreqAI module compatibility  
+**File:** `freqtrade/user_data/strategies/FinBuddyFreqAI.py` — ✅ Created
+
+**What's Done:**
+- ✅ Strategy class created with 16+ technical indicators (RSI, MACD, EMA, Bollinger, ATR, Volume, Time features)
+- ✅ FreqAI configuration added to config.json (LightGBMRegressor model, 30-day training, 4-hour retrain)
+- ✅ Indicator population complete, entry/exit hooks ready
+- ✅ datasieve module installed (FreqAI dependency)
+
+**Blocker:**
+- ❌ FreqTrade version (2026.3 stable) does not have LightGBMRegressor available
+- Error: "Impossible to load FreqaiModel 'LightGBMRegressor'. This class does not exist or contains Python code errors."
+- This is a container version issue, not a code issue
 
 A FreqAI strategy that uses LightGBM trained on OHLCV + indicators to predict price direction.
 
