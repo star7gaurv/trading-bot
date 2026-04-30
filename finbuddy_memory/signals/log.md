@@ -1,19 +1,10 @@
-# AI Signal Log
-> Each N8N signal generation cycle appends one entry here.
-> Useful for auditing why FinBuddy made specific trade decisions.
-> Back to hub → [[../CONTEXT]]  |  Current regime → [[../regimes/current]]
+# FinBuddy — Signal Audit Log
+
+Auto-written by `memory_writer.py` every 15 minutes.
+Do not edit manually — entries are appended automatically after each closed trade.
 
 ---
 
-## Format
-```
-### YYYY-MM-DD HH:MM | Signal: BUY / SELL / HOLD
-- **Regime at time:** BULL / BEAR / etc.
-- **RSI:** ... | **MACD:** ...
-- **AI reasoning:** "..."
-- **Action taken:** FreqTrade notified / No trade open
-```
-
----
-
-*(Log is empty — will populate once N8N reads this vault)*
+| Date | Pair | Result | Profit% | Profit USDT | Enter Tag | Exit Reason | Market State |
+|---|---|---|---|---|---|---|---|
+| *Waiting for first closed trade...* | | | | | | | |
