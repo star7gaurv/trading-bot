@@ -43,16 +43,15 @@
 - Blockers: None — Phase 0 fully done
 - Next: Read `tasks/phase-1-freqai-brain.md` to begin
 **Phase 0:** ✅ Complete  
-**Phase 1:** 🔄 In Progress
+**Phase 1:** 🔄 In Progress — Task 1.1 ✅ COMPLETE
 
 What's done:
-- FinBuddyFreqAI strategy running with TA signals + FreqAI LightGBM training
-- Docker image: `develop_freqai` (LightGBM included)
-- All config working: telegram, webhook, api_server, freqai all enabled
-- N8N Trading Loop v4 disabled — FreqTrade is now autonomous signal source
-- N8N Trade Event Handler still active (receives webhooks, sends Telegram)
+- ✅ Task 1.1: FinBuddyFreqAI with LightGBM ML brain fully wired
+  - set_freqai_targets() + &-s_close predictions driving entry/exit
+  - develop_freqai Docker image, all config enabled
+  - N8N Trading Loop v4 disabled — FreqTrade autonomous
 
 What's remaining:
-- Wire `set_freqai_targets()` + `&-s_close` ML predictions into entry/exit (Task 1.1 final step)
-- Task 1.2: Custom FreqAI model with Groq LLM confirmation layer
-- Task 1.3: Walk-forward backtest validation
+- Task 1.2: Custom IFreqaiModel with Groq LLM confirmation layer
+- Task 1.3: Walk-forward backtest (win rate >50%, Sharpe >0.5, drawdown <20%)
+- strategies/registry.json: mark FinBuddyFreqAI as validated after backtest
