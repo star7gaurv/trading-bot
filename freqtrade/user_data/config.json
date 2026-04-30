@@ -90,7 +90,7 @@
         }
     ],
     "telegram": {
-        "enabled": false,
+        "enabled": true,
         "token": "8557119080:AAH9KPMIZSGP7Gsn9wbJGVNaNRyEQHISR_o",
         "chat_id": "5622292536"
     },
@@ -114,28 +114,28 @@
     },
     "stoploss": -0.03,
     "webhook": {
-        "enabled": false,
+        "enabled": true,
         "url": "https://n8n.star7gaurav.in/webhook/freqtrade-events",
-        "webhookbuy": {
+        "webhookstatus": {
+            "type": "status",
+            "status": "{status}"
+        },
+        "webhookentry": {
             "type": "buy",
             "pair": "{pair}",
             "open_rate": "{open_rate}",
             "stake_amount": "{stake_amount}"
         },
-        "webhooksell": {
+        "webhookexit": {
             "type": "sell",
             "pair": "{pair}",
             "profit_ratio": "{profit_ratio}",
             "profit_abs": "{profit_abs}",
             "close_rate": "{close_rate}"
-        },
-        "webhookstatus": {
-            "type": "status",
-            "status": "{status}"
         }
     },
     "freqai": {
-        "enabled": false,
+        "enabled": true,
         "purge_old_models": true,
         "train_period_days": 30,
         "backtest_period_days": 7,
@@ -149,7 +149,12 @@
                 "BTC/USDT"
             ],
             "label_period_candles": 3,
-            "include_shifted_candles": 2
+            "include_shifted_candles": 2,
+            "indicator_periods_candles": [
+                10,
+                20,
+                50
+            ]
         },
         "data_split_parameters": {
             "test_size": 0.15
@@ -159,5 +164,5 @@
             "learning_rate": 0.05
         }
     },
-    "freqaimodel": "PyTorchMLPRegressor"
+    "freqaimodel": "LightGBMRegressor"
 }
