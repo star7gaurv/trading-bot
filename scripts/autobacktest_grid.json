@@ -1,26 +1,32 @@
 {
   "_comment": "Parameter grid for automated backtest search. Edit this file to change what combinations are tested. Do NOT edit autobacktest.py to change params.",
-
   "strategy_file": "freqtrade/user_data/strategies/FinBuddyFreqAI.py",
   "backtest_script": "scripts/run_backtest.sh",
   "parse_script": "scripts/parse_backtest.py",
   "results_csv": "_autobacktest_results.csv",
   "model_cache_path": "freqtrade/user_data/models",
   "backtest_results_path": "freqtrade/user_data/backtest_results",
-
   "acceptance_criteria": {
     "win_rate": 50.0,
     "sharpe": 0.5,
     "max_drawdown": 20.0,
     "profit_factor": 1.2
   },
-
   "grid": {
-    "ml_threshold": [0.009, 0.010, 0.011],
-    "trend_ema_period_1h": [20, 35],
-    "rsi_entry_ceiling": [68, 72]
+    "ml_threshold": [
+      0.009,
+      0.01,
+      0.011
+    ],
+    "trend_ema_period_1h": [
+      20,
+      35
+    ],
+    "rsi_entry_ceiling": [
+      68,
+      72
+    ]
   },
-
   "fixed": {
     "stoploss": -0.035,
     "_note": "Stoploss is fixed. Root cause of v3/v4 failures was entry quality, not stoploss width."

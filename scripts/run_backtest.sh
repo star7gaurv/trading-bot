@@ -84,15 +84,15 @@ docker exec \
     --timerange 20250101-20260401 \
     --timeframe 15m \
     --export trades \
-    --export-filename /freqtrade/user_data/backtest_results/backtest_finbuddy_$(date +%Y%m%d).json \
     2>&1 | tee -a "$LOG_FILE" || true
 
-# Detect failure via log — if the result JSON was not created, backtest failed.
-RESULT_FILE=$(ls -t "$RESULTS_DIR"/backtest_finbuddy_*.json 2>/dev/null | head -1)
+# Detect failure via log — FreqTrade always stores as backtest-result-*.zip
+# (the --export-filename flag sets the JSON export path but FreqTrade compresses to ZIP).
+RESULT_FILE=$(ls -t "$RESULTS_DIR"/backtest-result-*.zip 2>/dev/null | head -1)
 
 if [ -z "$RESULT_FILE" ]; then
   echo ""
-  echo "[×] Backtest failed — no result JSON found in $RESULTS_DIR"
+  echo "[×] Backtest failed — no backtest-result-*.zip found in $RESULTS_DIR"
   echo "    Check log: $LOG_FILE"
   echo ""
   echo "    Common fixes:"
