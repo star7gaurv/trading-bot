@@ -28,7 +28,9 @@ class FinBuddyFreqAI(IStrategy):
         "120": 0.01
     }
 
-    stoploss = -0.03
+    # Stoploss was -0.03 in first backtest (Sharpe -1.58). Loosen slightly to
+    # allow trades more room before being cut, then re-run Task 1.3.
+    stoploss = -0.035
     trailing_stop = True
     trailing_stop_positive = 0.01
     trailing_stop_positive_offset = 0.02
@@ -118,7 +120,7 @@ class FinBuddyFreqAI(IStrategy):
         bb = ta.BBANDS(dataframe, timeperiod=20)
         dataframe["bb_upperband"] = bb["upperband"]
         dataframe["bb_lowerband"] = bb["lowerband"]
-        dataframe["bb_pct"] = (dataframe["close"] - bb["lowerband"]) / (bb["upperband"] - bb["lowerband"] + 1e-9)
+        dataframe["bb_pct"] = (dataframe["close"] - bb["lowerband"] ) / (bb["upperband"] - bb["lowerband"] + 1e-9)
 
         return dataframe
 
