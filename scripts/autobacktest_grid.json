@@ -1,5 +1,5 @@
 {
-  "_comment": "Parameter grid for automated backtest search. Edit this file to change what combinations are tested. Do NOT edit autobacktest.py to change params.",
+  "_comment": "v2 grid: testing reward-to-risk levers (stoploss + roi_multiplier) — the real root cause of Round 1 failure. Round 1 proved EMA/RSI tuning has no effect when avg winner < avg loser.",
   "strategy_file": "freqtrade/user_data/strategies/FinBuddyFreqAI.py",
   "backtest_script": "scripts/run_backtest.sh",
   "parse_script": "scripts/parse_backtest.py",
@@ -13,22 +13,15 @@
     "profit_factor": 1.2
   },
   "grid": {
-    "ml_threshold": [
-      0.009,
-      0.01,
-      0.011
-    ],
-    "trend_ema_period_1h": [
-      20,
-      35
-    ],
-    "rsi_entry_ceiling": [
-      68,
-      72
-    ]
+    "stoploss": [-0.020, -0.025, -0.030],
+    "roi_multiplier": [0.06, 0.08, 0.10],
+    "ml_threshold": [0.009, 0.011],
+    "atr_threshold": [0.002, 0.003]
   },
-  "fixed": {
-    "stoploss": -0.035,
-    "_note": "Stoploss is fixed. Root cause of v3/v4 failures was entry quality, not stoploss width."
+  "_grid_rationale": {
+    "stoploss": "Round 1: avg loser ~3.5% with SL=-0.035. Testing tighter cuts (-2.0% to -3.0%) to improve reward:risk.",
+    "roi_multiplier": "Sets the 0-min ROI target. Higher = let winners run more. Testing 6-10% max profit target.",
+    "ml_threshold": "Kept from Round 1. 0.009 gave 65% WR (more trades), 0.011 gave 48% (too few). Testing both.",
+    "atr_threshold": "v5 new: skip flat market entries. 0.002=looser, 0.003=stricter volatility gate."
   }
 }
