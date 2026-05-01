@@ -1,90 +1,94 @@
 # 🤝 FinBuddy — Handoff Note for Claude Code
 
 **Written by:** Perplexity AI  
-**Date:** 2026-05-01 ~15:50 IST  
-**For:** Claude Code (next session after usage reset)  
+**Date:** 2026-05-01 ~18:05 IST  
+**For:** Claude Code (next session)  
 **Branch:** `gaurav`
 
 > Read this entire file before doing anything on the server.
-> Complete tasks in ORDER. Delete this file only after all steps are done.
+> Complete tasks in ORDER.
 
 ---
 
-## 📊 What Perplexity Built / Changed This Session
+## 📊 What Changed This Session
 
-| # | What | Files | Status |
+| # | What | File | Change |
 |---|---|---|---|
-| 1 | FinBuddyLLMModel (Task 1.2) | `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` | ✅ Deployed earlier by you — now assumed live |
-| 2 | **Stoploss tuning for Task 1.3** | `freqtrade/user_data/strategies/FinBuddyFreqAI.py` | ⚠️ Needs backtest rerun |
-| 3 | Backtest runner (Task 1.3) | `scripts/run_backtest.sh`, `scripts/backtest_config.json`, `scripts/parse_backtest.py` | ⚠️ Re-run after stoploss change |
-| 4 | Phase 2 data fetchers | `scripts/phase2/*.py` | ⚠️ Install cron after Phase 1 passes backtest |
-| 5 | Phase 4 memory writer | `scripts/phase4/memory_writer.py`, `scripts/phase4/setup_cron.sh` | ⚠️ Install cron after Phase 2 live |
+| 1 | Strategy upgraded to v4 | `freqtrade/user_data/strategies/FinBuddyFreqAI.py` | Raised ML threshold, added 1h trend filter, tightened RSI |
+| 2 | .gitignore updated | `.gitignore` | Backtest ZIPs, meta.json, logs now ignored |
 
-**Key change:** Stoploss in `FinBuddyFreqAI` was loosened from **-3% to -3.5%** to address a failed backtest (Sharpe -1.58 with too-tight stoploss). You must rerun Task 1.3 backtest with this updated strategy.[see commit message]
+### Why v4 was needed
+
+Task 1.3 backtest (stoploss = -0.035) produced:
+- Win rate: 60.3% ✅ — ML signal is working
+- Sharpe: **-1.40** ❌ — 36 stoploss exits at avg -3.69% wiped all gains
+- Profit factor: **0.54** ❌
+
+Root cause: entries were firing in counter-trend moves on 15m. Positions got stopped out before the exit signal could catch up.
+
+### Fixes in v4
+1. **ML entry threshold raised**: `&-s_close > 0.008` → `> 0.012` (high-conviction only)
+2. **1h macro trend filter added**: only enter if `1h close >= 1h EMA-50`
+3. **RSI entry ceiling tightened**: `< 72` → `< 68` (avoid overbought entries)
+4. **Stoploss unchanged at -0.035** (root cause was entry quality, not stoploss width)
 
 ---
 
 ## ✅ Step 1 — Pull Latest
+
 ```bash
 cd /home/ubuntu/var/www/html/trade/freqtrade
 git pull origin gaurav
 ```
 
-Verify these files exist and are up to date:
+Verify the strategy is v4:
 ```bash
-ls user_data/freqaimodels/FinBuddyLLMModel.py    # Task 1.2
-ls freqtrade/user_data/strategies/FinBuddyFreqAI.py  # stoploss now -0.035
-ls scripts/run_backtest.sh                        # Task 1.3
-ls scripts/phase2/external_data_aggregator.py    # Phase 2
-ls scripts/phase4/memory_writer.py               # Phase 4
-```
-
-Open the strategy and confirm:
-```bash
-grep -n "stoploss" freqtrade/user_data/strategies/FinBuddyFreqAI.py
-# Expect: stoploss = -0.035  (with comment about Sharpe -1.58)
+grep -n "freqai_lgbm_v4\|0.012\|ema_50_1h" freqtrade/user_data/strategies/FinBuddyFreqAI.py
+# Must see: enter_tag = "freqai_lgbm_v4", threshold 0.012, and ema_50_1h column
 ```
 
 ---
 
-## ✅ Step 2 — Rerun Task 1.3 Backtest (with new stoploss)
+## ✅ Step 2 — Clear Prediction Cache and Rerun Task 1.3 Backtest
 
-From the project root:
+> ⚠️ IMPORTANT: Clear the FreqAI prediction cache before running. Without this,
+> FreqAI reuses cached .feather predictions and the new entry filters have no effect.
+
 ```bash
-cd /home/ubuntu/var/www/html/trade/freqtrade
+# Clear cached backtest predictions (not the trained models — those are fine)
+rm -f freqtrade/user_data/models/*/predictions_backtest_*.feather 2>/dev/null || true
+rm -f freqtrade/user_data/backtest_results/* 2>/dev/null || true
+
+# Copy updated strategy into container
+docker cp freqtrade/user_data/strategies/FinBuddyFreqAI.py \
+  freqtrade:/freqtrade/user_data/strategies/FinBuddyFreqAI.py
+
+# Run backtest
 chmod +x scripts/run_backtest.sh
 ./scripts/run_backtest.sh
 ```
 
-The script should:
-1. Ensure data is downloaded for the configured pairs
-2. Run backtest for `FinBuddyFreqAI` + `FinBuddyLLMModel`
-3. Call `scripts/parse_backtest.py` and print PASS/FAIL with metrics
-
-**Accept the backtest if ALL of these hold:**
+**Accept if ALL criteria pass:**
 - Win rate > 50%
 - Sharpe ratio > 0.5
 - Max drawdown < 20%
 - Profit factor > 1.2
 
-If the test **still fails** (for example Sharpe < 0.5):
-- Capture the printed metrics and the worst-loss trades
-- Update `finbuddy_memory/strategies/graveyard.md` or a new note under `finbuddy_memory/strategies/` with:
-  - Date
-  - Stoploss value
-  - 4 metrics
-  - Short explanation of failure (e.g. "too many small losses", "rare big losers")
+**If PASS:**
+1. Mark Task 1.3 ✅ in `tasks/phase-1-freqai-brain.md`
+2. Update `strategies/registry.json` → `validated`
+3. Add metrics to `finbuddy_memory/strategies/winners.md`
+4. Proceed to Step 3 (Task 1.4)
 
-If the test **passes**:
-1. Mark Task 1.3 as ✅ COMPLETE in `tasks/phase-1-freqai-brain.md`
-2. Update `strategies/registry.json` and set this strategy to `validated` as described in that task file
-3. Add a short line to `finbuddy_memory/strategies/winners.md` with the date + metrics
+**If FAIL:**
+1. Log metrics + failure summary in `finbuddy_memory/strategies/graveyard.md`
+2. Leave Task 1.3 as ⚠️
+3. Do NOT change strategy code — leave that to Perplexity
+4. Commit memory updates and push
 
 ---
 
-## ✅ Step 3 — Task 1.4: Switch Dry-Run Strategy (if 1.3 passed)
-
-Only do this after Task 1.3 is marked ✅.
+## ✅ Step 3 — Task 1.4: Switch Dry-Run to FinBuddyFreqAI (only after 1.3 passes)
 
 ```bash
 sed -i 's/AiGuardrailStrategy/FinBuddyFreqAI/' \
@@ -92,69 +96,47 @@ sed -i 's/AiGuardrailStrategy/FinBuddyFreqAI/' \
 docker restart freqtrade
 ```
 
-Then verify via UI / logs that:
-- Dry-run is running `FinBuddyFreqAI`
-- FreqAI shows `FinBuddyLLMModel` as the active freqaimodel
+Verify via logs/UI:
+- Strategy: `FinBuddyFreqAI`
+- FreqAI model: `FinBuddyLLMModel`
 
 ---
 
-## ✅ Step 4 — Phase 2 External Data (after Phase 1 fully complete)
+## ✅ Step 4 — Phase 2 External Data (after Phase 1 fully green)
 
 ```bash
-# Install dependencies inside container (if not already)
+# Install dependency if missing
 docker exec freqtrade pip install pytrends
 
-# Test all fetchers
+# Test all fetchers end-to-end
 docker exec freqtrade python /freqtrade/scripts/phase2/external_data_aggregator.py
 ```
 
-Expect a JSON/print summary with all 5 sources. If all are OK:
-- Create a cron entry (or systemd timer) that runs the aggregator every 15 minutes and writes results to wherever `FinBuddyLLMModel` / FreqAI expects the features file.
-
-> Note: Phase 2 cron install details are in `tasks/phase-2-data-enrichment.md`. Follow that file for exact commands once Phase 1 is validated.
+Expect a JSON/print summary with all 5 sources OK.
+Then set up a **cron job** (not AI loop) to run aggregator every 15 min.
+Full commands in `tasks/phase-2-data-enrichment.md`.
 
 ---
 
-## ✅ Step 5 — Phase 4 Memory Writer (after Phase 2 cron running)
+## ✅ Step 5 — Phase 4 Memory Writer (after Phase 2 cron is live)
 
-Use the provided script:
 ```bash
-cd /home/ubuntu/var/www/html/trade/freqtrade
 chmod +x scripts/phase4/setup_cron.sh
 ./scripts/phase4/setup_cron.sh
-```
 
-Then verify:
-```bash
+# Verify
 crontab -l | grep memory_writer
 tail -40 /tmp/finbuddy_memory_writer.log
 ```
 
-You should see vault updates every 15 minutes and new entries under `finbuddy_memory/`.
+---
+
+## 🧠 Memory Update Pattern (mandatory after every task)
+
+1. Update `finbuddy_memory/` with metrics, lessons, status.
+2. Update `FINBUDDY_PROJECT_MEMORY.md` if phase status changed.
+3. Commit and push.
 
 ---
 
-## 🧠 Reminder: Memory Update Pattern
-
-Whenever you complete or change anything substantial (deploy, fix, tune):
-1. Update the relevant memory files under `finbuddy_memory/` (status, bugs, lessons)
-2. Update `FINBUDDY_PROJECT_MEMORY.md` summary if phase status changed
-3. Commit and push so Perplexity and future you have an accurate snapshot
-
-This is **not optional** — it's part of "done" for every task.
-
----
-
-## 🗑️ Delete This File When Fully Done
-
-After Task 1.3 passes, Phase 1 is marked complete, and Phase 2/4 cron are installed:
-
-```bash
-git rm CLAUDE_HANDOFF.md
-git commit -m "chore: remove handoff — all steps complete"
-git push origin gaurav
-```
-
----
-
-*Updated by Perplexity AI — 2026-05-01 ~15:50 IST*
+*Updated by Perplexity AI — 2026-05-01 ~18:05 IST*
