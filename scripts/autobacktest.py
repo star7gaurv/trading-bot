@@ -140,6 +140,46 @@ def write_patched_strategy(original_path: Path, params: dict) -> Path:
 
 
 # ------------------------------------------------------------------ #
+# Config patcher (patches backtest_config.json + docker cp to container) #
+# ------------------------------------------------------------------ #
+
+BACKTEST_CONFIG_HOST = SCRIPT_DIR / "backtest_config.json"
+TEMP_CONFIG_PATH = Path("/tmp/backtest_config_patched.json")
+CONTAINER_CONFIG_PATH = "/freqtrade/scripts/backtest_config.json"
+
+CONFIG_PATCH_KEYS = {
+    "stoploss": "stoploss",
+    "roi_multiplier": None,  # special: sets minimal_roi["0"]
+}
+
+
+def write_patched_config(params: dict) -> None:
+    """
+    Patch backtest_config.json with stoploss and roi_multiplier from params,
+    write to /tmp, then docker cp into the container.
+    This ensures the config does not override the strategy-level params.
+    """
+    with open(BACKTEST_CONFIG_HOST) as f:
+        cfg = json.load(f)
+
+    if "stoploss" in params:
+        cfg["stoploss"] = float(params["stoploss"])
+
+    if "roi_multiplier" in params:
+        cfg["minimal_roi"] = {"0": float(params["roi_multiplier"])}
+
+    with open(TEMP_CONFIG_PATH, "w") as f:
+        json.dump(cfg, f, indent=2)
+
+    cp_proc = subprocess.run(
+        ["docker", "cp", str(TEMP_CONFIG_PATH), f"freqtrade:{CONTAINER_CONFIG_PATH}"],
+        capture_output=True, text=True, timeout=30
+    )
+    if cp_proc.returncode != 0:
+        print(f"  [WARN] docker cp config failed: {cp_proc.stderr.strip()}")
+
+
+# ------------------------------------------------------------------ #
 # Cache cleaner                                                        #
 # ------------------------------------------------------------------ #
 
@@ -327,6 +367,10 @@ def main():
         write_patched_strategy(strategy_path, params)
         print(f"  Temp strategy written to {TEMP_STRATEGY_PATH}")
 
+        # Patch backtest_config.json so stoploss/roi aren't overridden
+        write_patched_config(params)
+        print(f"  Config patched: stoploss={params.get('stoploss')}, roi={params.get('roi_multiplier')}")
+
         # Clear cache
         clear_cache(config)
 
@@ -369,10 +413,16 @@ def main():
             print(f"{'='*60}")
             break
 
-    # Cleanup temp file
+    # Cleanup temp files and restore original config in container
     if TEMP_STRATEGY_PATH.exists():
         TEMP_STRATEGY_PATH.unlink()
-        print("\nTemp strategy file cleaned up.")
+    if TEMP_CONFIG_PATH.exists():
+        TEMP_CONFIG_PATH.unlink()
+    subprocess.run(
+        ["docker", "cp", str(BACKTEST_CONFIG_HOST), f"freqtrade:{CONTAINER_CONFIG_PATH}"],
+        capture_output=True, text=True, timeout=30
+    )
+    print("\nTemp files cleaned up. Original config restored in container.")
 
     # Final summary
     print(f"\n{'='*60}")
