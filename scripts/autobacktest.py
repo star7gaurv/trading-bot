@@ -40,13 +40,13 @@ Dependencies
   Python 3.8+, subprocess, json, csv, re, itertools, shutil, pathlib
   No external packages required — all stdlib.
 
-Notes
------
-  - Script patches FinBuddyFreqAI.py in-place for each run, then restores
-    the original at the end (safe even on CTRL+C via try/finally).
-  - Prediction cache is cleared between runs so FreqAI always uses fresh
-    predictions (the bug that made stoploss changes look like no-ops).
-  - Grid is defined in autobacktest_grid.json. Edit that file, not this one.
+Bug history
+-----------
+  v1: Docker volume resets FinBuddyFreqAI.py ownership to opc between runs.
+      write_text() raised PermissionError on combo 2+.
+  v2: _ensure_writable() runs chmod 666 via subprocess before every read/write.
+      Falls back gracefully if chmod fails (warning logged, write attempted).
+      run_backtest.sh LOG_FILE also fixed (moved to /tmp).
 """
 
 import json
@@ -54,7 +54,6 @@ import csv
 import re
 import subprocess
 import itertools
-import shutil
 import sys
 from pathlib import Path
 from datetime import datetime
@@ -71,6 +70,25 @@ GRID_FILE = SCRIPT_DIR / "autobacktest_grid.json"
 def load_grid():
     with open(GRID_FILE) as f:
         return json.load(f)
+
+
+# ------------------------------------------------------------------ #
+# Permission helper                                                    #
+# FIX: Docker volume mount resets file ownership to opc between runs. #
+# chmod 666 before every read/write ensures ubuntu can always access. #
+# ------------------------------------------------------------------ #
+
+def _ensure_writable(path: Path):
+    """chmod 666 the file so ubuntu can write it regardless of opc ownership."""
+    try:
+        result = subprocess.run(
+            ["chmod", "666", str(path)],
+            capture_output=True, text=True, timeout=5
+        )
+        if result.returncode != 0:
+            print(f"  [WARN] chmod failed for {path.name}: {result.stderr.strip()}")
+    except Exception as e:
+        print(f"  [WARN] _ensure_writable exception: {e}")
 
 
 # ------------------------------------------------------------------ #
@@ -97,6 +115,7 @@ PATCH_RULES = {
 
 def patch_strategy(strategy_path: Path, params: dict) -> str:
     """Apply param dict to strategy file. Returns original content for restore."""
+    _ensure_writable(strategy_path)  # FIX: reset opc ownership before read
     original = strategy_path.read_text()
     patched = original
     for param, value in params.items():
@@ -107,12 +126,14 @@ def patch_strategy(strategy_path: Path, params: dict) -> str:
         if new_text == patched:
             print(f"  [WARN] Patch for '{param}' found no match in strategy file.")
         patched = new_text
+    _ensure_writable(strategy_path)  # FIX: reset again before write
     strategy_path.write_text(patched)
     return original
 
 
 def restore_strategy(strategy_path: Path, original_content: str):
     """Restore strategy file to original content."""
+    _ensure_writable(strategy_path)  # FIX: always reset before restore
     strategy_path.write_text(original_content)
 
 
@@ -254,6 +275,7 @@ def main():
     print(f"{'='*60}\n")
 
     # Save original strategy content for restore
+    _ensure_writable(strategy_path)
     original_strategy = strategy_path.read_text()
     winner = None
 
@@ -263,7 +285,7 @@ def main():
             label = ", ".join(f"{k}={v}" for k, v in params.items())
             print(f"\n[{run_num}/{total}] Testing: {label}")
 
-            # Patch strategy
+            # Patch strategy (includes chmod fix inside)
             patch_strategy(strategy_path, params)
 
             # Clear cache
