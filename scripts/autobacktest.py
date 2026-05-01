@@ -89,7 +89,7 @@ PATCH_RULES = {
         lambda v: rf"\g<1>{int(v)}\g<3>",
     ),
     "trend_ema_period_1h": (
-        r"(informative_1h\[\"ema_50_1h\"\]\s*=\s*ta\.EMA\(\s*informative_1h,\s*timeperiod=)([0-9]+)(\))",
+        r"(informative_1h\[\"ema_50_1h\"\]\s*=\s*ta\.EMA\(\s*informative_1h,\s*timeperiod=)([0-9]+)(\s*\))",
         lambda v: rf"\g<1>{int(v)}\g<3>",
     ),
 }
