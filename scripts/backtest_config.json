@@ -1,6 +1,8 @@
 {
   "$schema": "https://schema.freqtrade.io/schema.json",
+
   "_comment": "Backtest-only config for Task 1.3. No live keys, no Telegram, no API server.",
+
   "max_open_trades": 4,
   "stake_currency": "USDT",
   "stake_amount": 200,
@@ -11,6 +13,7 @@
   "cancel_open_orders_on_exit": false,
   "trading_mode": "spot",
   "margin_mode": "",
+
   "exchange": {
     "name": "binance",
     "key": "",
@@ -36,35 +39,33 @@
       "WLFI/USDT"
     ]
   },
+
   "pairlists": [
     {
       "method": "StaticPairList"
     }
   ],
+
   "telegram": {
-    "enabled": false,
-    "token": "disabled",
-    "chat_id": "0"
+    "enabled": false
   },
+
   "api_server": {
-    "enabled": false,
-    "listen_ip_address": "127.0.0.1",
-    "listen_port": 8080,
-    "verbosity": "error",
-    "enable_openapi": false,
-    "jwt_secret_key": "disabled",
-    "CORS_origins": [],
-    "username": "disabled",
-    "password": "disabled"
+    "enabled": false
   },
+
   "bot_name": "finbuddy_backtest",
   "initial_state": "running",
+
   "stoploss": -0.03,
+
   "strategy": "FinBuddyFreqAI",
   "strategy_path": "user_data/strategies",
+
   "internals": {
     "process_throttle_secs": 5
   },
+
   "freqai": {
     "enabled": true,
     "purge_old_models": false,
@@ -73,19 +74,11 @@
     "live_retrain_hours": 4,
     "identifier": "finbuddy_backtest_v1",
     "feature_parameters": {
-      "include_timeframes": [
-        "15m"
-      ],
-      "include_corr_pairlist": [
-        "BTC/USDT"
-      ],
+      "include_timeframes": ["15m"],
+      "include_corr_pairlist": ["BTC/USDT"],
       "label_period_candles": 3,
       "include_shifted_candles": 2,
-      "indicator_periods_candles": [
-        10,
-        20,
-        50
-      ]
+      "indicator_periods_candles": [10, 20, 50]
     },
     "data_split_parameters": {
       "test_size": 0.15
@@ -95,21 +88,6 @@
       "learning_rate": 0.05
     }
   },
-  "freqaimodel": "FinBuddyLLMModel",
-  "entry_pricing": {
-    "price_side": "same",
-    "ask_last_balance": 0.0,
-    "use_order_book": false,
-    "order_book_top": 1
-  },
-  "exit_pricing": {
-    "price_side": "same",
-    "ask_last_balance": 0.0,
-    "use_order_book": false,
-    "order_book_top": 1
-  },
-  "minimal_roi": {
-    "0": 0.1
-  },
-  "timeframe": "15m"
+
+  "freqaimodel": "FinBuddyLLMModel"
 }
