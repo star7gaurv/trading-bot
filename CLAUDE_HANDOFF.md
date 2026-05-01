@@ -1,8 +1,8 @@
 # 🤝 FinBuddy — Handoff Note for Claude Code
 
 **Written by:** Perplexity AI  
-**Date:** 2026-05-01 ~01:30 IST  
-**For:** Claude Code (next session after usage reset at 2:40 AM IST)  
+**Date:** 2026-05-01 ~15:50 IST  
+**For:** Claude Code (next session after usage reset)  
 **Branch:** `gaurav`
 
 > Read this entire file before doing anything on the server.
@@ -10,147 +10,144 @@
 
 ---
 
-## 📊 What Perplexity Built This Session
+## 📊 What Perplexity Built / Changed This Session
 
 | # | What | Files | Status |
 |---|---|---|---|
-| 1 | FinBuddyLLMModel (Task 1.2) | `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` | ⚠️ Deploy + test |
-| 2 | Backtest runner (Task 1.3) | `scripts/run_backtest.sh`, `scripts/backtest_config.json`, `scripts/parse_backtest.py` | ⚠️ Run after #1 |
-| 3 | Phase 2 data fetchers | `scripts/phase2/*.py` | ⚠️ Install cron after Phase 1 complete |
-| 4 | Phase 4 memory writer | `scripts/phase4/memory_writer.py`, `scripts/phase4/setup_cron.sh` | ⚠️ Install cron after Phase 2 live |
+| 1 | FinBuddyLLMModel (Task 1.2) | `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` | ✅ Deployed earlier by you — now assumed live |
+| 2 | **Stoploss tuning for Task 1.3** | `freqtrade/user_data/strategies/FinBuddyFreqAI.py` | ⚠️ Needs backtest rerun |
+| 3 | Backtest runner (Task 1.3) | `scripts/run_backtest.sh`, `scripts/backtest_config.json`, `scripts/parse_backtest.py` | ⚠️ Re-run after stoploss change |
+| 4 | Phase 2 data fetchers | `scripts/phase2/*.py` | ⚠️ Install cron after Phase 1 passes backtest |
+| 5 | Phase 4 memory writer | `scripts/phase4/memory_writer.py`, `scripts/phase4/setup_cron.sh` | ⚠️ Install cron after Phase 2 live |
+
+**Key change:** Stoploss in `FinBuddyFreqAI` was loosened from **-3% to -3.5%** to address a failed backtest (Sharpe -1.58 with too-tight stoploss). You must rerun Task 1.3 backtest with this updated strategy.[see commit message]
 
 ---
 
-## ✅ Task Sequence — Do In This Order
-
----
-
-### STEP 1 — Pull Latest
+## ✅ Step 1 — Pull Latest
 ```bash
 cd /home/ubuntu/var/www/html/trade/freqtrade
 git pull origin gaurav
 ```
 
-Verify these files exist:
+Verify these files exist and are up to date:
 ```bash
 ls user_data/freqaimodels/FinBuddyLLMModel.py    # Task 1.2
+ls freqtrade/user_data/strategies/FinBuddyFreqAI.py  # stoploss now -0.035
 ls scripts/run_backtest.sh                        # Task 1.3
 ls scripts/phase2/external_data_aggregator.py    # Phase 2
 ls scripts/phase4/memory_writer.py               # Phase 4
 ```
 
----
-
-### STEP 2 — Deploy Task 1.2 (FinBuddyLLMModel)
-
-**2a. Add GROQ_API_KEY to docker-compose.yml**
+Open the strategy and confirm:
 ```bash
-nano docker-compose.yml
-# Under freqtrade service > environment, add:
-#   - GROQ_API_KEY=gsk_your_key_here
+grep -n "stoploss" freqtrade/user_data/strategies/FinBuddyFreqAI.py
+# Expect: stoploss = -0.035  (with comment about Sharpe -1.58)
 ```
-
-**2b. Ensure freqaimodels volume is mounted**
-```bash
-grep -n 'freqaimodels' docker-compose.yml
-# If not found, add under volumes:
-#   - ./user_data/freqaimodels:/freqtrade/user_data/freqaimodels
-```
-
-**2c. Test import**
-```bash
-docker exec freqtrade python -c "
-import sys
-sys.path.insert(0, '/freqtrade/user_data/freqaimodels')
-from FinBuddyLLMModel import FinBuddyLLMModel
-print('OK')
-"
-```
-
-**2d. If import OK — switch config**
-```bash
-jq '.freqaimodel = "FinBuddyLLMModel"' user_data/config.json > /tmp/c.json \
-  && mv /tmp/c.json user_data/config.json
-docker restart freqtrade
-sleep 10
-docker logs freqtrade --tail=50
-# Look for: FinBuddyLLMModel in startup logs
-```
-
-**2e. If import FAILS — rollback**
-```bash
-jq '.freqaimodel = "LightGBMRegressor"' user_data/config.json > /tmp/c.json \
-  && mv /tmp/c.json user_data/config.json
-docker restart freqtrade
-# Fix error in FinBuddyLLMModel.py, then retry
-```
-
-**After Step 2:** Mark Task 1.2 as ✅ COMPLETE in `tasks/phase-1-freqai-brain.md`
 
 ---
 
-### STEP 3 — Run Task 1.3 Backtest
+## ✅ Step 2 — Rerun Task 1.3 Backtest (with new stoploss)
 
+From the project root:
 ```bash
 cd /home/ubuntu/var/www/html/trade/freqtrade
 chmod +x scripts/run_backtest.sh
 ./scripts/run_backtest.sh
 ```
 
-The script:
-1. Downloads historical data (BTC, ETH, SOL, BNB, XRP)
-2. Runs walk-forward backtest
-3. Auto-grades PASS/FAIL with color output
+The script should:
+1. Ensure data is downloaded for the configured pairs
+2. Run backtest for `FinBuddyFreqAI` + `FinBuddyLLMModel`
+3. Call `scripts/parse_backtest.py` and print PASS/FAIL with metrics
 
-**Accept if:** Win rate >50%, Sharpe >0.5, Drawdown <20%, Profit Factor >1.2
+**Accept the backtest if ALL of these hold:**
+- Win rate > 50%
+- Sharpe ratio > 0.5
+- Max drawdown < 20%
+- Profit factor > 1.2
 
-**After Step 3:** Mark Task 1.3 as ✅ COMPLETE if criteria pass.
+If the test **still fails** (for example Sharpe < 0.5):
+- Capture the printed metrics and the worst-loss trades
+- Update `finbuddy_memory/strategies/graveyard.md` or a new note under `finbuddy_memory/strategies/` with:
+  - Date
+  - Stoploss value
+  - 4 metrics
+  - Short explanation of failure (e.g. "too many small losses", "rare big losers")
+
+If the test **passes**:
+1. Mark Task 1.3 as ✅ COMPLETE in `tasks/phase-1-freqai-brain.md`
+2. Update `strategies/registry.json` and set this strategy to `validated` as described in that task file
+3. Add a short line to `finbuddy_memory/strategies/winners.md` with the date + metrics
 
 ---
 
-### STEP 4 — Task 1.4: Switch dry-run strategy
+## ✅ Step 3 — Task 1.4: Switch Dry-Run Strategy (if 1.3 passed)
+
+Only do this after Task 1.3 is marked ✅.
 
 ```bash
 sed -i 's/AiGuardrailStrategy/FinBuddyFreqAI/' \
   /home/ubuntu/var/www/html/trade/freqtrade/docker-compose.yml
 docker restart freqtrade
-# Keep AiGuardrailStrategy.py — archive, don't delete
 ```
 
-**After Step 4:** Phase 1 is COMPLETE. Mark in `tasks/phase-1-freqai-brain.md`.
+Then verify via UI / logs that:
+- Dry-run is running `FinBuddyFreqAI`
+- FreqAI shows `FinBuddyLLMModel` as the active freqaimodel
 
 ---
 
-### STEP 5 — Phase 2 External Data (after Phase 1 complete)
+## ✅ Step 4 — Phase 2 External Data (after Phase 1 fully complete)
 
 ```bash
-# Install pytrends inside container
+# Install dependencies inside container (if not already)
 docker exec freqtrade pip install pytrends
 
 # Test all fetchers
 docker exec freqtrade python /freqtrade/scripts/phase2/external_data_aggregator.py
+```
 
-# If all 5 sources return OK — install cron
+Expect a JSON/print summary with all 5 sources. If all are OK:
+- Create a cron entry (or systemd timer) that runs the aggregator every 15 minutes and writes results to wherever `FinBuddyLLMModel` / FreqAI expects the features file.
+
+> Note: Phase 2 cron install details are in `tasks/phase-2-data-enrichment.md`. Follow that file for exact commands once Phase 1 is validated.
+
+---
+
+## ✅ Step 5 — Phase 4 Memory Writer (after Phase 2 cron running)
+
+Use the provided script:
+```bash
 cd /home/ubuntu/var/www/html/trade/freqtrade
 chmod +x scripts/phase4/setup_cron.sh
 ./scripts/phase4/setup_cron.sh
 ```
 
----
-
-### STEP 6 — Phase 4 Memory Writer (after Phase 2 cron running)
-
-The `setup_cron.sh` in Step 5 installs the memory writer cron automatically.
-Just verify it's running:
+Then verify:
 ```bash
 crontab -l | grep memory_writer
-tail -20 /tmp/finbuddy_memory_writer.log
-# Should show vault updates every 15 min
+tail -40 /tmp/finbuddy_memory_writer.log
 ```
+
+You should see vault updates every 15 minutes and new entries under `finbuddy_memory/`.
 
 ---
 
-## 🗑️ Delete This File When Done
+## 🧠 Reminder: Memory Update Pattern
+
+Whenever you complete or change anything substantial (deploy, fix, tune):
+1. Update the relevant memory files under `finbuddy_memory/` (status, bugs, lessons)
+2. Update `FINBUDDY_PROJECT_MEMORY.md` summary if phase status changed
+3. Commit and push so Perplexity and future you have an accurate snapshot
+
+This is **not optional** — it's part of "done" for every task.
+
+---
+
+## 🗑️ Delete This File When Fully Done
+
+After Task 1.3 passes, Phase 1 is marked complete, and Phase 2/4 cron are installed:
 
 ```bash
 git rm CLAUDE_HANDOFF.md
@@ -160,4 +157,4 @@ git push origin gaurav
 
 ---
 
-*Generated by Perplexity AI — 2026-05-01 ~01:30 IST*
+*Updated by Perplexity AI — 2026-05-01 ~15:50 IST*
