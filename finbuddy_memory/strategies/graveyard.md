@@ -39,3 +39,10 @@
 - **Regime it failed in:** Bear market — BTC/market fell -47.55% during test period (2025-02-01 to 2026-04-01)
 - **Date:** 2026-05-01
 - **Key lesson:** Threshold 0.012 + 1h EMA-50 filter too strict for bear market. Cuts valid trades along with bad ones. Improvement direction: threshold 0.010, or shorter 1h EMA-20, or separate bull/bear thresholds.
+
+### Grid Search Round 1 — 12 combos, no winner (2026-05-01)
+- **Grid:** ml_threshold [0.009/0.010/0.011] × ema_1h [20/35] × rsi_ceil [68/72]
+- **All 12 combos FAIL.** Best: ml=0.009, ema=20, rsi=68 → 65.1% WR, Sharpe -0.18, PF 0.854
+- **Pattern:** ml_threshold dominates — 83 trades at 0.009, 51 at 0.010, 29-30 at 0.011. WR drops below 50% at 0.011. EMA and RSI patches had minimal effect (possible patch failure due to opc file ownership).
+- **Sharpe negative for all combos** — stop_loss exits still destroying profit even with 1h trend filter. Exit signal win rate good but stop_loss exits at ~-3.5% avg dominate.
+- **Key lesson:** The grid range was too narrow. Need either: (a) wider stoploss like -0.05 to give trades more room, (b) trailing stop-only exits (remove fixed stoploss), or (c) structurally different entry logic (regime detection).
