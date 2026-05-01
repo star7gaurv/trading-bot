@@ -76,9 +76,9 @@ def load_grid():
 # ------------------------------------------------------------------ #
 
 PATCH_RULES = {
-    # Entry ML threshold: &-s_close > X
+    # Entry ML threshold: &-s_close > X)  # v6: grid param ml_threshold
     "ml_threshold": (
-        r"(dataframe\[\"&-s_close\"\]\s*>\s*)([0-9.]+)(\s*# v6: grid param ml_threshold)",
+        r"(dataframe\[\"&-s_close\"\]\s*>\s*)([0-9.]+)(\)\s*# v6: grid param ml_threshold)",
         lambda v: rf"\g<1>{v}\g<3>",
     ),
     # Hard stoploss
@@ -91,9 +91,9 @@ PATCH_RULES = {
         r"(trailing_stop_positive_offset\s*=\s*)([0-9.]+)(\s*# v6:)",
         lambda v: rf"\g<1>{float(v)}\g<3>",
     ),
-    # ML exit threshold — how fast to cut losers
+    # ML exit threshold — how fast to cut losers: &-s_close < X)  # v6:
     "ml_exit_threshold": (
-        r"(dataframe\[\"&-s_close\"\]\s*<\s*)(-[0-9.]+)(\s*# v6:)",
+        r"(dataframe\[\"&-s_close\"\]\s*<\s*)(-[0-9.]+)(\)\s*# v6:)",
         lambda v: rf"\g<1>{float(v)}\g<3>",
     ),
     # ATR volatility gate
