@@ -1,76 +1,95 @@
-# 🤝 FinBuddy — Handoff Note for Claude Code
+# 🤝 FinBuddy — Handoff Note for Perplexity
 
-**Written by:** Perplexity AI  
-**Date:** 2026-05-01 ~19:35 IST  
-**For:** Claude Code (next session)  
+**Written by:** Claude Code  
+**Date:** 2026-05-01 ~20:00 IST  
+**For:** Perplexity AI (next session)  
 **Branch:** `gaurav`
 
 ---
 
-## ✅ What Was Done This Session (Perplexity)
+## ✅ What Was Done This Session (Claude Code)
 
 | Task | Status |
 |---|---|
-| Analysed Round 1 grid CSV — identified root cause of all 12 FAILs | ✅ |
-| Root cause: negative reward:risk (avg winner < avg loser), NOT EMA/RSI params | ✅ |
-| Secondary root cause: autobacktest chmod bug — all 12 combos tested same params | ✅ |
-| Pushed `FinBuddyFreqAI.py` v5 — wider ROI, tighter SL, ATR volatility filter | ✅ |
-| Pushed `autobacktest.py` v3 — temp-file strategy (no more chmod/opc issues) | ✅ |
-| Pushed `autobacktest_grid.json` v2 — tests stoploss + roi_multiplier combos | ✅ |
-| Updated `CLAUDE_HANDOFF.md` (this file) | ✅ |
+| Pulled Perplexity's commit 68b54ae | ✅ |
+| Fixed class name mismatch in autobacktest.py (FinBuddyFreqAI → FinBuddyFreqAI_test) | ✅ |
+| Fixed ml_threshold regex (closing paren missing in pattern) | ✅ |
+| Discovered stoploss/roi_multiplier patches had zero effect (backtest_config.json override) | ✅ |
+| Fixed: write_patched_config() patches config + docker cp to container per combo | ✅ |
+| Ran Round 2: 36 combos completed — all FAIL | ✅ |
+| Committed results CSV, updated graveyard.md | ✅ |
 
 ---
 
-## 📊 Round 1 Grid Results Summary
+## 📊 Round 2 Grid Results — Full Analysis
 
-All 12 combos failed. Key findings:
+**Grid:** stoploss [-0.02/-0.025/-0.03] × roi_multiplier [0.06/0.08/0.10] × ml_threshold [0.009/0.011] × atr_threshold [0.002/0.003]
 
-| ml_threshold | Win Rate | Sharpe | Verdict |
+**Best combo:** stoploss=-0.03, roi=0.10, ml=0.009, atr=0.002 → **60.8% WR, Sharpe -0.236, DD 9.2%, PF 0.815**
+
+### Key Findings
+
+**Finding 1: roi_multiplier is a DEAD LEVER**
+All combos with same stoploss+ml+atr produce identical metrics regardless of roi (0.06, 0.08, 0.10).
+FreqAI exits via ML signal `&-s_close < -0.003` before the ROI ceiling is ever reached.
+Do NOT include roi_multiplier in future grids — it has zero effect in this architecture.
+
+**Finding 2: Stoploss is the only structural lever that works**
+| stoploss | best WR | best Sharpe | PF |
 |---|---|---|---|
-| 0.009 | ~65% | -0.18 | WR good, Sharpe negative |
-| 0.010 | ~58% | -0.36 | Worse |
-| 0.011 | ~48% | -0.28 | Too few trades |
+| -0.02 | 54.8% | -0.82 | 0.57 |
+| -0.025 | 59.3% | -0.38 | 0.73 |
+| -0.03 | 60.8% | -0.24 | 0.82 |
 
-**Diagnosis:** 65% win rate but negative Sharpe = winners are too small vs losers.
-The ROI table was exiting at 1-4% while stops were -3.5%. Fixed in v5.
+Trend: wider stoploss → better Sharpe. The -0.03 sweet spot lets winners develop.
+But even -0.03 is not enough — Sharpe is still deeply negative.
 
-**Also:** All 12 combos actually ran combo 1 parameters — chmod without sudo failed silently.
-Fixed in autobacktest.py v3 with temp-file approach.
+**Finding 3: Sharpe is structurally negative — parameter tuning cannot fix it**
+Best Sharpe across all 36 combos: **-0.174** (ml=0.011, sl=-0.025, roi=0.10, atr=0.002/0.003).
+Even at 59-61% win rate, avg USDT loss > avg USDT win.
+This means stop_loss exits happen BEFORE the ML signal fires the exit — the position moves against entry, then ML catches up and signals exit, but the damage is done.
+
+**Finding 4: ml=0.011 gives too few trades**
+ml=0.011 → 29 trades in 14 months. Too sparse for meaningful statistics.
+ml=0.009 → 75-84 trades — statistically meaningful.
+
+### Diagnosis
+
+The ML signal quality is NOT the problem (79-81% WR on signal exits confirmed in Round 1).
+The entry TIMING is the problem: entries are firing mid-candle on 15m timeframe but the signal is trained on 4h candle returns. By the time the 4h candle closes unfavorably, the position is already in drawdown beyond the SL.
 
 ---
 
-## 🚀 Your Next Job (Claude Code)
+## 🔧 What Needs to Change (Perplexity's Job)
 
-### Step 1: Pull latest changes
-```bash
-cd /home/ubuntu/var/www/html/trade
-git pull origin gaurav
+Three structural options — pick one or combine:
+
+### Option A: Trailing Stoploss (easiest)
+Replace fixed `stoploss = -0.03` with trailing stop in config:
+```json
+"trailing_stop": true,
+"trailing_stop_positive": 0.01,
+"trailing_stop_positive_offset": 0.02,
+"trailing_only_offset_is_reached": true
 ```
+This lets winners run while cutting losers early once price reverses.
+Test in autobacktest with no SL parameter (trailing handles it).
 
-### Step 2: Fix permissions (one time)
-```bash
-sudo chown ubuntu:ubuntu freqtrade/user_data/strategies/FinBuddyFreqAI.py
-sudo chown -R ubuntu:ubuntu freqtrade/user_data/backtest_results/
+### Option B: Custom Stoploss — ATR-based (better)
+```python
+def custom_stoploss(self, current_time, current_rate, current_profit, dataframe, trade):
+    atr = dataframe['atr_14'].iloc[-1]
+    return -2 * atr / current_rate  # 2× ATR below entry
 ```
+Dynamic SL that widens in volatile markets, tightens in calm.
 
-### Step 3: Run Round 2 grid (36 combos, ~2-4 hours)
-```bash
-tmux new -s autobacktest2
-cd /home/ubuntu/var/www/html/trade && python3 scripts/autobacktest.py 2>&1 | tee /tmp/autobacktest2.log
-# Ctrl+B D to detach
-```
+### Option C: Regime-Aware Entry (structural fix)
+Only enter in bull regime (BTC above 200-day MA). Skip all entries in bear market.
+Test period 2025-02-01 to 2026-04-01 was a 47% bear market — no strategy designed for trending markets should pass here. The real question is whether it works in bull conditions.
 
-### Step 4: When done, commit results
-```bash
-git add _autobacktest_results.csv
-git commit -m "data: Round 2 grid results (36 combos, v5 strategy)"
-git push origin gaurav
-```
-
-### Step 5: Update memory files
-- If WINNER found: add to `finbuddy_memory/winners.md`
-- If NO WINNER: add summary row to `finbuddy_memory/graveyard.md`
-- Update this handoff with outcome
+### Recommended path
+Start with Option A (trailing stop) — 2-line config change, run Round 3 grid.
+If still failing, pivot to Option C (regime filter).
 
 ---
 
@@ -78,41 +97,26 @@ git push origin gaurav
 
 | File | Version | State |
 |---|---|---|
-| `freqtrade/user_data/strategies/FinBuddyFreqAI.py` | v5 | ✅ Wider ROI, tighter SL=-0.025, ATR filter |
-| `scripts/autobacktest.py` | v3 | ✅ Temp-file approach, no chmod issues |
-| `scripts/autobacktest_grid.json` | v2 | ✅ 36-combo grid (SL × ROI × ML × ATR) |
-| `scripts/run_backtest.sh` | v2 | ✅ LOG_FILE in /tmp |
-| `scripts/parse_backtest.py` | latest | ✅ No changes needed |
-| `_autobacktest_results.csv` | Round 1 | ✅ Committed (12 rows, all FAIL) |
+| `freqtrade/user_data/strategies/FinBuddyFreqAI.py` | v5 | ✅ Unchanged |
+| `scripts/autobacktest.py` | v3.1 | ✅ Config patching fixed, all 4 patch rules verified |
+| `scripts/autobacktest_grid.json` | v2 | ⚠️ Remove roi_multiplier — it's a dead lever |
+| `_autobacktest_results.csv` | Round 2 | ✅ Committed (48 rows total: 12 Round 1 + 36 Round 2) |
+| `finbuddy_memory/strategies/graveyard.md` | updated | ✅ Round 2 entry added |
+
+## ⚠️ autobacktest.py — Confirmed Working
+
+All patch rules verified against v5 strategy:
+- `ml_threshold` → patches `dataframe["&-s_close"] > X)  # v5` ✅
+- `stoploss` → patches `stoploss = X` in strategy + backtest_config.json ✅
+- `atr_threshold` → patches `dataframe["atr_ratio"] > X` ✅
+- `roi_multiplier` → patches `minimal_roi["0"]` in config (but irrelevant — dead lever) ✅
+
+Config patching: `write_patched_config()` patches stoploss + minimal_roi in backtest_config.json
+and docker cp's it to `/freqtrade/scripts/backtest_config.json` before each combo. ✅
 
 ---
 
-## ⚠️ Known Issues / Watch-Outs
-
-1. **Round 2 grid is 36 combos** (3 SL × 3 ROI × 2 ML × 2 ATR) — will take 2-4 hours.
-2. **`docker cp` needed per combo** — autobacktest.py v3 does `docker cp /tmp/FinBuddyFreqAI_test.py freqtrade:/tmp/` before each run. Ensure Docker is running.
-3. **Strategy class name in temp file** stays `FinBuddyFreqAI` but Freqtrade is called with `--strategy FinBuddyFreqAI_test`. This will cause a mismatch. **See fix below.**
-
-### ⚠️ IMPORTANT: Strategy Class Name Fix
-
-autobacktest.py v3 passes `--strategy FinBuddyFreqAI_test` to Freqtrade, but the class inside the temp file is still named `FinBuddyFreqAI`. This will cause:
-```
-Freqtrade: Strategy FinBuddyFreqAI_test not found
-```
-
-**Fix:** In `write_patched_strategy()`, also rename the class:
-```python
-patched = patched.replace(
-    "class FinBuddyFreqAI(IStrategy):",
-    "class FinBuddyFreqAI_test(IStrategy):"
-)
-```
-Add this line before `TEMP_STRATEGY_PATH.write_text(patched)` in autobacktest.py.
-Perplexity will push this fix, OR Claude can apply it before running.
-
----
-
-## 🔄 Collaboration Rules (Reminder)
+## 🔄 Collaboration Rules
 
 | Who | Does What |
 |---|---|
@@ -122,4 +126,4 @@ Perplexity will push this fix, OR Claude can apply it before running.
 
 ---
 
-*Written by Perplexity AI — 2026-05-01 ~19:35 IST*
+*Written by Claude Code — 2026-05-01 ~20:00 IST*

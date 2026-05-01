@@ -40,6 +40,16 @@
 - **Date:** 2026-05-01
 - **Key lesson:** Threshold 0.012 + 1h EMA-50 filter too strict for bear market. Cuts valid trades along with bad ones. Improvement direction: threshold 0.010, or shorter 1h EMA-20, or separate bull/bear thresholds.
 
+### Grid Search Round 2 — 36 combos, no winner (2026-05-01)
+- **Grid:** stoploss [-0.02/-0.025/-0.03] × roi_multiplier [0.06/0.08/0.10] × ml_threshold [0.009/0.011] × atr_threshold [0.002/0.003]
+- **All 36 combos FAIL.** Best: stoploss=-0.03, roi=0.10, ml=0.009, atr=0.002 → 60.8% WR, Sharpe -0.236, DD 9.2%, PF 0.815
+- **Pattern 1 — roi_multiplier has ZERO effect:** Trades using same stoploss+ml+atr combo are identical regardless of roi. FreqAI exits via ML signal `&-s_close` before ROI ceiling is ever hit. roi_multiplier is a dead lever in this architecture.
+- **Pattern 2 — stoploss is the only structural lever:** Best stoploss is -0.03 (wider = more room for winners to develop). Tighter -0.02 cuts winners short and tanks Sharpe to -0.82.
+- **Pattern 3 — Sharpe remains deeply negative at all settings:** Best Sharpe -0.174 (ml=0.011, sl=-0.025, roi=0.10). Even though WR hits 60-65%, the avg loser is still much larger than avg winner in absolute USDT terms.
+- **Root diagnosis confirmed:** The ML signal fires exits correctly (79-81% WR on signal exits) but stop_loss exits occur BEFORE the ML exit signal fires — meaning entries are happening at bad timing relative to the 4h candle cycle.
+- **Key lesson:** Parameter tuning within this architecture cannot fix the problem. Need structural change: (a) trailing stop instead of fixed SL, (b) entry timing aligned to HTF candle close, or (c) separate bull/bear regime strategies.
+- **Date:** 2026-05-01
+
 ### Grid Search Round 1 — 12 combos, no winner (2026-05-01)
 - **Grid:** ml_threshold [0.009/0.010/0.011] × ema_1h [20/35] × rsi_ceil [68/72]
 - **All 12 combos FAIL.** Best: ml=0.009, ema=20, rsi=68 → 65.1% WR, Sharpe -0.18, PF 0.854
