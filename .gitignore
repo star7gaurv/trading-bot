@@ -1,10 +1,24 @@
 .env
 n8n/n8n_data/
-.env
-n8n/n8n_data/
 freqtrade/user_data/logs/
 freqtrade/user_data/data/
 freqtrade/user_data/tradesv3.sqlite*
 freqtrade/user_data/notebooks/
 .claude/
 freqtrade/user_data/models/
+
+# Backtest artifacts — never commit these (large binary files, machine-specific)
+freqtrade/user_data/backtest_results/*.zip
+freqtrade/user_data/backtest_results/*.meta.json
+freqtrade/user_data/backtest_results/*.log
+freqtrade/user_data/backtest_results/.last_result.json
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
