@@ -1,5 +1,7 @@
 # pragma pylint: disable=missing-docstring, invalid-name, pointless-string-statement
 # flake8: noqa: F401
+from functools import reduce
+
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
@@ -13,9 +15,9 @@ logger = logging.getLogger(__name__)
 
 class FinBuddyFreqAI(IStrategy):
     """
-    FinBuddy FreqAI Strategy v2 — ML Brain
-    LightGBM trained on OHLCV + TA indicators predicts 3-candle (45min) price direction.
-    Primary signal: FreqAI &-s_close prediction. TA used as secondary filter.
+    FinBuddy FreqAI Strategy v3 — correct feature engineering pattern.
+    Features defined in feature_engineering_expand_all() with % prefix.
+    ML brain: LightGBMRegressor / FinBuddyLLMModel predicts &-s_close.
     """
     INTERFACE_VERSION = 3
 
@@ -34,131 +36,114 @@ class FinBuddyFreqAI(IStrategy):
 
     timeframe = "15m"
     can_short = False
-    startup_candle_count = 300
+    startup_candle_count = 40
+
+    def feature_engineering_expand_all(
+        self, dataframe: DataFrame, period: int, metadata: dict, **kwargs
+    ) -> DataFrame:
+        """
+        FreqAI features — auto-expanded across indicator_periods_candles,
+        include_timeframes, include_shifted_candles, include_corr_pairlist.
+        All must be prefixed with % to be recognized by FreqAI.
+        """
+        dataframe["%-rsi-period"] = ta.RSI(dataframe, timeperiod=period)
+        dataframe["%-adx-period"] = ta.ADX(dataframe, timeperiod=period)
+        dataframe["%-ema-period"] = ta.EMA(dataframe, timeperiod=period)
+        dataframe["%-sma-period"] = ta.SMA(dataframe, timeperiod=period)
+
+        bb = ta.BBANDS(dataframe, timeperiod=period)
+        dataframe["%-bb_width-period"] = (bb["upperband"] - bb["lowerband"]) / bb["middleband"]
+        dataframe["%-bb_pct-period"] = (dataframe["close"] - bb["lowerband"]) / (bb["upperband"] - bb["lowerband"] + 1e-9)
+
+        dataframe["%-roc-period"] = ta.ROC(dataframe, timeperiod=period)
+        dataframe["%-relative_volume-period"] = (
+            dataframe["volume"] / dataframe["volume"].rolling(period).mean()
+        )
+        return dataframe
+
+    def feature_engineering_expand_basic(
+        self, dataframe: DataFrame, metadata: dict, **kwargs
+    ) -> DataFrame:
+        """Features expanded across timeframes/corr pairs but not periods."""
+        macd = ta.MACD(dataframe)
+        dataframe["%-macd"] = macd["macd"]
+        dataframe["%-macd_signal"] = macd["macdsignal"]
+        dataframe["%-macd_hist"] = macd["macdhist"]
+
+        dataframe["%-atr"] = ta.ATR(dataframe, timeperiod=14) / dataframe["close"]
+
+        rolling_high = dataframe["high"].rolling(96).max()
+        rolling_low = dataframe["low"].rolling(96).min()
+        dataframe["%-price_position"] = (
+            (dataframe["close"] - rolling_low) / (rolling_high - rolling_low + 1e-9)
+        )
+        return dataframe
+
+    def feature_engineering_std(
+        self, dataframe: DataFrame, metadata: dict, **kwargs
+    ) -> DataFrame:
+        """Standard features computed once on base timeframe."""
+        dataframe["%-day_of_week"] = pd.to_datetime(dataframe["date"]).dt.dayofweek
+        dataframe["%-hour_of_day"] = pd.to_datetime(dataframe["date"]).dt.hour
+        dataframe["%-raw_close"] = dataframe["close"]
+        dataframe["%-raw_volume"] = dataframe["volume"]
+        dataframe["%-raw_open"] = dataframe["open"]
+        return dataframe
 
     def set_freqai_targets(self, dataframe: DataFrame, metadata: dict, **kwargs) -> DataFrame:
         """
         Define what FreqAI predicts.
-        &-s_close = % price change after label_period_candles (3 candles = 45 min).
-        Positive = price goes up, negative = price goes down.
+        &-s_close = avg % price change over next label_period_candles.
         """
+        label_period = self.freqai_info["feature_parameters"]["label_period_candles"]
         dataframe["&-s_close"] = (
             dataframe["close"]
-            .shift(-self.freqai.dk.label_period_candles)
+            .shift(-label_period)
+            .rolling(label_period)
+            .mean()
             / dataframe["close"]
         ) - 1
         return dataframe
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        # RSI
+        # All features come from feature_engineering_*() methods above.
+        # FreqAI injects &-s_close prediction + do_predict into dataframe.
+        dataframe = self.freqai.start(dataframe, metadata, self)
+
+        # TA indicators for entry/exit filters (not FreqAI features)
         dataframe["rsi_14"] = ta.RSI(dataframe, timeperiod=14)
-        dataframe["rsi_7"] = ta.RSI(dataframe, timeperiod=7)
-
-        # MACD
-        macd = ta.MACD(dataframe)
-        dataframe["macd"] = macd["macd"]
-        dataframe["macd_signal"] = macd["macdsignal"]
-        dataframe["macd_hist"] = macd["macdhist"]
-
-        # EMA
-        dataframe["ema_9"] = ta.EMA(dataframe, timeperiod=9)
-        dataframe["ema_21"] = ta.EMA(dataframe, timeperiod=21)
         dataframe["ema_50"] = ta.EMA(dataframe, timeperiod=50)
         dataframe["ema_200"] = ta.EMA(dataframe, timeperiod=200)
 
-        # Bollinger Bands
         bb = ta.BBANDS(dataframe, timeperiod=20)
-        dataframe["bb_upper"] = bb["upperband"]
-        dataframe["bb_lower"] = bb["lowerband"]
-        dataframe["bb_mid"] = bb["middleband"]
-        dataframe["bb_width"] = bb["upperband"] - bb["lowerband"]
-        dataframe["bb_pct"] = (dataframe["close"] - bb["lowerband"]) / (dataframe["bb_width"] + 1e-10)
-
-        # ATR
-        dataframe["atr"] = ta.ATR(dataframe, timeperiod=14)
-        dataframe["atr_pct"] = dataframe["atr"] / dataframe["close"]
-
-        # Volume momentum
-        dataframe["volume_ma"] = dataframe["volume"].rolling(20).mean()
-        dataframe["volume_change"] = dataframe["volume"] / (dataframe["volume_ma"] + 1e-10)
-
-        # Price position in 24h range
-        dataframe["high_24"] = dataframe["high"].rolling(96).max()
-        dataframe["low_24"] = dataframe["low"].rolling(96).min()
-        dataframe["price_position"] = (
-            (dataframe["close"] - dataframe["low_24"])
-            / (dataframe["high_24"] - dataframe["low_24"] + 1e-10)
-        )
-
-        # EMA slope
-        dataframe["ema_21_slope"] = dataframe["ema_21"] - dataframe["ema_21"].shift(3)
-
-        # FreqAI: trains model + injects predictions into dataframe
-        # Adds: &-s_close (ML prediction), do_predict (1=valid, 0=warmup/skip)
-        dataframe = self.freqai.start(dataframe, metadata, self)
+        dataframe["bb_upperband"] = bb["upperband"]
+        dataframe["bb_lowerband"] = bb["lowerband"]
+        dataframe["bb_pct"] = (dataframe["close"] - bb["lowerband"]) / (bb["upperband"] - bb["lowerband"] + 1e-9)
 
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        """
-        PRIMARY: FreqAI predicts >0.8% gain in next 45 min.
-        SECONDARY: TA filters (trend + not overbought).
-        do_predict == 1 means model is trained and prediction is valid.
-        """
-        ml_signal = (
-            (dataframe["do_predict"] == 1) &
-            (dataframe["&-s_close"] > 0.008)
-        )
+        ml_signal = (dataframe["do_predict"] == 1) & (dataframe["&-s_close"] > 0.008)
         ta_filter = (
-            (dataframe["close"] > dataframe["ema_50"]) &
-            (dataframe["rsi_14"] < 72) &
-            (dataframe["bb_pct"] < 0.90) &
-            (dataframe["volume"] > 0)
+            (dataframe["close"] > dataframe["ema_50"])
+            & (dataframe["rsi_14"] < 72)
+            & (dataframe["bb_pct"] < 0.90)
+            & (dataframe["volume"] > 0)
         )
-        dataframe.loc[ml_signal & ta_filter, "enter_long"] = 1
-        dataframe.loc[ml_signal & ta_filter, "enter_tag"] = "freqai_lgbm"
+        safety = (
+            (dataframe["close"] > dataframe["ema_200"])
+            & (dataframe["rsi_14"] < 78)
+        )
+
+        dataframe.loc[ml_signal & ta_filter & safety, "enter_long"] = 1
+        dataframe.loc[ml_signal & ta_filter & safety, "enter_tag"] = "freqai_lgbm"
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        """
-        PRIMARY: FreqAI predicts price will fall.
-        SECONDARY: TA overbought / reversal signals.
-        """
-        ml_exit = (
-            (dataframe["do_predict"] == 1) &
-            (dataframe["&-s_close"] < -0.003)
-        )
+        ml_exit = (dataframe["do_predict"] == 1) & (dataframe["&-s_close"] < -0.003)
         ta_exit = (
-            (dataframe["rsi_14"] > 75) |
-            (
-                (dataframe["close"] < dataframe["ema_21"]) &
-                (dataframe["close"].shift(1) > dataframe["ema_21"].shift(1))
-            ) |
-            (dataframe["bb_pct"] > 0.95)
+            (dataframe["rsi_14"] > 75)
+            | (dataframe["bb_pct"] > 0.95)
         )
         dataframe.loc[ml_exit | ta_exit, "exit_long"] = 1
         return dataframe
-
-    def confirm_trade_entry(self, pair: str, order_type: str, amount: float, rate: float,
-                            time_in_force: str, current_time, entry_tag, side: str, **kwargs) -> bool:
-        """Safety gate: macro trend + not extreme overbought."""
-        dataframe, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
-        if dataframe.empty:
-            return False
-        last = dataframe.iloc[-1]
-        if last["close"] < last["ema_200"]:
-            logger.info(f"[{pair}] Entry rejected: price below 200 EMA")
-            return False
-        if last["rsi_14"] > 78:
-            logger.info(f"[{pair}] Entry rejected: RSI {last['rsi_14']:.1f} > 78")
-            return False
-        return True
-
-    def custom_stoploss(self, pair: str, trade: Trade, current_time, current_rate: float,
-                        current_profit: float, **kwargs) -> float:
-        """Tiered stoploss — tighten as profit grows."""
-        if current_profit > 0.04:
-            return -0.01
-        if current_profit > 0.02:
-            return -0.015
-        return -0.03

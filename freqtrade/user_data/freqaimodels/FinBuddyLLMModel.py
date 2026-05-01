@@ -5,15 +5,17 @@ FinBuddyLLMModel — Custom FreqAI Model (Task 1.2)
 Architecture:
   1. LightGBM trains on OHLCV + TA indicators (inherited from LightGBMRegressor)
   2. predict() checks signal confidence (abs prediction > threshold)
-  3. High-confidence signals get Groq Llama 3.3 70B confirmation
+  3. High-confidence signals get xAI Grok confirmation
   4. Final signal = LightGBM * 0.6 + LLM_factor * 0.4
 
-Rate limiting: per-pair cooldown (60 min) to stay inside Groq free tier (6000 req/day).
-Fallback: if Groq fails or times out, LightGBM signal is used unchanged.
+Rate limiting: per-pair cooldown (60 min).
+Fallback: if xAI fails or times out, LightGBM signal is used unchanged.
 
 Activation:
   config.json → "freqaimodel": "FinBuddyLLMModel"
-  docker-compose.yml → environment: - GROQ_API_KEY=gsk_xxxx
+  docker-compose.yml → environment:
+    - XAI_API_KEY=xai_xxxx
+    - GROK_MODEL=grok-3-mini
 """
 
 import logging
@@ -43,13 +45,13 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # ── Constants ──────────────────────────────────────────────────────────────────
-GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL   = "llama-3.3-70b-versatile"
+XAI_API_URL  = "https://api.x.ai/v1/chat/completions"
+XAI_MODEL    = "grok-3-mini"  # overridden at runtime from GROK_MODEL env var
 CONFIDENCE_THRESHOLD = 0.006   # 0.6% predicted move to trigger LLM call
 LGBM_WEIGHT  = 0.60            # LightGBM contribution to blended signal
 LLM_WEIGHT   = 0.40            # LLM contribution to blended signal
 COOLDOWN_SECONDS = 3600        # 60 min per-pair cooldown (rate limiting)
-GROQ_TIMEOUT = 4               # seconds — never block a trade decision
+XAI_TIMEOUT  = 8               # seconds — xAI is slightly slower than Groq
 
 # ── LLM outcome → signal multiplier ───────────────────────────────────────────
 LLM_MULTIPLIERS = {
@@ -68,15 +70,16 @@ class FinBuddyLLMModel(BASE_CLASS):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._groq_api_key: str = os.environ.get("GROQ_API_KEY", "")
-        # Per-pair last Groq call timestamp {pair: epoch_seconds}
+        self._xai_api_key: str = os.environ.get("XAI_API_KEY", "")
+        self._xai_model: str = os.environ.get("GROK_MODEL", XAI_MODEL)
+        # Per-pair last LLM call timestamp {pair: epoch_seconds}
         self._last_groq_call: Dict[str, float] = {}
         # Per-pair last LLM outcome cache {pair: (outcome_str, epoch_seconds)}
         self._llm_cache: Dict[str, Tuple[str, float]] = {}
 
-        if not self._groq_api_key:
+        if not self._xai_api_key:
             logger.warning(
-                "[FinBuddyLLMModel] GROQ_API_KEY not set. "
+                "[FinBuddyLLMModel] XAI_API_KEY not set. "
                 "LLM confirmation disabled — LightGBM signal used as-is."
             )
         if requests is None:
@@ -99,7 +102,7 @@ class FinBuddyLLMModel(BASE_CLASS):
         pred_df, do_predict = super().predict(unfiltered_df, dk, **kwargs)
 
         # ── 2. LLM confirmation (only if key present + requests available) ────
-        if not self._groq_api_key or requests is None:
+        if not self._xai_api_key or requests is None:
             return pred_df, do_predict
 
         pair = dk.pair if hasattr(dk, "pair") else "UNKNOWN"
@@ -111,7 +114,10 @@ class FinBuddyLLMModel(BASE_CLASS):
 
         # Work on last candle (most recent prediction)
         last_pred = pred_df[target_col].iloc[-1]
-        last_do_predict = do_predict.iloc[-1, 0] if not do_predict.empty else 0
+        if hasattr(do_predict, "iloc"):
+            last_do_predict = do_predict.iloc[-1, 0] if not do_predict.empty else 0
+        else:
+            last_do_predict = int(do_predict[-1]) if len(do_predict) > 0 else 0
 
         # Only call LLM if:
         #   a) model is trained (do_predict == 1)
@@ -166,7 +172,7 @@ class FinBuddyLLMModel(BASE_CLASS):
 
     def _call_groq(self, pair: str, context: str) -> str:
         """
-        Call Groq Llama 3.3 70B with market context.
+        Call xAI Grok with market context.
         Returns: 'CONFIRM', 'REJECT', or 'HOLD'.
         Falls back to 'HOLD' on any error.
         """
@@ -184,18 +190,18 @@ class FinBuddyLLMModel(BASE_CLASS):
 
         try:
             response = requests.post(
-                GROQ_API_URL,
+                XAI_API_URL,
                 headers={
-                    "Authorization": f"Bearer {self._groq_api_key}",
+                    "Authorization": f"Bearer {self._xai_api_key}",
                     "Content-Type": "application/json",
                 },
                 json={
-                    "model": GROQ_MODEL,
+                    "model": self._xai_model,
                     "messages": [{"role": "user", "content": prompt}],
                     "max_tokens": 10,
                     "temperature": 0.1,
                 },
-                timeout=GROQ_TIMEOUT,
+                timeout=XAI_TIMEOUT,
             )
             response.raise_for_status()
             data = response.json()
@@ -208,30 +214,30 @@ class FinBuddyLLMModel(BASE_CLASS):
             # Update cooldown timer
             self._last_groq_call[pair] = time.time()
             logger.info(
-                f"[FinBuddyLLMModel] Groq call for {pair} → {outcome} "
+                f"[FinBuddyLLMModel] xAI call for {pair} → {outcome} "
                 f"(raw: '{raw}')"
             )
             return outcome
 
         except requests.exceptions.Timeout:
             logger.warning(
-                f"[FinBuddyLLMModel] {pair}: Groq timeout after {GROQ_TIMEOUT}s — using HOLD"
+                f"[FinBuddyLLMModel] {pair}: xAI timeout after {XAI_TIMEOUT}s — using HOLD"
             )
         except requests.exceptions.HTTPError as e:
             status = e.response.status_code if e.response else "?"
             logger.warning(
-                f"[FinBuddyLLMModel] {pair}: Groq HTTP {status} error — using HOLD"
+                f"[FinBuddyLLMModel] {pair}: xAI HTTP {status} error — using HOLD"
             )
             if status == 429:
                 # Rate limited — extend cooldown to 2 hours
                 self._last_groq_call[pair] = time.time() + COOLDOWN_SECONDS
                 logger.warning(
-                    f"[FinBuddyLLMModel] {pair}: Rate limited by Groq, "
+                    f"[FinBuddyLLMModel] {pair}: Rate limited by xAI, "
                     f"extending cooldown to 2 hours"
                 )
         except Exception as e:
             logger.warning(
-                f"[FinBuddyLLMModel] {pair}: Groq call failed ({type(e).__name__}: {e}) — using HOLD"
+                f"[FinBuddyLLMModel] {pair}: xAI call failed ({type(e).__name__}: {e}) — using HOLD"
             )
 
         return "HOLD"  # Safe fallback — never block a trade on API failure

@@ -164,5 +164,5 @@
             "learning_rate": 0.05
         }
     },
-    "freqaimodel": "LightGBMRegressor"
+    "freqaimodel": "FinBuddyLLMModel"
 }
