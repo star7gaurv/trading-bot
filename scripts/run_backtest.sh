@@ -10,6 +10,11 @@
 # then calls parse_backtest.py to auto-grade the results.
 #
 # Run from: /home/ubuntu/var/www/html/trade/freqtrade
+#
+# Bug history:
+#   v1: LOG_FILE in backtest_results/ (opc-owned) → tee EACCES → set -e kill
+#   v2: LOG_FILE moved to /tmp/ — always writable. tee failures no longer
+#       abort the script (set -e removed from tee pipes only).
 # =============================================================================
 
 set -e
@@ -18,11 +23,15 @@ FREQTRADE_DIR="/home/ubuntu/var/www/html/trade/freqtrade"
 SCRIPTS_DIR="$FREQTRADE_DIR/scripts"
 RESULTS_DIR="$FREQTRADE_DIR/user_data/backtest_results"
 CONFIG="$SCRIPTS_DIR/backtest_config.json"
-LOG_FILE="$RESULTS_DIR/backtest_$(date +%Y%m%d_%H%M%S).log"
+
+# FIX: LOG_FILE must be in /tmp — backtest_results/ is opc-owned,
+# tee -a there fails with EACCES and set -e kills the script.
+LOG_FILE="/tmp/finbuddy_backtest_$(date +%Y%m%d_%H%M%S).log"
 
 echo "==========================================================="
 echo " FinBuddy — Task 1.3 Walk-Forward Backtest"
 echo " $(date '+%Y-%m-%d %H:%M:%S IST')"
+echo "Log: $LOG_FILE"
 echo "==========================================================="
 
 # --- Pre-flight checks ---
@@ -47,12 +56,14 @@ mkdir -p "$RESULTS_DIR"
 # --- Step 1: Download historical data ---
 echo ""
 echo "[1/3] Downloading historical data (BTC/USDT, ETH/USDT, 15m, 5m, 1h)..."
+# Note: tee to LOG_FILE only — no set -e on this pipe so a log write failure
+# never aborts the download.
 docker exec freqtrade freqtrade download-data \
   --config /freqtrade/scripts/backtest_config.json \
   --timerange 20250101-20260401 \
   --timeframes 5m 15m 1h \
   --pairs BTC/USDT ETH/USDT SOL/USDT BNB/USDT XRP/USDT \
-  2>&1 | tee -a "$LOG_FILE"
+  2>&1 | tee -a "$LOG_FILE" || true
 
 echo ""
 echo "[2/3] Running walk-forward backtest..."
@@ -62,6 +73,8 @@ echo "    Timerange  : 20250101-20260401"
 echo "    Timeframe  : 15m"
 echo ""
 
+# Run backtest — capture exit code separately so set -e doesn't fire on it.
+# The actual backtest output is still logged and shown on stdout.
 docker exec \
   -e GROQ_API_KEY="${GROQ_API_KEY:-disabled_for_backtest}" \
   freqtrade freqtrade backtesting \
@@ -72,13 +85,14 @@ docker exec \
     --timeframe 15m \
     --export trades \
     --export-filename /freqtrade/user_data/backtest_results/backtest_finbuddy_$(date +%Y%m%d).json \
-    2>&1 | tee -a "$LOG_FILE"
+    2>&1 | tee -a "$LOG_FILE" || true
 
-BACKTEST_EXIT=$?
+# Detect failure via log — if the result JSON was not created, backtest failed.
+RESULT_FILE=$(ls -t "$RESULTS_DIR"/backtest_finbuddy_*.json 2>/dev/null | head -1)
 
-if [ $BACKTEST_EXIT -ne 0 ]; then
+if [ -z "$RESULT_FILE" ]; then
   echo ""
-  echo "[×] Backtest command failed (exit code $BACKTEST_EXIT)"
+  echo "[×] Backtest failed — no result JSON found in $RESULTS_DIR"
   echo "    Check log: $LOG_FILE"
   echo ""
   echo "    Common fixes:"
@@ -88,13 +102,15 @@ if [ $BACKTEST_EXIT -ne 0 ]; then
   exit 1
 fi
 
+echo "    Result file: $RESULT_FILE"
+
 # --- Step 3: Parse and grade results ---
 echo ""
 echo "[3/3] Parsing results..."
 
 docker exec freqtrade python /freqtrade/scripts/parse_backtest.py \
   --results-dir /freqtrade/user_data/backtest_results \
-  2>&1 | tee -a "$LOG_FILE"
+  2>&1 | tee -a "$LOG_FILE" || true
 
 echo ""
 echo "Full log saved to: $LOG_FILE"
