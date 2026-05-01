@@ -3,7 +3,7 @@
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
 **Status:** 🟡 Phase 1 In Progress — Task 1.2 + 1.3 scripts NEED REVIEW  
-**Last Updated:** 2026-05-01 16:55 IST by Perplexity AI
+**Last Updated:** 2026-05-01 17:06 IST by Perplexity AI
 
 ---
 
@@ -21,7 +21,9 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 1. **Code over manual work:** If it can be automated with code (cron, script, config), do it once and do **not** waste AI tokens or manual effort on it again.
 2. **AI for progress, not routine:** Use AI (Perplexity, Claude, Grok) for design, debugging, monitoring, and improvements — not for tasks that a simple script or cron job can handle.
-3. **Never hardcode secrets:** API keys, passwords, and tokens must always come from environment variables, never from committed files.
+3. **DRY & reusable design:** Project code should follow “Do Not Repeat Yourself”. Shared logic must live in reusable helpers/modules so we don’t duplicate code across strategies, scripts, or phases.
+4. **Documentation as memory:** Any non-trivial behavior (strategy logic, cron setup, API integration, experiments) must be documented, so we never forget what’s already implemented and can safely reuse it instead of rewriting.
+5. **Never hardcode secrets:** API keys, passwords, and tokens must always come from environment variables, never from committed files.
 
 These rules are part of the "core context" for all future work in this repo.
 
@@ -166,4 +168,4 @@ These rules are part of the "core context" for all future work in this repo.
 
 ---
 
-*Last updated: Perplexity AI — 2026-05-01 ~16:55 IST*
+*Last updated: Perplexity AI — 2026-05-01 ~17:06 IST*
