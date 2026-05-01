@@ -200,10 +200,14 @@ def run_backtest(config: dict) -> dict:
 
     # Parse results
     try:
+        results_dir = PROJECT_ROOT / config["backtest_results_path"]
         parse_proc = subprocess.run(
-            ["python3", str(parse_script), "--json"],
+            ["python3", str(parse_script), "--json", "--results-dir", str(results_dir)],
             capture_output=True, text=True, cwd=str(PROJECT_ROOT), timeout=60
         )
+        if not parse_proc.stdout.strip():
+            result["error"] = f"parse_backtest.py empty output (stderr: {parse_proc.stderr[:200]})"
+            return result
         metrics = json.loads(parse_proc.stdout)
         result.update(metrics)
     except Exception as e:
