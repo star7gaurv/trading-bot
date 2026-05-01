@@ -91,7 +91,7 @@ def load_grid():
 
 PATCH_RULES = {
     "ml_threshold": (
-        r"(\(dataframe\[\"&-s_close\"\]\s*>\s*)([0-9.]+)(\s*# v5)",
+        r"(dataframe\[\"&-s_close\"\]\s*>\s*)([0-9.]+)(\)\s*# v5)",
         lambda v: rf"\g<1>{v}\g<3>",
     ),
     "rsi_entry_ceiling": (
@@ -131,6 +131,10 @@ def write_patched_strategy(original_path: Path, params: dict) -> Path:
             continue
         patched = re.sub(pattern, replacement_fn(value), patched)
 
+    patched = patched.replace(
+        "class FinBuddyFreqAI(IStrategy):",
+        "class FinBuddyFreqAI_test(IStrategy):"
+    )
     TEMP_STRATEGY_PATH.write_text(patched)
     return TEMP_STRATEGY_PATH
 
