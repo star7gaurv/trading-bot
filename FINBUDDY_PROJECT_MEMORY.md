@@ -3,7 +3,7 @@
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
 **Status:** 🟡 Phase 1 In Progress — Task 1.2 + 1.3 scripts NEED REVIEW  
-**Last Updated:** 2026-05-01 13:57 IST by Perplexity AI
+**Last Updated:** 2026-05-01 14:02 IST by Perplexity AI
 
 ---
 
@@ -21,36 +21,50 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 > **Rule:** Never hardcode API keys. Always use environment variables.
 
-| Model | Provider | API Base | Env Var | Role in FinBuddy |
+| Model | Provider | Env Var | Cost | Role in FinBuddy |
 |---|---|---|---|---|
-| **grok-3-mini** | xAI (Elon Musk) | `https://api.x.ai/v1` | `XAI_API_KEY` | ✅ **Primary — Task 1.2 signal confirmation** |
-| **grok-3** | xAI | `https://api.x.ai/v1` | `XAI_API_KEY` | Optional upgrade when free credits allow |
-| **gemini-2.5-flash** | Google | Gemini API | `GEMINI_API_KEY` | ✅ **Phase 5 — Karpathy research loop** |
-| **deepseek-chat** | DeepSeek | `https://api.deepseek.com/v1` | `DEEPSEEK_API_KEY` | ✅ **Phase 5 — hypothesis generator (ultra cheap)** |
+| **grok-3-mini** | xAI | `XAI_API_KEY` | $0.10/M | ✅ **Task 1.2 — real-time signal confirmation** |
+| **grok-3** | xAI | `XAI_API_KEY` | $2/M | Optional upgrade later |
+| **claude-sonnet-4-5** | Anthropic | `ANTHROPIC_API_KEY` | $3/$15 per M | ✅ **Phase 5 — write strategy code improvements** |
+| **gemini-2.5-flash** | Google | `GEMINI_API_KEY` | Free tier | ✅ **Phase 5 — read full backtest logs (1M context)** |
+| **deepseek-chat** | DeepSeek | `DEEPSEEK_API_KEY` | ~$0.01/M | ✅ **Phase 5 — bulk hypothesis generation** |
 
-### Why This Stack?
-- **Grok-3-Mini for signal confirmation:** Trained on real-time X/Twitter data — knows current market sentiment better than any other model. Fast, cheap, OpenAI-compatible API.
-- **Gemini 2.5 Flash for research:** 1M token context — can read entire backtest logs + strategy code in one call. Free tier very generous.
-- **DeepSeek for hypothesis gen:** Cheapest available (~$0.01/M tokens), surprisingly strong reasoning. Good for bulk Phase 5 hypothesis generation.
+### Why each model was chosen
 
-### xAI API curl example (for reference):
-```bash
-curl https://api.x.ai/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $XAI_API_KEY" \
-  -d '{
-    "model": "grok-3-mini",
-    "messages": [{"role": "user", "content": "Your message here"}],
-    "max_tokens": 500,
-    "stream": false
-  }'
+**Grok-3-Mini → Task 1.2 (Signal Confirmation)**
+- Only model trained on real-time X/Twitter data — knows live market sentiment
+- Fast, cheap, OpenAI-compatible API (drop-in replacement)
+- 60 req/min free tier — more than enough (~5–20 calls/hour for FinBuddy)
+- Hard timeout 4s in code; falls back to raw LGBM signal on failure
+
+**Claude Sonnet → Phase 5 (Strategy Code Writing)**
+- Best model in the world for writing reliable, bug-free Python code
+- Understands FreqTrade/FreqAI strategy structure deeply
+- Does not hallucinate API calls or FreqAI method signatures
+- Used for step 3 of the Karpathy loop: writing actual code changes
+- Already used indirectly — Claude Code (which deploys everything on server) runs on Sonnet
+
+**Gemini 2.5 Flash → Phase 5 (Backtest Log Analysis)**
+- 1M token context window — can ingest entire backtest JSONs + strategy code in one call
+- Free tier is very generous for weekly Phase 5 runs
+- Best for step 1: reading and summarizing what went wrong in backtests
+
+**DeepSeek → Phase 5 (Hypothesis Generation)**
+- Cheapest available (~$0.01/M tokens), strong reasoning
+- Best for step 2: generating 5+ hypotheses per week ("what if we add RSI filter?")
+- Bulk usage without worrying about cost
+
+### Phase 5 Karpathy Loop — how models work as a team
+```
+Every week (automated):
+  Step 1: Gemini 2.5 Flash  → reads full backtest logs, finds weak spots
+  Step 2: DeepSeek          → generates 5 improvement hypotheses
+  Step 3: Claude Sonnet     → writes the actual strategy/model code changes
+  Step 4: FreqTrade         → backtests new code automatically
+  Step 5: parse_backtest.py → if metrics improve → promote to live
 ```
 
-### Tools available on xAI API:
-- `web_search_preview` — live web search
-- `x_search` — real-time X/Twitter search (unique to Grok)
-
-### FinBuddyLLMModel.py — use this client setup:
+### API client setup for FinBuddyLLMModel.py (Task 1.2 — Grok)
 ```python
 import openai  # xAI is OpenAI-compatible
 
@@ -67,10 +81,9 @@ response = client.chat.completions.create(
 )
 ```
 
-### Free tier limits (xAI as of 2026-05):
-- $25 free credits on signup
-- 60 requests/minute
-- More than enough for FinBuddy's signal confirmation calls (~5-20/hour)
+### Tools available on xAI API (Grok-specific, not available on others)
+- `web_search_preview` — live web search
+- `x_search` — real-time X/Twitter search
 
 ---
 
@@ -101,22 +114,27 @@ response = client.chat.completions.create(
 
 ## 🗺️ 7-Phase Roadmap
 
-| Phase | Focus | Status |
-|---|---|---|
-| 0 | Foundation | ✅ 5/5 Complete (2026-04-27) |
-| 1 | FreqAI brain | 🟡 Task 1.2 ⚠️, 1.3–1.4 pending |
-| 2 | External data | ⚠️ Code ready — needs cron install |
-| 3 | HMM regime | ⬜ Not started |
-| 4 | Memory auto-write | ⚠️ Code ready — needs cron install |
-| 5 | Karpathy loop | ⬜ Not started (uses Gemini + DeepSeek) |
-| 6 | TradingView | ⬜ Not started |
-| 7 | Python executor | ⬜ Not started |
+| Phase | Focus | Status | AI Models Used |
+|---|---|---|---|
+| 0 | Foundation | ✅ 5/5 Complete (2026-04-27) | — |
+| 1 | FreqAI brain | 🟡 Task 1.2 ⚠️, 1.3–1.4 pending | Grok-3-Mini |
+| 2 | External data | ⚠️ Code ready — needs cron install | — |
+| 3 | HMM regime | ⬜ Not started | — |
+| 4 | Memory auto-write | ⚠️ Code ready — needs cron install | — |
+| 5 | Karpathy loop | ⬜ Not started | Gemini + DeepSeek + Claude Sonnet |
+| 6 | TradingView | ⬜ Not started | — |
+| 7 | Python executor | ⬜ Not started | — |
 
 ---
 
 ## 📦 What Perplexity Built (2026-05-01)
 
-### Option C — Task 1.3 Backtest Scripts
+### Task 1.2 — FinBuddyLLMModel.py (Grok layer)
+| File | Purpose |
+|---|---|
+| `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` | Custom FreqAI model: LightGBM + Grok-3-Mini blended signal |
+
+### Task 1.3 — Backtest Scripts
 | File | Purpose |
 |---|---|
 | `scripts/run_backtest.sh` | One-command backtest runner with pre-flight checks |
@@ -124,7 +142,7 @@ response = client.chat.completions.create(
 | `scripts/parse_backtest.py` | Auto-reads result JSON, prints PASS/FAIL with color |
 | `scripts/README.md` | Script usage guide |
 
-### Option A — Phase 2 External Data Fetchers
+### Phase 2 — External Data Fetchers
 | File | Source | Features Added to FreqAI |
 |---|---|---|
 | `scripts/phase2/fetch_fear_greed.py` | Alternative.me | `ext_fear_greed`, `ext_fear_greed_regime`, `ext_fear_greed_trend_7d` |
@@ -134,7 +152,7 @@ response = client.chat.completions.create(
 | `scripts/phase2/fetch_google_trends.py` | pytrends | `ext_trends_btc`, `ext_trends_contrarian`, `ext_trends_7d_change` |
 | `scripts/phase2/external_data_aggregator.py` | All 5 combined | `ext_composite_score` (-1 to +1) |
 
-### Option B — Phase 4 Memory Auto-Writer
+### Phase 4 — Memory Auto-Writer
 | File | Purpose |
 |---|---|
 | `scripts/phase4/memory_writer.py` | Reads FreqTrade API, writes vault entries, git commits |
@@ -172,4 +190,4 @@ response = client.chat.completions.create(
 
 ---
 
-*Last updated: Perplexity AI — 2026-05-01 ~13:57 IST*
+*Last updated: Perplexity AI — 2026-05-01 ~14:02 IST*
