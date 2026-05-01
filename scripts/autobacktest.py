@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-autobacktest.py v3 — Automated parameter grid search for FinBuddyFreqAI.
+autobacktest.py v4 — Automated parameter grid search for FinBuddyFreqAI.
 
 Purpose
 -------
@@ -18,44 +18,30 @@ Engineering principle
 ---------------------
   "If it can be automated with code, do it once and don't waste AI on it."
 
-v3 fix: Temp-file strategy approach
--------------------------------------
-  Previous approach: patch FinBuddyFreqAI.py in-place, run backtest, restore.
-  Problem: Docker volume resets file ownership to opc between runs.
-           chmod without sudo fails silently → all 12 combos test same params.
-  v3 fix: Write patched strategy to /tmp/FinBuddyFreqAI_test.py (always
-          writable). Pass --strategy-path /tmp to Freqtrade so it finds the
-          temp file. Original strategy never touched.
+v4 changes (v6 strategy support)
+---------------------------------
+  - Added PATCH_RULES for trailing_offset and ml_exit_threshold (new v3 grid params)
+  - trailing_offset patches trailing_stop_positive_offset in strategy
+  - ml_exit_threshold patches the exit threshold in populate_exit_trend
+  - Removed roi_multiplier from PATCH_RULES and CONFIG_PATCH_KEYS (confirmed dead lever)
+  - Updated CSV headers to include new params, remove roi_multiplier
+
+v3 fix: Temp-file strategy approach (unchanged)
+---------------------------------------------
+  Write patched strategy to /tmp/FinBuddyFreqAI_test.py (always writable).
+  Pass --strategy-path /tmp to Freqtrade. Original strategy never touched.
 
 Usage (Claude Code)
 -------------------
   cd /home/ubuntu/var/www/html/trade
   git pull origin gaurav
-  sudo chown ubuntu:ubuntu freqtrade/user_data/strategies/FinBuddyFreqAI.py
-  sudo chown -R ubuntu:ubuntu freqtrade/user_data/backtest_results/
+  sudo chown -R ubuntu:ubuntu freqtrade/user_data/
   python3 scripts/autobacktest.py
 
 Output
 ------
   _autobacktest_results.csv   — all runs with metrics (committed by Claude)
   stdout                      — progress + final PASS/FAIL summary
-
-After running
--------------
-  - Claude Code: commit _autobacktest_results.csv, update graveyard/winners
-    memory files, update CLAUDE_HANDOFF.md with outcome
-  - Perplexity:  read CSV, promote winner params into strategy permanently
-
-Dependencies
-------------
-  Python 3.8+, subprocess, json, csv, re, itertools, shutil, pathlib
-  No external packages required — all stdlib.
-
-Bug history
------------
-  v1: Docker volume resets ownership to opc → write_text PermissionError.
-  v2: _ensure_writable() runs chmod 666 via subprocess (no sudo → still fails).
-  v3: Temp-file approach — write to /tmp, point Freqtrade there. No chmod needed.
 """
 
 import json
@@ -86,37 +72,41 @@ def load_grid():
 
 
 # ------------------------------------------------------------------ #
-# Strategy patcher (v3: writes to temp file, never touches original)  #
+# Strategy patcher (v4: adds trailing_offset + ml_exit_threshold)     #
 # ------------------------------------------------------------------ #
 
 PATCH_RULES = {
+    # Entry ML threshold: &-s_close > X
     "ml_threshold": (
-        r"(dataframe\[\"&-s_close\"\]\s*>\s*)([0-9.]+)(\)\s*# v5)",
+        r"(dataframe\[\"&-s_close\"\]\s*>\s*)([0-9.]+)(\s*# v6: grid param ml_threshold)",
         lambda v: rf"\g<1>{v}\g<3>",
     ),
-    "rsi_entry_ceiling": (
-        r"(\(dataframe\[\"rsi_14\"\]\s*<\s*)([0-9]+)(\))",
-        lambda v: rf"\g<1>{int(v)}\g<3>",
-    ),
+    # Hard stoploss
     "stoploss": (
         r"(stoploss\s*=\s*)(-[0-9.]+)",
         lambda v: rf"\g<1>{float(v)}",
     ),
-    "roi_multiplier": (
-        # Scales the 0-minute ROI entry: "0": X.XX
-        r'(\"0\":\s*)([0-9.]+)',
-        lambda v: rf"\g<1>{float(v)}",
+    # Trailing stop offset — when trail activates
+    "trailing_offset": (
+        r"(trailing_stop_positive_offset\s*=\s*)([0-9.]+)(\s*# v6:)",
+        lambda v: rf"\g<1>{float(v)}\g<3>",
     ),
+    # ML exit threshold — how fast to cut losers
+    "ml_exit_threshold": (
+        r"(dataframe\[\"&-s_close\"\]\s*<\s*)(-[0-9.]+)(\s*# v6:)",
+        lambda v: rf"\g<1>{float(v)}\g<3>",
+    ),
+    # ATR volatility gate
     "atr_threshold": (
-        r"(dataframe\[\"atr_ratio\"\]\s*>\s*)([0-9.]+)",
-        lambda v: rf"\g<1>{float(v)}",
+        r"(dataframe\[\"atr_ratio\"\]\s*>\s*)([0-9.]+)(\s*# v6: grid param atr_threshold)",
+        lambda v: rf"\g<1>{float(v)}\g<3>",
     ),
 }
 
 
 def write_patched_strategy(original_path: Path, params: dict) -> Path:
     """
-    v3: Read original strategy, apply params, write to /tmp.
+    v4: Read original strategy, apply params, write to /tmp.
     Returns path to temp file. Original is never modified.
     """
     original = original_path.read_text()
@@ -140,24 +130,18 @@ def write_patched_strategy(original_path: Path, params: dict) -> Path:
 
 
 # ------------------------------------------------------------------ #
-# Config patcher (patches backtest_config.json + docker cp to container) #
+# Config patcher (patches backtest_config.json + docker cp)           #
 # ------------------------------------------------------------------ #
 
 BACKTEST_CONFIG_HOST = SCRIPT_DIR / "backtest_config.json"
 TEMP_CONFIG_PATH = Path("/tmp/backtest_config_patched.json")
 CONTAINER_CONFIG_PATH = "/freqtrade/scripts/backtest_config.json"
 
-CONFIG_PATCH_KEYS = {
-    "stoploss": "stoploss",
-    "roi_multiplier": None,  # special: sets minimal_roi["0"]
-}
-
 
 def write_patched_config(params: dict) -> None:
     """
-    Patch backtest_config.json with stoploss and roi_multiplier from params,
-    write to /tmp, then docker cp into the container.
-    This ensures the config does not override the strategy-level params.
+    Patch backtest_config.json with stoploss from params.
+    roi_multiplier removed (dead lever). Write to /tmp, docker cp to container.
     """
     with open(BACKTEST_CONFIG_HOST) as f:
         cfg = json.load(f)
@@ -165,8 +149,8 @@ def write_patched_config(params: dict) -> None:
     if "stoploss" in params:
         cfg["stoploss"] = float(params["stoploss"])
 
-    if "roi_multiplier" in params:
-        cfg["minimal_roi"] = {"0": float(params["roi_multiplier"])}
+    # Remove minimal_roi override — let strategy control it
+    cfg.pop("minimal_roi", None)
 
     with open(TEMP_CONFIG_PATH, "w") as f:
         json.dump(cfg, f, indent=2)
@@ -204,7 +188,7 @@ def clear_cache(config: dict):
 
 
 # ------------------------------------------------------------------ #
-# Backtest runner (v3: passes --strategy-path /tmp)                   #
+# Backtest runner                                                      #
 # ------------------------------------------------------------------ #
 
 def run_backtest(config: dict, temp_strategy_path: Path) -> dict:
@@ -215,7 +199,6 @@ def run_backtest(config: dict, temp_strategy_path: Path) -> dict:
     """
     parse_script = PROJECT_ROOT / config["parse_script"]
     results_dir_host = PROJECT_ROOT / config["backtest_results_path"]
-    results_dir_container = "/freqtrade/user_data/backtest_results"
 
     result = {
         "win_rate": None, "sharpe": None,
@@ -226,7 +209,7 @@ def run_backtest(config: dict, temp_strategy_path: Path) -> dict:
 
     # Step 1: Download data (idempotent — skip if already fresh)
     try:
-        dl_proc = subprocess.run(
+        subprocess.run(
             [
                 "docker", "exec", "freqtrade",
                 "freqtrade", "download-data",
@@ -237,7 +220,6 @@ def run_backtest(config: dict, temp_strategy_path: Path) -> dict:
             ],
             capture_output=True, text=True, timeout=600
         )
-        # Non-zero is ok here — data may already be fresh
     except subprocess.TimeoutExpired:
         result["error"] = "Data download timed out"
         return result
@@ -255,7 +237,7 @@ def run_backtest(config: dict, temp_strategy_path: Path) -> dict:
         result["error"] = f"docker cp exception: {e}"
         return result
 
-    # Step 3: Run backtest using temp strategy in /tmp inside container
+    # Step 3: Run backtest
     try:
         bt_proc = subprocess.run(
             [
@@ -274,7 +256,6 @@ def run_backtest(config: dict, temp_strategy_path: Path) -> dict:
             capture_output=True, text=True, timeout=1800
         )
         result["raw_output"] = bt_proc.stdout + bt_proc.stderr
-        # Don't check returncode — parse result file instead
     except subprocess.TimeoutExpired:
         result["error"] = "Backtest timed out (>30 min)"
         return result
@@ -317,7 +298,8 @@ def check_pass(metrics: dict, criteria: dict) -> bool:
 # ------------------------------------------------------------------ #
 
 CSV_HEADERS = [
-    "run", "timestamp", "ml_threshold", "stoploss", "roi_multiplier", "atr_threshold",
+    "run", "timestamp", "ml_threshold", "stoploss",
+    "trailing_offset", "ml_exit_threshold", "atr_threshold",
     "trades", "win_rate", "sharpe", "max_drawdown", "profit_factor",
     "total_profit", "pass", "error",
 ]
@@ -349,7 +331,8 @@ def main():
     total = len(combos)
 
     print(f"\n{'='*60}")
-    print(f"FinBuddy AutoBacktest Grid Search v3")
+    print(f"FinBuddy AutoBacktest Grid Search v4")
+    print(f"Strategy: v6 (Option C — trailing stop + tighter ML exit)")
     print(f"Grid: {total} combinations to test")
     print(f"Acceptance: {criteria}")
     print(f"Results CSV: {csv_path.name}")
@@ -363,13 +346,13 @@ def main():
         label = ", ".join(f"{k}={v}" for k, v in params.items())
         print(f"\n[{run_num}/{total}] Testing: {label}")
 
-        # Write patched strategy to /tmp (no opc ownership issues)
+        # Write patched strategy to /tmp
         write_patched_strategy(strategy_path, params)
         print(f"  Temp strategy written to {TEMP_STRATEGY_PATH}")
 
-        # Patch backtest_config.json so stoploss/roi aren't overridden
+        # Patch config (stoploss only, roi removed)
         write_patched_config(params)
-        print(f"  Config patched: stoploss={params.get('stoploss')}, roi={params.get('roi_multiplier')}")
+        print(f"  Config patched: stoploss={params.get('stoploss')}")
 
         # Clear cache
         clear_cache(config)
@@ -413,7 +396,7 @@ def main():
             print(f"{'='*60}")
             break
 
-    # Cleanup temp files and restore original config in container
+    # Cleanup
     if TEMP_STRATEGY_PATH.exists():
         TEMP_STRATEGY_PATH.unlink()
     if TEMP_CONFIG_PATH.exists():

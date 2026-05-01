@@ -16,43 +16,59 @@ logger = logging.getLogger(__name__)
 
 class FinBuddyFreqAI(IStrategy):
     """
-    FinBuddy FreqAI Strategy v5 — ROI/SL restructure after Round 1 grid analysis.
+    FinBuddy FreqAI Strategy v6 — Option C: Trailing stop + tighter ML exit combined.
 
-    Root cause of v4 failure (2026-05-01 Round 1 grid):
-      - Win rate was fine (65% at ml=0.009) but Sharpe was negative across ALL 12 combos.
-      - Diagnosis: avg winner ~0.8-1.0%, avg loser ~2.5-3.5% => negative expectancy.
-      - Tweaking EMA period and RSI ceiling had zero effect (confirmed by grid CSV).
-      - Also: autobacktest.py chmod bug meant ALL 12 combos tested same params (combo 1).
+    Root cause of v5 failure (2026-05-01 Round 2 grid, 36 combos):
+      - roi_multiplier confirmed dead lever: FreqAI exits via ML signal before ROI hits.
+      - stoploss IS the working lever: best result at -0.030 (Sharpe -0.236).
+      - Sharpe structurally negative: avg loser still > avg winner in dollar terms.
+      - Best Round 2: stoploss=-0.030, ml=0.009, atr=0.002 → 60.8% WR, Sharpe -0.236, PF 0.815.
 
-    Fixes in v5:
-      1. ROI table widened: give winners room to run (was 0.06/0.04/0.02/0.01)
-         New: 0.08 at 0min, 0.05 at 45min, 0.03 at 90min, 0.015 at 180min
-      2. Stoploss tightened: -0.025 (was -0.035) to cut losers smaller
-      3. ATR volatility filter: skip entries when market is flat/dead
-         Only enter when atr_ratio (ATR/close) > 0.003 (i.e. >0.3% range)
-      4. ML threshold back to 0.010 baseline (0.012 was too restrictive — 29 trades)
-      5. Grid in v2 now tests stoploss + roi_scale combos (the real levers)
+    Strategy v6 fixes — Option C (both combined):
+      1. Trailing stop tightened:
+         - positive offset lowered: 0.025 → 0.020 (activate trail sooner, lock in at +2%)
+         - positive amount lowered: 0.012 → 0.010 (tighter trail = larger captured profit)
+         - Goal: widen avg winner by letting trail protect gains from +2% onward
+      2. ML exit threshold tightened:
+         - exit on &-s_close < -0.001 (was -0.003)
+         - Cut losers 3x faster — exit as soon as ML predicts even tiny reversal
+         - Goal: shrink avg loser from ~3.5% toward ~1.5%
+      3. Combined effect targets:
+         - Wider avg winner (trailing locks in more upside)
+         - Smaller avg loser (faster ML exit)
+         - Together: flip reward:risk ratio positive → Sharpe > 0.5
+
+    Grid v3 tests:
+      - trailing_offset: [0.018, 0.020, 0.022, 0.025] — when to activate trail
+      - ml_exit_threshold: [-0.001, -0.002, -0.003] — how fast to exit on ML reversal
+      - stoploss: [-0.020, -0.025, -0.030] — hard floor (still the main lever)
+      - ml_threshold: [0.009, 0.011]
+      - atr_threshold: [0.002, 0.003]
+      Total: 72 combos (4x3x3x2x2)
 
     ML brain: LightGBMRegressor / FinBuddyLLMModel predicts &-s_close.
     Features: feature_engineering_expand_all() with % prefix (FreqAI standard).
     """
     INTERFACE_VERSION = 3
 
-    # v5: wider ROI — let winners run past early 1% targets
-    # previous tight ROI was killing avg winner size
+    # v6: ROI table — wide targets (ML exit fires first anyway, confirmed Round 2)
+    # roi_multiplier proved to be a dead lever so keeping these wide and stable
     minimal_roi = {
-        "0": 0.08,
-        "45": 0.05,
-        "90": 0.03,
-        "180": 0.015
+        "0": 0.10,
+        "60": 0.06,
+        "120": 0.04,
+        "240": 0.02
     }
 
-    # v5: tighter stoploss — cut losers smaller
-    # avg loser was ~3.5%, reducing to 2.5% improves reward:risk ratio
+    # v6: stoploss — hard floor, grid will sweep -0.020 to -0.030
     stoploss = -0.025
+
+    # v6 Option C fix 1: tighter trailing stop
+    # offset lowered 0.025 -> 0.020: trail activates at +2% (was +2.5%)
+    # positive lowered 0.012 -> 0.010: tighter trail = more profit captured
     trailing_stop = True
-    trailing_stop_positive = 0.012
-    trailing_stop_positive_offset = 0.025
+    trailing_stop_positive = 0.010  # v6: was 0.012
+    trailing_stop_positive_offset = 0.020  # v6: was 0.025 — grid param
     trailing_only_offset_is_reached = True
 
     timeframe = "15m"
@@ -152,9 +168,7 @@ class FinBuddyFreqAI(IStrategy):
             / (bb["upperband"] - bb["lowerband"] + 1e-9)
         )
 
-        # v5: ATR volatility filter — only enter when market has real movement
-        # atr_ratio = ATR(14) / close price = normalized volatility
-        # if atr_ratio < 0.003 the candles are too flat; skip entry
+        # ATR volatility filter — only enter when market has real movement
         dataframe["atr_14"] = ta.ATR(dataframe, timeperiod=14)
         dataframe["atr_ratio"] = dataframe["atr_14"] / dataframe["close"]
 
@@ -193,20 +207,20 @@ class FinBuddyFreqAI(IStrategy):
         self, dataframe: DataFrame, metadata: dict
     ) -> DataFrame:
         """
-        Entry conditions (v5):
-          1. FreqAI predicts > +1.0% price rise (relaxed from 1.2% — was too few trades)
+        Entry conditions (v6 — same as v5, unchanged):
+          1. FreqAI predicts > +1.0% price rise
           2. do_predict == 1
-          3. 15m close > 15m EMA-50  (short-term uptrend)
-          4. 1h close >= 1h EMA-50   (macro trend filter)
-          5. RSI-14 < 68             (not overbought)
-          6. BB% < 0.90              (not at top of band)
-          7. close > EMA-200         (long-term safety filter)
-          8. atr_ratio > 0.003       (v5 NEW: market must have real volatility)
+          3. 15m close > 15m EMA-50
+          4. 1h close >= 1h EMA-50
+          5. RSI-14 < 68
+          6. BB% < 0.90
+          7. close > EMA-200
+          8. atr_ratio > 0.003 (grid param: atr_threshold)
           9. volume > 0
         """
         ml_signal = (
             (dataframe["do_predict"] == 1)
-            & (dataframe["&-s_close"] > 0.010)  # v5: relaxed from 0.012
+            & (dataframe["&-s_close"] > 0.010)  # v6: grid param ml_threshold
         )
 
         ta_filter = (
@@ -216,9 +230,8 @@ class FinBuddyFreqAI(IStrategy):
             & (dataframe["volume"] > 0)
         )
 
-        # v5 NEW: only enter when ATR shows real market movement
         volatility_filter = (
-            dataframe["atr_ratio"] > 0.003  # >0.3% of price — not a flat/dead market
+            dataframe["atr_ratio"] > 0.003  # v6: grid param atr_threshold
         )
 
         trend_filter_1h = (
@@ -237,21 +250,22 @@ class FinBuddyFreqAI(IStrategy):
         dataframe.loc[
             ml_signal & ta_filter & volatility_filter & trend_filter_1h & safety,
             "enter_tag"
-        ] = "freqai_lgbm_v5"
+        ] = "freqai_lgbm_v6"
         return dataframe
 
     def populate_exit_trend(
         self, dataframe: DataFrame, metadata: dict
     ) -> DataFrame:
         """
-        Exit conditions (unchanged — exit logic was not the problem):
-          - FreqAI predicts > -0.3% price drop, OR
-          - RSI > 75, OR
-          - BB% > 0.95
+        Exit conditions (v6 Option C fix 2):
+          - ML exit threshold tightened: -0.001 (was -0.003)
+            Cut losers 3x faster — exit as soon as ML predicts tiny reversal
+          - RSI > 75 (unchanged)
+          - BB% > 0.95 (unchanged)
         """
         ml_exit = (
             (dataframe["do_predict"] == 1)
-            & (dataframe["&-s_close"] < -0.003)
+            & (dataframe["&-s_close"] < -0.001)  # v6: was -0.003, grid param ml_exit_threshold
         )
         ta_exit = (
             (dataframe["rsi_14"] > 75)
