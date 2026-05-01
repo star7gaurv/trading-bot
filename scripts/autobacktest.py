@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """
-autobacktest.py — Automated parameter grid search for FinBuddyFreqAI.
+autobacktest.py v3 — Automated parameter grid search for FinBuddyFreqAI.
 
 Purpose
 -------
 Instead of manually tweaking one parameter at a time and re-running the
 backtest by hand (expensive in AI tokens and time), this script:
   1. Reads a parameter grid from autobacktest_grid.json
-  2. For each combination: patches FinBuddyFreqAI.py, clears the FreqAI
-     prediction cache, runs run_backtest.sh, and parses the result
+  2. For each combination: writes a TEMP COPY of the strategy (no in-place
+     patching — avoids all opc ownership/chmod issues), runs run_backtest.sh
+     pointing to the temp file, and parses the result
   3. Logs every run to _autobacktest_results.csv
   4. Stops as soon as it finds a combination that meets ALL acceptance criteria
   5. Prints a clear summary at the end
@@ -16,12 +17,22 @@ backtest by hand (expensive in AI tokens and time), this script:
 Engineering principle
 ---------------------
   "If it can be automated with code, do it once and don't waste AI on it."
-This script encodes the manual tune-and-retry loop we were doing by hand.
+
+v3 fix: Temp-file strategy approach
+-------------------------------------
+  Previous approach: patch FinBuddyFreqAI.py in-place, run backtest, restore.
+  Problem: Docker volume resets file ownership to opc between runs.
+           chmod without sudo fails silently → all 12 combos test same params.
+  v3 fix: Write patched strategy to /tmp/FinBuddyFreqAI_test.py (always
+          writable). Pass --strategy-path /tmp to Freqtrade so it finds the
+          temp file. Original strategy never touched.
 
 Usage (Claude Code)
 -------------------
-  cd /home/ubuntu/var/www/html/trade/freqtrade
+  cd /home/ubuntu/var/www/html/trade
   git pull origin gaurav
+  sudo chown ubuntu:ubuntu freqtrade/user_data/strategies/FinBuddyFreqAI.py
+  sudo chown -R ubuntu:ubuntu freqtrade/user_data/backtest_results/
   python3 scripts/autobacktest.py
 
 Output
@@ -42,11 +53,9 @@ Dependencies
 
 Bug history
 -----------
-  v1: Docker volume resets FinBuddyFreqAI.py ownership to opc between runs.
-      write_text() raised PermissionError on combo 2+.
-  v2: _ensure_writable() runs chmod 666 via subprocess before every read/write.
-      Falls back gracefully if chmod fails (warning logged, write attempted).
-      run_backtest.sh LOG_FILE also fixed (moved to /tmp).
+  v1: Docker volume resets ownership to opc → write_text PermissionError.
+  v2: _ensure_writable() runs chmod 666 via subprocess (no sudo → still fails).
+  v3: Temp-file approach — write to /tmp, point Freqtrade there. No chmod needed.
 """
 
 import json
@@ -55,8 +64,9 @@ import re
 import subprocess
 import itertools
 import sys
+import shutil
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 # ------------------------------------------------------------------ #
 # Config                                                               #
@@ -66,6 +76,9 @@ SCRIPT_DIR = Path(__file__).parent
 PROJECT_ROOT = SCRIPT_DIR.parent
 GRID_FILE = SCRIPT_DIR / "autobacktest_grid.json"
 
+# Temp strategy file written to /tmp — always writable regardless of opc ownership
+TEMP_STRATEGY_PATH = Path("/tmp/FinBuddyFreqAI_test.py")
+
 
 def load_grid():
     with open(GRID_FILE) as f:
@@ -73,73 +86,57 @@ def load_grid():
 
 
 # ------------------------------------------------------------------ #
-# Permission helper                                                    #
-# FIX: Docker volume mount resets file ownership to opc between runs. #
-# chmod 666 before every read/write ensures ubuntu can always access. #
-# ------------------------------------------------------------------ #
-
-def _ensure_writable(path: Path):
-    """chmod 666 the file so ubuntu can write it regardless of opc ownership."""
-    try:
-        result = subprocess.run(
-            ["chmod", "666", str(path)],
-            capture_output=True, text=True, timeout=5
-        )
-        if result.returncode != 0:
-            print(f"  [WARN] chmod failed for {path.name}: {result.stderr.strip()}")
-    except Exception as e:
-        print(f"  [WARN] _ensure_writable exception: {e}")
-
-
-# ------------------------------------------------------------------ #
-# Strategy patcher                                                     #
-# Patches specific lines in FinBuddyFreqAI.py without full rewrite.   #
-# DRY: all param → regex mappings live here, not scattered.           #
+# Strategy patcher (v3: writes to temp file, never touches original)  #
 # ------------------------------------------------------------------ #
 
 PATCH_RULES = {
     "ml_threshold": (
-        r"(\(dataframe\[\"&-s_close\"\]\s*>\s*)([0-9.]+)(\).*# v4)",
+        r"(\(dataframe\[\"&-s_close\"\]\s*>\s*)([0-9.]+)(\s*# v5)",
         lambda v: rf"\g<1>{v}\g<3>",
     ),
     "rsi_entry_ceiling": (
-        r"(\(dataframe\[\"rsi_14\"\]\s*<\s*)([0-9]+)(\).*# v4)",
+        r"(\(dataframe\[\"rsi_14\"\]\s*<\s*)([0-9]+)(\))",
         lambda v: rf"\g<1>{int(v)}\g<3>",
     ),
-    "trend_ema_period_1h": (
-        r"(informative_1h\[\"ema_50_1h\"\]\s*=\s*ta\.EMA\(\s*informative_1h,\s*timeperiod=)([0-9]+)(\s*\))",
-        lambda v: rf"\g<1>{int(v)}\g<3>",
+    "stoploss": (
+        r"(stoploss\s*=\s*)(-[0-9.]+)",
+        lambda v: rf"\g<1>{float(v)}",
+    ),
+    "roi_multiplier": (
+        # Scales the 0-minute ROI entry: "0": X.XX
+        r'(\"0\":\s*)([0-9.]+)',
+        lambda v: rf"\g<1>{float(v)}",
+    ),
+    "atr_threshold": (
+        r"(dataframe\[\"atr_ratio\"\]\s*>\s*)([0-9.]+)",
+        lambda v: rf"\g<1>{float(v)}",
     ),
 }
 
 
-def patch_strategy(strategy_path: Path, params: dict) -> str:
-    """Apply param dict to strategy file. Returns original content for restore."""
-    _ensure_writable(strategy_path)  # FIX: reset opc ownership before read
-    original = strategy_path.read_text()
+def write_patched_strategy(original_path: Path, params: dict) -> Path:
+    """
+    v3: Read original strategy, apply params, write to /tmp.
+    Returns path to temp file. Original is never modified.
+    """
+    original = original_path.read_text()
     patched = original
+
     for param, value in params.items():
         if param not in PATCH_RULES:
             continue
         pattern, replacement_fn = PATCH_RULES[param]
-        new_text = re.sub(pattern, replacement_fn(value), patched)
-        if new_text == patched:
+        if not re.search(pattern, patched):
             print(f"  [WARN] Patch for '{param}' found no match in strategy file.")
-        patched = new_text
-    _ensure_writable(strategy_path)  # FIX: reset again before write
-    strategy_path.write_text(patched)
-    return original
+            continue
+        patched = re.sub(pattern, replacement_fn(value), patched)
 
-
-def restore_strategy(strategy_path: Path, original_content: str):
-    """Restore strategy file to original content."""
-    _ensure_writable(strategy_path)  # FIX: always reset before restore
-    strategy_path.write_text(original_content)
+    TEMP_STRATEGY_PATH.write_text(patched)
+    return TEMP_STRATEGY_PATH
 
 
 # ------------------------------------------------------------------ #
 # Cache cleaner                                                        #
-# Must run before every backtest or FreqAI reuses stale predictions.  #
 # ------------------------------------------------------------------ #
 
 def clear_cache(config: dict):
@@ -147,13 +144,11 @@ def clear_cache(config: dict):
     models_path = PROJECT_ROOT / config["model_cache_path"]
     results_path = PROJECT_ROOT / config["backtest_results_path"]
 
-    # Clear prediction feather files (not trained models — those are reusable)
     cleared = 0
     for feather in models_path.rglob("predictions_backtest_*.feather"):
         feather.unlink()
         cleared += 1
 
-    # Clear previous backtest result ZIPs (gitignored, safe to delete)
     for f in results_path.iterdir():
         if f.name != ".gitkeep":
             try:
@@ -165,17 +160,18 @@ def clear_cache(config: dict):
 
 
 # ------------------------------------------------------------------ #
-# Backtest runner                                                      #
+# Backtest runner (v3: passes --strategy-path /tmp)                   #
 # ------------------------------------------------------------------ #
 
-def run_backtest(config: dict) -> dict:
+def run_backtest(config: dict, temp_strategy_path: Path) -> dict:
     """
-    Run run_backtest.sh and parse_backtest.py.
-    Returns dict with keys: win_rate, sharpe, max_drawdown, profit_factor,
-    total_profit, trades, raw_output, error.
+    Run backtest using the temp strategy file.
+    Passes --strategy-path /tmp so Freqtrade finds FinBuddyFreqAI_test.py.
+    Returns dict with metrics.
     """
-    backtest_script = PROJECT_ROOT / config["backtest_script"]
     parse_script = PROJECT_ROOT / config["parse_script"]
+    results_dir_host = PROJECT_ROOT / config["backtest_results_path"]
+    results_dir_container = "/freqtrade/user_data/backtest_results"
 
     result = {
         "win_rate": None, "sharpe": None,
@@ -184,29 +180,69 @@ def run_backtest(config: dict) -> dict:
         "raw_output": "", "error": None,
     }
 
-    # Run backtest
+    # Step 1: Download data (idempotent — skip if already fresh)
     try:
-        proc = subprocess.run(
-            ["bash", str(backtest_script)],
-            capture_output=True, text=True, cwd=str(PROJECT_ROOT), timeout=1800
+        dl_proc = subprocess.run(
+            [
+                "docker", "exec", "freqtrade",
+                "freqtrade", "download-data",
+                "--config", "/freqtrade/scripts/backtest_config.json",
+                "--timerange", "20250101-20260401",
+                "--timeframes", "5m", "15m", "1h",
+                "--pairs", "BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT",
+            ],
+            capture_output=True, text=True, timeout=600
         )
-        result["raw_output"] = proc.stdout + proc.stderr
-        if proc.returncode != 0:
-            result["error"] = f"run_backtest.sh exited with code {proc.returncode}"
+        # Non-zero is ok here — data may already be fresh
+    except subprocess.TimeoutExpired:
+        result["error"] = "Data download timed out"
+        return result
+
+    # Step 2: Copy temp strategy into container
+    try:
+        cp_proc = subprocess.run(
+            ["docker", "cp", str(temp_strategy_path), "freqtrade:/tmp/FinBuddyFreqAI_test.py"],
+            capture_output=True, text=True, timeout=30
+        )
+        if cp_proc.returncode != 0:
+            result["error"] = f"docker cp failed: {cp_proc.stderr.strip()}"
             return result
+    except Exception as e:
+        result["error"] = f"docker cp exception: {e}"
+        return result
+
+    # Step 3: Run backtest using temp strategy in /tmp inside container
+    try:
+        bt_proc = subprocess.run(
+            [
+                "docker", "exec",
+                "-e", "GROQ_API_KEY=disabled_for_backtest",
+                "freqtrade",
+                "freqtrade", "backtesting",
+                "--config", "/freqtrade/scripts/backtest_config.json",
+                "--strategy", "FinBuddyFreqAI_test",
+                "--strategy-path", "/tmp",
+                "--freqaimodel", "FinBuddyLLMModel",
+                "--timerange", "20250101-20260401",
+                "--timeframe", "15m",
+                "--export", "trades",
+            ],
+            capture_output=True, text=True, timeout=1800
+        )
+        result["raw_output"] = bt_proc.stdout + bt_proc.stderr
+        # Don't check returncode — parse result file instead
     except subprocess.TimeoutExpired:
         result["error"] = "Backtest timed out (>30 min)"
         return result
 
-    # Parse results
+    # Step 4: Parse results
     try:
-        results_dir = PROJECT_ROOT / config["backtest_results_path"]
         parse_proc = subprocess.run(
-            ["python3", str(parse_script), "--json", "--results-dir", str(results_dir)],
+            ["python3", str(parse_script), "--json", "--results-dir", str(results_dir_host)],
             capture_output=True, text=True, cwd=str(PROJECT_ROOT), timeout=60
         )
         if not parse_proc.stdout.strip():
-            result["error"] = f"parse_backtest.py empty output (stderr: {parse_proc.stderr[:200]})"
+            result["error"] = f"parse_backtest.py empty output: {parse_proc.stderr[:300]}"
             return result
         metrics = json.loads(parse_proc.stdout)
         result.update(metrics)
@@ -221,7 +257,6 @@ def run_backtest(config: dict) -> dict:
 # ------------------------------------------------------------------ #
 
 def check_pass(metrics: dict, criteria: dict) -> bool:
-    """Return True only if ALL acceptance criteria are met."""
     try:
         return (
             metrics["win_rate"] > criteria["win_rate"]
@@ -238,14 +273,13 @@ def check_pass(metrics: dict, criteria: dict) -> bool:
 # ------------------------------------------------------------------ #
 
 CSV_HEADERS = [
-    "run", "timestamp", "ml_threshold", "trend_ema_period_1h", "rsi_entry_ceiling",
+    "run", "timestamp", "ml_threshold", "stoploss", "roi_multiplier", "atr_threshold",
     "trades", "win_rate", "sharpe", "max_drawdown", "profit_factor",
     "total_profit", "pass", "error",
 ]
 
 
 def append_csv(csv_path: Path, row: dict):
-    """Append one result row to the CSV. Creates file with headers if needed."""
     write_header = not csv_path.exists()
     with open(csv_path, "a", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=CSV_HEADERS, extrasaction="ignore")
@@ -265,86 +299,83 @@ def main():
     strategy_path = PROJECT_ROOT / config["strategy_file"]
     csv_path = PROJECT_ROOT / config["results_csv"]
 
-    # Build all param combinations
     param_names = list(grid.keys())
     param_values = list(grid.values())
     combos = list(itertools.product(*param_values))
     total = len(combos)
 
     print(f"\n{'='*60}")
-    print(f"FinBuddy AutoBacktest Grid Search")
+    print(f"FinBuddy AutoBacktest Grid Search v3")
     print(f"Grid: {total} combinations to test")
     print(f"Acceptance: {criteria}")
     print(f"Results CSV: {csv_path.name}")
+    print(f"Temp strategy: {TEMP_STRATEGY_PATH}")
     print(f"{'='*60}\n")
 
-    # Save original strategy content for restore
-    _ensure_writable(strategy_path)
-    original_strategy = strategy_path.read_text()
     winner = None
 
-    try:
-        for run_num, combo in enumerate(combos, 1):
-            params = dict(zip(param_names, combo))
-            label = ", ".join(f"{k}={v}" for k, v in params.items())
-            print(f"\n[{run_num}/{total}] Testing: {label}")
+    for run_num, combo in enumerate(combos, 1):
+        params = dict(zip(param_names, combo))
+        label = ", ".join(f"{k}={v}" for k, v in params.items())
+        print(f"\n[{run_num}/{total}] Testing: {label}")
 
-            # Patch strategy (includes chmod fix inside)
-            patch_strategy(strategy_path, params)
+        # Write patched strategy to /tmp (no opc ownership issues)
+        write_patched_strategy(strategy_path, params)
+        print(f"  Temp strategy written to {TEMP_STRATEGY_PATH}")
 
-            # Clear cache
-            clear_cache(config)
+        # Clear cache
+        clear_cache(config)
 
-            # Run backtest
-            print("  Running backtest...")
-            metrics = run_backtest(config)
+        # Run backtest
+        print("  Running backtest...")
+        metrics = run_backtest(config, TEMP_STRATEGY_PATH)
 
-            # Check pass/fail
-            passed = check_pass(metrics, criteria) if not metrics["error"] else False
-            status = "PASS ✅" if passed else "FAIL ❌"
-            print(f"  Result: {status}")
-            if not metrics["error"]:
-                print(f"  Trades={metrics['trades']} | WR={metrics['win_rate']}% | "
-                      f"Sharpe={metrics['sharpe']} | DD={metrics['max_drawdown']}% | "
-                      f"PF={metrics['profit_factor']}")
-            else:
-                print(f"  Error: {metrics['error']}")
+        # Check pass/fail
+        passed = check_pass(metrics, criteria) if not metrics["error"] else False
+        status = "PASS ✅" if passed else "FAIL ❌"
+        print(f"  Result: {status}")
+        if not metrics["error"]:
+            print(f"  Trades={metrics['trades']} | WR={metrics['win_rate']} | "
+                  f"Sharpe={metrics['sharpe']} | DD={metrics['max_drawdown']} | "
+                  f"PF={metrics['profit_factor']}")
+        else:
+            print(f"  Error: {metrics['error']}")
 
-            # Log to CSV
-            row = {
-                "run": run_num,
-                "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"),
-                **params,
-                **{k: metrics.get(k) for k in
-                   ["trades", "win_rate", "sharpe", "max_drawdown",
-                    "profit_factor", "total_profit"]},
-                "pass": passed,
-                "error": metrics.get("error") or "",
-            }
-            append_csv(csv_path, row)
+        # Log to CSV
+        row = {
+            "run": run_num,
+            "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+            **params,
+            **{k: metrics.get(k) for k in
+               ["trades", "win_rate", "sharpe", "max_drawdown",
+                "profit_factor", "total_profit"]},
+            "pass": passed,
+            "error": metrics.get("error") or "",
+        }
+        append_csv(csv_path, row)
 
-            if passed:
-                winner = params.copy()
-                winner.update({k: metrics.get(k) for k in
-                               ["trades", "win_rate", "sharpe",
-                                "max_drawdown", "profit_factor"]})
-                print(f"\n{'='*60}")
-                print("WINNER FOUND — stopping grid search.")
-                print(json.dumps(winner, indent=2))
-                print(f"{'='*60}")
-                break
+        if passed:
+            winner = params.copy()
+            winner.update({k: metrics.get(k) for k in
+                           ["trades", "win_rate", "sharpe",
+                            "max_drawdown", "profit_factor"]})
+            print(f"\n{'='*60}")
+            print("WINNER FOUND — stopping grid search.")
+            print(json.dumps(winner, indent=2))
+            print(f"{'='*60}")
+            break
 
-    finally:
-        # Always restore original strategy (even on CTRL+C or error)
-        restore_strategy(strategy_path, original_strategy)
-        print("\nStrategy file restored to original.")
+    # Cleanup temp file
+    if TEMP_STRATEGY_PATH.exists():
+        TEMP_STRATEGY_PATH.unlink()
+        print("\nTemp strategy file cleaned up.")
 
     # Final summary
     print(f"\n{'='*60}")
     if winner:
         print("GRID SEARCH COMPLETE — WINNER FOUND")
         print(f"Best params: {winner}")
-        print(f"\nNext step for Perplexity: apply winner params permanently to strategy.")
+        print("\nNext step for Perplexity: apply winner params permanently to strategy.")
     else:
         print(f"GRID SEARCH COMPLETE — NO WINNER in {total} combinations.")
         print(f"All results saved to: {csv_path.name}")
