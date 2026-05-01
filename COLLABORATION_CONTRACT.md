@@ -1,8 +1,8 @@
 # FinBuddy — Collaboration & Autonomy Contract
 
 **Owner:** Gaurav (star7gaurv)  
-**Actors:** Perplexity AI (this assistant), Claude Code (Anthropic Sonnet agent), Future agents (Gemini, DeepSeek, etc.)  
-**Last Updated:** 2026-05-01 ~16:20 IST
+**Actors:** Perplexity AI (this assistant), Claude Code (Anthropic Sonnet agent), Future agents (Grok/xAI, DeepSeek, etc.)  
+**Last Updated:** 2026-05-01 ~16:45 IST
 
 ---
 
@@ -26,70 +26,90 @@ Perplexity **cannot**:
 - See live logs or real-time PnL.
 - Store or access secrets (API keys, passwords).
 
-### 1.2 Claude Code — "DevOps & Runtime Executor"
+### 1.2 Claude Code — "Ops, Monitoring & Intelligent Executor"
 
 You can treat Claude Code as:
-- 🧑‍💻 **DevOps engineer** — pulls code, deploys changes, manages Docker/cron.
-- 📈 **Runtime executor** — runs backtests, hyperopt, and scripts.
-- 🕵️ **Live monitor** — watches logs, health, and can rollback if needed.
+- 🧑‍💻 **Ops engineer** — pulls code, deploys changes, manages Docker/cron.
+- 🕵️ **Live monitor** — watches logs / health, surfaces bugs, can rollback.
+- 🧪 **Experiment runner** — runs backtests / hyperopt / diagnostics when explicitly needed.
 
 Claude Code **can**:
 - SSH into the Oracle server and run shell commands.
 - `git pull` the `gaurav` branch and sync local files.
 - Restart Docker containers and inspect logs.
-- Run `scripts/run_backtest.sh`, `scripts/tune_stoploss.sh`, hyperopt, and cron setup scripts.
+- Run one-off scripts that require judgment (backtests, hyperopt, diagnostics).
 - Update status in task files and memory vault based on actual execution results.
 
-Claude Code **cannot**:
-- Change the high-level architecture alone (that is driven by Perplexity + you).
-- Decide the project roadmap — it follows `CLAUDE_HANDOFF.md` and tasks.
+Claude Code **should NOT be used** for:
+- Tasks that can run forever via code alone (cron, shell loops, daemons). Those must be automated once via scripts/cron and then left to the system, not to an AI.
 
 ---
 
-## 2. Task Boundaries — Who Finishes What
+## 2. Automation Principle — "AI for Progress, Code for Routine"
 
-### 2.1 Perplexity owns
+**Rule:** If something can be automated with code (cron, `.sh`, systemd, Freqtrade config), we automate it **once** and do **not** use AI time for it again.
+
+Examples:
+- ✅ Cron jobs for Phase 2 data fetchers and Phase 4 memory writer → handled by `setup_cron.sh` and system cron, not by Claude.
+- ✅ Daily/15-min scheduled tasks → system cron or Freqtrade internals, not AI.
+- ✅ Any recurring shell task → wrap in a script; Claude's job is just to install/verify once.
+
+AI (Perplexity / Claude) should focus on:
+- Reasoning, debugging, monitoring.
+- Designing and validating improvements.
+- Interpreting results and deciding the next experiment.
+
+---
+
+## 3. Task Boundaries — Who Finishes What
+
+### 3.1 Perplexity owns
 
 For each feature / phase:
 1. **Design** — architecture, parameters, acceptance criteria.
 2. **Implementation in repo** — code, configs, scripts, docs.
-3. **Handoff definition** — what Claude Code must run, in what order.
+3. **Automation** — wherever possible, write scripts/cron to avoid manual/AI repetition.
+4. **Handoff definition** — what Claude Code must run once, in what order.
 
 Deliverables Perplexity is responsible for:
 - Strategy logic (`FinBuddyFreqAI.py`, future variants).
 - FreqAI models (`FinBuddyLLMModel.py`, future models).
 - Backtest + robustness tooling (`scripts/run_backtest.sh`, `parse_backtest.py`, `tune_stoploss.sh`, hyperopt files).
 - Phase 2/3/4/5/6/7 scripts.
-- Documentation: `FINBUDDY_PROJECT_MEMORY.md`, `tasks/*.md`, `CLAUDE_HANDOFF.md`, `finbuddy_memory/*`.
+- Documentation: `FINBUDDY_PROJECT_MEMORY.md`, `tasks/*.md`, `CLAUDE_HANDOFF.md`, `COLLABORATION_CONTRACT.md`, `finbuddy_memory/*`.
 
-### 2.2 Claude Code owns
+### 3.2 Claude Code owns
 
 For each feature / phase:
-1. **Execution** — run the scripts / commands defined by Perplexity.
-2. **Verification** — check that results meet criteria (metrics, logs, health).
+1. **Execution once** — run the scripts / commands defined by Perplexity to set things up (deploy, cron install, one-off backtests, etc.).
+2. **Monitoring** — keep an eye on logs, health, error rates.
 3. **State updates** — mark tasks ✅/⚠️/❌ and add metrics to memory vault.
+4. **Bug surfacing & small fixes** — when it notices clear issues (config paths, missing deps), it may fix them within the boundaries of the plan.
 
 Claude Code is responsible for:
 - Deploying strategies and models into the live Freqtrade container.
-- Running backtests and hyperopt jobs.
-- Installing and verifying cron jobs for Phase 2 + Phase 4.
+- Running backtests / hyperopt when requested by task files.
+- Installing and verifying cron jobs for Phase 2 + Phase 4 (one-time).
 - Watching Freqtrade + FreqAI logs and rolling back if something breaks.
 
 ---
 
-## 3. Trigger Points — How Claude Code Knows What To Do
+## 4. Trigger Points — How Claude Code Knows What To Do
 
-Claude Code should **not** wait for ad-hoc instructions in chat. Instead, it should always:
+Claude Code should **not** wait for ad-hoc chat instructions. Instead, it should always:
 
 1. **On session start (or after usage reset):**
+   - `cd /home/ubuntu/var/www/html/trade/freqtrade`
    - `git pull origin gaurav`.
-   - Read `CLAUDE_HANDOFF.md` from top to bottom.
-   - Read `FINBUDDY_PROJECT_MEMORY.md` to understand current phase + model stack.
-   - Read the relevant `tasks/phase-X-*.md` file for detailed criteria.
+   - Read, in this order:
+     - `COLLABORATION_CONTRACT.md` (this file) — to remember its role.
+     - `CLAUDE_HANDOFF.md` — queue of concrete actions.
+     - `FINBUDDY_PROJECT_MEMORY.md` — current phase + model stack.
+     - Relevant `tasks/phase-X-*.md` — detailed criteria.
 
 2. **Determine work queue:**
    - Look for any task marked `⚠️ NEEDS REVIEW` or `⬜ PENDING` where the steps explicitly say "Claude Code must".
-   - Execute tasks **in order** (Phase 1 before Phase 2, etc.).
+   - Execute tasks **in order** (Phase 1 before Phase 2, etc.), but **skip anything that is already automated by cron or system scripts**.
 
 3. **After completing each step:**
    - Update the corresponding task file (`tasks/phase-X-*.md`) from ⚠️ → ✅ if criteria are met.
@@ -99,84 +119,91 @@ Claude Code should **not** wait for ad-hoc instructions in chat. Instead, it sho
 4. **On usage reset or restart:**
    - Repeat step 1 (pull + read) and continue where it left off.
 
-> In other words: **`CLAUDE_HANDOFF.md` + `tasks/*.md` + `FINBUDDY_PROJECT_MEMORY.md` are the single source of truth** for what Claude Code should do next.
-
 ---
 
-## 4. Autonomy Patterns for Claude Code
+## 5. Autonomy Patterns for Claude Code
 
-To make Claude Code more autonomous and not require manual prompts every time:
+To make Claude Code more autonomous without wasting tokens on routine automation:
 
-1. **Routine on login / after reset**
-   - Always:
-     ```bash
-     cd /home/ubuntu/var/www/html/trade/freqtrade
-     git pull origin gaurav
-     ```
-   - Then:
-     - Read `CLAUDE_HANDOFF.md` → execute the next unresolved steps.
+1. **Use scripts + cron for repetition**
+   - Example: Phase 2 aggregator and Phase 4 memory writer are driven by cron; Claude only needs to:
+     - Run `scripts/phase4/setup_cron.sh` **once**.
+     - Verify cron is working (e.g., logs, last-run timestamps).
 
-2. **Cron-like behavior (logical, not system cron)**
-   - On each session, if there is nothing urgent in handoff:
-     - Check for TODOs in `tasks/phase-2-data-enrichment.md`, `phase-4-obsidian-memory.md`, etc.
-     - Pick the topmost `⚠️` or `⬜` task that only needs execution.
+2. **Use one-off scripts for experiments**
+   - Example: `scripts/tune_stoploss.sh` is a one-off tool for Task 1.3 robustness.
+   - Claude runs it only when a task or Perplexity explicitly requires new metrics.
+   - No cron for this — tuning is not a forever process.
 
 3. **Error handling & local decisions**
    - If a command fails because of missing dependency (e.g., `pytrends` not installed):
-     - Claude Code may decide to install it inside the container:
+     - Claude can install it inside the container:
        ```bash
        docker exec freqtrade pip install pytrends
        ```
      - Then retry the script.
    - If backtest metrics fail criteria:
-     - Do **not** tweak strategy code on its own.
-     - Instead, record metrics + logs in `finbuddy_memory/strategies/graveyard.md` and leave Task as ❌ or ⚠️ for Perplexity to adjust code.
+     - Do **not** auto-change strategy logic.
+     - Record metrics + logs in `finbuddy_memory/strategies/*.md` and leave task for Perplexity.
 
 4. **Resource & usage awareness**
    - Prefer short, focused runs:
-     - Run one backtest, one hyperopt, or one cron installation at a time.
-     - Avoid long-running experiments without explicit tasks.
-   - When API usage is close to limits (Claude or external APIs), prioritize finishing high-value tasks (deployment, backtest) over exploration.
+     - One backtest, one hyperopt, or one cron setup per burst.
+   - Avoid long-running loops that keep Claude busy doing what cron or code can do.
 
 ---
 
-## 5. Current Focus — Task 1.3 Robustness & Hyperopt
+## 6. Analysis Models vs Coding Models
 
-### 5.1 What Perplexity has already done
+### 6.1 Grok (xAI) — Analysis & Market Reasoning
 
-- Tuned `FinBuddyFreqAI.py` stoploss from -3% to -3.5% for better Sharpe in Task 1.3.[see commit history]
-- Created `scripts/tune_stoploss.sh` to run multiple backtests with different stoploss values and log metrics to CSV.[scripts/tune_stoploss.sh]
+- **Role:** primary analysis model for market/sentiment reasoning.
+- Used inside `FinBuddyLLMModel.py` to confirm or dampen FreqAI predictions.
+- Must have **both `x_search` and `web_search_preview` tools enabled** on the xAI API so it can see live data.
+
+### 6.2 Claude Sonnet — Coding & Ops
+
+- **Role:** best model for writing and reviewing code, and for structured DevOps operations.
+- Used via Claude Code to:
+  - Deploy code.
+  - Run backtests/hyperopt.
+  - Inspect logs.
+  - Suggest/fix bugs that require code changes (implemented by Perplexity in repo afterwards).
+
+### 6.3 Gemini / DeepSeek
+
+- Kept in stack for **future** large-context and cheap reasoning tasks (e.g., Phase 5 research loop), but **not used as generic “analysis” instead of Grok.**
+- Any future use will be explicitly documented in `FINBUDDY_PROJECT_MEMORY.md` and task files.
+
+---
+
+## 7. Current Focus — Task 1.3 Robustness & Hyperopt
+
+### 7.1 What Perplexity has already done
+
+- Tuned `FinBuddyFreqAI.py` stoploss from -3% to -3.5% for better Sharpe in Task 1.3.
+- Created `scripts/tune_stoploss.sh` to run multiple backtests with different stoploss values and log metrics to CSV.
 - Documented acceptance criteria and backtest workflow in `scripts/README.md` and `tasks/phase-1-freqai-brain.md`.
 
-### 5.2 What Claude Code should do next (autonomously)
+### 7.2 How Claude Code should act (without wasting usage)
 
-1. **Rerun Task 1.3** with the updated stoploss:
-   - `./scripts/run_backtest.sh`.
-   - If metrics meet criteria → mark Task 1.3 ✅ and update registry + memory.
-
-2. **If metrics are borderline or still bad:**
-   - Run `./scripts/tune_stoploss.sh` to test `-0.03`, `-0.035`, `-0.04`.
-   - Save and commit `_tune_stoploss_results.csv` and mention best stoploss in `finbuddy_memory/strategies/winners.md` or a new note.
-   - Leave strategy code change (choosing final stoploss) to Perplexity.
-
-3. **Later (Hyperopt phase):**
-   - When Perplexity adds a hyperopt space file (e.g., `hyperopts/finbuddy_freqai_space.py`):
-     - Claude runs hyperopt commands according to that file.
-     - Writes final metrics + chosen parameters to memory.
+1. Use `./scripts/run_backtest.sh` when Task 1.3 requires a fresh backtest.
+2. Use `./scripts/tune_stoploss.sh` **only when Perplexity or task files explicitly request more robustness data**.
+3. Never put tuning scripts on cron — tuning is an occasional experiment, not a forever loop.
+4. Once a good configuration is found and committed, treat it as code — **no AI needed until metrics degrade or Perplexity asks for new experiments.**
 
 ---
 
-## 6. How You (Gaurav) Should Think About Us
+## 8. How You (Gaurav) Should Think About Us
 
 - **Perplexity AI** = "Head of Research + Lead Engineer"
   - Designs the system, writes the code, maintains documentation, and proposes improvements.
-- **Claude Code** = "Senior DevOps + Operator"
-  - Makes sure the code actually runs on the server, meets criteria, and stays healthy.
+- **Claude Code** = "Senior Ops + Monitor"
+  - Executes the plan on the server, monitors live behavior, surfaces issues, and runs experiments when asked by the project files.
 
-Your job becomes:
-- Decide priorities (which phase, which objective: Sharpe, PF, DD, automation).
-- Review high-level outcomes (metrics, PnL, and safety).
-- Occasionally mediate when Perplexity suggests changes that affect your risk appetite.
+Your constraints are now baked into this contract:
+- Routine work → scripts + cron.
+- AI work → monitoring, debugging, improving, and pushing the project forward.
 
 ---
 
