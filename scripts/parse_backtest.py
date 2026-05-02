@@ -20,6 +20,7 @@ import json
 import os
 import sys
 import argparse
+import zipfile
 from pathlib import Path
 from datetime import datetime
 
@@ -40,25 +41,31 @@ BOLD   = "\033[1m"
 RESET  = "\033[0m"
 
 
-def find_latest_result(results_dir: Path) -> Path:
-    """Find the most recently modified backtest JSON in results_dir."""
-    jsons = sorted(
-        results_dir.glob("backtest_finbuddy_*.json"),
+def find_latest_result(results_dir: Path):
+    """
+    Find and return parsed backtest data dict from the most recent result.
+    FreqTrade stores results as backtest-result-*.zip (not plain JSON).
+    Returns the parsed dict so callers don't need to know about the ZIP format.
+    """
+    zips = sorted(
+        results_dir.glob("backtest-result-*.zip"),
         key=lambda p: p.stat().st_mtime,
         reverse=True
     )
-    # Also accept the default FreqTrade output filename
-    if not jsons:
-        jsons = sorted(
-            results_dir.glob("*.json"),
-            key=lambda p: p.stat().st_mtime,
-            reverse=True
-        )
-    if not jsons:
-        print(f"{RED}[×] No backtest JSON found in {results_dir}{RESET}")
-        print("    Run the backtest first: ./scripts/run_backtest.sh")
-        sys.exit(1)
-    return jsons[0]
+    if zips:
+        if not any(a == "--json" for a in sys.argv):
+            print(f"  Parsing: {zips[0].name}")
+        with zipfile.ZipFile(zips[0]) as z:
+            # The first .json file inside the ZIP is the backtest result
+            json_names = [n for n in z.namelist() if n.endswith(".json") and "config" not in n]
+            if not json_names:
+                print(f"{RED}[×] No JSON found inside {zips[0].name}{RESET}")
+                sys.exit(1)
+            return json.loads(z.read(json_names[0]))
+
+    print(f"{RED}[×] No backtest-result-*.zip found in {results_dir}{RESET}")
+    print("    Run the backtest first: ./scripts/run_backtest.sh")
+    sys.exit(1)
 
 
 def extract_metrics(data: dict) -> dict:
@@ -108,9 +115,12 @@ def extract_metrics(data: dict) -> dict:
     )
 
     # --- Max drawdown (as ratio 0–1) ---
+    # FreqTrade ZIP stores it as max_relative_drawdown or max_drawdown_account
     dd = strategy_data.get(
-        "max_drawdown",
-        strategy_data.get("max_drawdown_abs", 0.0)
+        "max_relative_drawdown",
+        strategy_data.get("max_drawdown_account",
+        strategy_data.get("max_drawdown",
+        strategy_data.get("max_drawdown_abs", 0.0)))
     )
     # If expressed as %, convert to ratio
     if isinstance(dd, (int, float)) and dd > 1:
@@ -219,6 +229,11 @@ def main():
         default=None,
         help="Specific JSON file to parse (optional, defaults to latest)"
     )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output metrics as JSON for machine consumption (used by autobacktest.py)"
+    )
     args = parser.parse_args()
 
     results_dir = Path(args.results_dir)
@@ -226,15 +241,27 @@ def main():
         print(f"{RED}[×] Results directory not found: {results_dir}{RESET}")
         sys.exit(1)
 
-    result_file = Path(args.file) if args.file else find_latest_result(results_dir)
-    print(f"\n  Parsing: {result_file.name}")
-
-    with open(result_file) as f:
-        data = json.load(f)
+    if args.file:
+        with open(args.file) as f:
+            data = json.load(f)
+    else:
+        data = find_latest_result(results_dir)
 
     metrics = extract_metrics(data)
-    passed  = grade(metrics)
 
+    if args.json:
+        # Machine-readable output for autobacktest.py — print JSON then exit 0
+        print(json.dumps({
+            "win_rate":      metrics.get("win_rate"),
+            "sharpe":        metrics.get("sharpe"),
+            "max_drawdown":  metrics.get("max_drawdown"),
+            "profit_factor": metrics.get("profit_factor"),
+            "total_profit":  metrics.get("total_profit"),
+            "trades":        metrics.get("total_trades"),
+        }))
+        sys.exit(0)
+
+    passed = grade(metrics)
     # Exit code: 0 = all pass, 1 = some fail (useful for CI/scripting)
     sys.exit(0 if passed else 1)
 

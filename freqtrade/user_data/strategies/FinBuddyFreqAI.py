@@ -16,46 +16,62 @@ logger = logging.getLogger(__name__)
 
 class FinBuddyFreqAI(IStrategy):
     """
-    FinBuddy FreqAI Strategy v4 — entry filter tightened after Task 1.3 FAIL.
+    FinBuddy FreqAI Strategy v6 — Option C: Trailing stop + tighter ML exit combined.
 
-    Root cause of v3 failure (2026-05-01):
-      - Win rate was fine (60.3%) but 36 stoploss exits at avg -3.69% wiped all gains.
-      - Entries were firing too early / in counter-trend moves on 15m.
-      - ML signal threshold was too low (0.008), allowing marginal-confidence entries.
+    Root cause of v5 failure (2026-05-01 Round 2 grid, 36 combos):
+      - roi_multiplier confirmed dead lever: FreqAI exits via ML signal before ROI hits.
+      - stoploss IS the working lever: best result at -0.030 (Sharpe -0.236).
+      - Sharpe structurally negative: avg loser still > avg winner in dollar terms.
+      - Best Round 2: stoploss=-0.030, ml=0.009, atr=0.002 → 60.8% WR, Sharpe -0.236, PF 0.815.
 
-    Fixes applied in v4:
-      1. ML entry threshold raised: &-s_close > 0.008 -> > 0.012
-         (only enter on high-conviction FreqAI predictions)
-      2. 1h trend filter added: require 1h close >= 1h EMA-50
-         (do not fight the macro 1h trend)
-      3. RSI entry ceiling tightened: < 72 -> < 68
-         (avoid entering near overbought conditions)
-      4. Stoploss kept at -0.035 (root cause was bad entries, not stoploss width)
+    Strategy v6 fixes — Option C (both combined):
+      1. Trailing stop tightened:
+         - positive offset lowered: 0.025 → 0.020 (activate trail sooner, lock in at +2%)
+         - positive amount lowered: 0.012 → 0.010 (tighter trail = larger captured profit)
+         - Goal: widen avg winner by letting trail protect gains from +2% onward
+      2. ML exit threshold tightened:
+         - exit on &-s_close < -0.001 (was -0.003)
+         - Cut losers 3x faster — exit as soon as ML predicts even tiny reversal
+         - Goal: shrink avg loser from ~3.5% toward ~1.5%
+      3. Combined effect targets:
+         - Wider avg winner (trailing locks in more upside)
+         - Smaller avg loser (faster ML exit)
+         - Together: flip reward:risk ratio positive → Sharpe > 0.5
+
+    Grid v3 tests:
+      - trailing_offset: [0.018, 0.020, 0.022, 0.025] — when to activate trail
+      - ml_exit_threshold: [-0.001, -0.002, -0.003] — how fast to exit on ML reversal
+      - stoploss: [-0.020, -0.025, -0.030] — hard floor (still the main lever)
+      - ml_threshold: [0.009, 0.011]
+      - atr_threshold: [0.002, 0.003]
+      Total: 72 combos (4x3x3x2x2)
 
     ML brain: LightGBMRegressor / FinBuddyLLMModel predicts &-s_close.
     Features: feature_engineering_expand_all() with % prefix (FreqAI standard).
     """
     INTERFACE_VERSION = 3
 
+    # v6: ROI table — wide targets (ML exit fires first anyway, confirmed Round 2)
+    # roi_multiplier proved to be a dead lever so keeping these wide and stable
     minimal_roi = {
-        "0": 0.06,
-        "30": 0.04,
-        "60": 0.02,
-        "120": 0.01
+        "0": 0.10,
+        "60": 0.06,
+        "120": 0.04,
+        "240": 0.02
     }
 
-    # Stoploss: -3.5% — kept from v3. Root cause of Task 1.3 failure was entry
-    # quality, not stoploss width. Tightening stoploss further would hurt win rate.
-    stoploss = -0.035
+    # v6: stoploss — hard floor, grid will sweep -0.020 to -0.030
+    stoploss = -0.025
+
+    # v6 Option C fix 1: tighter trailing stop
+    # offset lowered 0.025 -> 0.020: trail activates at +2% (was +2.5%)
+    # positive lowered 0.012 -> 0.010: tighter trail = more profit captured
     trailing_stop = True
-    trailing_stop_positive = 0.01
-    trailing_stop_positive_offset = 0.02
+    trailing_stop_positive = 0.010  # v6: was 0.012
+    trailing_stop_positive_offset = 0.020  # v6: was 0.025 — grid param
     trailing_only_offset_is_reached = True
 
     timeframe = "15m"
-
-    # informative_timeframes: fetch 1h candles for trend filter
-    # (used in populate_indicators via self.dp.get_pair_dataframe)
     informative_timeframes = ["1h"]
 
     can_short = False
@@ -68,11 +84,6 @@ class FinBuddyFreqAI(IStrategy):
     def feature_engineering_expand_all(
         self, dataframe: DataFrame, period: int, metadata: dict, **kwargs
     ) -> DataFrame:
-        """
-        Auto-expanded across indicator_periods_candles, include_timeframes,
-        include_shifted_candles, include_corr_pairlist.
-        All columns MUST be prefixed with % to be recognised by FreqAI.
-        """
         dataframe["%-rsi-period"] = ta.RSI(dataframe, timeperiod=period)
         dataframe["%-adx-period"] = ta.ADX(dataframe, timeperiod=period)
         dataframe["%-ema-period"] = ta.EMA(dataframe, timeperiod=period)
@@ -96,7 +107,6 @@ class FinBuddyFreqAI(IStrategy):
     def feature_engineering_expand_basic(
         self, dataframe: DataFrame, metadata: dict, **kwargs
     ) -> DataFrame:
-        """Expanded across timeframes/corr pairs but NOT across periods."""
         macd = ta.MACD(dataframe)
         dataframe["%-macd"] = macd["macd"]
         dataframe["%-macd_signal"] = macd["macdsignal"]
@@ -115,7 +125,6 @@ class FinBuddyFreqAI(IStrategy):
     def feature_engineering_std(
         self, dataframe: DataFrame, metadata: dict, **kwargs
     ) -> DataFrame:
-        """Standard features computed once on the base timeframe."""
         dataframe["%-day_of_week"] = pd.to_datetime(dataframe["date"]).dt.dayofweek
         dataframe["%-hour_of_day"] = pd.to_datetime(dataframe["date"]).dt.hour
         dataframe["%-raw_close"] = dataframe["close"]
@@ -126,10 +135,6 @@ class FinBuddyFreqAI(IStrategy):
     def set_freqai_targets(
         self, dataframe: DataFrame, metadata: dict, **kwargs
     ) -> DataFrame:
-        """
-        FreqAI prediction target: avg % price change over next label_period_candles.
-        Positive &-s_close = expected price rise = bullish signal.
-        """
         label_period = self.freqai_info["feature_parameters"]["label_period_candles"]
         dataframe["&-s_close"] = (
             dataframe["close"]
@@ -147,11 +152,6 @@ class FinBuddyFreqAI(IStrategy):
     def populate_indicators(
         self, dataframe: DataFrame, metadata: dict
     ) -> DataFrame:
-        """
-        1. Run FreqAI — injects &-s_close prediction + do_predict columns.
-        2. Compute TA filters for entry/exit rules (not FreqAI features).
-        3. Merge 1h EMA-50 for macro trend filter (v4 addition).
-        """
         # --- FreqAI inference ---
         dataframe = self.freqai.start(dataframe, metadata, self)
 
@@ -168,10 +168,11 @@ class FinBuddyFreqAI(IStrategy):
             / (bb["upperband"] - bb["lowerband"] + 1e-9)
         )
 
-        # --- 1h trend filter (v4) ---
-        # Fetch 1h candles and compute EMA-50 on them.
-        # Merge back onto 15m dataframe using forward-fill so every 15m
-        # candle knows the latest 1h EMA-50 value.
+        # ATR volatility filter — only enter when market has real movement
+        dataframe["atr_14"] = ta.ATR(dataframe, timeperiod=14)
+        dataframe["atr_ratio"] = dataframe["atr_14"] / dataframe["close"]
+
+        # --- 1h trend filter ---
         if self.dp:
             informative_1h = self.dp.get_pair_dataframe(
                 pair=metadata["pair"], timeframe="1h"
@@ -190,7 +191,6 @@ class FinBuddyFreqAI(IStrategy):
                     direction="backward",
                 )
             else:
-                # Fallback: no 1h data available; disable trend filter
                 dataframe["ema_50_1h"] = dataframe["close"]
                 dataframe["close_1h"] = dataframe["close"]
         else:
@@ -207,63 +207,65 @@ class FinBuddyFreqAI(IStrategy):
         self, dataframe: DataFrame, metadata: dict
     ) -> DataFrame:
         """
-        Entry conditions (v4 tightened):
-          1. FreqAI predicts > +1.2% price rise (raised from 0.8% in v3)
-          2. do_predict == 1 (model is confident in its own prediction)
-          3. 15m close > 15m EMA-50  (short-term uptrend)
-          4. 1h close >= 1h EMA-50   (macro trend filter — NEW in v4)
-          5. RSI-14 < 68             (not overbought — tightened from 72 in v3)
-          6. BB% < 0.90              (not at the top of the band)
-          7. close > EMA-200         (long-term safety filter)
-          8. volume > 0
+        Entry conditions (v6 — same as v5, unchanged):
+          1. FreqAI predicts > +1.0% price rise
+          2. do_predict == 1
+          3. 15m close > 15m EMA-50
+          4. 1h close >= 1h EMA-50
+          5. RSI-14 < 68
+          6. BB% < 0.90
+          7. close > EMA-200
+          8. atr_ratio > 0.003 (grid param: atr_threshold)
+          9. volume > 0
         """
-        # High-conviction ML signal only
         ml_signal = (
             (dataframe["do_predict"] == 1)
-            & (dataframe["&-s_close"] > 0.012)   # v4: raised from 0.008
+            & (dataframe["&-s_close"] > 0.010)  # v6: grid param ml_threshold
         )
 
-        # 15m short-term filter
         ta_filter = (
             (dataframe["close"] > dataframe["ema_50"])
-            & (dataframe["rsi_14"] < 68)           # v4: tightened from 72
+            & (dataframe["rsi_14"] < 68)
             & (dataframe["bb_pct"] < 0.90)
             & (dataframe["volume"] > 0)
         )
 
-        # 1h macro trend filter (v4 — prevents counter-trend entries)
+        volatility_filter = (
+            dataframe["atr_ratio"] > 0.003  # v6: grid param atr_threshold
+        )
+
         trend_filter_1h = (
             dataframe["close_1h"] >= dataframe["ema_50_1h"]
         )
 
-        # Long-term safety
         safety = (
             (dataframe["close"] > dataframe["ema_200"])
             & (dataframe["rsi_14"] < 78)
         )
 
         dataframe.loc[
-            ml_signal & ta_filter & trend_filter_1h & safety,
+            ml_signal & ta_filter & volatility_filter & trend_filter_1h & safety,
             "enter_long"
         ] = 1
         dataframe.loc[
-            ml_signal & ta_filter & trend_filter_1h & safety,
+            ml_signal & ta_filter & volatility_filter & trend_filter_1h & safety,
             "enter_tag"
-        ] = "freqai_lgbm_v4"
+        ] = "freqai_lgbm_v6"
         return dataframe
 
     def populate_exit_trend(
         self, dataframe: DataFrame, metadata: dict
     ) -> DataFrame:
         """
-        Exit conditions (unchanged from v3 — exit logic was not the problem):
-          - FreqAI predicts > -0.3% price drop, OR
-          - RSI > 75, OR
-          - BB% > 0.95 (price at top of band)
+        Exit conditions (v6 Option C fix 2):
+          - ML exit threshold tightened: -0.001 (was -0.003)
+            Cut losers 3x faster — exit as soon as ML predicts tiny reversal
+          - RSI > 75 (unchanged)
+          - BB% > 0.95 (unchanged)
         """
         ml_exit = (
             (dataframe["do_predict"] == 1)
-            & (dataframe["&-s_close"] < -0.003)
+            & (dataframe["&-s_close"] < -0.001)  # v6: was -0.003, grid param ml_exit_threshold
         )
         ta_exit = (
             (dataframe["rsi_14"] > 75)
