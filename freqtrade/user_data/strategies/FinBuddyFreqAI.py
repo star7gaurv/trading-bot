@@ -58,11 +58,11 @@ class FinBuddyFreqAI(IStrategy):
     # This is just the emergency hard floor (gap protection, exchange outage)
     stoploss = -0.08
 
-    # v8: keep trailing stop for capturing winners (100% WR in R1 and R2)
-    trailing_stop = True
-    trailing_stop_positive = 0.010
-    trailing_stop_positive_offset = 0.020
-    trailing_only_offset_is_reached = True
+    # v9: framework trailing DISABLED — custom_stoploss() owns the trail exclusively.
+    # Round 3 showed 79/62 trailing_stop_loss exits at -0.55% avg from the two
+    # trailing systems (framework + Chandelier in custom_stoploss) fighting each
+    # other. With this off, custom_stoploss is the single source of truth.
+    trailing_stop = False
 
     # v8: enable custom stoploss
     use_custom_stoploss = True
@@ -328,10 +328,15 @@ class FinBuddyFreqAI(IStrategy):
             "enter_tag"
         ] = "freqai_lgbm_v8_long"
 
-        # --- Short entry (v7 relaxed, carry-forward) ---
+        # --- Short entry (v9: macro-gated) ---
+        # v9 fix: shorts only fire when BTC 4h is below its EMA-50 (macro bear).
+        # Round 3 bull period had 81 shorts vs 31 longs in a +122% bull market —
+        # the macro filter was leaking. Requiring btc_4h_below_ema50 == 1 here
+        # prevents shorting alts during a sustained BTC uptrend.
         ml_signal_short = (
             (dataframe["do_predict"] == 1)
             & (dataframe["&-s_close"] < -0.010)
+            & (dataframe["btc_4h_below_ema50"] == 1)
         )
 
         ta_filter_short = (

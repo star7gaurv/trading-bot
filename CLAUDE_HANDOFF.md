@@ -240,6 +240,98 @@ Avg duration W/L  : 1h 32m / 1h 40m
 
 ---
 
+## 📈 Round 4 Results (v9) — Run 2026-05-02
+
+**v9 changes vs v8:**
+1. `trailing_stop = False` (framework trailing OFF; custom_stoploss owns the trail)
+2. Short entry now requires `btc_4h_below_ema50 == 1` (macro-gated)
+
+### 🐂 BULL — `20240101-20250101` (Market: +122.88%)
+```
+Total Trades      : 57   (24W / 33L)   ← was 112 in R3
+Long / Short      : 31 / 26            ← was 31 / 81 (shorts -68%) ✅
+Final Balance     : 992.83 USDT
+Absolute P&L      : -7.17 USDT          ← was -33.05 (much better)
+Total Profit %    : -0.72%
+
+--- Acceptance ---
+Win Rate          : 42.1%   ❌  (basically flat vs R3 42.0%)
+Sharpe (closed)   : -0.13   ❌  (was -0.78 — huge improvement)
+Max Drawdown      : 2.34%   ✅  (was 4.64% — halved)
+Profit Factor     : 0.89    ❌  (was 0.72)
+
+--- Exit Reasons ---
+exit_signal       : 19 | +1.02% | 94.7% WR  ← signal cohort still excellent
+trailing_stop_loss: 38 | -0.60% | 15.8% WR  ← STILL CHOPPING
+stop_loss         :  0 | (fallback never hit)
+```
+
+### 🐻 BEAR — `20250101-20260401` (Market: -39.27%)
+```
+Total Trades      : 92   (46W / 46L)   ← was 96
+Long / Short      : 52 / 40
+Final Balance     : 978.48 USDT
+Absolute P&L      : -21.52 USDT         ← was -12.47 (regressed)
+Total Profit %    : -2.15%
+
+--- Acceptance ---
+Win Rate          : 50.0%   ❌  (was 52.1% — slight regression)
+Sharpe (closed)   : -0.37   ❌  (was -0.22 — REGRESSED)
+Max Drawdown      : 4.92%   ✅  (was 4.72%)
+Profit Factor     : 0.77    ❌  (was 0.87 — regressed)
+
+--- Exit Reasons ---
+exit_signal       : 32 | +0.80% | 93.8% WR
+trailing_stop_loss: 60 | -0.61% | 26.7% WR
+stop_loss         :  0 | (fallback never hit)
+```
+
+---
+
+## 🔍 Round 4 — Hypothesis vs Reality
+
+| Hypothesis | Result | Verdict |
+|---|---|---|
+| trailing_stop_loss drops from 79/62 → near zero | Got 38/60 | ❌ Did not happen |
+| Bull shorts drop from 81 → ~20-30 | Got 26 | ✅ Hit dead center |
+| WR recovers toward 60%+ on both | 42% / 50% | ❌ Did not happen |
+| Bear Sharpe crosses -0.1 or goes positive | -0.37 | ❌ Regressed |
+
+**Score: 1 of 4. Macro filter worked. Trailing fix didn't.**
+
+### Why disabling framework trailing didn't fix the chop
+- `custom_stoploss()` itself has a trailing arm: once profit > +1×ATR, it tightens to MFE − 1.5×ATR.
+- Turning OFF the framework `trailing_stop` only removed the second trailing system. The Chandelier-style trail INSIDE custom_stoploss is still the dominant chop source.
+- 60 bear-period trailing exits at -0.61% avg confirms it.
+
+### Why bull improved sharply but bear didn't
+- Bull benefit came almost entirely from the **macro-filter fix**: 81 → 26 shorts removed the bulk of alpha-bleed in a +122% bull market. Trade count nearly halved, smaller drawdown, smaller absolute loss.
+- Bear had nothing to gain from that fix (BTC was below 4h EMA most of the period anyway, so v8 vs v9 short eligibility barely changed — 43 → 40 shorts). Without the trailing fix actually reaching the trailing arm, bear regressed slightly.
+
+### Recommendations for Round 5 (v10)
+The trailing arm inside `custom_stoploss()` is the next thing to touch, not the framework. Three options ranked by expected impact:
+
+1. **Disable the trailing arm in custom_stoploss entirely** — return only the initial 2×ATR stop, never tighten. Single-screen change, isolates whether trailing is helping at all.
+2. **Arm the trail later** — only start trailing after profit > +2×ATR (currently +1×ATR). Lets winners breathe past noise before locking in.
+3. **Widen the trail** — use 3×ATR pullback instead of 1.5×ATR. Looser leash, fewer chops.
+
+My pick: try **option 1 first** as a diagnostic. If trailing is net-negative we'll see PF flip immediately. If trailing is net-positive but mistuned, options 2/3 follow.
+
+### Status of the four rounds
+| | R1 (v6) | R2 (v7) | R3 (v8) | R4 (v9) |
+|---|---|---|---|---|
+| Bull Sharpe | -0.145 | -0.896 | -0.78 | **-0.13** |
+| Bear Sharpe | -0.258 | -0.554 | -0.22 | -0.37 |
+| Bull DD | 3.73% | 6.25% | 4.64% | **2.34%** |
+| Bear DD | 8.23% | 7.10% | 4.72% | 4.92% |
+| Bull P&L | -10 | -47 | -33 | **-7** |
+| Bear P&L | -23 | -36 | -12 | -22 |
+| exit_signal WR | 79% | 93.5% | 94% | 94% |
+
+**Direction is correct.** Bull P&L from -47 → -7 over four rounds; bull DD from 6.25% → 2.34%. Signal cohort stable at 94% WR. The remaining lever is the trailing arm.
+
+---
+
 ## 📁 v8 Changes Summary
 
 | Change | Old (v7) | New (v8) | Reason |
