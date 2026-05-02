@@ -2,8 +2,8 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status:** 🔴 Strategic Pivot — Futures-First Architecture  
-**Last Updated:** 2026-05-02 15:31 IST by Perplexity AI
+**Status:** 🟡 Phase 1 In Progress — Futures Live (Dry-Run), Walk-Forward Backtest Next  
+**Last Updated:** 2026-05-02 15:55 IST by Perplexity AI — Step 5 Complete
 
 ---
 
@@ -16,6 +16,23 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 - FreqTrade is just the hands (execution); the brain is the product
 - **Primary market: Binance Futures (USDT-M Perpetual) — long AND short**
 - Spot trading will be added later as a secondary module
+
+---
+
+## ✅ Step 5 Complete (2026-05-02)
+
+**What Claude confirmed as live on server:**
+- FreqTrade started cleanly — futures mode operational
+- Pre-existing log permission bug fixed (chmod 666 on log files, chmod 777 on logs dir)
+- `trading_mode: futures`, `margin_mode: isolated` confirmed in config
+- All 22 pairs converted to `COIN/USDT:USDT` futures format
+- Pairlist active: VolumePairList + SpreadFilter + PriceFilter + RangeStabilityFilter + VolatilityFilter
+- `FinBuddyLLMModel` loaded ✅ — xAI Grok-3-mini [PRIMARY] → LGBM fallback waterfall confirmed in logs
+- FreqAI downloading training data for futures candles
+- API server running at `0.0.0.0:8080`, Telegram RPC active
+- No fatal errors — bot is operational
+
+**Commit:** `9f6b6ed` → `gaurav` branch
 
 ---
 
@@ -39,65 +56,65 @@ Spot trading is structurally long-biased — you can only buy low, sell high. Th
 | Funding rate income | ❌ None | ✅ Passive when neutral |
 | Market neutrality | ❌ | ✅ Long/short, delta-neutral |
 
-Futures makes FinBuddy **truly market-agnostic** — the brain calls direction AND regime, then positions accordingly in any market condition.
-
 ---
 
 ## 🎯 Full Vision — All Crypto Market Modules
 
-FinBuddy will eventually support all major crypto market types as modular strategy plugins. One central AI brain, multiple execution modules:
-
 | Module | Type | Priority | Status |
 |---|---|---|---|
-| **Perp Futures (Long/Short)** | Directional | 🔥 Immediate | 🔄 Rewriting now |
+| **Perp Futures (Long/Short)** | Directional | 🔥 Immediate | 🔄 In Progress |
 | **Funding Rate Farming** | Passive income | ⚡ Phase 2 | ⬜ Pending |
-| **Spot-Futures Basis Arb** | Market neutral | 🕐 Phase 4 | ⬜ Pending |
-| **Statistical Arb (pair trading)** | Market neutral | 🕐 Phase 5 | ⬜ Pending |
-| **Grid Trading** | Sideways/range | ⚡ Phase 3 | ⬜ Pending |
-| **Spot Trading** | Long-only | 🕐 Phase 6 | ⬜ Secondary |
-| **DCA / Accumulation** | Long-term | 🕐 Phase 6 | ⬜ Pending |
+| **Spot-Futures Basis Arb** | Market neutral | 🕐 Phase 7 | ⬜ Pending |
+| **Statistical Arb (pair trading)** | Market neutral | 🕐 Phase 7 | ⬜ Pending |
+| **Grid Trading** | Sideways/range | ⚡ Phase 5 | ⬜ Pending |
+| **Spot Trading** | Long-only | 🕐 Phase 8 | ⬜ Secondary |
+| **DCA / Accumulation** | Long-term | 🕐 Phase 8 | ⬜ Pending |
 | **Options (hedging)** | Risk mgmt | 🕐 Future | ⬜ Advanced |
-
-All modules share: the same regime signal, the same AI brain, the same memory vault.
 
 ---
 
 ## 🧱 Core Engineering Principles
 
-1. **Code over manual work:** If it can be automated with code (cron, script, config), do it once and do **not** waste AI tokens or manual effort on it again.
-2. **AI for progress, not routine:** Use AI (Perplexity, Claude, Grok) for design, debugging, monitoring, and improvements — not for tasks that a simple script or cron job can handle.
-3. **DRY & reusable design:** Project code should follow "Do Not Repeat Yourself". Shared logic must live in reusable helpers/modules so we don't duplicate code across strategies, scripts, or phases.
-4. **Documentation as memory:** Any non-trivial behavior (strategy logic, cron setup, API integration, experiments) must be documented, so we never forget what's already implemented and can safely reuse it instead of rewriting.
-5. **Never hardcode secrets:** API keys, passwords, and tokens must always come from environment variables, never from committed files.
+1. **Code over manual work:** Automate with cron/script; never waste AI tokens on repetitive tasks.
+2. **AI for progress, not routine:** Use AI for design, debugging, monitoring, improvements.
+3. **DRY & reusable design:** Shared logic in helpers/modules — no duplication across strategies.
+4. **Documentation as memory:** All non-trivial behavior must be documented.
+5. **Never hardcode secrets:** API keys always from environment variables, never committed files.
 
 ---
 
-## 🤖 AI Model Stack (Decided 2026-05-01)
+## 📚 Critical Freqtrade Rules (from develop docs — must follow)
+
+These are rules from the official Freqtrade develop docs that directly impact our strategy code:
+
+| Rule | Why It Matters |
+|---|---|
+| `INTERFACE_VERSION = 3` in every strategy | v2 strategies silently break in new versions |
+| `can_short = True` at strategy class level | Without this, short signals are silently ignored |
+| `startup_candle_count ≥ max_indicator_period` | Backtesting will use unstable (NaN-filled) candles without this |
+| Never use `datetime.now()` in callbacks | Use `current_time` parameter — live vs backtest differ |
+| Never use `iloc[-1]` or loops in `populate_*` | Must be vectorized pandas — loops break backtesting |
+| Custom stoploss for futures: `return -0.04 * trade.leverage` | Without leverage multiply, stoploss is too tight |
+| `adjust_trade_position()` for DCA | Requires `position_adjustment_enable: true` in config |
+| Env vars override config.json override strategy | `FREQTRADE__EXCHANGE__KEY=...` format in Docker |
+| Backtest flag `--enable-protections` | Includes cooldown/stoploss guard effects |
+| `--timeframe-detail 1m` for precise SL/TP | Without this, stoploss fires may be imprecise in backtest |
+
+---
+
+## 🤖 AI Model Stack
 
 > **Rule:** Never hardcode API keys. Always use environment variables.
 
-| Model | Provider | Env Var | Cost | Role in FinBuddy |
+| Model | Provider | Env Var | Cost | Role |
 |---|---|---|---|---|
-| **grok-3-mini** | xAI | `XAI_API_KEY` | $0.10/M | ✅ **Task 1.2 — real-time signal confirmation & analysis** |
-| **grok-3** | xAI | `XAI_API_KEY` | $2/M | Optional upgrade later |
-| **claude-sonnet-4-5** | Anthropic | `ANTHROPIC_API_KEY` | $3/$15 per M | ✅ **Coding & ops via Claude Code (deploy, monitor, experiments)** |
-| **gemini-2.5-flash** | Google | `GEMINI_API_KEY` | Free tier | Reserved for future large-context research if needed |
-| **deepseek-chat** | DeepSeek | `DEEPSEEK_API_KEY` | ~$0.01/M | Reserved for cheap bulk hypothesis generation if needed |
+| **grok-3-mini** | xAI | `XAI_API_KEY` | $0.10/M | ✅ Real-time signal confirmation — PRIMARY |
+| **grok-3** | xAI | `XAI_API_KEY` | $2/M | Optional upgrade if needed |
+| **claude-sonnet-4-5** | Anthropic | `ANTHROPIC_API_KEY` | $3/$15/M | ✅ Claude Code — deploy, monitor, debug |
+| **gemini-2.5-flash** | Google | `GEMINI_API_KEY` | Free tier | Future large-context research |
+| **deepseek-chat** | DeepSeek | `DEEPSEEK_API_KEY` | ~$0.01/M | Future bulk hypothesis generation |
 
-### Grok (xAI) — analysis & signal confirmation
-- Only model trained on real-time X/Twitter data — knows live market sentiment.
-- Fast, cheap, OpenAI-compatible API (drop-in replacement).
-- 60 req/min free tier — more than enough (~5–20 calls/hour for FinBuddy).
-- **Must have both `x_search` and `web_search_preview` tools enabled** on the xAI API.
-- Used inside `FinBuddyLLMModel.py` for signal confirmation + market reasoning.
-
-### Claude Sonnet — code & infrastructure
-- Best model for writing reliable, bug-free Python and ops scripts.
-- Understands FreqTrade/FreqAI strategy structure deeply.
-- Powers **Claude Code**, which deploys code, runs backtests, monitors logs, improves automation.
-
-### Gemini / DeepSeek — future usage
-- Gemini 2.5 Flash (1M context) and DeepSeek are **available but not active** yet.
+**Grok must have `x_search` and `web_search_preview` tools enabled on xAI API.**
 
 ---
 
@@ -106,73 +123,81 @@ All modules share: the same regime signal, the same AI brain, the same memory va
 | Icon | Meaning |
 |---|---|
 | ✅ COMPLETE | Verified live on server by Claude Code |
-| ⚠️ NEEDS REVIEW | Code written by Perplexity AI, committed to GitHub, NOT yet on server |
-| 🟡 IN PROGRESS | Being actively worked on |
+| ⚠️ NEEDS REVIEW | Code in GitHub, NOT yet deployed/verified on server |
+| 🟡 IN PROGRESS | Actively being worked on |
 | ⬜ PENDING | Not started |
-| 🔴 PIVOTED | Superseded by strategic pivot — do not continue |
+| 🔴 RETIRED | Superseded — do not continue |
 
 ---
 
-## 🚀 Current State
+## 🚀 Current System State (as of 2026-05-02 — Step 5)
 
 | Component | Status | Notes |
 |---|---|---|
-| **FreqTrade** | ✅ Running, dry-run | On server, Oracle Free Tier |
-| **LightGBM (Task 1.1)** | ✅ Live — training per pair | Keep — reuse for futures strategy |
-| **N8N v4 Pipeline** | 🔴 Disabled permanently | FreqAI is sole signal source |
-| **FinBuddyFreqAI.py (v6)** | 🔴 SPOT — needs rewrite for futures | Long+short rewrite is next action |
-| **FinBuddyLLMModel.py (Task 1.2)** | ⚠️ In GitHub — NOT deployed | Deploy on futures strategy, not spot |
-| **Backtest scripts (Task 1.3)** | ⚠️ In GitHub — repurpose for futures | Change market type + add short logic |
-| **Phase 2 Data Fetchers** | ⚠️ In GitHub — NOT installed | Still valid for futures signals |
-| **Phase 4 Memory Writer** | ⚠️ In GitHub — NOT installed | Still valid, install after futures validated |
+| **FreqTrade** | ✅ Running, dry-run | Futures mode, Oracle Free Tier |
+| **Futures config** | ✅ Live | trading_mode: futures, margin_mode: isolated |
+| **22 futures pairs** | ✅ Active | All in COIN/USDT:USDT format |
+| **FinBuddyLLMModel** | ✅ Loaded | Grok-3-mini waterfall confirmed |
+| **FreqAI** | ✅ Training | Downloading data per pair |
+| **API Server** | ✅ 0.0.0.0:8080 | Accessible |
+| **Telegram RPC** | ✅ Active | Native FreqTrade Telegram |
+| **Log permissions** | ✅ Fixed | chmod 666/777 applied |
+| **LightGBM (Task 1.1)** | ✅ Live | Keep — reuse for futures |
+| **N8N pipeline** | 🔴 Permanently disabled | FreqAI is sole signal source |
+| **FinBuddyFreqAI.py (futures rewrite)** | ⚠️ Pending | Must add `can_short=True` + short signals |
+| **Walk-forward backtest** | ⬜ Not run | NEXT PRIORITY before going live |
+| **HMM Engine** | ⬜ Not built | Phase 3 |
+| **Karpathy Loop** | ⬜ Not built | Phase 5 |
+| **Obsidian auto-write** | ⬜ Not wired | Phase 4 |
 
 ---
 
-## 🗺️ Revised Roadmap (Post-Pivot)
+## 🗺️ Revised Roadmap (Post-Pivot, Post-Step-5)
 
-### Immediate Priority (Before any other phase)
+### 🔥 Immediate Next Steps
 
-| Step | Action | Owner |
-|---|---|---|
-| 🔥 P0 | Switch FreqTrade config from spot to **Binance Futures USDT-M** | Claude Code |
-| 🔥 P1 | Rewrite `FinBuddyFreqAI.py` for **long + short signals** | Perplexity |
-| 🔥 P2 | Run **bull period backtest on futures** (2024-01-01 → 2025-01-01) | Claude Code |
-| 🔥 P3 | Validate: Sharpe > 0.5, WR > 50%, DD < 20%, PF > 1.2 | Perplexity reads CSV |
-
-### Phase Roadmap (Revised)
-
-| Phase | Focus | Status | Notes |
+| Step | Action | Owner | Status |
 |---|---|---|---|
-| 0 | Foundation | ✅ 5/5 Complete | Done |
-| 1 | FreqAI brain — **futures long/short** | 🔄 Rewriting strategy | Task 1.1 ✅, strategy pivot in progress |
-| 2 | Funding rate farming module | ⬜ Pending | Passive income on neutral regime |
-| 3 | HMM 5-regime engine | ⬜ Pending | Critical for futures — regime drives long/short/neutral |
-| 4 | External data + cron install | ⬜ Pending | Phase 2 code ready, needs crons |
-| 5 | Grid trading module | ⬜ Pending | Sideways market strategy |
-| 6 | Memory auto-write + Karpathy loop | ⬜ Pending | Phase 4 code ready, needs crons |
-| 7 | Spot-futures basis arbitrage | ⬜ Pending | Market neutral |
-| 8 | Spot trading module | ⬜ Pending | Secondary, after futures validated |
-| 9 | TradingView webhook + Multi-executor | ⬜ Pending | SaaS buildout |
+| **NEXT 1** | Verify FinBuddyFreqAI.py has `can_short=True`, short entry signals, `startup_candle_count ≥ 400` | Claude Code | ⬜ |
+| **NEXT 2** | Run futures walk-forward backtest (2024-01-01 → 2025-01-01 bull + 2025-01-01 → 2026-04-01 bear) | Claude Code | ⬜ |
+| **NEXT 3** | Parse backtest CSV — validate: Sharpe > 0.5, WR > 50%, DD < 20%, PF > 1.2 | Perplexity reads CSV | ⬜ |
+| **NEXT 4** | If validated: switch `dry_run: false` → go live with small stake ($10–20/trade) | Claude Code | ⬜ |
+| **NEXT 5** | Install Phase 2 external data fetchers + cron jobs | Claude Code | ⬜ |
+
+### Phase Roadmap
+
+| Phase | Focus | Status |
+|---|---|---|
+| 0 | Foundation | ✅ Complete |
+| 1 | FreqAI brain — futures long+short | 🟡 Step 5 done, backtest pending |
+| 2 | Funding rate farming module | ⬜ Pending |
+| 3 | HMM 5-regime engine | ⬜ Pending |
+| 4 | External data + cron install | ⬜ Code ready, crons pending |
+| 5 | Grid trading module | ⬜ Pending |
+| 6 | Memory auto-write + Karpathy loop | ⬜ Code ready, crons pending |
+| 7 | Spot-futures basis arbitrage | ⬜ Pending |
+| 8 | Spot trading module | ⬜ Secondary |
+| 9 | TradingView webhook + Multi-executor | ⬜ SaaS buildout |
 
 ---
 
-## 📦 What's Built & Committed (pre-pivot, still valid)
+## 📦 What's Built & Committed
 
-### Task 1.2 — FinBuddyLLMModel.py (Grok layer)
-- `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` — LightGBM + Grok-3-Mini blended signal
-- **Still valid** — deploy on futures strategy once rewrite is done
+### Task 1.2 — FinBuddyLLMModel.py (Grok layer) — ✅ Deployed & Running
+- `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py`
+- LightGBM + Grok-3-mini blended signal — confirmed in logs
 
-### Task 1.3 — Backtest Scripts
+### Task 1.3 — Backtest Scripts — ⚠️ Repurpose for futures
 - `scripts/run_backtest.sh`, `scripts/backtest_config.json`, `scripts/parse_backtest.py`, `scripts/tune_stoploss.sh`
-- **Repurpose** — update for futures market type and long+short logic
+- Must update `--trading-mode futures` flag and add short logic
 
-### Phase 2 — External Data Fetchers
+### Phase 2 — External Data Fetchers — ⚠️ Committed, not installed
 - `scripts/phase2/` — fear/greed, CoinGecko, CryptoPanic, DefiLlama, Google Trends
-- **Still valid** — external signals are market-type agnostic
+- Still valid — external signals are market-type agnostic
 
-### Phase 4 — Memory Auto-Writer
+### Phase 4 — Memory Auto-Writer — ⚠️ Committed, not installed
 - `scripts/phase4/memory_writer.py` + `setup_cron.sh`
-- **Still valid** — install after futures strategy is validated live
+- Install after futures strategy is validated live
 
 ---
 
@@ -183,8 +208,8 @@ All modules share: the same regime signal, the same AI brain, the same memory va
 | **Core collaboration rules** | `COLLABORATION_CONTRACT.md` |
 | **🚨 Handoff for Claude Code** | `CLAUDE_HANDOFF.md` ← READ THIS FIRST |
 | **Full project context** | `CLAUDE.md` |
-| **Active strategy (needs rewrite)** | `freqtrade/user_data/strategies/FinBuddyFreqAI.py` |
-| **LLM model (needs deploy on futures)** | `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` |
+| **Active strategy (needs futures rewrite verify)** | `freqtrade/user_data/strategies/FinBuddyFreqAI.py` |
+| **LLM model (deployed + running)** | `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` |
 | **Backtest runner** | `scripts/run_backtest.sh` |
 | **External data fetchers** | `scripts/phase2/` |
 | **Memory writer** | `scripts/phase4/memory_writer.py` |
@@ -198,11 +223,11 @@ All modules share: the same regime signal, the same AI brain, the same memory va
 
 | Tool | Can Do | Cannot Do |
 |---|---|---|
-| **Perplexity AI** | Design, write + commit code/docs to GitHub; define automation | SSH, docker restart, live logs |
-| **Claude Code** | SSH, deploy, monitor, run experiments, improve automations when needed | Replace cron or scripts for repetitive tasks |
+| **Perplexity AI** | Design, write + commit code/docs to GitHub; define automation; read/parse CSVs | SSH, docker restart, live logs |
+| **Claude Code** | SSH, deploy, monitor, run experiments, run backtests, verify deployments | Replace cron/scripts for repetitive tasks |
 
-**Workflow:** Perplexity writes → marks ⚠️ NEEDS REVIEW → Claude Code deploys / verifies once → cron/scripts handle repetition → Claude monitors and improves.
+**Workflow:** Perplexity writes → marks ⚠️ NEEDS REVIEW → Claude Code deploys/verifies once → cron/scripts handle repetition → Claude monitors and improves.
 
 ---
 
-*Last updated: Perplexity AI — 2026-05-02 15:31 IST — Strategic pivot to futures-first architecture*
+*Last updated: Perplexity AI — 2026-05-02 15:55 IST — Step 5 complete, futures mode live, walk-forward backtest is next*
