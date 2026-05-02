@@ -51,7 +51,7 @@
     "stake_currency": "USDT",
     "max_open_trades": 4,
     "pairs": [
-        "BTC/USDT",
-        "ETH/USDT"
+        "BTC/USDT:USDT",
+        "ETH/USDT:USDT"
     ]
 }
