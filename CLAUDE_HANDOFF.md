@@ -112,17 +112,82 @@ git push origin gaurav
 
 ---
 
-## 📊 Round 2 Results (v7 — fill in after running)
+## 📊 Round 2 Results (v7 — run by Claude Code 2026-05-02)
+
+### Acceptance thresholds: WR > 50% | Sharpe > 0.5 | Drawdown < 20% ✅ | Profit Factor > 1.2
+
+| Metric | Bull (2024) | Bear (2025-26) | Target |
+|---|---|---|---|
+| Win Rate | 48.2% ❌ | 50.0% ❌ | > 50% |
+| Sharpe | -0.896 ❌ | -0.554 ❌ | > 0.5 |
+| Max Drawdown | 6.25% ✅ | 7.10% ✅ | < 20% |
+| Profit Factor | 0.649 ❌ | 0.736 ❌ | > 1.2 |
+| Total P&L | -47.32 USDT | -36.25 USDT | Positive |
+| Stop-loss hits | 41 × -1.60% | 42 × -1.60% | — |
+| Long / Short | 47 / 38 | 65 / 31 | — |
+| Trades | 85 | 96 | — |
+
+**Result: ALL criteria FAIL in both periods.**
 
 ### 🐂 BULL — `20240101-20250101`
 ```
-[FILL IN AFTER RUNNING]
+Trades       : 85 (41W / 44L)
+Win Rate     : 48.2% ❌
+Sharpe       : -0.896 ❌
+Max Drawdown : 6.25% ✅
+Profit Factor: 0.649 ❌
+Total P&L    : -47.32 USDT
+Long/Short   : 47 / 38
+Stop-losses  : 41 × -1.60% = -130.41 USDT total damage
+Signal exits : Long 31 trades at 0.84% avg (79.2% WR) ✅ — ML quality confirmed
+               Short 22 trades at 0.16% avg (59.1% WR)
+Trailing SL  : 12 trades at 1.38% avg (100% WR) ✅
 ```
 
 ### 🐻 BEAR — `20250101-20260401`
 ```
-[FILL IN AFTER RUNNING]
+Trades       : 96 (48W / 48L)
+Win Rate     : 50.0% ❌ (borderline)
+Sharpe       : -0.554 ❌
+Max Drawdown : 7.10% ✅
+Profit Factor: 0.736 ❌
+Total P&L    : -36.25 USDT
+Long/Short   : 65 / 31
+Stop-losses  : 42 × -1.60% = -131.79 USDT total damage
+Signal exits : Long 31 trades at 0.84% avg (93.5% WR) ✅ — extraordinarily strong
+               Short 17 trades at 0.55% avg (76.5% WR) ✅ — shorts working
+Trailing SL  : 6 trades at 2.05% avg (100% WR) ✅
 ```
+
+---
+
+## ⚠️ Root Cause Analysis — Round 2 (written by Claude Code)
+
+**The v7 stoploss tightening made things WORSE, not better.**
+
+| Issue | Round 1 (-0.035 SL) | Round 2 (-0.015 SL) |
+|---|---|---|
+| Stop-loss hits (bull) | 13 hits | 41 hits |
+| Stop-loss damage (bull) | -93.16 USDT | -130.41 USDT |
+| Stop-loss hits (bear) | 14 hits | 42 hits |
+| Stop-loss damage (bear) | -93.15 USDT | -131.79 USDT |
+
+**Why:** At 15m timeframe, a -1.5% stoploss is within normal candle-level noise. The price oscillates past it regularly before the signal plays out. Fewer but larger stops (R1) were actually less damaging than many tiny stops (R2).
+
+**The ML signal quality is excellent:**
+- Bear longs via exit_signal: 93.5% WR at +0.84% avg = +52.20 USDT (if stops didn't interfere)
+- Bear shorts via exit_signal: 76.5% WR at +0.55% avg = +18.71 USDT
+- These signals WORK — the stoploss is destroying profitable setups
+
+**Root cause: Stop-loss approach is wrong for this timeframe/strategy.**
+
+**For Perplexity — suggested directions for v8:**
+1. **No fixed SL + time-based exit:** Exit after N candles if signal reverses. Let ML decide exit, not stop.
+2. **ATR-based stoploss:** `stoploss = -(2 × ATR / close)` — adapts to volatility. Needs `custom_stoploss()`.
+3. **Wider SL + position sizing:** Use -0.03 SL but reduce stake to 100 USDT (half). Same max loss, fewer chops.
+4. **Exit on signal flip only:** Disable stoploss entirely (set to -0.99) and exit purely on `&-s_close` sign reversal.
+
+**Bonus finding:** `backtest_config.json` had a hardcoded `stoploss: -0.035` that overrode the strategy's stoploss for ALL of Round 1 too — Round 1 was actually tested at -3.5% SL (not -2.5% as intended). This is now fixed to -0.015 for this run.
 
 ---
 
