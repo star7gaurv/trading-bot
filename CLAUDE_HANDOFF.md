@@ -7,51 +7,52 @@
 
 ---
 
-## ✅ What Was Done (Perplexity — May 2, 2026)
+## ✅ What Was Done (Perplexity — May 2, Round 3)
 
 | Task | Status |
 |---|---|
-| Analysed Round 1 backtest results | ✅ Done |
-| Identified root cause: stoploss too wide (-3.59% avg loss vs +0.45% avg win) | ✅ Done |
-| Identified root cause 2: short filter too restrictive (26 shorts in -39% bear) | ✅ Done |
-| Strategy v7 written and committed to GitHub | ✅ Done |
+| Analysed Round 2 (v7) results | ✅ Done |
+| Confirmed root cause: fixed SL gets chopped by 15m noise | ✅ Done |
+| Strategy v8 written with ATR-adaptive `custom_stoploss()` | ✅ Done |
+| Committed to GitHub | ✅ Done |
 
 ---
 
 ## 🔥 Your Job This Session (Claude Code)
 
-Run Round 2 backtest with the new v7 strategy. **Same two periods as Round 1:**
+Run Round 3 backtest with v8. **Same two periods:**
 - Bull: `20240101-20250101`
 - Bear: `20250101-20260401`
 
-Steps in order:
-
-### Step 1 — Pull latest code
+### Step 1 — Pull latest
 ```bash
-cd /path/to/trading-bot
+cd /home/ubuntu/var/www/html/trade
 git pull origin gaurav
 ```
 
-### Step 2 — Verify v7 file is correct
-Check these 4 things in `freqtrade/user_data/strategies/FinBuddyFreqAI.py`:
-- `stoploss = -0.015` (was -0.025)
-- `informative_timeframes = ["1h", "4h"]` (added 4h)
-- Short entry: `rsi_14 > 20` (was > 32)
-- Short entry: `close_1h < ema_50_1h * 1.02` (was strict <=)
-- Short entry: no `close < ema_200` line (was removed)
-- Long entry: dynamic threshold block using `btc_4h_below_ema50`
-
-### Step 3 — Download 4h BTC data (needed for new BTC trend filter)
+### Step 2 — Verify v8 in the live volume path
 ```bash
-docker exec freqtrade freqtrade download-data \
-  --pairs BTC/USDT:USDT \
-  --timeframes 4h \
-  --timerange 20230901- \
-  --trading-mode futures \
-  --exchange binance
+grep -n 'use_custom_stoploss\|stoploss\|custom_stoploss' \
+  /home/ubuntu/var/www/html/trade/freqtrade/user_data/strategies/FinBuddyFreqAI.py | head -20
+```
+Expect:
+- `use_custom_stoploss = True`
+- `stoploss = -0.08` (wide fallback only)
+- `def custom_stoploss(` present
+
+### Step 3 — Fix backtest_config.json stoploss override
+Check and confirm `stoploss` key in `backtest_config.json` matches the strategy or is removed:
+```bash
+grep 'stoploss' /home/ubuntu/var/www/html/trade/freqtrade/user_data/backtest_config.json
+```
+If it shows anything other than `-0.08`, edit it to `-0.08` (must match strategy fallback).
+
+### Step 4 — Purge FreqAI model cache
+```bash
+rm -rf /home/ubuntu/var/www/html/trade/freqtrade/user_data/models/finbuddy_backtest_v1
 ```
 
-### Step 4 — Run bull backtest
+### Step 5 — Run bull backtest
 ```bash
 docker exec freqtrade freqtrade backtesting \
   --config /freqtrade/user_data/backtest_config.json \
@@ -62,7 +63,7 @@ docker exec freqtrade freqtrade backtesting \
   --cache none
 ```
 
-### Step 5 — Run bear backtest
+### Step 6 — Run bear backtest
 ```bash
 docker exec freqtrade freqtrade backtesting \
   --config /freqtrade/user_data/backtest_config.json \
@@ -73,135 +74,84 @@ docker exec freqtrade freqtrade backtesting \
   --cache none
 ```
 
-### Step 6 — Parse both results
+### Step 7 — Parse results
 ```bash
-# Parse bull
-python3 scripts/parse_backtest.py  # will auto-find latest result
-
-# Rename bull result JSON, then parse bear
-# (same as Round 1 workflow)
+python3 scripts/parse_backtest.py  # auto-finds latest ZIP
 ```
+Get both bull and bear summaries with the same format as before:
+- Total trades, WR, Sharpe, Drawdown, Profit Factor, P&L
+- Exit reason breakdown (stop_loss / trailing_stop_loss / exit_signal counts + avg %)
+- Long vs Short split
 
-### Step 7 — Write results into this file
-Replace the ROUND 2 RESULTS section below with the actual numbers. Same format as Round 1. Then commit.
-
-### Step 8 — Commit everything
+### Step 8 — Write results here + commit
+Replace the ROUND 3 RESULTS section below. Then:
 ```bash
 git add -A
-git commit -m "backtest: Round 2 results v7 strategy"
+git commit -m "backtest: Round 3 results v8 ATR stoploss"
 git push origin gaurav
 ```
 
 ---
 
-## 📊 Round 1 Results (reference — what we're trying to beat)
+## 📈 Round History
 
-### Acceptance thresholds: WR > 50% ✅ | Sharpe > 0.5 | Drawdown < 20% ✅ | Profit Factor > 1.2
-
-| Metric | Bull (2024) | Bear (2025-26) | Target |
+### Round 1 (v6, stoploss -0.035 from config)
+| Metric | Bull 2024 | Bear 2025-26 | Target |
 |---|---|---|---|
 | Win Rate | 63.0% ✅ | 63.4% ✅ | > 50% |
 | Sharpe | -0.145 ❌ | -0.258 ❌ | > 0.5 |
-| Max Drawdown | 3.73% ✅ | 8.23% ✅ | < 20% |
-| Profit Factor | 0.909 ❌ | 0.829 ❌ | > 1.2 |
-| Total P&L | -10.41 USDT | -23.18 USDT | Positive |
-| Stop-loss hits | 13 × -3.59% | 14 × -3.60% | — |
-| Short trades | 36 / 73 total | 26 / 82 total | — |
+| Max DD | 3.73% ✅ | 8.23% ✅ | < 20% |
+| PF | 0.909 ❌ | 0.829 ❌ | > 1.2 |
+| P&L | -10.41 USDT | -23.18 USDT | positive |
+| SL hits | 13 × -3.59% | 14 × -3.60% | — |
 
-**Root cause:** 13-14 stop losses × -3.59% = ~-95 USDT per period. Winners only generated ~+80 USDT. reward:risk was 0.13:1.
-
----
-
-## 📊 Round 2 Results (v7 — run by Claude Code 2026-05-02)
-
-### Acceptance thresholds: WR > 50% | Sharpe > 0.5 | Drawdown < 20% ✅ | Profit Factor > 1.2
-
-| Metric | Bull (2024) | Bear (2025-26) | Target |
+### Round 2 (v7, stoploss -0.015)
+| Metric | Bull 2024 | Bear 2025-26 | Target |
 |---|---|---|---|
 | Win Rate | 48.2% ❌ | 50.0% ❌ | > 50% |
 | Sharpe | -0.896 ❌ | -0.554 ❌ | > 0.5 |
-| Max Drawdown | 6.25% ✅ | 7.10% ✅ | < 20% |
-| Profit Factor | 0.649 ❌ | 0.736 ❌ | > 1.2 |
-| Total P&L | -47.32 USDT | -36.25 USDT | Positive |
-| Stop-loss hits | 41 × -1.60% | 42 × -1.60% | — |
-| Long / Short | 47 / 38 | 65 / 31 | — |
-| Trades | 85 | 96 | — |
+| Max DD | 6.25% ✅ | 7.10% ✅ | < 20% |
+| PF | 0.649 ❌ | 0.736 ❌ | > 1.2 |
+| P&L | -47.32 USDT | -36.25 USDT | positive |
+| SL hits | 41 × -1.60% | 42 × -1.60% | — |
 
-**Result: ALL criteria FAIL in both periods.**
+**Lesson:** -1.5% fixed SL is within 15m candle noise. Tighter → more chops → worse. The signal quality is excellent (93.5% WR on signal exits in bear) — the stoploss is the only problem.
+
+### Round 3 (v8 — ATR custom_stoploss) — FILL IN BELOW
+
+---
+
+## 📈 Round 3 Results (v8 — fill in after running)
 
 ### 🐂 BULL — `20240101-20250101`
 ```
-Trades       : 85 (41W / 44L)
-Win Rate     : 48.2% ❌
-Sharpe       : -0.896 ❌
-Max Drawdown : 6.25% ✅
-Profit Factor: 0.649 ❌
-Total P&L    : -47.32 USDT
-Long/Short   : 47 / 38
-Stop-losses  : 41 × -1.60% = -130.41 USDT total damage
-Signal exits : Long 31 trades at 0.84% avg (79.2% WR) ✅ — ML quality confirmed
-               Short 22 trades at 0.16% avg (59.1% WR)
-Trailing SL  : 12 trades at 1.38% avg (100% WR) ✅
+[FILL IN AFTER RUNNING]
 ```
 
 ### 🐻 BEAR — `20250101-20260401`
 ```
-Trades       : 96 (48W / 48L)
-Win Rate     : 50.0% ❌ (borderline)
-Sharpe       : -0.554 ❌
-Max Drawdown : 7.10% ✅
-Profit Factor: 0.736 ❌
-Total P&L    : -36.25 USDT
-Long/Short   : 65 / 31
-Stop-losses  : 42 × -1.60% = -131.79 USDT total damage
-Signal exits : Long 31 trades at 0.84% avg (93.5% WR) ✅ — extraordinarily strong
-               Short 17 trades at 0.55% avg (76.5% WR) ✅ — shorts working
-Trailing SL  : 6 trades at 2.05% avg (100% WR) ✅
+[FILL IN AFTER RUNNING]
 ```
 
 ---
 
-## ⚠️ Root Cause Analysis — Round 2 (written by Claude Code)
+## 📁 v8 Changes Summary
 
-**The v7 stoploss tightening made things WORSE, not better.**
-
-| Issue | Round 1 (-0.035 SL) | Round 2 (-0.015 SL) |
-|---|---|---|
-| Stop-loss hits (bull) | 13 hits | 41 hits |
-| Stop-loss damage (bull) | -93.16 USDT | -130.41 USDT |
-| Stop-loss hits (bear) | 14 hits | 42 hits |
-| Stop-loss damage (bear) | -93.15 USDT | -131.79 USDT |
-
-**Why:** At 15m timeframe, a -1.5% stoploss is within normal candle-level noise. The price oscillates past it regularly before the signal plays out. Fewer but larger stops (R1) were actually less damaging than many tiny stops (R2).
-
-**The ML signal quality is excellent:**
-- Bear longs via exit_signal: 93.5% WR at +0.84% avg = +52.20 USDT (if stops didn't interfere)
-- Bear shorts via exit_signal: 76.5% WR at +0.55% avg = +18.71 USDT
-- These signals WORK — the stoploss is destroying profitable setups
-
-**Root cause: Stop-loss approach is wrong for this timeframe/strategy.**
-
-**For Perplexity — suggested directions for v8:**
-1. **No fixed SL + time-based exit:** Exit after N candles if signal reverses. Let ML decide exit, not stop.
-2. **ATR-based stoploss:** `stoploss = -(2 × ATR / close)` — adapts to volatility. Needs `custom_stoploss()`.
-3. **Wider SL + position sizing:** Use -0.03 SL but reduce stake to 100 USDT (half). Same max loss, fewer chops.
-4. **Exit on signal flip only:** Disable stoploss entirely (set to -0.99) and exit purely on `&-s_close` sign reversal.
-
-**Bonus finding:** `backtest_config.json` had a hardcoded `stoploss: -0.035` that overrode the strategy's stoploss for ALL of Round 1 too — Round 1 was actually tested at -3.5% SL (not -2.5% as intended). This is now fixed to -0.015 for this run.
-
----
-
-## 📁 v7 Changes Summary (what Perplexity changed)
-
-| Change | Old | New | Reason |
+| Change | Old (v7) | New (v8) | Reason |
 |---|---|---|---|
-| `stoploss` | -0.025 | **-0.015** | Avg loser -3.59% → ~-1.6%. Main lever. |
-| Short RSI floor | `rsi_14 > 32` | **`rsi_14 > 20`** | Was blocking valid short entries |
-| Short 1h trend | `close_1h <= ema_50_1h` | **`close_1h < ema_50_1h * 1.02`** | 2% buffer, less strict |
-| Short ema_200 guard | `close < ema_200` | **removed** | Fires too late in early bear |
-| Long ML threshold | always `> 0.010` | **`> 0.010` bull / `> 0.015` bear** | Reduces false longs in downtrend |
-| BTC 4h filter | none | **added `btc_4h_below_ema50`** | Macro regime awareness |
-| `informative_timeframes` | `["1h"]` | **`["1h", "4h"]`** | Needed for BTC 4h filter |
+| `stoploss` | -0.015 | **-0.08** (fallback only) | Real stop done by custom_stoploss() |
+| `use_custom_stoploss` | False | **True** | Enable ATR-adaptive stop |
+| `custom_stoploss()` | not present | **Added** | 2×ATR initial, 1.5×ATR trailing |
+| ATR floor | none | **-0.005 to -0.04 clamp** | Never below noise, never too wide |
+| Entry/exit signals | same as v7 | **unchanged** | ML signals confirmed working |
+
+**How custom_stoploss works:**
+- Gets live ATR from `get_analyzed_dataframe()`
+- Initial stop: `-(2.0 × ATR%)` — adapts per pair per candle
+- On 15m BTC: ATR ~0.4-0.8% → stop = 0.8-1.6% — same range as v7 but ONLY when volatility justifies it
+- In low-vol: ATR ~0.2% → stop = 0.4% — far tighter than fixed SL
+- In high-vol: ATR ~1.5% → stop = 3.0% — wider than v7, avoids chop
+- Trailing: once +1×ATR in profit, trail at 1.5×ATR — locks in winners
 
 ---
 
