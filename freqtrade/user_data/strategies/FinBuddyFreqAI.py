@@ -74,8 +74,8 @@ class FinBuddyFreqAI(IStrategy):
     timeframe = "15m"
     informative_timeframes = ["1h"]
 
-    can_short = False
-    startup_candle_count = 40
+    can_short = True
+    startup_candle_count = 400
 
     # ------------------------------------------------------------------ #
     # FreqAI feature engineering                                          #
@@ -250,7 +250,35 @@ class FinBuddyFreqAI(IStrategy):
         dataframe.loc[
             ml_signal & ta_filter & volatility_filter & trend_filter_1h & safety,
             "enter_tag"
-        ] = "freqai_lgbm_v6"
+        ] = "freqai_lgbm_v6_long"
+
+        # --- Short entry: mirror of long, inverted conditions ---
+        ml_signal_short = (
+            (dataframe["do_predict"] == 1)
+            & (dataframe["&-s_close"] < -0.010)
+        )
+        ta_filter_short = (
+            (dataframe["close"] < dataframe["ema_50"])
+            & (dataframe["rsi_14"] > 32)
+            & (dataframe["bb_pct"] > 0.10)
+            & (dataframe["volume"] > 0)
+        )
+        trend_filter_1h_short = (
+            dataframe["close_1h"] <= dataframe["ema_50_1h"]
+        )
+        safety_short = (
+            (dataframe["close"] < dataframe["ema_200"])
+            & (dataframe["rsi_14"] > 22)
+        )
+
+        dataframe.loc[
+            ml_signal_short & ta_filter_short & volatility_filter & trend_filter_1h_short & safety_short,
+            "enter_short"
+        ] = 1
+        dataframe.loc[
+            ml_signal_short & ta_filter_short & volatility_filter & trend_filter_1h_short & safety_short,
+            "enter_tag"
+        ] = "freqai_lgbm_v6_short"
         return dataframe
 
     def populate_exit_trend(
@@ -272,4 +300,15 @@ class FinBuddyFreqAI(IStrategy):
             | (dataframe["bb_pct"] > 0.95)
         )
         dataframe.loc[ml_exit | ta_exit, "exit_long"] = 1
+
+        # --- Short exit: cover when ML predicts price rise ---
+        ml_exit_short = (
+            (dataframe["do_predict"] == 1)
+            & (dataframe["&-s_close"] > 0.001)
+        )
+        ta_exit_short = (
+            (dataframe["rsi_14"] < 25)
+            | (dataframe["bb_pct"] < 0.05)
+        )
+        dataframe.loc[ml_exit_short | ta_exit_short, "exit_short"] = 1
         return dataframe
