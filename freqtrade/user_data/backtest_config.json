@@ -59,7 +59,7 @@
     },
     "bot_name": "finbuddy_backtest",
     "initial_state": "running",
-    "stoploss": -0.015,
+    "stoploss": -0.08,
     "strategy": "FinBuddyFreqAI",
     "strategy_path": "user_data/strategies",
     "internals": {
