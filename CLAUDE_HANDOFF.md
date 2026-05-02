@@ -1,182 +1,157 @@
 # 🤝 FinBuddy — Handoff Note for Claude Code
 
-**Written by:** Claude Code  
+**Written by:** Perplexity AI  
 **Date:** 2026-05-02  
-**For:** Perplexity AI (next session)  
+**For:** Claude Code (next session)  
 **Branch:** `gaurav`
 
 ---
 
-## ✅ What Was Done This Session (Claude Code — May 2, 2026)
+## ✅ What Was Done (Perplexity — May 2, Round 3)
 
 | Task | Status |
 |---|---|
-| Switched FreqTrade to futures mode (trading_mode: futures, margin_mode: isolated) | ✅ Done |
-| Fixed log permission issue preventing container startup | ✅ Done |
-| Strategy: `can_short = True`, `startup_candle_count = 400` | ✅ Done |
-| Strategy: `enter_short` + `exit_short` added | ✅ Done |
-| `backtest_config.json` updated for futures (pairs, pricing) | ✅ Done |
-| `parse_backtest.py` format bug fixed | ✅ Done |
-| Futures walk-forward backtest: bull + bear periods | ✅ Done |
-| All changes committed and pushed to `gaurav` branch | ✅ Done |
+| Analysed Round 2 (v7) results | ✅ Done |
+| Confirmed root cause: fixed SL gets chopped by 15m noise | ✅ Done |
+| Strategy v8 written with ATR-adaptive `custom_stoploss()` | ✅ Done |
+| Committed to GitHub | ✅ Done |
 
 ---
 
-## 🔥 Your Job This Session (Perplexity)
+## 🔥 Your Job This Session (Claude Code)
 
-Read the backtest results below and design Round 2 fixes. The WR is healthy (63%) but Sharpe and Profit Factor both fail. The root cause is clear — see analysis below.
+Run Round 3 backtest with v8. **Same two periods:**
+- Bull: `20240101-20250101`
+- Bear: `20250101-20260401`
 
----
-
-## 📊 Futures Backtest Results — Round 1 (2026-05-02)
-
-### Strategy: FinBuddyFreqAI v6 | 5 pairs: BTC/ETH/SOL/BNB/XRP USDT:USDT | 15m | Isolated Futures
-
----
-
-### 🐂 BULL PERIOD — `20240101-20250101` (Market: +122.88%)
-
-```
-Trading Mode      : Isolated Futures
-Pairs             : BTC/USDT:USDT, ETH/USDT:USDT, SOL/USDT:USDT, BNB/USDT:USDT, XRP/USDT:USDT
-Starting Balance  : 1000 USDT
-Final Balance     : 989.59 USDT
-Absolute P&L      : -10.41 USDT
-Total Profit %    : -1.04%
-CAGR %            : -1.04%
-
---- Acceptance Criteria ---
-Win Rate          : 63.0%     threshold > 50%   ✅ PASS
-Sharpe (closed)   : -0.145    threshold > 0.5   ❌ FAIL
-Max Drawdown      : 3.73%     threshold < 20%   ✅ PASS
-Profit Factor     : 0.909     threshold > 1.2   ❌ FAIL
-
---- Trade Stats ---
-Total Trades      : 73  (46W / 27L)
-Long Trades       : 37  |  P&L: +3.19 USDT (+0.32%)
-Short Trades      : 36  |  P&L: -13.60 USDT (-1.36%)
-Avg Duration      : 3h 50m
-Avg Stake         : 197.97 USDT
-
---- Exit Reasons ---
-exit_signal       : 46 trades | Avg +0.48% | 69.6% WR
-trailing_stop_loss: 14 trades | Avg +1.41% | 100% WR
-stop_loss         : 13 trades | Avg -3.59% |   0% WR  ← PROBLEM
-
---- By Entry Tag ---
-freqai_lgbm_v6_long  + exit_signal       : 24 trades | +0.77% avg | 79.2% WR
-freqai_lgbm_v6_long  + trailing_stop     :  6 trades | +1.36% avg | 100% WR
-freqai_lgbm_v6_short + trailing_stop     :  8 trades | +1.44% avg | 100% WR
-freqai_lgbm_v6_short + exit_signal       : 22 trades | +0.16% avg | 59.1% WR
-freqai_lgbm_v6_short + stop_loss         :  6 trades | -3.59% avg |   0% WR
-freqai_lgbm_v6_long  + stop_loss         :  7 trades | -3.59% avg |   0% WR
-
---- Drawdown ---
-Max Drawdown      : 37.93 USDT (3.73%)
-Drawdown Duration : 261 days
-Drawdown Start    : 2024-03-15
-Drawdown End      : 2024-12-02
+### Step 1 — Pull latest
+```bash
+cd /home/ubuntu/var/www/html/trade
+git pull origin gaurav
 ```
 
----
-
-### 🐻 BEAR PERIOD — `20250101-20260401` (Market: -39.27%)
-
+### Step 2 — Verify v8 in the live volume path
+```bash
+grep -n 'use_custom_stoploss\|stoploss\|custom_stoploss' \
+  /home/ubuntu/var/www/html/trade/freqtrade/user_data/strategies/FinBuddyFreqAI.py | head -20
 ```
-Trading Mode      : Isolated Futures
-Pairs             : BTC/USDT:USDT, ETH/USDT:USDT, SOL/USDT:USDT, BNB/USDT:USDT, XRP/USDT:USDT
-Starting Balance  : 1000 USDT
-Final Balance     : 976.82 USDT
-Absolute P&L      : -23.18 USDT
-Total Profit %    : -2.32%
-CAGR %            : -1.86%
+Expect:
+- `use_custom_stoploss = True`
+- `stoploss = -0.08` (wide fallback only)
+- `def custom_stoploss(` present
 
---- Acceptance Criteria ---
-Win Rate          : 63.4%     threshold > 50%   ✅ PASS
-Sharpe (closed)   : -0.258    threshold > 0.5   ❌ FAIL
-Max Drawdown      : 8.23%     threshold < 20%   ✅ PASS
-Profit Factor     : 0.829     threshold > 1.2   ❌ FAIL
+### Step 3 — Fix backtest_config.json stoploss override
+Check and confirm `stoploss` key in `backtest_config.json` matches the strategy or is removed:
+```bash
+grep 'stoploss' /home/ubuntu/var/www/html/trade/freqtrade/user_data/backtest_config.json
+```
+If it shows anything other than `-0.08`, edit it to `-0.08` (must match strategy fallback).
 
---- Trade Stats ---
-Total Trades      : 82  (52W / 30L)
-Long Trades       : 56  |  P&L: -33.07 USDT (-3.31%)
-Short Trades      : 26  |  P&L: +9.89 USDT (+0.99%)
-Avg Duration      : 4h 27m
+### Step 4 — Purge FreqAI model cache
+```bash
+rm -rf /home/ubuntu/var/www/html/trade/freqtrade/user_data/models/finbuddy_backtest_v1
+```
 
---- Exit Reasons ---
-exit_signal       : 62 trades | Avg +0.43% | 74.2% WR
-trailing_stop_loss:  6 trades | Avg +2.22% | 100% WR
-stop_loss         : 14 trades | Avg -3.60% |   0% WR  ← PROBLEM
+### Step 5 — Run bull backtest
+```bash
+docker exec freqtrade freqtrade backtesting \
+  --config /freqtrade/user_data/backtest_config.json \
+  --strategy FinBuddyFreqAI \
+  --timerange 20240101-20250101 \
+  --timeframe-detail 1m \
+  --export trades \
+  --cache none
+```
 
---- By Entry Tag ---
-freqai_lgbm_v6_long  + exit_signal       : 39 trades | +0.37% avg | 76.9% WR
-freqai_lgbm_v6_long  + trailing_stop     :  5 trades | +2.42% avg | 100% WR
-freqai_lgbm_v6_short + exit_signal       : 23 trades | +0.52% avg | 69.6% WR
-freqai_lgbm_v6_short + trailing_stop     :  1 trade  | +1.20% avg | 100% WR
-freqai_lgbm_v6_short + stop_loss         :  2 trades | -3.60% avg |   0% WR
-freqai_lgbm_v6_long  + stop_loss         : 12 trades | -3.60% avg |   0% WR
+### Step 6 — Run bear backtest
+```bash
+docker exec freqtrade freqtrade backtesting \
+  --config /freqtrade/user_data/backtest_config.json \
+  --strategy FinBuddyFreqAI \
+  --timerange 20250101-20260401 \
+  --timeframe-detail 1m \
+  --export trades \
+  --cache none
+```
 
---- Drawdown ---
-Max Drawdown      : 85.99 USDT (8.23%)
-Drawdown Duration : 261 days
-Drawdown Start    : 2025-03-02
-Drawdown End      : 2025-11-19
+### Step 7 — Parse results
+```bash
+python3 scripts/parse_backtest.py  # auto-finds latest ZIP
+```
+Get both bull and bear summaries with the same format as before:
+- Total trades, WR, Sharpe, Drawdown, Profit Factor, P&L
+- Exit reason breakdown (stop_loss / trailing_stop_loss / exit_signal counts + avg %)
+- Long vs Short split
+
+### Step 8 — Write results here + commit
+Replace the ROUND 3 RESULTS section below. Then:
+```bash
+git add -A
+git commit -m "backtest: Round 3 results v8 ATR stoploss"
+git push origin gaurav
 ```
 
 ---
 
-## 🔍 Root Cause Analysis
+## 📈 Round History
 
-### Problem 1: Stop-loss hits are destroying P&L
-- Every stop-loss exit = -3.59% to -3.60% (hard floor at -3.5%, fees push to -3.6%)
-- Bull: 13 stop-losses × -3.59% = -93 USDT total loss from stops alone
-- Bear: 14 stop-losses × -3.60% = -100 USDT total loss from stops alone
-- Exit signals and trailing stops are profitable — stops are the ONLY loss source
+### Round 1 (v6, stoploss -0.035 from config)
+| Metric | Bull 2024 | Bear 2025-26 | Target |
+|---|---|---|---|
+| Win Rate | 63.0% ✅ | 63.4% ✅ | > 50% |
+| Sharpe | -0.145 ❌ | -0.258 ❌ | > 0.5 |
+| Max DD | 3.73% ✅ | 8.23% ✅ | < 20% |
+| PF | 0.909 ❌ | 0.829 ❌ | > 1.2 |
+| P&L | -10.41 USDT | -23.18 USDT | positive |
+| SL hits | 13 × -3.59% | 14 × -3.60% | — |
 
-### Problem 2: Short signals under-firing in bear market
-- Bear period (market -39.27%): only 26 shorts vs 56 longs — should be inverted
-- Current short conditions are too restrictive:
-  - `close < ema_200` — in a bear, price is below 200 EMA but this might conflict with other filters
-  - `close_1h <= ema_50_1h` — 1h EMA might lag too much
-  - `rsi_14 > 32` + `bb_pct > 0.10` — possibly filtering out good short entries
+### Round 2 (v7, stoploss -0.015)
+| Metric | Bull 2024 | Bear 2025-26 | Target |
+|---|---|---|---|
+| Win Rate | 48.2% ❌ | 50.0% ❌ | > 50% |
+| Sharpe | -0.896 ❌ | -0.554 ❌ | > 0.5 |
+| Max DD | 6.25% ✅ | 7.10% ✅ | < 20% |
+| PF | 0.649 ❌ | 0.736 ❌ | > 1.2 |
+| P&L | -47.32 USDT | -36.25 USDT | positive |
+| SL hits | 41 × -1.60% | 42 × -1.60% | — |
 
-### What IS working
-- Win rate: 63%+ in both bull AND bear — signal quality is confirmed good
-- Trailing stop exits: 100% win rate, +1.4–2.2% avg — when trades run in our direction, we capture well
-- Exit signal: 69-74% WR at +0.43–0.48% avg — ML exit timing is solid
-- Drawdown: 3.73% bull / 8.23% bear — well within limits, capital is protected
-- Shorts working when they fire: +9.89 USDT in bear even with only 26 trades
+**Lesson:** -1.5% fixed SL is within 15m candle noise. Tighter → more chops → worse. The signal quality is excellent (93.5% WR on signal exits in bear) — the stoploss is the only problem.
 
----
-
-## 🎯 Suggested Round 2 Levers (for Perplexity to evaluate)
-
-1. **Tighten stoploss** from -3.5% to -2.0% or -1.5%
-   - Reduces avg loser from -3.59% toward -2.0%
-   - Risk: more premature stops on valid trades
-
-2. **Loosen short entry filter** — relax one or more of:
-   - Remove `close < ema_200` requirement (too slow to trigger in early bear)
-   - Change `close_1h <= ema_50_1h` to `close_1h < ema_50_1h * 1.01` (small buffer)
-   - Lower RSI floor from `rsi_14 > 32` to `rsi_14 > 20`
-
-3. **Add BTC trend filter** — only allow shorts when BTC 4h is below its 50 EMA
-   - Avoids shorting alts in a local BTC bounce
-
-4. **Raise ML threshold for longs in bear** — if BTC trend is down, require stronger long signal (`&-s_close > 0.015` instead of `> 0.010`)
+### Round 3 (v8 — ATR custom_stoploss) — FILL IN BELOW
 
 ---
 
-## 📁 Current File State
+## 📈 Round 3 Results (v8 — fill in after running)
 
-| File | Version | State |
-|---|---|---|
-| `freqtrade/user_data/strategies/FinBuddyFreqAI.py` | v6 | ✅ futures-ready — `can_short=True`, `startup=400`, long+short signals |
-| `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` | v2 | ✅ Deployed — xAI Grok waterfall |
-| `freqtrade/user_data/backtest_config.json` | futures | ✅ futures mode, USDT:USDT pairs |
-| `scripts/backtest_config.json` | futures | ✅ same as above (canonical source) |
-| `scripts/parse_backtest.py` | fixed | ✅ format bug fixed |
-| `scripts/autobacktest.py` | v4.1 | ✅ ready to repurpose for futures grid |
+### 🐂 BULL — `20240101-20250101`
+```
+[FILL IN AFTER RUNNING]
+```
+
+### 🐻 BEAR — `20250101-20260401`
+```
+[FILL IN AFTER RUNNING]
+```
+
+---
+
+## 📁 v8 Changes Summary
+
+| Change | Old (v7) | New (v8) | Reason |
+|---|---|---|---|
+| `stoploss` | -0.015 | **-0.08** (fallback only) | Real stop done by custom_stoploss() |
+| `use_custom_stoploss` | False | **True** | Enable ATR-adaptive stop |
+| `custom_stoploss()` | not present | **Added** | 2×ATR initial, 1.5×ATR trailing |
+| ATR floor | none | **-0.005 to -0.04 clamp** | Never below noise, never too wide |
+| Entry/exit signals | same as v7 | **unchanged** | ML signals confirmed working |
+
+**How custom_stoploss works:**
+- Gets live ATR from `get_analyzed_dataframe()`
+- Initial stop: `-(2.0 × ATR%)` — adapts per pair per candle
+- On 15m BTC: ATR ~0.4-0.8% → stop = 0.8-1.6% — same range as v7 but ONLY when volatility justifies it
+- In low-vol: ATR ~0.2% → stop = 0.4% — far tighter than fixed SL
+- In high-vol: ATR ~1.5% → stop = 3.0% — wider than v7, avoids chop
+- Trailing: once +1×ATR in profit, trail at 1.5×ATR — locks in winners
 
 ---
 
@@ -185,9 +160,9 @@ Drawdown End      : 2025-11-19
 | Who | Does What |
 |---|---|
 | **Gaurav** | Decides when to run, approves phase transitions |
-| **Claude Code** | SSH, deploy, config changes, run scripts, verify on server |
-| **Perplexity** | Designs strategy, writes code, updates docs, commits to GitHub |
+| **Claude Code** | SSH, deploy, run backtests, verify on server, commit results |
+| **Perplexity** | Analyses results, designs strategy changes, writes code, updates docs |
 
 ---
 
-*Written by Claude Code — 2026-05-02*
+*Written by Perplexity AI — 2026-05-02*
