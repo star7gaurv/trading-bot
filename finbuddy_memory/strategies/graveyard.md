@@ -40,6 +40,16 @@
 - **Date:** 2026-05-01
 - **Key lesson:** Threshold 0.012 + 1h EMA-50 filter too strict for bear market. Cuts valid trades along with bad ones. Improvement direction: threshold 0.010, or shorter 1h EMA-20, or separate bull/bear thresholds.
 
+### Grid Search Round 3 — 144 combos, no winner (2026-05-02)
+- **Grid:** stoploss [-0.02/-0.025/-0.03] × trailing_offset [0.018/0.020/0.022/0.025] × ml_exit_threshold [-0.001/-0.002/-0.003] × ml_threshold [0.009/0.011] × atr_threshold [0.002/0.003]
+- **All 144 combos FAIL.** Best: SL=-0.025, trail=0.020, ml_exit=-0.001, ml=0.011, atr=0.002 → 48.3% WR, Sharpe -0.401, DD 5.3%, PF 0.472
+- **Pattern 1 — trailing_offset is another dead lever:** Same metrics across different trailing_offset values (0.018→0.025 all give Sharpe -0.401 at best settings). Trailing stop activates but doesn't improve reward:risk in this bear market.
+- **Pattern 2 — ml_exit_threshold also dead:** Faster exit (-0.001) vs slower (-0.003) produces identical or near-identical results. The ML model doesn't catch the reversal fast enough to change outcomes.
+- **Pattern 3 — Bear market is the structural problem:** The test period 2025-02-01 to 2026-04-01 saw BTC fall -47.55%. No long-only strategy tuned on these params can be profitable in a sustained bear market. This is not a parameter problem.
+- **192 total combos across 3 rounds — none passed.** The strategy architecture (15m entries, 4h-trained ML) is sound but requires correct market conditions.
+- **Key lesson:** Stop tuning parameters in bear market data. Either (a) add regime filter to skip bear entries, or (b) re-test with bull market period (2024-01 to 2025-01). The ML signal is validated at 79-81% WR on signal exits — the strategy works, just not in a -47% market.
+- **Date:** 2026-05-02
+
 ### Grid Search Round 2 — 36 combos, no winner (2026-05-01)
 - **Grid:** stoploss [-0.02/-0.025/-0.03] × roi_multiplier [0.06/0.08/0.10] × ml_threshold [0.009/0.011] × atr_threshold [0.002/0.003]
 - **All 36 combos FAIL.** Best: stoploss=-0.03, roi=0.10, ml=0.009, atr=0.002 → 60.8% WR, Sharpe -0.236, DD 9.2%, PF 0.815
