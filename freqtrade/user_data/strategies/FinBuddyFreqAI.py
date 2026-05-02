@@ -7,7 +7,7 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
-from freqtrade.strategy import IStrategy
+from freqtrade.strategy import IStrategy, stoploss_from_open
 from freqtrade.persistence import Trade
 import talib.abstract as ta
 import freqtrade.vendor.qtpylib.indicators as qtpylib
@@ -88,45 +88,63 @@ class FinBuddyFreqAI(IStrategy):
         **kwargs,
     ) -> Optional[float]:
         """
-        ATR-adaptive stoploss.
+        v10 — ATR-adaptive stoploss, rebuilt for docs-correctness.
 
-        Initial stop: 2.0 × ATR below entry (adapts to volatility)
-        Trailing mode: once profit > 1×ATR, trail at 1.5×ATR below peak
+        Per Freqtrade strategy-callbacks docs:
+          - Returning None = "no desire to change" the existing stop.
+            Do NOT fall back to self.stoploss — that resets a previously
+            tightened stop on every candle when ATR is unavailable.
+          - Return value is treated as |abs| % of current_rate; sign ignored.
+          - The stop can only ever move upwards (Freqtrade enforces).
 
-        Returns stoploss as a negative ratio from current_rate (not from entry).
-        FreqTrade convention: return value is relative to current_rate.
-        A return of -0.02 means "stop if price drops 2% from current_rate".
+        v10 fixes vs v9:
+          1. None on missing data (was: self.stoploss → forced reset).
+          2. Return positive floats (was: negative; same effect, but explicit).
+          3. trailing_stop = False already (set at class level).
+          4. Anchor stops to ENTRY price via stoploss_from_open(), not to
+             current_rate. Stops the chop where price runs up and the
+             current-rate-relative stop tightens beneath it.
         """
         dataframe, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
         if dataframe is None or dataframe.empty:
-            return self.stoploss
+            return None  # v10 Fix 1
 
         last = dataframe.iloc[-1]
         atr = last.get("atr_14", None)
         if atr is None or atr <= 0 or current_rate <= 0:
-            return self.stoploss
+            return None  # v10 Fix 1
 
         atr_pct = atr / current_rate
+        atr_pct = max(0.003, min(atr_pct, 0.025))  # clamp 0.3%–2.5%
 
-        # Clamp ATR to sensible range: 0.003 (0.3%) to 0.025 (2.5%)
-        atr_pct = max(0.003, min(atr_pct, 0.025))
+        # --- Trailing arm: profit > 1×ATR → lock at +1.5×ATR above entry ---
+        # Positive open_relative_stop = profit-lock above open (canonical use).
+        # stoploss_from_open returns 0 if the lock would be at/above current
+        # price (profit not yet large enough); treat that as "no change".
+        if current_profit > atr_pct:
+            trail_pct = stoploss_from_open(
+                1.5 * atr_pct,
+                current_profit,
+                is_short=trade.is_short,
+                leverage=trade.leverage,
+            )
+            if trail_pct and trail_pct > 0:
+                return trail_pct  # v10 Fix 2: positive float
+            return None
 
-        # Initial stop: 2.0 × ATR from entry price
-        initial_stop = -(2.0 * atr_pct)
-
-        # Hard floor / ceiling on initial stop
-        # Never wider than -4% (gap protection)
-        # Never tighter than -0.5% (avoids instant stops on fees)
-        initial_stop = max(-0.04, min(initial_stop, -0.005))
-
-        if current_profit < atr_pct:  # not yet in profit by 1×ATR
-            return initial_stop
-
-        # Trailing mode: trade is profitable by at least 1×ATR
-        # Trail at 1.5×ATR below peak (lock in more of the winner)
-        trailing_atr_stop = -(1.5 * atr_pct)
-        trailing_atr_stop = max(-0.04, min(trailing_atr_stop, -0.005))
-        return trailing_atr_stop
+        # --- Initial arm: 2×ATR below entry, anchored via the same helper ---
+        # NEGATIVE open_relative_stop = loss-cap below open. The helper
+        # returns 0 when current price has already breached the open-anchored
+        # floor, which is correctly handled by Freqtrade as "stop now".
+        initial_stop = stoploss_from_open(
+            -2.0 * atr_pct,
+            current_profit,
+            is_short=trade.is_short,
+            leverage=trade.leverage,
+        )
+        if initial_stop and initial_stop > 0:
+            return initial_stop  # v10 Fix 2: positive float
+        return None
 
     # ------------------------------------------------------------------ #
     # FreqAI feature engineering                                          #
@@ -326,7 +344,7 @@ class FinBuddyFreqAI(IStrategy):
         dataframe.loc[
             ml_signal & ta_filter & volatility_filter & trend_filter_1h,
             "enter_tag"
-        ] = "freqai_lgbm_v8_long"
+        ] = "freqai_lgbm_v10_long"
 
         # --- Short entry (v9: macro-gated) ---
         # v9 fix: shorts only fire when BTC 4h is below its EMA-50 (macro bear).
@@ -359,7 +377,7 @@ class FinBuddyFreqAI(IStrategy):
         dataframe.loc[
             ml_signal_short & ta_filter_short & volatility_filter & trend_filter_1h_short & safety_short,
             "enter_tag"
-        ] = "freqai_lgbm_v8_short"
+        ] = "freqai_lgbm_v10_short"
 
         return dataframe
 

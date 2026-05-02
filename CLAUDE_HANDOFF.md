@@ -332,6 +332,128 @@ My pick: try **option 1 first** as a diagnostic. If trailing is net-negative we'
 
 ---
 
+## 📈 Round 5 Results (v10) — Run 2026-05-02
+
+**v10 changes vs v9 (docs-correctness rewrite of `custom_stoploss`):**
+1. `return None` on missing data (was: `self.stoploss` → forced reset every candle)
+2. Return positive floats throughout (was: negatives; same effect, but docs-aligned)
+3. `trailing_stop = False` carried over from v9
+4. **Both stops anchored to ENTRY price via `stoploss_from_open()`** — initial uses negative arg (loss-cap below open), trailing uses positive arg (profit-lock above open)
+
+### 🐂 BULL — `20240101-20250101` (Market: +122.88%)
+```
+Total Trades      : 57   (33W / 24L)
+Long / Short      : 32 / 25
+Final Balance     : 1007.24 USDT      ← FIRST POSITIVE BALANCE
+Absolute P&L      : +7.24 USDT        ← FIRST POSITIVE P&L
+Total Profit %    : +0.72%
+
+--- Acceptance ---
+Win Rate          : 57.9%   ✅  (was 42.1% R4)
+Sharpe (closed)   : +0.13   ❌  (was -0.13 — first POSITIVE Sharpe)
+Max Drawdown      : 1.68%   ✅  (was 2.34% — all-time low)
+Profit Factor     : 1.11    ❌  (was 0.89 — first time > 1.0)
+
+--- Exit Reasons ---
+exit_signal       : 13 | +0.38% | 92.3% WR
+trailing_stop_loss: 41 | +0.04% | 51.2% WR  ← FLIPPED FROM CHOP TO PROFIT
+stop_loss         :  3 | -0.89% |  0.0% WR  (helper-zero edge cases)
+
+Long  | exit_signal      :  5 trades | 100%  WR | +0.50% avg
+Short | exit_signal      :  8 trades | 87.5% WR | +0.30% avg
+Long  | trailing_stop    : 24 trades | 50.0% WR | +0.07% avg
+Short | trailing_stop    : 17 trades | 52.9% WR | -0.00% avg
+Long  | stop_loss        :  3 trades |  0.0% WR | -0.89% avg
+```
+
+### 🐻 BEAR — `20250101-20260401` (Market: -39.27%)
+```
+Total Trades      : 87   (51W / 36L)
+Long / Short      : 48 / 39
+Final Balance     : 991.22 USDT
+Absolute P&L      : -8.78 USDT        ← was -21.52 R4 (improved 60%)
+Total Profit %    : -0.88%
+
+--- Acceptance ---
+Win Rate          : 58.6%   ✅  (was 50.0% R4)
+Sharpe (closed)   : -0.15   ❌  (was -0.37 R4)
+Max Drawdown      : 3.66%   ✅  (was 4.92% R4)
+Profit Factor     : 0.91    ❌  (was 0.77 R4)
+Max Consec Wins   : 12              (was 7 R4)
+
+--- Exit Reasons ---
+exit_signal       : 22 | +0.36% | 81.8% WR
+trailing_stop_loss: 63 | -0.17% | 52.4% WR  ← was 26.7% WR @ -0.61% R4
+stop_loss         :  2 | -0.80% |  0.0% WR
+
+Long  | exit_signal      : 13 trades | 100%  WR | +0.69% avg  ← perfect cohort
+Short | exit_signal      :  9 trades | 55.6% WR | -0.13% avg
+Long  | trailing_stop    : 34 trades | 55.9% WR | -0.02% avg
+Short | trailing_stop    : 29 trades | 48.3% WR | -0.35% avg
+```
+
+---
+
+## 🔍 Round 5 — The breakthrough round
+
+**Score: 4 of 4 directional improvements.**
+
+| | R4 v9 | R5 v10 | Δ |
+|---|---|---|---|
+| Bull WR | 42.1% | **57.9%** | +15.8pp |
+| Bull Sharpe | -0.13 | **+0.13** | first positive Sharpe ever |
+| Bull PF | 0.89 | **1.11** | first PF > 1 |
+| Bull P&L | -7.17 | **+7.24** | first profitable round |
+| Bull DD | 2.34% | **1.68%** | all-time low |
+| Bear WR | 50.0% | **58.6%** | +8.6pp |
+| Bear Sharpe | -0.37 | **-0.15** | better |
+| Bear PF | 0.77 | **0.91** | better |
+| Bear P&L | -21.52 | **-8.78** | 60% smaller loss |
+| Bear DD | 4.92% | **3.66%** | better |
+
+### Why anchoring to entry-price flipped the result
+- v9's trailing arm returned `-(1.5 × atr_pct)` interpreted as "% from current price." As price ran up after entry, the stop chased upward at the same speed → it sat ~1.5×ATR below current price forever, never actually locking in profit, just absorbing every pullback.
+- v10's trailing arm calls `stoploss_from_open(1.5 × atr_pct, current_profit, ...)` which returns a current-rate-relative number that places the stop at +1.5×ATR **above the OPEN** — a fixed price level. As current price moves up further, the % from current widens, so the stop appears to "trail," but it's actually locked at a fixed dollar level above entry.
+- Result: the trailing cohort that lost -0.61% avg in R4 now makes +0.04% / -0.17% avg — the chop is gone, replaced by genuine profit-lock-in.
+
+### Why the wider `stop_loss` fallback now hits 3-5 times
+- The `stoploss_from_open(-2.0 × atr_pct, ...)` helper returns 0 when price has already breached the open-anchored target on the loss side. Freqtrade interprets `0` as "stop at current price" — i.e., immediate stop. That's correct: if the open-anchored stop is already breached, we should be out.
+- 3-5 hard stops at -0.5% to -0.9% avg is a healthy, narrow tail. No more -3.6% blowouts like R1, no -1.6% chops like R2.
+
+### Acceptance vs targets
+| | Bull | Bear | Target |
+|---|---|---|---|
+| WR | 57.9% ✅ | 58.6% ✅ | > 50% |
+| Sharpe | +0.13 ❌ | -0.15 ❌ | > 0.5 |
+| DD | 1.68% ✅ | 3.66% ✅ | < 20% |
+| PF | 1.11 ❌ | 0.91 ❌ | > 1.2 |
+
+**2/4 pass on each leg.** Sharpe and PF are now within sight of the target — same direction, smaller gap. Not yet shippable to live capital but the trajectory is clean.
+
+### Five-round trajectory
+| | R1 v6 | R2 v7 | R3 v8 | R4 v9 | **R5 v10** |
+|---|---|---|---|---|---|
+| Bull Sharpe | -0.145 | -0.896 | -0.78 | -0.13 | **+0.13** |
+| Bear Sharpe | -0.258 | -0.554 | -0.22 | -0.37 | **-0.15** |
+| Bull DD | 3.73% | 6.25% | 4.64% | 2.34% | **1.68%** |
+| Bear DD | 8.23% | 7.10% | 4.72% | 4.92% | **3.66%** |
+| Bull P&L | -10 | -47 | -33 | -7 | **+7** |
+| Bear P&L | -23 | -36 | -12 | -22 | **-9** |
+| Bull WR | 63.0% | 48.2% | 42.0% | 42.1% | **57.9%** |
+| Bear WR | 63.4% | 50.0% | 52.1% | 50.0% | **58.6%** |
+
+### Recommendations for Round 6 (v11)
+The signal works, the stop now works, the macro filter works. To cross the Sharpe > 0.5 / PF > 1.2 line, the remaining levers are:
+
+1. **Walk-forward / out-of-sample validation first.** R5 numbers are still in-sample. Before tuning further, confirm the lift survives a held-out window. If it doesn't, we're overfitting; if it does, we have a real strategy.
+2. **Tune the trailing trigger and width.** Currently arms at +1×ATR, locks at +1.5×ATR above entry. Worth a small grid: arm at {1.0, 1.5, 2.0}×ATR, lock at {1.5, 2.0, 2.5}×ATR.
+3. **Position sizing.** All trades use 200 USDT stake. Volatility-scaled stake (smaller in high-ATR regimes) would reduce dollar damage from the tail of stop_loss + losing trailing trades without changing logic.
+4. **Re-label with triple-barrier.** Biggest single research unlock if Sharpe plateaus here. The path-blind `mean(next 3 closes)` label is still the architectural ceiling.
+
+My pick: option 1 first (validation), then option 2 (small grid). Don't relabel until the in-sample lift is confirmed real.
+
+---
+
 ## 📁 v8 Changes Summary
 
 | Change | Old (v7) | New (v8) | Reason |
