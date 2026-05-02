@@ -2,6 +2,7 @@
 
 > This file is the single source of truth for any Claude instance working in this repo.
 > Read this fully before touching any file, writing any code, or making any suggestion.
+> For current phase status and roadmap → always check [[FINBUDDY_PROJECT_MEMORY]] first.
 
 ---
 
@@ -19,10 +20,22 @@ The long-term vision is a **multi-tenant SaaS platform** where retail traders pl
 
 This is not a fixed blueprint. FinBuddy is a self-evolving system and the project approach evolves with it. Tools, models, workflows, and components can be dropped, swapped, or added at any time based on what works best. Nothing here is sacred except the core idea: an autonomous AI brain that trades, learns, and improves itself continuously.
 
-- If a better model exists, we switch to it (we already dropped OpenRouter for Groq)
-- If a tool stops serving the vision, we cut it (we already cut Dify)
+- If a better model exists, we switch to it (we dropped OpenRouter → Groq → now Grok-3-Mini)
+- If a tool stops serving the vision, we cut it (cut Dify, cut N8N pipeline)
 - If a new approach is faster or cheaper, we take it
 - Always optimize for what moves the brain forward, not what preserves existing work
+
+---
+
+## Core Engineering Principles (Added 2026-05-01)
+
+These apply to ALL code, scripts, and automation in this repo:
+
+1. **Code over manual work:** If it can be automated with code (cron, script, config), do it once and do **not** waste AI tokens or manual effort on it again.
+2. **AI for progress, not routine:** Use AI (Perplexity, Claude, Grok) for design, debugging, monitoring, and improvements — not for tasks that a simple script or cron job can handle.
+3. **DRY & reusable design:** Project code must follow "Do Not Repeat Yourself". Shared logic lives in reusable helpers/modules — never duplicate code across strategies, scripts, or phases.
+4. **Documentation as memory:** Any non-trivial behavior (strategy logic, cron setup, API integration, experiments) must be documented so we never forget what's already implemented.
+5. **Never hardcode secrets:** API keys, passwords, and tokens must always come from environment variables, never from committed files.
 
 ---
 
@@ -47,248 +60,158 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 | Server user | `ubuntu` (SSH), sometimes seen as `opc` for older files |
 | Docker Compose root | `/home/ubuntu/var/www/html/trade/` |
 | FreqTrade version | 2026.3, Docker container |
-| N8N | Docker container |
+| N8N | ~~Docker container~~ 🔴 **DISABLED since 2026-04-30** |
 | GitHub repo | `git@github.com:star7gaurv/trading-bot.git` (note: star7gaurv, not star7gaurav — typo in repo name) |
 | Dev tooling on server | Claude Code 2.1.109 (npm global install) |
 
 ### Domains
 - `trade.star7gaurav.in` → FreqTrade UI
-- `n8n.star7gaurav.in` → N8N workflow editor
-- `jack.star7gaurav.in` → OpenClaw (port 18789)
+- `n8n.star7gaurav.in` → N8N (disabled — container still exists but pipeline off)
+- `jack.star7gaurav.in` → OpenClaw (port 18789) — ☠️ **Abandoned** (was only used as OpenRouter proxy)
 
 ---
 
-## What Is Live and Working Right Now
+## What Is Live and Working Right Now (verified 2026-04-30 by Claude Code)
 
 ### FreqTrade
-- Running `AiGuardrailStrategy.py` in **dry-run mode**
-- 1000 USDT virtual wallet, max 4 open trades, 200 USDT stake per trade, stoploss -0.03
+- Running **`FinBuddyFreqAI.py` (v6)** in dry-run mode — `AiGuardrailStrategy.py` is **retired**
+- FreqAI + LightGBM training per pair, live
+- 1000 USDT virtual wallet, max 4 open trades, 200 USDT stake per trade
 - API accessible at `http://localhost:8080/api/v1` with credentials `bot:bot123`
 - Whitelist: ~20 Binance pairs on 15-minute timeframe
-- First dry-run trade opened: BTC/USDT @ 67,206.72 USDT
 
-### N8N v4 Pipeline (active — v3 is superseded)
-- Cron every 15 minutes
-- Fetches Binance OHLCV data → calculates RSI(14), MACD(12,26,9), ATR(14)
-- Full trade-context awareness:
-  - No open trade → AI decides BUY or HOLD
-  - Open trade → AI receives entry price, current price, P&L → decides SELL or HOLD
-- Calls Groq API with full context → parses signal → if confidence ≥ 65% → calls FreqTrade forceenter/forceexit
-- Telegram notifications fire with real RSI, MACD, P&L data
-- v2 and v3 workflows still exist in N8N but are inactive — to be deleted in Task 0.4
+### N8N
+- 🔴 **Fully disabled as of 2026-04-30** — FreqAI is now the sole signal source
+- Container still exists on server but pipeline workflow turned off
+- Will be fully removed once FreqAI is validated live
 
 ### OpenClaw ("Jack")
-- Running at `jack.star7gaurav.in`, port 18789 (UI), port 18791 (ACP WebSocket bridge)
-- Version v2026.3.28
-- Added to crontab for reboot survival: `@reboot ~/.npm-global/bin/openclaw > ~/.openclaw/logs/startup.log 2>&1`
-- Contains working OpenRouter API key in openclaw.json (OpenRouter dropped for N8N but key still valid)
+- ☠️ **Abandoned** — was only used as an OpenRouter proxy; dropped when OpenRouter was dropped
 
-### Telegram Notifications
-Two separate bots, both posting to the same chat:
-
-**FreqTrade Bot** (wired directly into FreqTrade config.json on server):
-- Token: `8557119080:AAH9KPMIZSGP7Gsn9wbJGVNaNRyEQHISR_o`
-- Status: ✅ LIVE — FreqTrade sends trade notifications directly
-- Note: This token is intentionally NOT committed to the repo config.json (repo has empty credentials). Lives only on server.
-
-**N8N / FinBuddy Signal Bot** (used by N8N v4 pipeline for signal notifications):
-- Token: `7799143446:AAElV1Yk6Mk7fBMCCaOfakGWQ0cheIcmIGU`
-- Status: ✅ LIVE — N8N fires Telegram with RSI/MACD/P&L data on every signal
-
-Both bots post to Chat ID: `5622292536`
+### Telegram
+- **FreqTrade native bot** (token `8557119080:...`) — ✅ live on server, fires trade notifications directly
+- **N8N/FinBuddy bot** (token `7799143446:...`) — ⏸️ idle (N8N disabled)
+- Both post to Chat ID: `5622292536`
+- Note: tokens intentionally NOT committed to repo config.json — live only on server
 
 ### Obsidian Memory Vault
 - Location: `finbuddy_memory/` in this repo
-- This folder IS the FinBuddy brain's living memory — designed to be opened as an Obsidian vault
-- Server auto-writes and auto-commits memory files here (regimes, signals, research, winners, graveyard)
-- Gaurav pulls locally and opens `finbuddy_memory/` in Obsidian to inspect the brain's state
-- `CONTEXT.md` is the master summary — N8N injects it into every AI prompt before signal generation
-- **Never delete or manually overwrite files in finbuddy_memory/ — they are auto-generated by the brain**
-- Current state: vault structure created, HMM engine not yet wired, regime = UNKNOWN
+- This folder IS the FinBuddy brain's living memory — open as an Obsidian vault
+- `finbuddy_memory/CONTEXT.md` is the master summary injected into every AI prompt
+- `memory_writer.py` committed (Phase 4) but crons not yet installed
 
 ---
 
-## AI Model Assignment Matrix
+## ⚠️ What Is Committed But NOT Yet Deployed
 
-| Task | Model | Provider | Cost |
-|---|---|---|---|
-| Trade signals (primary) | Llama 3.3 70B Versatile | Groq | Free (6000 req/day, ~200ms) |
-| Deep market research | Gemini 2.5 Flash | Google | Free tier |
-| Nightly strategy reasoning | DeepSeek R1 | DeepSeek | Near-free |
-| Twitter/social sentiment | Grok 4.1 Fast | xAI | TBD |
-| Pine Script writing + strategy promotion | Claude Sonnet 4.6 | Anthropic | Sparingly |
+| Component | File | Status |
+|---|---|---|
+| FinBuddyLLMModel.py (Task 1.2) | `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` | ✅ Committed — ❌ Not deployed |
+| Backtest scripts (Task 1.3) | `scripts/run_backtest.sh`, `parse_backtest.py`, `tune_stoploss.sh` | ✅ Committed — ❌ Not run with bull period |
+| Phase 2 external data fetchers | `scripts/phase2/` | ✅ Committed — ❌ Crons not installed |
+| Phase 4 memory writer | `scripts/phase4/memory_writer.py` + `setup_cron.sh` | ✅ Committed — ❌ Crons not installed |
+
+---
+
+## AI Model Assignment Matrix (Updated 2026-05-01)
+
+| Task | Model | Provider | Env Var | Cost |
+|---|---|---|---|---|
+| Signal confirmation (Task 1.2) | **grok-3-mini** | xAI | `XAI_API_KEY` | $0.10/M |
+| Coding & ops | Claude Sonnet 4.6 | Anthropic | `ANTHROPIC_API_KEY` | Sparingly |
+| Future large-context research | Gemini 2.5 Flash | Google | `GEMINI_API_KEY` | Free tier |
+| Future cheap hypothesis gen | DeepSeek chat | DeepSeek | `DEEPSEEK_API_KEY` | ~$0.01/M |
 
 **Total projected cost: ~$3–5/month**
 
 ### Models That Were Dropped and Why
-- **OpenRouter** — dropped April 2026. Too unreliable on free tier: rate limits hit constantly, model IDs changed without notice. Switched to Groq direct API.
-- **Dify** — dropped February 2026. Fully removed from server March 31, 2026. All 9 Docker containers, images, volumes deleted. Freed ~6GB disk (53% → 39% usage).
+- **OpenRouter** — dropped April 2026. Rate limits + model ID changes on free tier.
+- **Dify** — dropped February 2026. Freed ~6GB disk.
+- **Groq Llama 3.3 70B** — was primary N8N signal model. Replaced by Grok-3-Mini inside `FinBuddyLLMModel.py` (decided 2026-05-01). N8N pipeline using Groq is now disabled.
+- **OpenClaw** — abandoned. Was only a proxy for OpenRouter which was also dropped.
 
 ---
 
 ## Current Strategy
 
-### Active: `rsi_macd_ai_v1`
-- Classical RSI(14) + MACD(12,26,9) signals confirmed by Groq Llama 3.3 70B AI layer
+### Active: `FinBuddyFreqAI.py` (v6)
+- FreqAI + LightGBM training per pair on rolling 30-day window
 - Timeframe: 15m on Binance, ~20 pairs
-- Confidence threshold: 65%
-- Position sizing: 200 USDT fixed (to be replaced by ATR-based 2% rule)
-- Walk-forward backtest: **pending — not yet validated**
-- Status: Active in production N8N v4 pipeline
+- Trailing stop + tighter ML exit (v6 Option C)
+- Status: ✅ Running live in dry-run mode
 
-### Planned (Not Yet Implemented)
+### ❌ Retired: `AiGuardrailStrategy.py`
+- Superseded by `FinBuddyFreqAI.py`. Do not reference or restart.
 
-**`hmm_regime_adaptive_v1`**
-- Adapts entry/exit rules and position sizing based on HMM regime classification
-- Blocked on: HMM engine build
-- Status: Planned
-
-**`turtle_breakout_v1`**
-- Classical Turtle Trading using Donchian Channel 20/55 with 2% ATR-based position sizing
-- Expected to be the first walk-forward validated candidate
-- Timeframe: 1h
-- Status: Planned
-
-### Strategy Registry
-All strategies live in `strategies/registry.json`. Every signal references a `strategy_id` from this file. The Karpathy loop promotes/demotes strategies by editing this file. The executor will only act on strategies listed as `"status": "active"` in the registry AND present in the user's `active_strategies` config.
+### Pending: `FinBuddyLLMModel.py` (Task 1.2)
+- Custom FreqAI model: LightGBM signal blended with Grok-3-Mini confirmation layer
+- Committed to `freqtrade/user_data/freqaimodels/` but NOT deployed
+- Deployment blocked on backtest validation (see below)
 
 ---
 
-## Full Architecture (Designed, Partially Built)
+## 🔬 Backtest Grid — Full History
 
-### Five-Regime HMM Engine (NOT YET BUILT)
-```
-CRASH → BEAR → NEUTRAL → BULL → EUPHORIA
-```
-Each regime drives:
-- Different position sizing multipliers
-- Different confidence thresholds for entry
-- Different stop-loss distances
-- Risk flags (e.g., no new entries in CRASH regime)
+| Round | Combos | Best Sharpe | Root Cause of Failure |
+|---|---|---|---|
+| Round 1 | 12 | -0.183 | chmod bug — patches never applied; EMA/RSI dead levers |
+| Round 2 | 36 | -0.236 | roi_multiplier dead lever; avg loser > avg winner |
+| Round 3 | 144 | best ever: -0.174 | trailing_offset + ml_exit dead levers; **bear market is root cause** |
+| **Total** | **192** | **-0.174** | **Parameter tuning exhausted** |
 
-The regime is detected using a Hidden Markov Model trained on market data. Output feeds into every signal prompt and the FinBuddy memory vault.
+**Key finding (Round 3):** BTC fell -47.55% from 2025-02-01 to 2026-04-01. No long-only strategy achieves Sharpe >0.5 in a sustained -47% bear market. ML signal quality is confirmed healthy: **79-81% WR on signal-driven exits**.
 
-### Karpathy Auto-Research Loop (NOT YET BUILT)
-Continuous background process that makes the brain self-improving:
-```
-Market data
-    ↓
-Gemini 2.5 Flash (deep research — reads news, on-chain data, macro)
-    ↓
-DeepSeek R1 (nightly reasoning — generates strategy hypotheses)
-    ↓
-Strategy hypothesis written to strategies/registry.json (status: in_development)
-    ↓
-Walk-forward backtest runs automatically (mandatory validation gate)
-    ↓
-If valid → promote to active, Claude Sonnet writes Pine Script if needed
-If invalid → demote to deprecated, log to strategies/graveyard
-    ↓
-Commit results to repo → loop restarts
-```
+### 🔴 Current Blocker — Round 4 Decision
 
-### Position Sizing (NOT YET IMPLEMENTED IN PRODUCTION)
-ATR-based dynamic sizing using Turtle Trading's 2% rule:
-- Risk 2% of total capital per trade
-- Position size = (Capital × 0.02) / (ATR × stop_loss_multiplier)
-- This replaces all fixed lot sizing (current 200 USDT fixed stake)
+Two options (Perplexity's decision to implement):
 
-### Signal Contract
-Fully specced in `docs/signal-contract.md`. This is the API between the signal generator brain and the trade executor hands. Key fields:
-- `signal_id` (UUID v4) — idempotency key, executors dedupe on this
-- `user_id` — which user this signal targets
-- `pair` — e.g. "BTC/USDT"
-- `side` — "buy" / "sell" / "hold"
-- `confidence` — float 0.0–1.0
-- `regime` — CRASH / BEAR / NEUTRAL / BULL / EUPHORIA
-- `strategy_id` — references registry.json
-- `position_size_pct` — fraction of capital to risk (default 0.02)
-- `stop_loss_atr_multiplier` — default 2.0
-- `market_context` — price, RSI, MACD histogram, ATR
+**Option A — Regime Filter:**
+Add BTC 200-day MA filter to `FinBuddyFreqAI.py`. Only enter when BTC is above 200d MA. Keep same test period, trade less, better quality.
 
-Executor validates: schema version, signal_id not seen before, signal not older than 10 min, user config exists, pair exists on exchange, confidence meets threshold, strategy is active in registry and user's config, regime is allowed.
+**Option B — Bull Market Retest (recommended first):**
+Change timerange in `scripts/run_backtest.sh` / `scripts/backtest_config.json` from `20250101-20260401` → `20240101-20250101`. 1-line change. Validates strategy in BTC $42k→$100k bull run.
 
-### Architecture Decision (ADR-001): Signal-as-a-Service
-Full doc in `docs/ADR-001-multi-tenant-architecture.md`. Summary:
+Pass criteria: **Sharpe > 0.5, WR > 50%, DD < 20%, PF > 1.2**
 
-**Rejected Option A** — FreqTrade per user (one Docker container per user). Hits Oracle Free Tier ceiling at ~40 users. Linear cost scaling. Wrong shape.
+---
 
-**Rejected Option B** — Shared FreqTrade fork. Would require permanently maintaining a fork of FreqTrade internals. Fragile and expensive for a solo builder.
+## Full Build Roadmap
+
+| Phase | File | Status | Focus |
+|---|---|---|---|
+| 0 | `tasks/phase-0-foundation.md` | ✅ **5/5 Complete** (2026-04-27) | Foundation — FreqTrade, Telegram, server |
+| 1 | `tasks/phase-1-freqai-brain.md` | 🟡 Task 1.1 ✅, Task 1.2 ⚠️ not deployed, 1.3–1.4 pending | FreqAI brain |
+| 2 | `tasks/phase-2-data-enrichment.md` | ⚠️ Code ready — crons not installed | External data |
+| 3 | `tasks/phase-3-hmm-regime.md` | ⬜ Not started | HMM 5-regime engine |
+| 4 | `tasks/phase-4-obsidian-memory.md` | ⚠️ Code ready — crons not installed | Obsidian auto-write |
+| 5 | `tasks/phase-5-karpathy-loop.md` | ⬜ Not started | Self-improving research loop |
+| 6 | `tasks/phase-6-tradingview.md` | ⬜ Not started | TradingView webhook |
+| 7 | `tasks/phase-7-executor.md` | ⬜ Not started | Python signal executor |
+
+---
+
+## Architecture Decision (ADR-001): Signal-as-a-Service
+Full doc in `docs/ADR-001-multi-tenant-architecture.md`.
 
 **Chosen Option C** — Signal-as-a-Service + thin per-user executor:
 - One central brain publishes signals (O(1) cost regardless of user count)
-- Each user has a lightweight Python executor (~300–500 LOC) that subscribes to signals, sizes positions using their own capital and risk profile, places orders via their own Binance API key
-- Non-custodial by design: user API keys are scoped for trading only (no withdrawal permission)
-- One user's rate limit issue, exchange outage, or bad config cannot cascade to others
+- Each user has a lightweight Python executor (~300–500 LOC)
+- Non-custodial: user API keys scoped for trading only (no withdrawal)
+- One user's problem cannot cascade to others
 
-**Phase 1 (now):** Single user (Gaurav), multi-tenant-shaped code. No signup flow, no billing, no dashboard. Build the shape correctly from day one.
-**Phase 2 (after 6-month live track record):** Add the glue: user signup, API-key encryption, paper-trading mode, billing, dashboard.
-
----
-
-## Pending Tasks (In Priority Order)
-
-> Phase 0 live audit completed 2026-04-26 by Claude Code on server. Updated statuses below.
-
-### Phase 0 Remaining (Blocking)
-
-1. **Pairlist audit** (Task 0.3) — Add to `pair_blacklist` in FreqTrade `config.json`: D/USDT, CHIP/USDT, SOMI/USDT, ZBT/USDT. These come from VolumePairList dynamically and are suspicious tokens. Requires docker restart after edit.
-
-2. **N8N cleanup** (Task 0.4) — Delete dead workflows: "Dify Trade Executor" (Dify gone from server), "Freqtrade AI Core Trading Loop v2", "Freqtrade AI Core Trading Loop v3" (both superseded by v4), "My workflow 3" (unknown, no activity). Go to `https://n8n.star7gaurav.in`. After cleanup: document surviving workflows in `n8n/workflows/README.md`.
-
-3. **Investigate Trade Event Handler runtime error** — workflow shows `n8n.workflow.failed` on 2026-04-26. The wiring (webhook URL → config.json) is correct; the failure is inside the workflow logic. Check N8N execution log at `https://n8n.star7gaurav.in` → Executions.
-
-### Phase 1+ (After Phase 0 Complete)
-
-4. **Activate FreqAI** — `freqaimodels/` directory is empty — green field. Build `FinBuddyFreqAI.py` with LightGBM baseline first, then add custom IFreqaiModel that calls Groq for confirmation layer. See `tasks/phase-1-freqai-brain.md`.
-
-5. **Build HMM five-regime detection engine** — Python script classifying CRASH/BEAR/NEUTRAL/BULL/EUPHORIA. Feeds into FinBuddy memory vault and signal prompts. See `tasks/phase-3-hmm-regime.md`.
-
-6. **Implement Karpathy auto-research loop** — Gemini researches, DeepSeek reasons, hypotheses are backtested, winners promoted automatically. See `tasks/phase-5-karpathy-loop.md`.
-
-7. **Build minimal Python executor** — ~300–500 LOC. Reads user config, receives signals via HTTP webhook on localhost:8787, dedupes on signal_id, sizes positions using 2% ATR rule, places orders via ccxt, logs to SQLite. See `tasks/phase-7-executor.md`.
-
-### Already Done (Phase 0)
-- ✅ Trade Event Handler wired and active in N8N (webhook URL in FreqTrade config.json)
-- ✅ FreqTrade Telegram configured directly on server (token 8557119080:...)
-- ✅ `users/user_01_gaurav.json` created with full user config
+**Phase 1 (now):** Single user (Gaurav), multi-tenant-shaped code.
+**Phase 2 (after 6-month live track record):** Add signup, API-key encryption, billing, dashboard.
 
 ---
 
-## Key Engineering Lessons (Hard-Won)
-
-| Problem | Root Cause | Fix |
-|---|---|---|
-| `NaN` in RSI/MACD calculations | N8N splits Binance kline array into 50 items on manual run, differently on cron — indicator math breaks | Consolidated into single `Merge Context` node with dual-path array handling |
-| N8N HTTP Request body failing | `return` statements not supported inside N8N expression context | Moved payload to dedicated `Build Groq Payload` code node using string concatenation |
-| N8N API not returning workflows | `/api/v1/workflows` only returns default project space, not named project workflows | Access named-project workflows via direct URL |
-| SQLite permission error on FreqTrade | DB files were owned by `opc` user from old setup | Full SQLite wipe + removed `db_url` MySQL reference from `config.json` |
-| FreqTrade loading wrong strategy | `--strategy SampleStrategy` was hardcoded in docker-compose.yml `command:` block, overriding config.json | Fixed with `sed` to replace `SampleStrategy` with `AiGuardrailStrategy` |
-| f-string syntax error in strategy | Backslash escapes inside `{}` expressions not allowed in Python < 3.12 (FreqTrade container) | Rewrote all f-strings to use single quotes on the outside |
-| `show_config` returning 25 bytes | API credentials not set in config.json — unauthenticated ping response | Added `username`/`password` to `api_server` block in config |
-| OpenClaw returning 502 | Process was killed, not managed by systemd/pm2 | Added `@reboot` crontab entry for persistence |
-| OpenRouter instability | Rate limits + model ID changes on free tier, frequent failures | Switched to Groq direct API — faster, more reliable, 6000 req/day free |
-
----
-
-## Code Location Rules
-
-- **All new code goes inside `freqtrade/user_data/`** — never outside this directory
-- Strategies: `freqtrade/user_data/strategies/`
-- FreqAI models: `freqtrade/user_data/freqaimodels/`
-- Notebooks: `freqtrade/user_data/notebooks/` (gitignored)
-- N8N workflows: `n8n/workflows/`
-- Architecture docs: `docs/`
-- Strategy registry: `strategies/registry.json`
-- User configs (future): `users/`
-- FinBuddy brain memory: `finbuddy_memory/`
-
-## .gitignore Rules
-These are excluded from git:
-- `freqtrade/user_data/logs/`
-- `freqtrade/user_data/data/`
-- `freqtrade/user_data/tradesv3.sqlite*`
-- `freqtrade/user_data/notebooks/`
+## Signal Contract
+Fully specced in `docs/signal-contract.md`. Key fields:
+- `signal_id` (UUID v4) — idempotency key
+- `user_id`, `pair`, `side` (buy/sell/hold), `confidence` (0.0–1.0)
+- `regime` — CRASH/BEAR/NEUTRAL/BULL/EUPHORIA
+- `strategy_id` — references `strategies/registry.json`
+- `position_size_pct` — fraction of capital (default 0.02)
+- `stop_loss_atr_multiplier` — default 2.0
 
 ---
 
@@ -301,124 +224,107 @@ These are excluded from git:
 | FreqTrade API user | `bot` |
 | FreqTrade API password | `bot123` |
 | FreqTrade UI | `https://trade.star7gaurav.in` |
-| N8N | `https://n8n.star7gaurav.in` |
-| N8N admin user | `admin` |
-| N8N admin password | `supersecretpassword` |
-| OpenClaw UI | `https://jack.star7gaurav.in` (port 18789 local) |
-| Telegram Bot Token (FreqTrade) | `8557119080:AAH9KPMIZSGP7Gsn9wbJGVNaNRyEQHISR_o` — live on server, NOT in repo |
-| Telegram Bot Token (N8N/FinBuddy) | `7799143446:AAElV1Yk6Mk7fBMCCaOfakGWQ0cheIcmIGU` |
+| N8N | `https://n8n.star7gaurav.in` (disabled) |
+| N8N admin | `admin` / `supersecretpassword` |
 | Telegram Chat ID | `5622292536` |
 | Docker Compose path | `/home/ubuntu/var/www/html/trade/` |
-| Strategy file | `freqtrade/user_data/strategies/AiGuardrailStrategy.py` |
+| Active strategy | `freqtrade/user_data/strategies/FinBuddyFreqAI.py` |
 | GitHub repo | `git@github.com:star7gaurv/trading-bot.git` |
 
 ---
 
-## N8N Retirement Plan
+## Code Location Rules
 
-N8N is a transitional tool — not a permanent component. It was the right rapid-prototyping choice to get the first dry-run trade opened, but as FreqAI takes over signal generation, it becomes redundant.
+- **All new code goes inside `freqtrade/user_data/`** — never outside this directory
+- Strategies: `freqtrade/user_data/strategies/`
+- FreqAI models: `freqtrade/user_data/freqaimodels/`
+- Notebooks: `freqtrade/user_data/notebooks/` (gitignored)
+- N8N workflows: `n8n/workflows/`
+- Architecture docs: `docs/`
+- Strategy registry: `strategies/registry.json`
+- User configs: `users/`
+- FinBuddy brain memory: `finbuddy_memory/`
+- Phase scripts: `scripts/`
 
-**What replaces N8N:**
-- FreqAI (inside FreqTrade) → replaces signal generation and the 15-min cron
-- FreqTrade native Telegram config → replaces N8N Telegram notifications
-- Python scripts on cron → replace any remaining orchestration
-- Python executor (Phase 7) → replaces trade execution via N8N
-
-**Exit timeline:**
-- Keep N8N alive through Phase 0 + Phase 1 (it's still the live pipeline)
-- Once FreqAI passes walk-forward backtest and goes live → deactivate N8N signal workflow
-- Monitor 1 week → shut down N8N container entirely
-- Free ~200MB RAM, remove one failure point
-
-**Do NOT retire N8N before FreqAI is validated and live.**
+## .gitignore Rules
+- `freqtrade/user_data/logs/`
+- `freqtrade/user_data/data/`
+- `freqtrade/user_data/tradesv3.sqlite*`
+- `freqtrade/user_data/notebooks/`
 
 ---
 
-## Full Build Roadmap (Task Files in tasks/)
+## Key Engineering Lessons (Hard-Won)
 
-Each phase has a detailed task file in `tasks/`. Read the phase file before starting any work in that phase.
-
-| Phase | File | Status | Focus |
-|---|---|---|---|
-| 0 | `tasks/phase-0-foundation.md` | 🔴 Start Here | Fix loose ends — Trade Event Handler, Telegram, pairlist, N8N cleanup |
-| 1 | `tasks/phase-1-freqai-brain.md` | ⬜ After Phase 0 | FreqAI as signal brain — LightGBM + custom LLM model |
-| 2 | `tasks/phase-2-data-enrichment.md` | ⬜ After Phase 1 | Free external data — Fear & Greed, CoinGecko, CryptoPanic, DefiLlama, Google Trends, TradingView |
-| 3 | `tasks/phase-3-hmm-regime.md` | ⬜ After Phase 2 | HMM 5-regime engine — CRASH/BEAR/NEUTRAL/BULL/EUPHORIA |
-| 4 | `tasks/phase-4-obsidian-memory.md` | ⬜ Parallel OK | Complete Obsidian vault auto-write pipeline |
-| 5 | `tasks/phase-5-karpathy-loop.md` | ⬜ After Phase 3 | Self-improving research loop — Gemini → DeepSeek → backtest → promote |
-| 6 | `tasks/phase-6-tradingview.md` | ⬜ Parallel OK | TradingView webhook receiver |
-| 7 | `tasks/phase-7-executor.md` | ⬜ After Phase 1 | Python Signal-as-a-Service executor |
-
-### Free External Data Sources Approved
-All free, no paid APIs needed:
-- Alternative.me Fear & Greed Index (no auth)
-- CoinGecko free tier (no auth)
-- CryptoPanic (free API key)
-- DefiLlama (no auth)
-- Google Trends via pytrends (free)
-- TradingView webhook alerts (free = 1 alert, Pro = unlimited)
-
-### AI Models Approved for FreqAI Integration
-**Native FreqAI (built-in, no install):** LightGBM, XGBoost, CatBoost, PyTorch MLP, Reinforcement Learning (Stable Baselines3)
-**External via custom IFreqaiModel:** Groq (free), Gemini (free tier), DeepSeek (near-free), Claude Sonnet (sparingly)
+| Problem | Root Cause | Fix |
+|---|---|---|
+| `NaN` in RSI/MACD calculations | N8N splits Binance kline array into 50 items on manual run, differently on cron | Consolidated into single `Merge Context` node with dual-path array handling |
+| N8N HTTP Request body failing | `return` statements not supported inside N8N expression context | Moved payload to dedicated `Build Groq Payload` code node |
+| N8N API not returning workflows | `/api/v1/workflows` only returns default project space | Access named-project workflows via direct URL |
+| SQLite permission error on FreqTrade | DB files owned by `opc` user from old setup | Full SQLite wipe + removed `db_url` MySQL reference |
+| FreqTrade loading wrong strategy | `--strategy SampleStrategy` hardcoded in docker-compose.yml | Fixed with `sed` |
+| f-string syntax error in strategy | Backslash escapes inside `{}` not allowed in Python < 3.12 | Rewrote all f-strings with single quotes outside |
+| Rounds 1–3 backtests all fail | Bear market period (BTC -47.55%) — not a code issue | Change test period to bull run (2024) or add regime filter |
 
 ---
 
 ## Session History Summary
 
-### March 31 – April 1, 2026
+### March 31 – April 4, 2026
 - Removed Dify completely (9 containers, freed ~6GB disk)
-- Fixed git remote (repo had no remote configured)
-- Fixed FreqTrade: API credentials, wrong strategy (SampleStrategy → AiGuardrailStrategy), f-string syntax error in strategy, config values reset
-- Got OpenClaw running, identified it uses WebSocket not REST (N8N can't call it via HTTP)
-- Decided N8N calls OpenRouter (later switched to Groq) directly instead of through OpenClaw
-- Key commits: remove dify, fix .gitignore, fix strategy, fix config
-
-### April 4, 2026
-- Confirmed Groq API working (llama-3.3-70b-versatile, ~200ms)
-- Added OpenClaw to crontab for reboot survival
-- Wiped old FreqTrade trade history (SQLite reset), removed db_url MySQL reference
-- Built N8N v3 pipeline with full context-aware AI logic
-- Fixed indicator calculation (Merge Context node)
-- Fixed Groq payload (Build Groq Payload code node)
-- AI now receives open trade P&L + entry price
-- AI adapts prompt: BUY/HOLD when no trade, SELL/HOLD when trade open
-- Telegram notifications working with real RSI/MACD/P&L data
-- **First dry run trade opened: BTC/USDT @ 67,206.72 USDT**
-- Dropped OpenRouter, confirmed Groq as primary AI
+- Fixed FreqTrade: API credentials, wrong strategy, f-string syntax, SQLite reset
+- Got first dry-run trade: BTC/USDT @ 67,206.72 USDT
+- Dropped OpenRouter → Groq direct API
+- N8N v4 pipeline confirmed live with Groq Llama 3.3 70B
 
 ### April 21–22, 2026
-- Wrote ADR-001: Multi-Tenant Architecture decision (chose Option C)
-- Defined signal contract v1 (`docs/signal-contract.md`)
-- Created strategy registry (`strategies/registry.json`)
-- Set up FinBuddy Obsidian memory vault (`finbuddy_memory/`)
-- Wrote N8N workflow split plan (`docs/n8n-workflow-split.md`)
-- Trade Event Handler imported to N8N — not yet activated (webhook URL missing)
+- Wrote ADR-001, signal contract, strategy registry, N8N workflow split plan
+- Set up FinBuddy Obsidian memory vault
+
+### April 27, 2026
+- Phase 0 live audit by Claude Code — confirmed v4 pipeline active, two Telegram bots live
+- Created full 7-phase task roadmap in `tasks/`
+- Created this `CLAUDE.md` as master project context
+- Phase 0: 3/5 tasks complete at this point
+
+### April 30, 2026 (Claude Code)
+- `FinBuddyFreqAI.py` v6 deployed and running — `AiGuardrailStrategy.py` **retired**
+- LightGBM training per pair confirmed live
+- **N8N pipeline fully disabled** — FreqAI is now sole signal source
+- Round 3 backtest: 144 combos, all FAIL, best Sharpe -0.401
+- Phase 0: **5/5 complete**
+
+### May 1, 2026 (Perplexity)
+- Decided AI model stack: **Grok-3-Mini (xAI)** as signal confirmation in Task 1.2
+- Added 5 Core Engineering Principles (DRY, AI vs Automation, Reusability, Docs as Memory, No hardcoded secrets)
+- Updated `FINBUDDY_PROJECT_MEMORY.md` as master hub
+- `COLLABORATION_CONTRACT.md` updated with role boundaries
+
+### May 2, 2026 — 1:30 AM (Claude Code)
+- Round 3 full analysis committed: 192 total combos across all rounds, all fail
+- Root cause confirmed: bear market period (BTC -47.55%), not strategy logic
+- ML signal quality confirmed: 79-81% WR on signal-driven exits ✅
+- Graveyard.md updated, results CSV committed
+- Round 4 recommendation: Option B (bull period retest) first
+
+### May 2, 2026 — 2:49 PM (Perplexity)
+- Full memory sync across all 4 core MD files
+- Stale references to AiGuardrailStrategy, active N8N, Groq as primary removed from all files
+- Obsidian cross-links wired across CLAUDE.md, FINBUDDY_PROJECT_MEMORY.md, COLLABORATION_CONTRACT.md, finbuddy_memory/CONTEXT.md
 
 ---
 
-### April 27, 2026 (Cowork Planning Session + Live Audit)
-- Confirmed project name is FinBuddy permanently — Jarvis retired
-- Confirmed FinBuddy is an autonomous AI brain, NOT a bot — framing locked
-- Confirmed this is a fluid system — tools/models can be dropped or added freely
-- Decided FreqAI should be the signal brain (replaces N8N → Groq pipeline)
-- Confirmed custom files in user_data/ survive FreqTrade Docker upgrades
-- Decided N8N will be retired after Phase 1 (FreqAI validated and live)
-- Approved free external data sources: Fear & Greed, CoinGecko, CryptoPanic, DefiLlama, Google Trends, TradingView webhooks
-- Approved AI models for FreqAI: LightGBM, XGBoost, PyTorch, RL, custom Groq/Gemini/DeepSeek layer
-- Created full 7-phase task roadmap in tasks/ directory
-- Created this CLAUDE.md as master project context
-- Created session_log_2026-04-27.md with full conversation decisions
+## 🔗 Related Files (Obsidian Links)
 
-**Live Audit Results (Claude Code on server, April 27):**
-- Active N8N pipeline is **v4**, NOT v3 as previously documented — all references updated
-- FreqTrade Telegram IS live on server (token 8557119080:...) — repo config intentionally has empty credentials
-- Two Telegram bots confirmed: FreqTrade bot (8557119080:...) and N8N/FinBuddy bot (7799143446:...)
-- Trade Event Handler: wired correctly but has `n8n.workflow.failed` runtime error on 2026-04-26 — needs investigation
-- Suspicious pairlist tokens confirmed: D/USDT, CHIP/USDT, SOMI/USDT, ZBT/USDT — need blacklisting
-- Dead N8N workflows confirmed: Dify Executor, v2 loop, v3 loop, "My workflow 3" — need deletion
-- Phase 0 status: 3/5 tasks complete, Tasks 0.3 and 0.4 remaining
+- [[FINBUDDY_PROJECT_MEMORY]] ← master hub — always read this first for current status
+- [[COLLABORATION_CONTRACT]] ← roles, automation rules, AI vs code boundaries
+- [[CLAUDE_HANDOFF]] ← current action queue for Claude Code
+- [[finbuddy_memory/CONTEXT]] ← live context injected into every AI prompt
+- [[tasks/phase-1-freqai-brain]] ← current phase task file
+- [[finbuddy_memory/strategies/graveyard]] ← retired strategies + backtest failures
+- [[finbuddy_memory/signals/log]] ← signal history
+- [[finbuddy_memory/regimes/current]] ← live regime
 
 ---
 
-*This file should be updated at the end of every major session. It is the memory of the project for any Claude instance that opens this repo.*
+*This file must be updated at the end of every major session. It is the operational memory for any Claude instance opening this repo.*
