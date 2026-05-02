@@ -22,7 +22,7 @@ services:
     restart: unless-stopped
     container_name: freqtrade
     environment:
-      - XAI_API_KEY=xai-IzbCBYvWFy6W8EQzlKMioaeqhyX5uG3uhpH7yXlseeJtBlqn1yjINe6TivpCp1QgzQz2fyPBOuVvQbJq
+      - XAI_API_KEY=${XAI_API_KEY}
       - GROK_MODEL=grok-3-mini
     volumes:
       - "./user_data:/freqtrade/user_data"
