@@ -1,7 +1,7 @@
 # FinBuddy — Master Context
 > Injected into every AI prompt before signal generation.
 > Auto-written by memory_writer.py (not yet wired — currently updated manually).
-> Last updated: 2026-04-27 (Cowork planning session)
+> Last updated: 2026-05-02 (Step 5 complete — Futures mode live)
 
 ---
 
@@ -26,12 +26,18 @@ Note       : HMM engine not yet built (Phase 3)
 
 ## Active Strategy
 ```
-Strategy   : rsi_macd_ai_v1
-Description: RSI(14) + MACD(12,26,9) signals confirmed by Groq Llama 3.3 70B
-Mode       : Dry-run on Binance, 15m timeframe, ~20 pairs
+Strategy   : FinBuddyFreqAI (AiGuardrailStrategy → pending futures rewrite)
+Mode       : Dry-run on Binance FUTURES (USDT-M Perpetual)
+Timeframe  : 5m (primary)
+Pairs      : 22 futures pairs (BTC/USDT:USDT, ETH/USDT:USDT + 20 others)
+Trading    : Long + Short enabled (can_short = True)
+Margin     : Isolated
+Leverage   : Conservative 2–5x
+FreqAI     : ✅ Training per-pair on rolling window
+LLM Layer  : ✅ FinBuddyLLMModel loaded — xAI Grok-3-mini [PRIMARY] → LGBM fallback
 Confidence : ≥ 65% required to act
-Backtest   : PENDING walk-forward validation
-Status     : Active (N8N v3 pipeline)
+Backtest   : PENDING walk-forward on futures
+Status     : Bot RUNNING (dry-run), futures mode confirmed
 ```
 
 ---
@@ -40,8 +46,8 @@ Status     : Active (N8N v3 pipeline)
 
 | Phase | Focus | Status |
 |---|---|---|
-| 0 | Foundation — fix loose ends | 🔴 In Progress |
-| 1 | FreqAI as signal brain | ⬜ Pending |
+| 0 | Foundation — fix loose ends | ✅ Complete |
+| 1 | FreqAI as signal brain (futures long+short) | 🔄 In Progress — Step 5 done |
 | 2 | External data enrichment | ⬜ Pending |
 | 3 | HMM 5-regime engine | ⬜ Pending |
 | 4 | Obsidian auto-write pipeline | ⬜ Pending |
@@ -49,46 +55,59 @@ Status     : Active (N8N v3 pipeline)
 | 6 | TradingView webhook | ⬜ Pending |
 | 7 | Python signal executor | ⬜ Pending |
 
-Full task details in `tasks/` directory. Start with `tasks/phase-0-foundation.md`.
+Full task details in `tasks/` directory.
 
 ---
 
 ## Key Architecture Decisions (Locked)
 
-**FreqAI is the signal brain** — replaces N8N → Groq call. Runs inside FreqTrade. Supports LightGBM, XGBoost, PyTorch, RL, and custom models that call external APIs.
+**FreqAI is the signal brain** — runs inside FreqTrade. Supports LightGBM + custom models that call external APIs (Grok).
 
-**N8N is being retired** — transitional tool only. Exit: once FreqAI passes walk-forward backtest and goes live. Do NOT retire before then.
+**N8N is permanently retired** — disabled as of 2026-05-02. FreqAI is sole signal source.
 
-**Custom files survive FreqTrade upgrades** — user_data/ is a Docker volume mount. Upgrades only change the container image. Strategies, FreqAI models, configs all persist.
+**Futures-first architecture** — trading_mode: futures, margin_mode: isolated, all pairs in COIN/USDT:USDT format. Spot is secondary module, Phase 8.
 
-**This is a fluid system** — tools and models can be dropped or added freely. We dropped OpenRouter (→ Groq), dropped Dify. We will drop N8N. Always optimize for what moves the brain forward.
+**Custom files survive FreqTrade upgrades** — user_data/ is a Docker volume mount. Strategies, FreqAI models, configs all persist.
+
+**IMPORTANT — Freqtrade dev docs rules (must follow):**
+- Always use `INTERFACE_VERSION = 3` in all strategy files
+- `startup_candle_count` must be >= max indicator lookback period (set ≥ 400)
+- Never use `datetime.now()` in callbacks — use the `current_time` parameter
+- Never use `iloc[-1]` or loops in `populate_*` — vectorized pandas only
+- `can_short = True` is required at strategy class level for short signals to work
+- `adjust_trade_position()` is the correct DCA method — needs `position_adjustment_enable: true` in config
+- Custom stoploss for futures: always multiply by `trade.leverage`
+- Environment variables override config.json which overrides strategy — never hardcode secrets
+- `startup_candle_count` unstable candles are excluded from backtest automatically
 
 ---
 
-## Signal Pipeline (Current — N8N v3)
+## Signal Pipeline (Current — FreqAI + Grok)
 ```
-Binance OHLCV (15m)
+Binance Futures OHLCV (5m, 22 pairs)
     ↓
-N8N: calculate RSI(14), MACD(12,26,9), ATR(14)
+FreqAI: LightGBM trains on rolling window per pair
     ↓
-Groq Llama 3.3 70B (free, ~200ms, 6000 req/day)
+FinBuddyLLMModel: LightGBM signal → Grok-3-mini confirmation (xAI API)
     ↓
 If confidence ≥ 65%:
-    → FreqTrade forceenter / forceexit
-    → Telegram notification
+    → enter_long = 1 OR enter_short = 1
+    → Isolated margin, 2–5x leverage
+    → ATR-based stoploss (custom_stoploss × leverage)
+    → Telegram notification (native FreqTrade)
 ```
 
-## Signal Pipeline (Target — FreqAI)
+## Signal Pipeline (Target — Full Brain)
 ```
-Binance OHLCV + external data (Fear & Greed, CoinGecko, CryptoPanic, DefiLlama)
+Binance Futures OHLCV + external data (Fear & Greed, CoinGecko, CryptoPanic, DefiLlama)
     ↓
 FreqAI: LightGBM trains on rolling 30-day window
     ↓
-Custom IFreqaiModel: LightGBM signal + Groq confirmation layer
+FinBuddyLLMModel: LightGBM + Grok confirmation layer
     ↓
-HMM regime filter (CRASH = no entry, BEAR = half size)
+HMM regime filter (CRASH = no entry, BEAR = reduce size, BULL = full)
     ↓
-ATR-based position sizing (Turtle 2% rule)
+ATR-based position sizing (Turtle 2% rule × leverage)
     ↓
 FreqTrade executes + Telegram (native)
 ```
@@ -108,44 +127,50 @@ FreqTrade executes + Telegram (native)
 ## AI Model Assignment
 | Task | Model | Cost |
 |---|---|---|
-| Trade signals | Groq Llama 3.3 70B | Free |
-| Deep research | Gemini 2.5 Flash | Free tier |
-| Nightly reasoning | DeepSeek R1 | Near-free |
-| Social sentiment | Grok 4.1 Fast | TBD |
-| Pine Script + promotion | Claude Sonnet 4.6 | Sparingly |
+| Trade signals + real-time analysis | xAI Grok-3-mini | $0.10/M |
+| Deep research + Pine Script | Claude Sonnet 4.6 | Sparingly |
+| Bulk hypothesis generation | DeepSeek chat | ~$0.01/M |
+| Large context research | Gemini 2.5 Flash | Free tier |
 
 ---
 
-## System State (as of 2026-04-27)
+## System State (as of 2026-05-02 — Step 5 Complete)
 | Component | Status |
-|---|---|
-| FreqTrade | ✅ Running, dry-run, AiGuardrailStrategy |
-| N8N v3 pipeline | ✅ Running (temporary — retiring after Phase 1) |
-| Groq signal AI | ✅ Live |
-| Trade Event Handler | ❌ Not activated (Phase 0, Task 0.1) |
-| FreqAI | ❌ Installed, empty (Phase 1) |
+|---|
+---|
+| FreqTrade | ✅ Running, dry-run, FUTURES mode, 22 pairs |
+| FinBuddyLLMModel | ✅ Loaded — Grok-3-mini waterfall confirmed in logs |
+| Futures config | ✅ trading_mode: futures, margin_mode: isolated |
+| Pair format | ✅ All pairs in COIN/USDT:USDT format |
+| Pairlist filters | ✅ VolumePairList + SpreadFilter + PriceFilter + RangeStabilityFilter + VolatilityFilter |
+| API server | ✅ Running at 0.0.0.0:8080 |
+| Telegram RPC | ✅ Active |
+| FreqAI training | ✅ Downloading training data per pair |
+| N8N pipeline | 🔴 Permanently disabled |
 | HMM Engine | ❌ Not built (Phase 3) |
 | Karpathy Loop | ❌ Not built (Phase 5) |
 | Obsidian auto-write | ❌ Not wired (Phase 4) |
-| TradingView webhook | ❌ Not set up (Phase 6) |
-| Python Executor | ❌ Not built (Phase 7) |
-| Telegram in FreqTrade | ❌ Not configured (Phase 0, Task 0.2) |
+| Walk-forward backtest | ❌ Pending (next priority) |
 
 ---
 
 ## Risk Flags
-- None active.
+- Futures leverage amplifies both gains AND losses — conservative 2–5x only
+- Walk-forward backtest not yet run on futures — do NOT go live before validation
+- Custom stoploss must multiply by `trade.leverage` or it will be too tight
 
 ## Recent Insights
-- No Karpathy research cycles run yet — will populate once Phase 5 is active.
+- Step 5 success confirms infrastructure is solid — futures mode operational
+- Bot ran cleanly after fixing pre-existing log permission issue (chmod 666/777)
+- Next bottleneck: FinBuddyFreqAI.py strategy rewrite for futures long+short is NOT yet deployed
 
 ## What's Working
 → [[strategies/winners]]
-- Nothing walk-forward validated yet.
+- Nothing walk-forward validated yet on futures.
 
 ## What Failed
 → [[strategies/graveyard]]
-- Nothing retired yet.
+- Spot strategy retired — structural long-bias failure in bear market (-47.55% BTC drop)
 
 ## Signal History
 → [[signals/log]]
