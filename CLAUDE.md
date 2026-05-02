@@ -16,6 +16,46 @@ The long-term vision is a **multi-tenant SaaS platform** where retail traders pl
 
 ---
 
+## 🚨 Strategic Pivot (2026-05-02) — READ THIS FIRST
+
+**PRIMARY MARKET IS NOW FUTURES (USDT-M PERPETUAL), NOT SPOT.**
+
+The 192-combo spot backtest failure was not a strategy bug — it was an architectural ceiling. Spot is structurally long-only. In a -47.55% bear market (BTC 2025-02-01 → 2026-04-01), no long-only strategy can achieve Sharpe > 0.5. The ML signal quality is confirmed healthy (79–81% WR on signal-driven exits). The market type was wrong.
+
+**Futures gives FinBuddy long + short capability = truly market-agnostic.**
+
+### Do NOT do this anymore:
+- Run more backtests on spot with the same bear market period
+- Try to fix the spot strategy with regime filters as the primary solution
+- Deploy Task 1.2 on the spot strategy
+
+### DO this instead (in order):
+1. Switch FreqTrade to Binance Futures USDT-M (config change)
+2. Rewrite `FinBuddyFreqAI.py` for long + short signals
+3. Run bull period backtest on futures (2024-01-01 → 2025-01-01)
+4. Validate: Sharpe > 0.5, WR > 50%, DD < 20%, PF > 1.2
+5. Then deploy Task 1.2 (FinBuddyLLMModel.py) on the futures strategy
+
+---
+
+## Full Vision — All Crypto Market Modules
+
+FinBuddy will support all major crypto market types as modular strategy plugins:
+
+| Module | Type | Priority |
+|---|---|---|
+| **Perp Futures (Long/Short)** | Directional | 🔥 Immediate |
+| **Funding Rate Farming** | Passive income | ⚡ Phase 2 |
+| **Grid Trading** | Sideways/range | ⚡ Phase 3 |
+| **Spot-Futures Basis Arb** | Market neutral | 🕐 Phase 4 |
+| **Statistical Arb (pair trading)** | Market neutral | 🕐 Phase 5 |
+| **Spot Trading** | Long-only | 🕐 Secondary |
+| **DCA / Accumulation** | Long-term | 🕐 Phase 6 |
+
+All modules share: the same regime signal, the same AI brain, the same memory vault.
+
+---
+
 ## This Is a Fluid System
 
 This is not a fixed blueprint. FinBuddy is a self-evolving system and the project approach evolves with it. Tools, models, workflows, and components can be dropped, swapped, or added at any time based on what works best. Nothing here is sacred except the core idea: an autonomous AI brain that trades, learns, and improves itself continuously.
@@ -74,7 +114,7 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 ## What Is Live and Working Right Now (verified 2026-04-30 by Claude Code)
 
 ### FreqTrade
-- Running **`FinBuddyFreqAI.py` (v6)** in dry-run mode — `AiGuardrailStrategy.py` is **retired**
+- Running **`FinBuddyFreqAI.py` (v6)** in dry-run mode — ⚠️ **SPOT strategy — being rewritten for futures**
 - FreqAI + LightGBM training per pair, live
 - 1000 USDT virtual wallet, max 4 open trades, 200 USDT stake per trade
 - API accessible at `http://localhost:8080/api/v1` with credentials `bot:bot123`
@@ -106,8 +146,8 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 | Component | File | Status |
 |---|---|---|
-| FinBuddyLLMModel.py (Task 1.2) | `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` | ✅ Committed — ❌ Not deployed |
-| Backtest scripts (Task 1.3) | `scripts/run_backtest.sh`, `parse_backtest.py`, `tune_stoploss.sh` | ✅ Committed — ❌ Not run with bull period |
+| FinBuddyLLMModel.py (Task 1.2) | `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` | ✅ Committed — ❌ Deploy on futures strategy (not spot) |
+| Backtest scripts (Task 1.3) | `scripts/run_backtest.sh`, `parse_backtest.py`, `tune_stoploss.sh` | ✅ Committed — ❌ Repurpose for futures |
 | Phase 2 external data fetchers | `scripts/phase2/` | ✅ Committed — ❌ Crons not installed |
 | Phase 4 memory writer | `scripts/phase4/memory_writer.py` + `setup_cron.sh` | ✅ Committed — ❌ Crons not installed |
 
@@ -127,18 +167,17 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 ### Models That Were Dropped and Why
 - **OpenRouter** — dropped April 2026. Rate limits + model ID changes on free tier.
 - **Dify** — dropped February 2026. Freed ~6GB disk.
-- **Groq Llama 3.3 70B** — was primary N8N signal model. Replaced by Grok-3-Mini inside `FinBuddyLLMModel.py` (decided 2026-05-01). N8N pipeline using Groq is now disabled.
+- **Groq Llama 3.3 70B** — was primary N8N signal model. Replaced by Grok-3-Mini. N8N pipeline using Groq is now disabled.
 - **OpenClaw** — abandoned. Was only a proxy for OpenRouter which was also dropped.
 
 ---
 
 ## Current Strategy
 
-### Active: `FinBuddyFreqAI.py` (v6)
-- FreqAI + LightGBM training per pair on rolling 30-day window
-- Timeframe: 15m on Binance, ~20 pairs
-- Trailing stop + tighter ML exit (v6 Option C)
-- Status: ✅ Running live in dry-run mode
+### 🔄 In Rewrite: `FinBuddyFreqAI.py` → Futures Long/Short
+- Current v6 is spot-only — being rewritten to support Binance Futures USDT-M
+- Must support both long AND short entries based on FreqAI signal direction
+- LightGBM + Grok-3-Mini confirmation (Task 1.2) will be deployed on the rewritten version
 
 ### ❌ Retired: `AiGuardrailStrategy.py`
 - Superseded by `FinBuddyFreqAI.py`. Do not reference or restart.
@@ -146,47 +185,44 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 ### Pending: `FinBuddyLLMModel.py` (Task 1.2)
 - Custom FreqAI model: LightGBM signal blended with Grok-3-Mini confirmation layer
 - Committed to `freqtrade/user_data/freqaimodels/` but NOT deployed
-- Deployment blocked on backtest validation (see below)
+- **Deploy on futures strategy — NOT on spot v6**
 
 ---
 
-## 🔬 Backtest Grid — Full History
+## 🔬 Backtest Grid — Full History (Spot — Retired)
 
 | Round | Combos | Best Sharpe | Root Cause of Failure |
 |---|---|---|---|
 | Round 1 | 12 | -0.183 | chmod bug — patches never applied; EMA/RSI dead levers |
 | Round 2 | 36 | -0.236 | roi_multiplier dead lever; avg loser > avg winner |
-| Round 3 | 144 | best ever: -0.174 | trailing_offset + ml_exit dead levers; **bear market is root cause** |
-| **Total** | **192** | **-0.174** | **Parameter tuning exhausted** |
+| Round 3 | 144 | -0.174 | trailing_offset + ml_exit dead levers; **bear market is root cause** |
+| **Total** | **192** | **-0.174** | **Spot backtesting retired. Futures next.** |
 
-**Key finding (Round 3):** BTC fell -47.55% from 2025-02-01 to 2026-04-01. No long-only strategy achieves Sharpe >0.5 in a sustained -47% bear market. ML signal quality is confirmed healthy: **79-81% WR on signal-driven exits**.
+**Key finding:** ML signal quality confirmed healthy: **79-81% WR on signal-driven exits**. Strategy logic is sound. Market type was the problem.
 
-### 🔴 Current Blocker — Round 4 Decision
-
-Two options (Perplexity's decision to implement):
-
-**Option A — Regime Filter:**
-Add BTC 200-day MA filter to `FinBuddyFreqAI.py`. Only enter when BTC is above 200d MA. Keep same test period, trade less, better quality.
-
-**Option B — Bull Market Retest (recommended first):**
-Change timerange in `scripts/run_backtest.sh` / `scripts/backtest_config.json` from `20250101-20260401` → `20240101-20250101`. 1-line change. Validates strategy in BTC $42k→$100k bull run.
-
-Pass criteria: **Sharpe > 0.5, WR > 50%, DD < 20%, PF > 1.2**
+### Next Backtest: Futures Round 1
+- Market: Binance Futures USDT-M (perpetual)
+- Strategy: rewritten `FinBuddyFreqAI.py` with long + short signals
+- Period: `20240101-20250101` (BTC bull run $42k → $100k)
+- Pass criteria: **Sharpe > 0.5, WR > 50%, DD < 20%, PF > 1.2**
 
 ---
 
-## Full Build Roadmap
+## Full Build Roadmap (Post-Pivot)
 
 | Phase | File | Status | Focus |
 |---|---|---|---|
 | 0 | `tasks/phase-0-foundation.md` | ✅ **5/5 Complete** (2026-04-27) | Foundation — FreqTrade, Telegram, server |
-| 1 | `tasks/phase-1-freqai-brain.md` | 🟡 Task 1.1 ✅, Task 1.2 ⚠️ not deployed, 1.3–1.4 pending | FreqAI brain |
-| 2 | `tasks/phase-2-data-enrichment.md` | ⚠️ Code ready — crons not installed | External data |
-| 3 | `tasks/phase-3-hmm-regime.md` | ⬜ Not started | HMM 5-regime engine |
-| 4 | `tasks/phase-4-obsidian-memory.md` | ⚠️ Code ready — crons not installed | Obsidian auto-write |
-| 5 | `tasks/phase-5-karpathy-loop.md` | ⬜ Not started | Self-improving research loop |
-| 6 | `tasks/phase-6-tradingview.md` | ⬜ Not started | TradingView webhook |
-| 7 | `tasks/phase-7-executor.md` | ⬜ Not started | Python signal executor |
+| 1 | `tasks/phase-1-freqai-brain.md` | 🔄 **Rewriting for futures** | FreqAI brain — long + short |
+| 2 | `tasks/phase-2-funding-rate.md` | ⬜ Pending | Funding rate farming module |
+| 3 | `tasks/phase-3-hmm-regime.md` | ⬜ Pending | HMM 5-regime engine (critical for futures) |
+| 4 | `tasks/phase-4-external-data.md` | ⚠️ Code ready — crons not installed | External data fetchers |
+| 5 | `tasks/phase-5-grid-trading.md` | ⬜ Pending | Grid trading module (sideways) |
+| 6 | `tasks/phase-6-obsidian-memory.md` | ⚠️ Code ready — crons not installed | Memory auto-write |
+| 7 | `tasks/phase-7-karpathy-loop.md` | ⬜ Pending | Self-improving research loop |
+| 8 | `tasks/phase-8-arb.md` | ⬜ Pending | Spot-futures basis + stat arb |
+| 9 | `tasks/phase-9-spot.md` | ⬜ Pending | Spot trading (secondary) |
+| 10 | `tasks/phase-10-executor.md` | ⬜ Pending | Multi-user executor + SaaS |
 
 ---
 
@@ -264,7 +300,7 @@ Fully specced in `docs/signal-contract.md`. Key fields:
 | SQLite permission error on FreqTrade | DB files owned by `opc` user from old setup | Full SQLite wipe + removed `db_url` MySQL reference |
 | FreqTrade loading wrong strategy | `--strategy SampleStrategy` hardcoded in docker-compose.yml | Fixed with `sed` |
 | f-string syntax error in strategy | Backslash escapes inside `{}` not allowed in Python < 3.12 | Rewrote all f-strings with single quotes outside |
-| Rounds 1–3 backtests all fail | Bear market period (BTC -47.55%) — not a code issue | Change test period to bull run (2024) or add regime filter |
+| Rounds 1–3 spot backtests all fail | Bear market period (BTC -47.55%) + spot is long-only | **Pivoted to futures (long + short)** |
 
 ---
 
@@ -284,8 +320,7 @@ Fully specced in `docs/signal-contract.md`. Key fields:
 ### April 27, 2026
 - Phase 0 live audit by Claude Code — confirmed v4 pipeline active, two Telegram bots live
 - Created full 7-phase task roadmap in `tasks/`
-- Created this `CLAUDE.md` as master project context
-- Phase 0: 3/5 tasks complete at this point
+- Created `CLAUDE.md` as master project context
 
 ### April 30, 2026 (Claude Code)
 - `FinBuddyFreqAI.py` v6 deployed and running — `AiGuardrailStrategy.py` **retired**
@@ -296,7 +331,7 @@ Fully specced in `docs/signal-contract.md`. Key fields:
 
 ### May 1, 2026 (Perplexity)
 - Decided AI model stack: **Grok-3-Mini (xAI)** as signal confirmation in Task 1.2
-- Added 5 Core Engineering Principles (DRY, AI vs Automation, Reusability, Docs as Memory, No hardcoded secrets)
+- Added 5 Core Engineering Principles
 - Updated `FINBUDDY_PROJECT_MEMORY.md` as master hub
 - `COLLABORATION_CONTRACT.md` updated with role boundaries
 
@@ -305,12 +340,17 @@ Fully specced in `docs/signal-contract.md`. Key fields:
 - Root cause confirmed: bear market period (BTC -47.55%), not strategy logic
 - ML signal quality confirmed: 79-81% WR on signal-driven exits ✅
 - Graveyard.md updated, results CSV committed
-- Round 4 recommendation: Option B (bull period retest) first
 
 ### May 2, 2026 — 2:49 PM (Perplexity)
 - Full memory sync across all 4 core MD files
-- Stale references to AiGuardrailStrategy, active N8N, Groq as primary removed from all files
-- Obsidian cross-links wired across CLAUDE.md, FINBUDDY_PROJECT_MEMORY.md, COLLABORATION_CONTRACT.md, finbuddy_memory/CONTEXT.md
+- Stale references cleaned across all docs
+
+### May 2, 2026 — 3:31 PM (Perplexity)
+- **🚨 STRATEGIC PIVOT: Futures-first architecture decided**
+- Spot backtesting retired — futures (USDT-M Perp) is now primary market
+- Full vision expanded: all crypto market types as modular plugins (perp, funding rate, grid, arb, spot, DCA)
+- Revised 10-phase roadmap committed
+- `FINBUDDY_PROJECT_MEMORY.md`, `CLAUDE.md`, `CLAUDE_HANDOFF.md` all updated
 
 ---
 
