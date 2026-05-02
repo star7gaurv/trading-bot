@@ -114,7 +114,7 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 ## What Is Live and Working Right Now (verified 2026-04-30 by Claude Code)
 
 ### FreqTrade
-- Running **`FinBuddyFreqAI.py` (v6)** in dry-run mode — ⚠️ **SPOT strategy — being rewritten for futures**
+- Running **`FinBuddyFreqAI.py` (v10)** in dry-run mode on **Binance Futures USDT-M** — long+short, ATR-adaptive `custom_stoploss()` anchored to entry via `stoploss_from_open()`
 - FreqAI + LightGBM training per pair, live
 - 1000 USDT virtual wallet, max 4 open trades, 200 USDT stake per trade
 - API accessible at `http://localhost:8080/api/v1` with credentials `bot:bot123`
@@ -174,10 +174,12 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ## Current Strategy
 
-### 🔄 In Rewrite: `FinBuddyFreqAI.py` → Futures Long/Short
-- Current v6 is spot-only — being rewritten to support Binance Futures USDT-M
-- Must support both long AND short entries based on FreqAI signal direction
-- LightGBM + Grok-3-Mini confirmation (Task 1.2) will be deployed on the rewritten version
+### ✅ Active: `FinBuddyFreqAI.py` v10 — Futures Long/Short
+- Binance Futures USDT-M (perpetual, isolated margin)
+- Long + short signals from FreqAI LightGBM
+- `custom_stoploss()` rebuilt per Freqtrade docs: returns None on missing data, anchors stops to entry price via `stoploss_from_open()` (initial: 2×ATR below open, trailing: 1.5×ATR above open)
+- `trailing_stop = False` (custom_stoploss owns the trail; framework trailing was double-stopping in v8/v9)
+- Macro short-gate: shorts only fire when BTC 4h close < BTC 4h EMA-50
 
 ### ❌ Retired: `AiGuardrailStrategy.py`
 - Superseded by `FinBuddyFreqAI.py`. Do not reference or restart.
@@ -189,22 +191,41 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ---
 
-## 🔬 Backtest Grid — Full History (Spot — Retired)
+## 🔬 Backtest History — Spot (retired) → Futures (active)
 
-| Round | Combos | Best Sharpe | Root Cause of Failure |
+### Spot — retired
+| Round | Combos | Best Sharpe | Verdict |
 |---|---|---|---|
-| Round 1 | 12 | -0.183 | chmod bug — patches never applied; EMA/RSI dead levers |
-| Round 2 | 36 | -0.236 | roi_multiplier dead lever; avg loser > avg winner |
-| Round 3 | 144 | -0.174 | trailing_offset + ml_exit dead levers; **bear market is root cause** |
-| **Total** | **192** | **-0.174** | **Spot backtesting retired. Futures next.** |
+| 1–3 (spot) | 192 total | -0.174 | Architectural ceiling: spot is long-only and the test window was a -47.55% bear. Retired. ML signal quality confirmed healthy (79–81% WR on signal exits). |
 
-**Key finding:** ML signal quality confirmed healthy: **79-81% WR on signal-driven exits**. Strategy logic is sound. Market type was the problem.
+### Futures (USDT-M perpetual, isolated, 5 pairs)
 
-### Next Backtest: Futures Round 1
-- Market: Binance Futures USDT-M (perpetual)
-- Strategy: rewritten `FinBuddyFreqAI.py` with long + short signals
-- Period: `20240101-20250101` (BTC bull run $42k → $100k)
-- Pass criteria: **Sharpe > 0.5, WR > 50%, DD < 20%, PF > 1.2**
+Bull window: `20240101-20250101` (BTC +122.88%)
+Bear window: `20250101-20260401` (BTC -39.27%)
+Acceptance targets: **Sharpe > 0.5, WR > 50%, DD < 20%, PF > 1.2**
+
+| Round | Strategy | Bull Sharpe | Bear Sharpe | Bull P&L | Bear P&L | Note |
+|---|---|---|---|---|---|---|
+| 1 | v6 (futures-ready) | -0.145 | -0.258 | -10 | -23 | 13/14 SL hits at -3.59% destroy P&L |
+| 2 | v7 (SL -1.5%) | -0.896 | -0.554 | -47 | -36 | Tighter SL → 41/42 chops, WR collapsed |
+| 3 | v8 (ATR custom_stoploss) | -0.78 | -0.22 | -33 | -12 | Hard SL hits → 0; trailing chop new problem |
+| 4 | v9 (trailing_stop=False + macro short gate) | -0.13 | -0.37 | -7 | -22 | Bull shorts 81→26; trailing arm still chopping |
+| **5** | **v10 (stoploss_from_open, entry-anchored)** | **+0.13** | **-0.15** | **+7.24** | **-8.78** | **First profitable bull. Trailing cohort flipped from chop to lock-in.** |
+
+### Round 5 (v10) — current state
+| | Bull | Bear |
+|---|---|---|
+| Win Rate | **57.9%** ✅ | **58.6%** ✅ |
+| Sharpe (closed) | **+0.13** | -0.15 |
+| Max Drawdown | **1.68%** ✅ | **3.66%** ✅ |
+| Profit Factor | 1.11 | 0.91 |
+| P&L (USDT) | **+7.24** | -8.78 |
+| exit_signal WR | 92.3% | 81.8% |
+
+WR ✅ and DD ✅ pass on both legs. Sharpe and PF still under target but the gap closed dramatically (Sharpe target 0.5; PF target 1.2).
+
+### Next: walk-forward / out-of-sample validation before v11
+R5 numbers are still in-sample. Before further tuning we walk the window: train months 1–6, test month 7, slide. If the lift survives OOS, we have a real strategy. If not, we are overfitting and v11 must address that first.
 
 ---
 
@@ -344,6 +365,16 @@ Fully specced in `docs/signal-contract.md`. Key fields:
 ### May 2, 2026 — 2:49 PM (Perplexity)
 - Full memory sync across all 4 core MD files
 - Stale references cleaned across all docs
+
+### May 2, 2026 — Late session (Claude Code)
+- 5 rounds of futures backtests run end-to-end (R1 → R5)
+- Strategy iterated v6 → v7 → v8 → v9 → v10
+- **R5 v10 is the breakthrough**: first positive Sharpe, first profitable bull, first PF > 1
+- v10 mechanism: `custom_stoploss()` rewritten per Freqtrade docs, both stops anchored to entry price via `stoploss_from_open()` — flipped the trailing cohort from -0.60% avg / 15.8% WR to +0.04% avg / 51.2% WR
+- Macro short-gate fix in v9 cut bull shorts from 81 → 26
+- Docker user/permissions: ubuntu added to `opc` group; `freqtrade/user_data` group-owned + `g+w` so both ubuntu and the container's ftuser (uid 1000 = opc) can write
+- `XAI_API_KEY` moved out of `docker-compose.yml` into `freqtrade/.env` (gitignored)
+- FreqAI model artifacts now properly gitignored
 
 ### May 2, 2026 — 3:31 PM (Perplexity)
 - **🚨 STRATEGIC PIVOT: Futures-first architecture decided**

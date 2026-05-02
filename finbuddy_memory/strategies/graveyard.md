@@ -66,3 +66,33 @@
 - **Pattern:** ml_threshold dominates — 83 trades at 0.009, 51 at 0.010, 29-30 at 0.011. WR drops below 50% at 0.011. EMA and RSI patches had minimal effect (possible patch failure due to opc file ownership).
 - **Sharpe negative for all combos** — stop_loss exits still destroying profit even with 1h trend filter. Exit signal win rate good but stop_loss exits at ~-3.5% avg dominate.
 - **Key lesson:** The grid range was too narrow. Need either: (a) wider stoploss like -0.05 to give trades more room, (b) trailing stop-only exits (remove fixed stoploss), or (c) structurally different entry logic (regime detection).
+
+---
+
+### FinBuddyFreqAI v6 — Spot, futures-ready rewrite (retired 2026-05-02)
+- **Backtest:** Futures R1. Bull: 73 trades, WR 63.0%, Sharpe -0.145, PF 0.91, P&L -10 USDT. Bear: 82 trades, WR 63.4%, Sharpe -0.258, PF 0.83, P&L -23 USDT.
+- **Reason failed:** 13/14 stop-loss hits at -3.59% per round destroyed P&L. Avg loser >> avg winner.
+- **Key lesson:** A -3.5% fixed stop with -0.4% to -0.5% avg winner is a 7:1 reward:risk against you. Either widen winners or tighten stops — but tightening is the trap (see v7).
+
+### FinBuddyFreqAI v7 — Stoploss tightened to -1.5% (retired 2026-05-02)
+- **Backtest:** Futures R2. Bull: 85 trades, WR 48.2%, Sharpe -0.896, P&L -47 USDT. Bear: 96 trades, WR 50.0%, Sharpe -0.554, P&L -36 USDT.
+- **Reason failed:** -1.5% stop is inside the noise floor of 15m BTC. 41/42 stop hits per round, WR collapsed from 63% to 48%. Tightening did the opposite of what was needed.
+- **Key lesson:** A fixed % stop is wrong when ATR varies. Need ATR-adaptive sizing (which became v8).
+
+### FinBuddyFreqAI v8 — ATR-based custom_stoploss() (retired 2026-05-02)
+- **Backtest:** Futures R3. Bull: 112 trades, WR 42.0%, Sharpe -0.78, P&L -33 USDT. Bear: 96 trades, WR 52.1%, Sharpe -0.22, P&L -12 USDT.
+- **Reason failed:** Two trailing systems running simultaneously — framework `trailing_stop=True` AND a Chandelier trail inside `custom_stoploss()`. Whichever was tighter fired first. 79/62 `trailing_stop_loss` exits at -0.55% avg avg replaced the SL chops.
+- **Key lessons:**
+  1. Freqtrade docs explicitly warn: don't combine `trailing_stop` with custom_stoploss.
+  2. `dataframe.iloc[-1]` inside `custom_stoploss()` has off-by-one lookahead concerns across FT versions.
+  3. Returning `self.stoploss` as a fallback resets a previously tightened stop on every candle — must return `None` ("no desire to change").
+
+### FinBuddyFreqAI v9 — `trailing_stop=False` + macro short-gate (retired 2026-05-02)
+- **Backtest:** Futures R4. Bull: 57 trades, WR 42.1%, Sharpe -0.13, P&L -7 USDT. Bear: 92 trades, WR 50.0%, Sharpe -0.37, P&L -22 USDT.
+- **What worked:** Macro short-gate (`btc_4h_below_ema50 == 1`) cut bull shorts from 81 → 26, halved trade count, halved DD.
+- **Reason failed (bear):** Disabling framework trailing only removed *one* of two trailing systems. The Chandelier trail INSIDE `custom_stoploss()` was still chasing current price down. 60 bear trailing exits at -0.61% avg.
+- **Key lesson:** A current-rate-relative trailing stop chases price up indefinitely without ever locking in a fixed dollar floor. Need entry-anchored stops via `stoploss_from_open()` (which became v10).
+
+---
+
+## ✅ Active (not retired): FinBuddyFreqAI v10 — see [[winners]]

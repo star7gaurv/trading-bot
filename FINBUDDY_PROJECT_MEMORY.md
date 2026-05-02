@@ -2,8 +2,8 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status:** 🟡 Phase 1 In Progress — Futures Live (Dry-Run), Walk-Forward Backtest Next  
-**Last Updated:** 2026-05-02 15:55 IST by Perplexity AI — Step 5 Complete
+**Status:** 🟢 v10 deployed · 5 futures backtest rounds done · R5 first profitable bull · Walk-forward OOS validation next
+**Last Updated:** 2026-05-02 (Claude Code — Round 5 complete)
 
 ---
 
@@ -55,6 +55,27 @@ Spot trading is structurally long-biased — you can only buy low, sell high. Th
 | Leverage | ❌ None | ✅ 2–5x conservative use |
 | Funding rate income | ❌ None | ✅ Passive when neutral |
 | Market neutrality | ❌ | ✅ Long/short, delta-neutral |
+
+---
+
+## 📈 Five Futures Backtest Rounds — Trajectory
+
+| Round | Strategy | Key Change | Bull P&L | Bear P&L | Bull Sharpe | Bear Sharpe |
+|---|---|---|---|---|---|---|
+| 1 | v6 | Futures-ready spot rewrite | -10 | -23 | -0.145 | -0.258 |
+| 2 | v7 | Stoploss tightened to -1.5% | -47 | -36 | -0.896 | -0.554 |
+| 3 | v8 | ATR-based `custom_stoploss()` | -33 | -12 | -0.78 | -0.22 |
+| 4 | v9 | `trailing_stop=False` + macro short-gate | -7 | -22 | -0.13 | -0.37 |
+| **5** | **v10** | **`stoploss_from_open()` — entry-anchored stops** | **+7.24** | **-8.78** | **+0.13** | **-0.15** |
+
+### Round 5 (current state)
+- **Bull:** 57 trades · WR 57.9% ✅ · Sharpe +0.13 · DD 1.68% ✅ · PF 1.11 · P&L **+7.24 USDT** (first profitable round)
+- **Bear:** 87 trades · WR 58.6% ✅ · Sharpe -0.15 · DD 3.66% ✅ · PF 0.91 · P&L -8.78 USDT
+- Acceptance: WR ✅ and DD ✅ on both legs. Sharpe and PF still below target (0.5 / 1.2) but the gap closed dramatically.
+- Mechanism: `stoploss_from_open()` anchors both stops to ENTRY price. Trailing cohort flipped from -0.60% avg / 15.8% WR (R4) to +0.04% avg / 51.2% WR (R5).
+
+### Next phase
+**Walk-forward / out-of-sample validation** before any v11 tuning or live deployment. R5 numbers are in-sample; we need to confirm the lift survives a held-out window before we trust the result. Plan: train months 1–6, test month 7, slide.
 
 ---
 
