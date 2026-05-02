@@ -9,19 +9,20 @@
 
 ---
 
-## Status as of 2026-04-30 (end of day)
+## ⚠️ IMPORTANT: Communication Protocol
 
-**Task 1.1 COMPLETE.** FreqAI LightGBM brain is wired end-to-end:
-- `develop_freqai` Docker image — LightGBM included
-- `set_freqai_targets()` defines what ML predicts (`&-s_close`)
-- `self.freqai.start()` trains model + injects predictions into dataframe
-- Entry driven by `&-s_close > 0.008` (ML signal) + TA filter
-- Exit driven by `&-s_close < -0.003` OR TA reversal
-- Bot RUNNING, models training per pair in background
+> **For Claude Code:** Before starting any task, read `CLAUDE_HANDOFF.md` in the repo root.
+> It contains explicit instructions for work done by Perplexity AI that needs your review/deployment.
+>
+> **Status legend used in this file:**
+> - ✅ **COMPLETE** — Verified running on live server by Claude Code
+> - ⚠️ **NEEDS REVIEW** — Code written by Perplexity AI, committed to GitHub, NOT yet deployed/tested on server. Claude Code must pull, review, deploy, and verify before marking complete.
+> - 🟡 **IN PROGRESS** — Being actively worked on
+> - ⬜ **PENDING** — Not started
 
 ---
 
-## Why FreqAI Instead of N8N + Groq
+## Status as of 2026-05-01
 
 ### 1. **Unified In-Process Signals**
 - ✅ Latency: ~50ms (vs. N8N Groq = 500–800ms)
@@ -62,111 +63,92 @@
 - ✅ Graceful fallback if model fails (use previous signal)
 - ✅ Persistent model storage (trained models saved to disk)
 - ✅ Live prediction on new data with proper feature alignment
+- Task 1.1: ✅ COMPLETE (Claude Code verified live on server, 2026-04-30)
+- Task 1.2: ⚠️ NEEDS REVIEW (Perplexity AI wrote code, committed to GitHub — NOT deployed)
+- Task 1.3: ⬜ PENDING (blocked on 1.2 deploy)
+- Task 1.4: ⬜ PENDING (blocked on 1.3)
 
 ---
 
 ## Task 1.1 — Build First FreqAI Strategy with LightGBM
-**Status:** ✅ COMPLETE (2026-04-30)
+**Status:** ✅ COMPLETE (verified live by Claude Code, 2026-04-30)  
 **File:** `freqtrade/user_data/strategies/FinBuddyFreqAI.py`
 
 **All Done:**
 - ✅ 14+ TA indicators (RSI 14/7, MACD, EMA 9/21/50/200, Bollinger, ATR, Volume, Price position)
 - ✅ `set_freqai_targets()` — LightGBM predicts `&-s_close` (% price change in next 3 candles / 45min)
 - ✅ `self.freqai.start()` — trains model + injects predictions into dataframe every candle
-- ✅ Entry: PRIMARY `&-s_close > 0.008` AND `do_predict == 1`, SECONDARY TA filter (EMA50, RSI<72, BB<0.90)
+- ✅ Entry: PRIMARY `&-s_close > 0.008` AND `do_predict == 1`, SECONDARY TA filter
 - ✅ Exit: PRIMARY `&-s_close < -0.003` OR TA reversal signals
 - ✅ Safety gate: rejects entries below 200 EMA and RSI >78
 - ✅ Docker image `develop_freqai` — LightGBM, XGBoost, scikit-learn pre-installed
-- ✅ Config: telegram ✅ webhook ✅ api_server ✅ freqai ✅ LightGBMRegressor ✅
-- ✅ N8N Trading Loop v4 disabled — FreqTrade is sole signal source
-- ✅ Bot RUNNING, models training per pair, new trades will show `enter_tag: freqai_lgbm`
-
-A FreqAI strategy that uses LightGBM trained on OHLCV + indicators to predict price direction.
-
-### Features to engineer (inputs to the model)
-- RSI 14, RSI 7
-- MACD histogram, MACD signal
-- EMA 9, EMA 21, EMA 50, EMA 200
-- Bollinger Band width, %B
-- ATR 14 (normalized)
-- Volume change % vs 20-period average
-- Hour of day (cyclical encoding — sin/cos)
-- Day of week (cyclical encoding)
-- Price position relative to 24h high/low
-
-### Target variable
-- `&-s_close` — whether price will be higher in N candles (FreqAI standard)
-- Start with N=3 (3 candles = 45 minutes on 15m timeframe)
-
-### FreqAI config additions to `config.json`
-```json
-"freqai": {
-  "enabled": true,
-  "purge_old_models": true,
-  "train_period_days": 30,
-  "backtest_period_days": 7,
-  "live_retrain_hours": 4,
-  "identifier": "finbuddy_lgbm_v1",
-  "feature_parameters": {
-    "include_timeframes": ["5m", "15m", "1h"],
-    "include_corr_pairlist": ["BTC/USDT", "ETH/USDT"],
-    "label_period_candles": 3,
-    "include_shifted_candles": 2
-  },
-  "data_split_parameters": {
-    "test_size": 0.15
-  },
-  "model_training_parameters": {
-    "n_estimators": 200,
-    "learning_rate": 0.05
-  }
-}
-```
-
-### Model config
-```json
-"freqaimodel": "LightGBMRegressor"
-```
+- ✅ Bot RUNNING, models training per pair
 
 ---
 
-## Task 1.2 — Build Custom FreqAI Model with Groq LLM Layer
-**Status:** ⬜ Pending (after 1.1)  
-**Effort:** 3–4 hours  
-**File:** `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py`
+## Task 1.2 — Custom FreqAI Model with Groq LLM Layer
+**Status:** ⚠️ NEEDS REVIEW — Code written by Perplexity AI (2026-05-01 01:00 IST)  
+**File:** `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py`  
+**Commit:** [55848d7](https://github.com/star7gaurv/trading-bot/commit/55848d79305557914a5ef72f68dfad56d283f422)  
+**Action required:** See `CLAUDE_HANDOFF.md` for full step-by-step deployment instructions.
 
-A custom `IFreqaiModel` that combines LightGBM predictions with a Groq LLM confirmation call. Best of both worlds: ML picks the signal, LLM validates it with market context.
+### What Perplexity Built
 
-### Architecture
+A custom `IFreqaiModel` that inherits from `LightGBMRegressor` and overrides `predict()` to add a Groq LLM confirmation layer.
+
+**Architecture:**
 ```
 Market data + indicators
         ↓
-  LightGBM prediction (fast, local)
+  LightGBM prediction (inherited — full training pipeline unchanged)
         ↓
-  If confidence > 0.60:
-    → Call Groq Llama 3.3 70B with market context + LightGBM signal
-    → Parse LLM confirmation
-    → Final signal = LightGBM * 0.6 + LLM_confirmation * 0.4
+  If abs(&-s_close) > 0.006 (0.6% predicted move) AND cooldown elapsed:
+    → Call Groq Llama 3.3 70B with market context (pair, RSI, MACD, EMA, BB, volume)
+    → Parse response: CONFIRM / REJECT / HOLD
+    → Blended signal = LightGBM * 0.60 + LightGBM * multiplier * 0.40
+       CONFIRM → multiplier = 1.30 (amplify)
+       REJECT  → multiplier = 0.15 (near-zero dampening)
+       HOLD    → multiplier = 0.50 (moderate dampening)
   Else:
-    → HOLD
+    → LightGBM signal unchanged (passes through to strategy)
 ```
 
-### Key methods to implement
-- `fit(data_dictionary, dk)` — train LightGBM on historical data
-- `predict(unfiltered_df, dk)` — run LightGBM, then optionally call Groq
+**Safety features:**
+- 4-second Groq timeout (never blocks a trade decision)
+- 60-min per-pair cooldown (stays inside Groq free tier: 6000 req/day)
+- Graceful fallback on any error → LightGBM signal used unchanged
+- 429 rate limit → auto-extends cooldown to 2 hours
+- GROQ_API_KEY from environment variable (set in docker-compose.yml)
+
+### What Claude Code Must Do
+
+> **Full instructions: read `CLAUDE_HANDOFF.md`**
+
+Quick checklist:
+- [ ] `git pull origin gaurav`
+- [ ] Verify `user_data/freqaimodels/FinBuddyLLMModel.py` exists
+- [ ] Check base class import compatibility with current FreqTrade version
+- [ ] Add `GROQ_API_KEY` to docker-compose.yml environment
+- [ ] Add `freqaimodels/` to docker-compose.yml volumes (if not present)
+- [ ] Test import: `docker exec freqtrade python -c "from FinBuddyLLMModel import FinBuddyLLMModel"`
+- [ ] If import passes: update config.json `freqaimodel` to `"FinBuddyLLMModel"`
+- [ ] `docker restart freqtrade`
+- [ ] Check logs for FinBuddyLLMModel startup + first Groq call
+- [ ] If all good: mark Task 1.2 as ✅ COMPLETE in this file
+- [ ] If broken: fix, or rollback to `LightGBMRegressor` and leave as NEEDS REVIEW with notes
 
 ---
 
 ## Task 1.3 — FreqAI Backtest Run
-**Status:** ⬜ Pending (after 1.1)  
+**Status:** ⬜ PENDING (blocked on Task 1.2 deployment)  
 **Effort:** 1–2 hours
 
-Run walk-forward backtest on the LightGBM strategy before activating in dry run.
+Run walk-forward backtest after FinBuddyLLMModel is verified running on server.
 
 ```bash
 docker exec -it freqtrade freqtrade backtesting \
   --strategy FinBuddyFreqAI \
-  --freqaimodel LightGBMRegressor \
+  --freqaimodel FinBuddyLLMModel \
   --timerange 20250101-20260401 \
   --timeframe 15m
 ```
@@ -177,29 +159,40 @@ docker exec -it freqtrade freqtrade backtesting \
 - Max drawdown < 20%
 - Profit factor > 1.2
 
-### Update registry
-Update `strategies/registry.json` — change `backtest.status` to `validated` if it passes.
+### Update registry after passing
+Update `strategies/registry.json` — change `backtest.status` to `validated`.
 
 ---
 
 ## Task 1.4 — Switch Dry Run to FinBuddyFreqAI Strategy
-**Status:** ⬜ Pending (after 1.3)  
+**Status:** ⬜ PENDING (blocked on Task 1.3)  
 **Effort:** 15 minutes
 
-Once backtest passes, switch FreqTrade from `AiGuardrailStrategy` to `FinBuddyFreqAI`.
+Once backtest passes:
 
 ```bash
-# Edit docker-compose.yml
 sed -i 's/AiGuardrailStrategy/FinBuddyFreqAI/' \
   /home/ubuntu/var/www/html/trade/freqtrade/docker-compose.yml
 docker restart freqtrade
 ```
 
-Keep `AiGuardrailStrategy.py` — don't delete it. Archive, don't remove.
+Keep `AiGuardrailStrategy.py` — archive, don't delete.
 
 ---
 
-## AI Models Available in FreqAI (No Extra Install Needed)
+## Phase 1 Complete When
+- [x] `FinBuddyFreqAI.py` strategy exists and runs without errors (Task 1.1 ✅)
+- [x] `set_freqai_targets()` implemented — ML predicts `&-s_close` (Task 1.1 ✅)
+- [x] Entry/exit uses ML predictions (Task 1.1 ✅)
+- [x] LightGBM model training on live data (Task 1.1 ✅)
+- [ ] `FinBuddyLLMModel.py` deployed and verified on server (Task 1.2 ⚠️)
+- [ ] Walk-forward backtest passes: win rate >50%, Sharpe >0.5, drawdown <20%, PF >1.2 (Task 1.3)
+- [ ] Strategy listed as `validated` in `strategies/registry.json` (Task 1.3)
+- [ ] Dry run switched to `FinBuddyFreqAI` with `FinBuddyLLMModel` (Task 1.4)
+
+---
+
+## AI Models Available in FreqAI
 
 | Model | Class | Best For |
 |---|---|---|
@@ -208,25 +201,11 @@ Keep `AiGuardrailStrategy.py` — don't delete it. Archive, don't remove.
 | CatBoost | `CatBoostRegressor` | Handles categorical features well |
 | PyTorch MLP | `PyTorchMLPRegressor` | Neural net for complex patterns |
 | Reinforcement Learning | `ReinforcementLearner` | Learns from trade outcomes directly |
-| Sklearn | `SklearnRandomForestClassifier` | Interpretable, good for feature importance |
 
-## External AI APIs to Integrate (via custom model)
+## External AI APIs
 
 | API | Use Case | Cost |
 |---|---|---|
 | Groq (Llama 3.3 70B) | Signal confirmation, market reasoning | Free (6000 req/day) |
 | Gemini 2.5 Flash | Deep research, macro context | Free tier |
 | DeepSeek R1 | Nightly strategy reasoning | Near-free |
-| Anthropic Claude Sonnet | Pine Script writing, strategy promotion | Sparingly |
-
----
-
-## Phase 1 Complete When
-- [x] `FinBuddyFreqAI.py` strategy exists and runs without errors
-- [x] `set_freqai_targets()` implemented — ML predicts `&-s_close`
-- [x] Entry/exit uses ML predictions (`dataframe["&-s_close"]`)
-- [x] LightGBM model training on live data (training in background per pair)
-- [x] Dry run switched to `FinBuddyFreqAI`
-- [ ] Walk-forward backtest passes: win rate >50%, Sharpe >0.5, drawdown <20%, profit factor >1.2
-- [ ] Strategy listed as `validated` in `strategies/registry.json`
-- [ ] Task 1.2: Custom IFreqaiModel with Groq LLM confirmation layer

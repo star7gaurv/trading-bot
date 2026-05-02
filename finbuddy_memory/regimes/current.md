@@ -1,29 +1,35 @@
-# Current Market Regime
-> Auto-updated by the HMM engine on every regime change.
-> N8N reads this file as the single source of truth for current regime.
-> Part of → [[../CONTEXT]]
+# FinBuddy — Current Regime
+
+**Last Updated:** Not yet initialized  
+**Data Sources:** 0/5 OK
 
 ---
 
-## Status
+## 🌡️ Market Regime
+
 ```
-Regime     : UNKNOWN
-Confidence : —
-Detected   : —
-Previous   : —
+Regime      : UNKNOWN
+Composite   : 0.000  (-1.0 = STRONG_BEAR, +1.0 = STRONG_BULL)
 ```
 
-## Regime Guide
-| Regime    | Meaning                        | Strategy Posture          |
-|-----------|--------------------------------|---------------------------|
-| CRASH     | Sharp rapid decline            | Exit all, hold cash       |
-| BEAR      | Sustained downtrend            | Reduce exposure, short    |
-| NEUTRAL   | Sideways, no clear trend       | Small positions, tight SL |
-| BULL      | Sustained uptrend              | Full exposure, trail SL   |
-| EUPHORIA  | Parabolic / overextended       | Take profits, reduce risk  |
+## 📈 Signal Breakdown
 
-## Full History
-→ [[history]]
+| Signal | Value | Interpretation |
+|---|---|---|
+| Fear & Greed | ?/100 | Not yet fetched |
+| BTC Dominance | ?% | Not yet fetched |
+| News Sentiment | ? | Not yet fetched |
+| DeFi TVL | $?B | Not yet fetched |
+
+## 🤖 Bot Performance
+
+| Metric | Value |
+|---|---|
+| Total Trades | 0 |
+| Win Rate | 0.0% |
+| Total P&L | 0.00% |
 
 ---
-*Updated automatically by the HMM engine. Do not edit manually.*
+
+*This file will be auto-updated every 15 minutes once Phase 4 cron is running.*  
+*To activate: run `scripts/phase4/setup_cron.sh` on the server.*
