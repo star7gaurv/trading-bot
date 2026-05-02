@@ -26,18 +26,24 @@ Note       : HMM engine not yet built (Phase 3)
 
 ## Active Strategy
 ```
-Strategy   : FinBuddyFreqAI (AiGuardrailStrategy → pending futures rewrite)
+Strategy   : FinBuddyFreqAI v10 (gaurav branch — entry-anchored ATR custom_stoploss)
 Mode       : Dry-run on Binance FUTURES (USDT-M Perpetual)
-Timeframe  : 5m (primary)
-Pairs      : 22 futures pairs (BTC/USDT:USDT, ETH/USDT:USDT + 20 others)
+Timeframe  : 15m (primary), 1h + 4h informative
+Pairs      : Binance USDT:USDT futures (BTC, ETH, SOL, BNB, XRP for backtest)
 Trading    : Long + Short enabled (can_short = True)
 Margin     : Isolated
-Leverage   : Conservative 2–5x
-FreqAI     : ✅ Training per-pair on rolling window
-LLM Layer  : ✅ FinBuddyLLMModel loaded — xAI Grok-3-mini [PRIMARY] → LGBM fallback
-Confidence : ≥ 65% required to act
-Backtest   : PENDING walk-forward on futures
-Status     : Bot RUNNING (dry-run), futures mode confirmed
+Stops      : custom_stoploss() returns stops anchored to entry via stoploss_from_open()
+             - Initial: 2×ATR below open
+             - Trailing: 1.5×ATR above open (only when profit > 1×ATR)
+             - Wide -0.08 fallback only (rarely hit)
+             - trailing_stop = False (framework trail off; custom owns it)
+Macro gate : Shorts only when BTC 4h close < BTC 4h EMA-50
+FreqAI     : ✅ LightGBMRegressor predicting mean of next 3 closes
+LLM Layer  : ✅ FinBuddyLLMModel — xAI Grok-3-mini [PRIMARY] → LGBM fallback
+Backtest   : R5 (v10) complete — first profitable bull (+7.24 USDT, WR 57.9%, Sharpe +0.13)
+             Bear: -8.78 USDT, WR 58.6%, Sharpe -0.15
+Next       : Walk-forward / out-of-sample validation before v11 tuning
+Status     : Bot RUNNING (dry-run); futures mode confirmed
 ```
 
 ---
