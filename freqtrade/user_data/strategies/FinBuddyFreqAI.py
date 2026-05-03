@@ -315,9 +315,23 @@ class FinBuddyFreqAI(IStrategy):
 
             labels[t] = label
 
-        # last label_period rows → NaN (FreqAI drops automatically)
-        labels[n - label_period:] = np.nan
-        dataframe["&-s_label"] = labels.astype("float32")
+        # v11.2 — encode targets as strings ("L"/"S"). Two reasons:
+        #  1. FreqAI's data_kitchen.remove_features_from_df does
+        #     `col.startswith("%")` over dataframe.columns; with float-typed
+        #     classes the per-class proba columns FreqAI adds end up as float
+        #     scalars (1.0 / -1.0), which raises AttributeError.
+        #  2. Collapse the rare class-0 (exact-flat time-barrier) rows to NaN
+        #     so train/val splits always see the same {L, S} class set —
+        #     LightGBM otherwise raises "y contains previously unseen
+        #     labels: [0.0]" when the validation split has a class the train
+        #     split does not.
+        labels_str = np.where(
+            labels == 1.0, "L",
+            np.where(labels == -1.0, "S", None)
+        )
+        # Tail of length label_period → NaN (FreqAI drops automatically)
+        labels_str[n - label_period:] = None
+        dataframe["&-s_label"] = pd.Series(labels_str, index=dataframe.index, dtype=object)
         return dataframe
 
     # ------------------------------------------------------------------ #
@@ -434,18 +448,17 @@ class FinBuddyFreqAI(IStrategy):
 
         TA filters and macro gate unchanged from v10.
         """
-        # Probability columns produced by LightGBMClassifier — per-class, named
-        # after the stringified float label. Try a few spellings defensively.
+        # v11.2 — string class labels => FreqAI proba columns are named "L" / "S".
+        # Defensive fallbacks kept for older feather formats.
         proba_long = (
+            dataframe.get("L",
             dataframe.get("1.0",
-            dataframe.get("1",
-            dataframe.get("&-s_label_proba_1",
-            dataframe.get("&-s_label_proba_+1", None))))
+            dataframe.get("1", None)))
         )
         proba_short = (
+            dataframe.get("S",
             dataframe.get("-1.0",
-            dataframe.get("-1",
-            dataframe.get("&-s_label_proba_-1", None)))
+            dataframe.get("-1", None)))
         )
 
         if proba_long is None:
@@ -546,15 +559,14 @@ class FinBuddyFreqAI(IStrategy):
         TA exits unchanged (RSI/BB extremes).
         """
         proba_long = (
+            dataframe.get("L",
             dataframe.get("1.0",
-            dataframe.get("1",
-            dataframe.get("&-s_label_proba_1",
-            dataframe.get("&-s_label_proba_+1", None))))
+            dataframe.get("1", None)))
         )
         proba_short = (
+            dataframe.get("S",
             dataframe.get("-1.0",
-            dataframe.get("-1",
-            dataframe.get("&-s_label_proba_-1", None)))
+            dataframe.get("-1", None)))
         )
 
         if proba_long is None:
