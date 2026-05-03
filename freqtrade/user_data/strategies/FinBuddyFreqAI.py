@@ -124,6 +124,47 @@ class FinBuddyFreqAI(IStrategy):
         return None
 
     # ------------------------------------------------------------------ #
+    # Phase 3 — Regime-aware position sizing                             #
+    # ------------------------------------------------------------------ #
+    _REGIME_MULTIPLIERS = {
+        "CRASH":    0.0,
+        "BEAR":     0.5,
+        "NEUTRAL":  1.0,
+        "BULL":     1.0,
+        "EUPHORIA": 0.75,
+    }
+
+    def _get_current_regime(self) -> str:
+        import json, os
+        regime_file = os.path.join(
+            str(self.config.get("user_data_dir", "/freqtrade/user_data")),
+            "../../finbuddy_memory/regimes/current.json"
+        )
+        try:
+            with open(regime_file) as f:
+                return json.load(f).get("regime", "NEUTRAL")
+        except Exception:
+            return "NEUTRAL"
+
+    def custom_stake_amount(
+        self,
+        current_time,
+        current_rate: float,
+        proposed_stake: float,
+        min_stake,
+        max_stake: float,
+        leverage: float,
+        entry_tag: str,
+        side: str,
+        **kwargs,
+    ) -> float:
+        regime = self._get_current_regime()
+        multiplier = self._REGIME_MULTIPLIERS.get(regime, 1.0)
+        if multiplier == 0.0:
+            return 0.0
+        return max(min_stake or 0, proposed_stake * multiplier)
+
+    # ------------------------------------------------------------------ #
     # FreqAI feature engineering (v10 — unchanged)                       #
     # ------------------------------------------------------------------ #
 
