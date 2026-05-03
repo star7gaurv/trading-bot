@@ -454,6 +454,81 @@ My pick: option 1 first (validation), then option 2 (small grid). Don't relabel 
 
 ---
 
+## 🤝 Handoff to Perplexity — Walk-Forward Validation In Progress
+
+**Written by:** Claude Code
+**Date:** 2026-05-03
+**For:** Perplexity AI (next session)
+**Status:** Walk-forward backtest running on server; results pending.
+
+### What's running right now
+A single Freqtrade backtest with FreqAI walk-forward training:
+- `train_period_days = 180` (6 months training)
+- `backtest_period_days = 30` (test window = 1 month, retrain monthly)
+- `identifier = finbuddy_walkforward_v1` (separate model cache from R5 results)
+- Range: `20240315-20260415` → ~25 monthly test windows
+- Strategy: v10 unchanged (no parameter tuning between windows — same `custom_stoploss`, same macro short-gate, same entry/exit thresholds)
+- Pairs: BTC/ETH/SOL/BNB/XRP USDT:USDT
+- Process: background task `bhim8u0tk` on server
+
+Why this matters: R5's +7 USDT bull and -9 USDT bear are still in-sample because we hand-tuned v6 → v10 against those exact windows. Walk-forward simulates "what would v10 have done if we deployed it cold each month using only the prior 6 months of training data?"
+
+### Result parser
+`scripts/walkforward_parse.py` — reads the latest backtest-result ZIP and reports per-month: trade count, WR%, Sharpe, P&L%, avg trade %. Run it after the backtest completes:
+```
+sg opc -c "python3 scripts/walkforward_parse.py"
+```
+
+### Decision tree for what comes next
+
+When the parser output lands:
+
+**Pass criteria (proceed to v11 tuning):**
+- ≥ 60% of windows have WR > 50%
+- Average monthly Sharpe > 0
+- No single month accounts for > 40% of cumulative P&L
+- Both bull-regime months (2024-04 → 2024-12) and bear-regime months (2025-Q1 → 2026-Q1) show positive median behavior
+
+**Fail criteria (escalate to Perplexity for triple-barrier redesign):**
+- Cumulative P&L concentrated in 1–2 lucky months
+- Positive Sharpe in < 50% of windows
+- A clear regime where v10 systematically loses (e.g., all 2025-Q3 months negative)
+
+### If we fail OOS — your job, Perplexity
+
+The label `&-s_close = mean(next 3 closes) / current_close - 1` is the architectural problem. It is **path-blind**: the model is rewarded only for the average of the forward window, regardless of how much drawdown the path takes to get there. Every parameter tweak we've made (v6→v10) has been treating symptoms; this is the disease.
+
+The redesign is **triple-barrier labeling** (López de Prado). For each candidate entry, label by which of three barriers hits first within `label_period_candles`:
+- Upper barrier: take-profit at +k×ATR → label `+1`
+- Lower barrier: stop-loss at -k×ATR → label `-1`
+- Time barrier: window expires before either → label by sign of final return
+
+The model now learns to *refuse* setups whose path is bad even when the mean is okay — exactly the pathology our 79/62 trailing chops in v8/v9 exposed.
+
+When you take this on:
+1. Replace `set_freqai_targets()` to emit the categorical label (or a directional regression on the realized first-touch outcome).
+2. Retrain on the same windows — expect WR to drop a bit but Sharpe and PF to rise as the model stops taking trash setups.
+3. Re-run walk-forward on v11 with the new label. Same `train_period_days=180, backtest_period_days=30`.
+
+### What's already pushed for you
+
+`gaurav` branch:
+- v10 strategy with `stoploss_from_open()` — see `freqtrade/user_data/strategies/FinBuddyFreqAI.py`
+- 5 rounds of futures backtest results — full table in this file, `## 📈 Round History`
+- Walk-forward runner config — `freqtrade/user_data/backtest_config.json` already has the 180/30 settings
+- Result parser — `scripts/walkforward_parse.py`
+- All memory files synced to v10 / R5 state (CLAUDE.md, FINBUDDY_PROJECT_MEMORY.md, finbuddy_memory/CONTEXT.md, graveyard.md, winners.md)
+
+### Server ops state (just so you don't trip on it)
+- ubuntu user is now in the `opc` group; `freqtrade/user_data` is group-owned + `g+w` + setgid. Both ubuntu (uid 1001) and the container's ftuser (uid 1000 = host opc) can write. Existing SSH sessions need `newgrp opc` or re-login to pick up the group.
+- `XAI_API_KEY` lives in `freqtrade/.env` (gitignored), referenced as `${XAI_API_KEY}` in `docker-compose.yml`. Compose auto-loads `.env` from the compose-file dir.
+- FreqAI `.pkl` model artifacts are gitignored — won't show up as dirty in git status anymore.
+- Live dry-run bot is still on the live `finbuddy_lgbm_v1` identifier (separate from `finbuddy_walkforward_v1` used for this run).
+
+*Written by Claude Code — 2026-05-03. Walk-forward result will be appended below this section once it lands.*
+
+---
+
 ## 📁 v8 Changes Summary
 
 | Change | Old (v7) | New (v8) | Reason |
