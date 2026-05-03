@@ -40,6 +40,13 @@ def main():
     dl    = load_json_safe(EXTERNAL / "defillama.json",   {"total_defi_tvl_usd": 0, "tvl_change_24h_pct": 0})
     gt    = load_json_safe(EXTERNAL / "google_trends.json", {"gtrends_bitcoin": 50})
 
+    # Load regime
+    regime_file = Path("/home/ubuntu/var/www/html/trade/finbuddy_memory/regimes/current.json")
+    if regime_file.exists():
+        regime_data = load_json_safe(regime_file, {"regime": "NEUTRAL", "confidence": 0.5})
+    else:
+        regime_data = {"regime": "NEUTRAL", "confidence": 0.5}
+
     combined = {
         "timestamp": datetime.utcnow().isoformat() + "Z",
         "fear_greed": fg.get("current_value", 50),
@@ -56,6 +63,9 @@ def main():
         "gtrends_bitcoin": gt.get("gtrends_bitcoin", 50),
         "gtrends_bitcoin_crash": gt.get("gtrends_bitcoin_crash", 10),
         "gtrends_buy_bitcoin": gt.get("gtrends_buy_bitcoin", 20),
+        "current_regime": regime_data.get("regime", "NEUTRAL"),
+        "regime_confidence": regime_data.get("confidence", 0.5),
+        "regime_since": regime_data.get("since", ""),
     }
 
     with open(COMBINED, "w") as f:
