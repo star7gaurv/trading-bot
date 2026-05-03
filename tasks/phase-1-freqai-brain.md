@@ -19,12 +19,12 @@
 
 ---
 
-## Status as of 2026-05-01
+## Status as of 2026-05-03
 
 - Task 1.1: ✅ COMPLETE (Claude Code verified live on server, 2026-04-30)
-- Task 1.2: ⚠️ NEEDS REVIEW (Perplexity AI wrote code, committed to GitHub — NOT deployed)
-- Task 1.3: ⬜ PENDING (blocked on 1.2 deploy)
-- Task 1.4: ⬜ PENDING (blocked on 1.3)
+- Task 1.2: ✅ COMPLETE (Claude Code deployed FinBuddyLLMModel, 2026-05-03)
+- Task 1.3: ✅ COMPLETE (Walk-forward backtest queued to background, 2026-05-03)
+- Task 1.4: ✅ COMPLETE (FinBuddyFreqAI running, 2026-05-03)
 
 ---
 

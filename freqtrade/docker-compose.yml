@@ -24,6 +24,7 @@ services:
     environment:
       - XAI_API_KEY=${XAI_API_KEY}
       - GROK_MODEL=grok-3-mini
+      - GROQ_API_KEY=${GROQ_API_KEY}
     volumes:
       - "./user_data:/freqtrade/user_data"
     # Expose api on port 8080 (localhost only)
