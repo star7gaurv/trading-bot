@@ -2,8 +2,8 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status:** 🟢 v10 deployed · 5 futures backtest rounds done · R5 first profitable bull · Walk-forward OOS validation next
-**Last Updated:** 2026-05-02 (Claude Code — Round 5 complete)
+**Status:** 🟢 v11 deployed · Phases 0–7 wired · Futures infra online · Walk-forward / label redesign next
+**Last Updated:** 2026-05-03 (Perplexity — post 7-phase infra run)
 
 ---
 
@@ -19,20 +19,28 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 ---
 
-## ✅ Step 5 Complete (2026-05-02)
+## ✅ Step 7 Complete (2026-05-03) — Infra Phases 1–7
 
-**What Claude confirmed as live on server:**
-- FreqTrade started cleanly — futures mode operational
-- Pre-existing log permission bug fixed (chmod 666 on log files, chmod 777 on logs dir)
-- `trading_mode: futures`, `margin_mode: isolated` confirmed in config
-- All 22 pairs converted to `COIN/USDT:USDT` futures format
-- Pairlist active: VolumePairList + SpreadFilter + PriceFilter + RangeStabilityFilter + VolatilityFilter
-- `FinBuddyLLMModel` loaded ✅ — xAI Grok-3-mini [PRIMARY] → LGBM fallback waterfall confirmed in logs
-- FreqAI downloading training data for futures candles
-- API server running at `0.0.0.0:8080`, Telegram RPC active
-- No fatal errors — bot is operational
+**What Claude Code’s latest session achieved on server (reporting back to this hub):**
 
-**Commit:** `9f6b6ed` → `gaurav` branch
+- **FreqTrade futures container**: ✅ Running, dry-run; FinBuddyFreqAI **v11** loaded; API available on port 8080
+- **Phase 2 — Data enrichment**: ✅ `fetch_all_external.py` wired to cron every 15 minutes, writing `combined_context.json`
+- **Phase 3 — HMM regime engine**: ✅ `hmm_regime_detector.py` wired to cron every 4 hours, writing `finbuddy_memory/regimes/current.{json,md}`
+- **Phase 4 — Obsidian memory writer**: ✅ `memory_writer.py` + `git_commit.sh` wired to cron every 15 minutes, updating `finbuddy_memory/CONTEXT.md` and auto-committing vault changes
+- **Phase 5 — Karpathy loop**: ✅ `karpathy/run_loop.py` wired to daily cron at 02:00, writing nightly research notes under `finbuddy_memory/research/`
+- **Phase 6 — TradingView webhook**: ⚠️ **Partial** — `webhook_receiver.py` created; FastAPI/uvicorn NOT yet installed; service not running; Nginx proxy path in place but backend returns 502 until uvicorn is installed
+- **Phase 7 — Python executor**: ✅ `executor/executor.py` wired to cron every 5 minutes, `/health` endpoint reports “0 signals processed (DB initialized and functional)”
+
+### Live crontab (server truth, as of 2026-05-03)
+```cron
+*/15 * * * * python3 /home/ubuntu/var/www/html/trade/freqtrade/user_data/scripts/fetch_all_external.py >> /home/ubuntu/.finbuddy/logs/data_fetcher.log 2>&1
+0 */4 * * * python3 /home/ubuntu/var/www/html/trade/freqtrade/user_data/scripts/hmm_regime_detector.py >> /home/ubuntu/.finbuddy/logs/hmm_regime.log 2>&1
+*/15 * * * * python3 /home/ubuntu/var/www/html/trade/finbuddy_memory/scripts/memory_writer.py && bash /home/ubuntu/var/www/html/trade/finbuddy_memory/scripts/git_commit.sh >> /home/ubuntu/.finbuddy/logs/memory_writer.log 2>&1
+0 2 * * * python3 /home/ubuntu/var/www/html/trade/freqtrade/user_data/scripts/karpathy/run_loop.py >> /home/ubuntu/.finbuddy/logs/karpathy.log 2>&1
+*/5 * * * * python3 /home/ubuntu/var/www/html/trade/freqtrade/user_data/scripts/executor/executor.py >> /home/ubuntu/.finbuddy/logs/executor.log 2>&1
+```
+
+This confirms: **Phases 2, 3, 4, 5, and 7 are not just coded — they are live and automated.**
 
 ---
 
@@ -58,7 +66,9 @@ Spot trading is structurally long-biased — you can only buy low, sell high. Th
 
 ---
 
-## 📈 Five Futures Backtest Rounds — Trajectory
+## 📈 Five Futures Backtest Rounds — Trajectory (v6 → v10)
+
+*(v11 is the current live strategy; v10 remains the last fully analyzed backtest round.)*
 
 | Round | Strategy | Key Change | Bull P&L | Bear P&L | Bull Sharpe | Bear Sharpe |
 |---|---|---|---|---|---|---|
@@ -68,29 +78,7 @@ Spot trading is structurally long-biased — you can only buy low, sell high. Th
 | 4 | v9 | `trailing_stop=False` + macro short-gate | -7 | -22 | -0.13 | -0.37 |
 | **5** | **v10** | **`stoploss_from_open()` — entry-anchored stops** | **+7.24** | **-8.78** | **+0.13** | **-0.15** |
 
-### Round 5 (current state)
-- **Bull:** 57 trades · WR 57.9% ✅ · Sharpe +0.13 · DD 1.68% ✅ · PF 1.11 · P&L **+7.24 USDT** (first profitable round)
-- **Bear:** 87 trades · WR 58.6% ✅ · Sharpe -0.15 · DD 3.66% ✅ · PF 0.91 · P&L -8.78 USDT
-- Acceptance: WR ✅ and DD ✅ on both legs. Sharpe and PF still below target (0.5 / 1.2) but the gap closed dramatically.
-- Mechanism: `stoploss_from_open()` anchors both stops to ENTRY price. Trailing cohort flipped from -0.60% avg / 15.8% WR (R4) to +0.04% avg / 51.2% WR (R5).
-
-### Next phase
-**Walk-forward / out-of-sample validation** before any v11 tuning or live deployment. R5 numbers are in-sample; we need to confirm the lift survives a held-out window before we trust the result. Plan: train months 1–6, test month 7, slide.
-
----
-
-## 🎯 Full Vision — All Crypto Market Modules
-
-| Module | Type | Priority | Status |
-|---|---|---|---|
-| **Perp Futures (Long/Short)** | Directional | 🔥 Immediate | 🔄 In Progress |
-| **Funding Rate Farming** | Passive income | ⚡ Phase 2 | ⬜ Pending |
-| **Spot-Futures Basis Arb** | Market neutral | 🕐 Phase 7 | ⬜ Pending |
-| **Statistical Arb (pair trading)** | Market neutral | 🕐 Phase 7 | ⬜ Pending |
-| **Grid Trading** | Sideways/range | ⚡ Phase 5 | ⬜ Pending |
-| **Spot Trading** | Long-only | 🕐 Phase 8 | ⬜ Secondary |
-| **DCA / Accumulation** | Long-term | 🕐 Phase 8 | ⬜ Pending |
-| **Options (hedging)** | Risk mgmt | 🕐 Future | ⬜ Advanced |
+*(Full R5 analysis and the walk-forward OOS failure are kept in `CLAUDE_HANDOFF.md` for historical reference and future label redesign work.)*
 
 ---
 
@@ -132,123 +120,84 @@ These are rules from the official Freqtrade develop docs that directly impact ou
 | **grok-3-mini** | xAI | `XAI_API_KEY` | $0.10/M | ✅ Real-time signal confirmation — PRIMARY |
 | **grok-3** | xAI | `XAI_API_KEY` | $2/M | Optional upgrade if needed |
 | **claude-sonnet-4-5** | Anthropic | `ANTHROPIC_API_KEY` | $3/$15/M | ✅ Claude Code — deploy, monitor, debug |
-| **gemini-2.5-flash** | Google | `GEMINI_API_KEY` | Free tier | Future large-context research |
+| **gemini-2.5-flash** | Google | `GEMINI_API_KEY` | Free tier | Nightly research loop (Phase 5) |
 | **deepseek-chat** | DeepSeek | `DEEPSEEK_API_KEY` | ~$0.01/M | Future bulk hypothesis generation |
-
-**Grok must have `x_search` and `web_search_preview` tools enabled on xAI API.**
 
 ---
 
-## ⚠️ Status Legend
+## 🚨 Status Legend
 
 | Icon | Meaning |
 |---|---|
 | ✅ COMPLETE | Verified live on server by Claude Code |
-| ⚠️ NEEDS REVIEW | Code in GitHub, NOT yet deployed/verified on server |
+| ⚠️ NEEDS REVIEW | Code in GitHub, NOT yet fully live or has gaps |
 | 🟡 IN PROGRESS | Actively being worked on |
 | ⬜ PENDING | Not started |
 | 🔴 RETIRED | Superseded — do not continue |
 
 ---
 
-## 🚀 Current System State (as of 2026-05-02 — Step 5)
+## 🚀 Current System State (as of 2026-05-03)
 
 | Component | Status | Notes |
 |---|---|---|
-| **FreqTrade** | ✅ Running, dry-run | Futures mode, Oracle Free Tier |
-| **Futures config** | ✅ Live | trading_mode: futures, margin_mode: isolated |
-| **22 futures pairs** | ✅ Active | All in COIN/USDT:USDT format |
-| **FinBuddyLLMModel** | ✅ Loaded | Grok-3-mini waterfall confirmed |
-| **FreqAI** | ✅ Training | Downloading data per pair |
-| **API Server** | ✅ 0.0.0.0:8080 | Accessible |
-| **Telegram RPC** | ✅ Active | Native FreqTrade Telegram |
-| **Log permissions** | ✅ Fixed | chmod 666/777 applied |
-| **LightGBM (Task 1.1)** | ✅ Live | Keep — reuse for futures |
+| **FreqTrade futures** | ✅ Running, dry-run | FinBuddyFreqAI v11, Binance USDT-M, isolated margin |
+| **Phase 1 — FreqAI brain** | 🟡 Active | v11 deployed; label/Walk-forward work still open (see CLAUDE_HANDOFF) |
+| **Phase 2 — Data enrichment** | ✅ Live | All 5 fetchers + master aggregator cron’d |
+| **Phase 3 — HMM regimes** | ✅ Live | 5-regime HMM writes `regimes/current.{json,md}` every 4h |
+| **Phase 4 — Obsidian memory** | ✅ Live | CONTEXT + signals/research auto-written + git auto-commit |
+| **Phase 5 — Karpathy loop** | ✅ Live | Nightly Gemini + DeepSeek research at 02:00 |
+| **Phase 6 — TradingView webhook** | ⚠️ Skeleton | Receiver file created; FastAPI/uvicorn missing; service not running yet |
+| **Phase 7 — Executor** | ✅ Live (paper) | Signal executor cron every 5 min; `/health` OK; 0 signals processed so far |
 | **N8N pipeline** | 🔴 Permanently disabled | FreqAI is sole signal source |
-| **FinBuddyFreqAI.py (futures rewrite)** | ⚠️ Pending | Must add `can_short=True` + short signals |
-| **Walk-forward backtest** | ⬜ Not run | NEXT PRIORITY before going live |
-| **HMM Engine** | ⬜ Not built | Phase 3 |
-| **Karpathy Loop** | ⬜ Not built | Phase 5 |
-| **Obsidian auto-write** | ⬜ Not wired | Phase 4 |
 
 ---
 
-## 🗺️ Revised Roadmap (Post-Pivot, Post-Step-5)
+## 🆕 Revised Phase Roadmap (Authoritative)
 
-### 🔥 Immediate Next Steps
+*(This table supersedes any older roadmap tables in this file. For the canonical live view, also see `tasks/TASKS.md`.)*
 
-| Step | Action | Owner | Status |
+| Phase | File | Status | Focus |
 |---|---|---|---|
-| **NEXT 1** | Verify FinBuddyFreqAI.py has `can_short=True`, short entry signals, `startup_candle_count ≥ 400` | Claude Code | ⬜ |
-| **NEXT 2** | Run futures walk-forward backtest (2024-01-01 → 2025-01-01 bull + 2025-01-01 → 2026-04-01 bear) | Claude Code | ⬜ |
-| **NEXT 3** | Parse backtest CSV — validate: Sharpe > 0.5, WR > 50%, DD < 20%, PF > 1.2 | Perplexity reads CSV | ⬜ |
-| **NEXT 4** | If validated: switch `dry_run: false` → go live with small stake ($10–20/trade) | Claude Code | ⬜ |
-| **NEXT 5** | Install Phase 2 external data fetchers + cron jobs | Claude Code | ⬜ |
+| 0 | `tasks/phase-0-foundation.md` | ✅ Complete | Foundation — FreqTrade, Telegram, server, N8N cleanup |
+| 1 | `tasks/phase-1-freqai-brain.md` | 🟡 In Progress | FreqAI brain — futures long+short, v11 + label work |
+| 2 | `tasks/phase-2-data-enrichment.md` | ✅ Live | External data fetchers + combined_context.json |
+| 3 | `tasks/phase-3-hmm-regime.md` | ✅ Live | 5-regime HMM engine + regime-aware sizing hooks |
+| 4 | `tasks/phase-4-obsidian-memory.md` | ✅ Live | Obsidian vault auto-write + auto git commit |
+| 5 | `tasks/phase-5-karpathy-loop.md` | ✅ Live | Nightly research loop (Gemini + DeepSeek R1) |
+| 6 | `tasks/phase-6-tradingview.md` | ⚠️ Partial | TV webhook FastAPI app created; uvicorn not installed / not running |
+| 7 | `tasks/phase-7-executor.md` | ✅ Live (paper) | Python signal executor + `/health` endpoint |
+| 8 | `tasks/phase-8-futures-setup.md` | ⬜ Pending | Futures account setup refinement (dedicated API key, leverage caps, separate config) |
+| 9 | `tasks/phase-9-futures-risk.md` | ⬜ Pending | Futures risk engine — liquidation guard, funding monitor, DD watchdog |
+| 10 | `tasks/phase-10-live-migration.md` | ⬜ Pending | Dry-run → live capital migration, kill switch, go-live protocol |
 
-### Phase Roadmap
+---
 
-| Phase | Focus | Status |
+## 🎯 What Each Agent Does (Summary)
+
+| Tool | Role | Focus |
 |---|---|---|
-| 0 | Foundation | ✅ Complete |
-| 1 | FreqAI brain — futures long+short | 🟡 Step 5 done, backtest pending |
-| 2 | Funding rate farming module | ⬜ Pending |
-| 3 | HMM 5-regime engine | ⬜ Pending |
-| 4 | External data + cron install | ⬜ Code ready, crons pending |
-| 5 | Grid trading module | ⬜ Pending |
-| 6 | Memory auto-write + Karpathy loop | ⬜ Code ready, crons pending |
-| 7 | Spot-futures basis arbitrage | ⬜ Pending |
-| 8 | Spot trading module | ⬜ Secondary |
-| 9 | TradingView webhook + Multi-executor | ⬜ SaaS buildout |
+| **Perplexity AI** | Architect & Repo Maintainer | Designs phases, writes/updates code & docs, keeps memory in sync |
+| **Claude Code** | Ops, Monitoring, Executor | Runs commands on server, deploys, monitors, runs backtests, updates task status |
+
+Workflow is now explicitly baked into:
+- `COLLABORATION_CONTRACT.md` (roles & boundaries)
+- `CLAUDE.md` (deep project context, history, and architecture)
+- `tasks/TASKS.md` (phase list + statuses)
+- This file, `FINBUDDY_PROJECT_MEMORY.md` (high-level hub)
 
 ---
 
-## 📦 What's Built & Committed
+## 🔗 Related Files
 
-### Task 1.2 — FinBuddyLLMModel.py (Grok layer) — ✅ Deployed & Running
-- `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py`
-- LightGBM + Grok-3-mini blended signal — confirmed in logs
-
-### Task 1.3 — Backtest Scripts — ⚠️ Repurpose for futures
-- `scripts/run_backtest.sh`, `scripts/backtest_config.json`, `scripts/parse_backtest.py`, `scripts/tune_stoploss.sh`
-- Must update `--trading-mode futures` flag and add short logic
-
-### Phase 2 — External Data Fetchers — ⚠️ Committed, not installed
-- `scripts/phase2/` — fear/greed, CoinGecko, CryptoPanic, DefiLlama, Google Trends
-- Still valid — external signals are market-type agnostic
-
-### Phase 4 — Memory Auto-Writer — ⚠️ Committed, not installed
-- `scripts/phase4/memory_writer.py` + `setup_cron.sh`
-- Install after futures strategy is validated live
+- [[CLAUDE]] ← deep project context, history, and architecture
+- [[COLLABORATION_CONTRACT]] ← roles, automation rules, AI vs code boundaries
+- [[CLAUDE_HANDOFF]] ← current action queue + label/walk-forward decisions
+- [[tasks/TASKS]] ← canonical phase list and statuses
+- [[finbuddy_memory/CONTEXT]] ← live context injected into AI prompts
+- [[finbuddy_memory/regimes/current]] ← live regime snapshot
+- [[strategies/registry]] ← strategy registry & lifecycle
 
 ---
 
-## 🎯 Quick Links
-
-| What | Where |
-|---|---|
-| **Core collaboration rules** | `COLLABORATION_CONTRACT.md` |
-| **🚨 Handoff for Claude Code** | `CLAUDE_HANDOFF.md` ← READ THIS FIRST |
-| **Full project context** | `CLAUDE.md` |
-| **Active strategy (needs futures rewrite verify)** | `freqtrade/user_data/strategies/FinBuddyFreqAI.py` |
-| **LLM model (deployed + running)** | `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` |
-| **Backtest runner** | `scripts/run_backtest.sh` |
-| **External data fetchers** | `scripts/phase2/` |
-| **Memory writer** | `scripts/phase4/memory_writer.py` |
-| **xAI API console** | https://console.x.ai |
-| **Server** | Oracle Free Tier, 140.245.17.121 |
-| **FreqTrade UI** | https://trade.star7gaurav.in |
-
----
-
-## 💬 Who Does What
-
-| Tool | Can Do | Cannot Do |
-|---|---|---|
-| **Perplexity AI** | Design, write + commit code/docs to GitHub; define automation; read/parse CSVs | SSH, docker restart, live logs |
-| **Claude Code** | SSH, deploy, monitor, run experiments, run backtests, verify deployments | Replace cron/scripts for repetitive tasks |
-
-**Workflow:** Perplexity writes → marks ⚠️ NEEDS REVIEW → Claude Code deploys/verifies once → cron/scripts handle repetition → Claude monitors and improves.
-
----
-
-*Last updated: Perplexity AI — 2026-05-02 15:55 IST — Step 5 complete, futures mode live, walk-forward backtest is next*
+*This hub must be updated at the end of every major session. It is the high-level single source of truth for the project.*
