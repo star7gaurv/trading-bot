@@ -1,77 +1,12 @@
 {
-  "_comment": "Jarvis user config. NEVER commit real API keys — use env var references. Phase 1: one user. Phase 2: one of many.",
-
   "user_id": "user_01_gaurav",
-  "display_name": "Gaurav",
-  "created_at": "2026-04-21",
-  "status": "active",
-
-  "exchange": {
-    "name": "binance",
-    "mode": "dry_run",
-    "api_key_env": "BINANCE_API_KEY",
-    "api_secret_env": "BINANCE_API_SECRET",
-    "base_url": "https://api.binance.com"
-  },
-
-  "capital": {
-    "quote_currency": "USDT",
-    "allocated_usd": 1000.0,
-    "reserved_usd": 100.0,
-    "_note": "allocated_usd = what Jarvis may trade with. reserved_usd = held back, never touched."
-  },
-
-  "risk": {
-    "max_risk_per_trade_pct": 0.02,
-    "max_concurrent_positions": 3,
-    "max_daily_loss_pct": 0.06,
-    "max_drawdown_pct": 0.15,
-    "min_confidence_threshold": 0.6,
-    "_note": "Turtle 2% per trade. Halt trading if daily loss ≥ 6% or drawdown ≥ 15%."
-  },
-
-  "pairs": {
-    "whitelist": [
-      "BTC/USDT",
-      "ETH/USDT",
-      "SOL/USDT",
-      "BNB/USDT"
-    ],
-    "blacklist": [],
-    "_note": "Phase 1: conservative majors only. Pairlist audit will expand/refine this."
-  },
-
-  "strategies": {
-    "active_strategies": [
-      "rsi_macd_ai_v1"
-    ],
-    "_note": "Signal-generator only emits for strategies listed here. Strategy IDs must exist in strategies/registry.json."
-  },
-
+  "capital_usd": 1000,
+  "max_risk_per_trade_pct": 0.02,
+  "min_confidence_threshold": 0.60,
+  "paper_trading": true,
   "regime_filter": {
-    "allow_trading_in": ["BEAR", "NEUTRAL", "BULL"],
-    "halt_trading_in": ["CRASH", "EUPHORIA"],
-    "_note": "Default: skip trading in the extremes. Override per-strategy if needed."
+    "blocked_regimes": ["CRASH"]
   },
-
-  "notifications": {
-    "telegram": {
-      "enabled": true,
-      "chat_id_env": "TELEGRAM_CHAT_ID",
-      "bot_token_env": "TELEGRAM_BOT_TOKEN",
-      "notify_on": ["buy", "sell", "stop_loss_hit", "take_profit_hit", "daily_summary", "error"]
-    }
-  },
-
-  "execution": {
-    "order_type": "market",
-    "slippage_tolerance_pct": 0.005,
-    "paper_trade": false,
-    "_note": "paper_trade=true skips actual Binance order placement but logs everything as if real."
-  },
-
-  "schedule": {
-    "signal_cadence_minutes": 15,
-    "timezone": "Asia/Kolkata"
-  }
+  "exchange": "binance",
+  "pairs": ["BTC/USDT", "ETH/USDT", "SOL/USDT"]
 }
