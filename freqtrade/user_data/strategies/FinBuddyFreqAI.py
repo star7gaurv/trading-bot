@@ -422,22 +422,32 @@ class FinBuddyFreqAI(IStrategy):
         """
         v11 entry rules using LightGBMClassifier output probabilities.
 
-        FreqAI classifier produces columns at inference:
-          &-s_label_proba_-1   probability the label resolves to -1 (SL hits first)
-          &-s_label_proba_0    probability of time-barrier / flat
-          &-s_label_proba_+1   probability the label resolves to +1 (TP hits first)
+        FreqAI's LightGBMClassifier emits one probability column per class,
+        named with the stringified class label only (no `&-s_label_proba_` prefix).
+        Labels are float32, so the columns are "1.0" and "-1.0".
+        Verified from models/finbuddy_backtest_v11/backtesting_predictions/*.feather
+        whose columns are: ['date', '&-s_label', '&-s_label_mean',
+        '&-s_label_std', '-1.0', '1.0', 'do_predict'].
 
         Long:  P(+1) > 0.55 — model confident TP hits before SL
         Short: P(-1) > 0.55 — model confident SL hits (price drops) before TP
 
         TA filters and macro gate unchanged from v10.
         """
-        # Probability columns produced by LightGBMClassifier
-        proba_long  = dataframe.get("&-s_label_proba_1",  dataframe.get("&-s_label_proba_+1",  None))
-        proba_short = dataframe.get("&-s_label_proba_-1", None)
+        # Probability columns produced by LightGBMClassifier — per-class, named
+        # after the stringified float label. Try a few spellings defensively.
+        proba_long = (
+            dataframe.get("1.0",
+            dataframe.get("1",
+            dataframe.get("&-s_label_proba_1",
+            dataframe.get("&-s_label_proba_+1", None))))
+        )
+        proba_short = (
+            dataframe.get("-1.0",
+            dataframe.get("-1",
+            dataframe.get("&-s_label_proba_-1", None)))
+        )
 
-        # Graceful fallback if column names differ (FreqAI uses str(class)):
-        # try both "+1" and "1" spellings
         if proba_long is None:
             # column doesn't exist yet (first candle before FreqAI trains)
             proba_long  = pd.Series(0.0, index=dataframe.index)
@@ -535,8 +545,17 @@ class FinBuddyFreqAI(IStrategy):
         Exit short when P(+1) > 0.45 (model sees TP risk rising for shorts).
         TA exits unchanged (RSI/BB extremes).
         """
-        proba_long  = dataframe.get("&-s_label_proba_1",  dataframe.get("&-s_label_proba_+1",  None))
-        proba_short = dataframe.get("&-s_label_proba_-1", None)
+        proba_long = (
+            dataframe.get("1.0",
+            dataframe.get("1",
+            dataframe.get("&-s_label_proba_1",
+            dataframe.get("&-s_label_proba_+1", None))))
+        )
+        proba_short = (
+            dataframe.get("-1.0",
+            dataframe.get("-1",
+            dataframe.get("&-s_label_proba_-1", None)))
+        )
 
         if proba_long is None:
             proba_long  = pd.Series(0.0, index=dataframe.index)
