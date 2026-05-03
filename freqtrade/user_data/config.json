@@ -91,8 +91,9 @@
   ],
   "telegram": {
     "enabled": true,
-    "token": "8557119080:AAH9KPMIZSGP7Gsn9wbJGVNaNRyEQHISR_o",
-    "chat_id": "5622292536"
+    "token": "",
+    "chat_id": "5622292536",
+    "_token_note": "REDACTED in repo. Live token is set on server only \u2014 paste into the on-server config or supply via env. Rotate via @BotFather: this token was previously committed."
   },
   "api_server": {
     "enabled": true,
@@ -164,5 +165,6 @@
       "learning_rate": 0.05
     }
   },
-  "freqaimodel": "FinBuddyLLMModel"
+  "freqaimodel": "LightGBMClassifier",
+  "_freqaimodel_note": "Set to LightGBMClassifier to match v11 strategy (proba columns -1.0 / 1.0). FinBuddyLLMModel is a Regressor and is incompatible with v11; rewrite as Classifier subclass before re-enabling."
 }
