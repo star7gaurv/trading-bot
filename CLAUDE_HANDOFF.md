@@ -529,6 +529,115 @@ When you take this on:
 
 ---
 
+## 🔴 Walk-Forward Result — v10 FAILED OOS
+
+**Run:** `20240315-20260415`, `train_period_days=180`, `backtest_period_days=30`
+**Identifier:** `finbuddy_walkforward_v1`
+**Result file:** `backtest-result-2026-05-03_16-53-34.zip`
+
+### Aggregate
+- 280 trades, WR 58.2% ✓, Drawdown 4.44% ✓
+- **Sharpe (closed): -0.67** ❌ (was +0.13 / -0.15 in R5)
+- **Total P&L: -23.14 USDT** ❌ (was +7.24 / -8.78 in R5)
+
+### Per-window breakdown (test month = close_date month)
+```
+Month        N  Wins  Losses    WR%   Sharpe     P&L%     Avg%
+----------------------------------------------------------------------
+2024-04      1     1       0  100.0    +0.00    +3.75   +3.750   ← 1 trade
+2024-06      2     0       2    0.0    -4.96    -1.73   -0.866
+2024-08      4     2       2   50.0    +0.20    +0.67   +0.167
+2024-09      2     0       2    0.0    -3.52    -0.95   -0.474
+2024-11      2     0       2    0.0    -7.38    -6.66   -3.330
+2024-12     53    27      26   50.9    -0.92    -8.45   -0.159
+2025-01     49    30      19   61.2    -0.24    -1.59   -0.032
+2025-02     23    17       6   73.9    +0.97    +7.12   +0.310   ← only winner
+2026-03    129    79      50   61.2    -0.15    -1.18   -0.009
+2026-04     15     7       8   46.7    -0.89    -2.57   -0.171
+----------------------------------------------------------------------
+OVERALL    280   163     117   58.2    -0.67   -11.58   -0.041
+```
+
+### Verdict against pass/fail criteria
+| Criterion | Threshold | Actual | Verdict |
+|---|---|---|---|
+| Months WR > 50% | ≥ 60% of months | **44%** (4/9) | ❌ |
+| Avg monthly Sharpe > 0 | > 0 | **-1.88** | ❌ |
+| No month dominates P&L | < 40% from any one | 2025-02 alone: +7.12 vs cumulative -11.58 (only positive month with mass) | ❌ |
+| Positive Sharpe months | ≥ 50% | **22%** (2/9) | ❌ |
+
+**4/4 fail criteria triggered.** The R5 in-sample lift does not survive OOS.
+
+### Two anomalies worth flagging
+1. **Sparse months.** Of 25 expected test windows, only 10 produced ≥1 trade and only 4 produced substantial trade counts (2024-12, 2025-01, 2025-02, 2026-03). The other 15 months are silent. Either v10's filters (macro short-gate, ATR floor, 1h trend) are vastly too restrictive when the training window changes, OR something in the FreqAI training cadence skipped predictions during those months. Worth investigating but does not change the conclusion.
+2. **2026-03 cluster (129 trades, 61.2% WR, near-zero Sharpe).** Almost half of all OOS trades happen in a single month, and even that "good WR" month is a -1.18% loser. Confirms the strategy is taking trash setups when it does fire.
+
+### What this proves
+**The label is the architectural problem, not the stop.** Five rounds of stop-tuning got us to a beautiful in-sample R5, but cold deployment loses money. The mean-of-next-3-closes target is path-blind by construction — the model is trained to ignore the drawdown leg, then the realized stops absorb all the path damage and the model "looks right" on average while every trade limps to break-even.
+
+This was the diagnosis from the Round 1 review I wrote earlier in this session. Five iterations didn't fix it because we were treating the symptom (stops) instead of the cause (label).
+
+---
+
+## 🚨 Escalation to Perplexity — Triple-Barrier Label Redesign
+
+**You're up.**
+
+The escalation criteria from earlier in this file are met. Cease v10/v11 stop tuning. The next move is a label rewrite, not another parameter pass.
+
+### Concrete spec for v11 label
+Replace `set_freqai_targets()` in `freqtrade/user_data/strategies/FinBuddyFreqAI.py`. Current implementation:
+```python
+def set_freqai_targets(self, dataframe, metadata, **kwargs):
+    label_period = self.freqai_info["feature_parameters"]["label_period_candles"]
+    dataframe["&-s_close"] = (
+        dataframe["close"].shift(-label_period).rolling(label_period).mean()
+        / dataframe["close"]
+    ) - 1
+    return dataframe
+```
+
+This produces a path-blind regression target. Replace with **triple-barrier labeling** (López de Prado, *Advances in Financial Machine Learning* ch. 3):
+
+For each candle `t`:
+- Set TP barrier at `close[t] * (1 + k_tp * atr_pct[t])`
+- Set SL barrier at `close[t] * (1 - k_sl * atr_pct[t])`
+- Set time barrier at `t + label_period_candles`
+- Look forward in `[t+1, t+label_period_candles]` and label by which barrier hits first:
+  - `+1` if TP hits first → take-profit reached
+  - `-1` if SL hits first → stopped out
+  - `0` if time barrier expires before either → label by sign of final return
+
+Suggested starting params: `k_tp = 2.0`, `k_sl = 1.0`, `label_period_candles = 12` (3 hours on 15m, longer than current 3 to give the path time to resolve).
+
+Two model-output options:
+- **Categorical (recommended):** Switch FreqAI model to a classifier (`LightGBMClassifier`). Output is class probabilities. Entry rule: `&-s_label_proba_+1 > 0.55`.
+- **Regression on outcome:** Keep regressor, target is the realized P&L at first-touch. Less elegant but compatible with current entry logic (`&-s_close > 0.010` style).
+
+### Validation plan for v11 (mandatory)
+Once the label is rewritten:
+1. Re-run the same walk-forward harness (already in place: `train_period_days=180, backtest_period_days=30, identifier=finbuddy_walkforward_v1`). Purge cache first: `sudo rm -rf freqtrade/user_data/models/finbuddy_walkforward_v1`.
+2. Run `python3 scripts/walkforward_parse.py` — same parser, same metrics, same pass/fail bar.
+3. **Pass criteria:** ≥ 60% months with WR > 50%, avg monthly Sharpe > 0, no single month > 40% of cumulative P&L.
+
+Do NOT run another in-sample bull/bear pair until v11 passes walk-forward. The five-round in-sample march was theatre.
+
+### Files for context
+- `freqtrade/user_data/strategies/FinBuddyFreqAI.py` — strategy v10
+- `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` — current FreqAI model (LightGBMRegressor + xAI Grok confirmation). For categorical label, fork to `FinBuddyLLMClassifierModel.py`.
+- `freqtrade/user_data/backtest_config.json` — already configured for walk-forward
+- `scripts/walkforward_parse.py` — result parser
+- `finbuddy_memory/strategies/graveyard.md` — v6/v7/v8/v9 retirement entries; add v10 once v11 ships
+
+### What you should NOT do
+- Don't tune the stop further. The stop is not the bug — five rounds proved that.
+- Don't try yet another parameter grid on the existing label. Same dead end.
+- Don't deploy v11 to dry-run without passing walk-forward. Live capital must wait for OOS validation.
+
+*Written by Claude Code — 2026-05-03. Walk-forward verdict appended.*
+
+---
+
 ## 📁 v8 Changes Summary
 
 | Change | Old (v7) | New (v8) | Reason |
