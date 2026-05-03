@@ -13,14 +13,14 @@
 |---|---|---|---|
 | 0 | [phase-0-foundation.md](phase-0-foundation.md) | ✅ **5/5 Complete** (2026-04-27) | Fix loose ends, clean up, wire everything together |
 | 1 | [phase-1-freqai-brain.md](phase-1-freqai-brain.md) | 🔄 **In Progress** — rewriting for futures | FreqAI brain — long + short, v10 active |
-| 2 | [phase-2-data-enrichment.md](phase-2-data-enrichment.md) | ⚠️ **Code deployed** (2026-05-03) | External data fetchers — Fear & Greed, CoinGecko, CryptoPanic, DefiLlama, Google Trends |
-| 3 | [phase-3-hmm-regime.md](phase-3-hmm-regime.md) | ⚠️ **Code deployed** (2026-05-03) | 5-regime HMM engine wired into strategy + memory |
-| 4 | [phase-4-obsidian-memory.md](phase-4-obsidian-memory.md) | ⚠️ **Code deployed** (2026-05-03) | Obsidian vault auto-write + git auto-commit |
-| 5 | [phase-5-karpathy-loop.md](phase-5-karpathy-loop.md) | ⚠️ **Code deployed** (2026-05-03) | Nightly research loop — Gemini + DeepSeek R1 |
+| 2 | [phase-2-data-enrichment.md](phase-2-data-enrichment.md) | ✅ **Verified** (2026-05-03) — cron clean, combined_context.json updating | External data fetchers — Fear & Greed, CoinGecko, CryptoPanic, DefiLlama, Google Trends |
+| 3 | [phase-3-hmm-regime.md](phase-3-hmm-regime.md) | ✅ **Verified** (2026-05-03) — regime NEUTRAL, cron clean | 5-regime HMM engine wired into strategy + memory |
+| 4 | [phase-4-obsidian-memory.md](phase-4-obsidian-memory.md) | ✅ **Verified** (2026-05-03) — auto-commits every 15m | Obsidian vault auto-write + git auto-commit |
+| 5 | [phase-5-karpathy-loop.md](phase-5-karpathy-loop.md) | ✅ **Verified** (2026-05-03) — research notes + hypotheses generated | Nightly research loop — Gemini + DeepSeek R1 |
 | 6 | [phase-6-tradingview.md](phase-6-tradingview.md) | ✅ **Live** (2026-05-03) — webhook + Nginx proxy | TradingView webhook live; Task 6.2 (TV alert config) is manual |
-| 7 | [phase-7-executor.md](phase-7-executor.md) | ⚠️ **Code deployed** (2026-05-03) | Python signal executor — paper trading mode |
-| 8 | [phase-8-futures-setup.md](phase-8-futures-setup.md) | ⬜ **Pending** | Futures account setup — Binance USDT-M, leverage config, isolated margin |
-| 9 | [phase-9-futures-risk.md](phase-9-futures-risk.md) | ⬜ **Pending** | Futures risk engine — position sizing, liquidation guards, funding rate monitor |
+| 7 | [phase-7-executor.md](phase-7-executor.md) | ✅ **Verified** (2026-05-03) — cron clean, no exceptions | Python signal executor — paper trading mode |
+| 8 | [phase-8-futures-setup.md](phase-8-futures-setup.md) | 🔄 **In Progress** (2026-05-03) — config checker live; Binance manual checklist pending | Futures account setup — Binance USDT-M, leverage config, isolated margin |
+| 9 | [phase-9-futures-risk.md](phase-9-futures-risk.md) | 🔄 **In Progress** (2026-05-03) — RiskEngine scaffold + 10/10 self-test passing | Futures risk engine — position sizing, liquidation guards, funding rate monitor |
 | 10 | [phase-10-live-migration.md](phase-10-live-migration.md) | ⬜ **Pending** | Live capital migration — dry-run to real money, kill switch, go-live protocol |
 
 ---
