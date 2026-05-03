@@ -68,10 +68,10 @@
     "freqai": {
         "enabled": true,
         "purge_old_models": false,
-        "train_period_days": 30,
-        "backtest_period_days": 7,
+        "train_period_days": 180,
+        "backtest_period_days": 30,
         "live_retrain_hours": 4,
-        "identifier": "finbuddy_backtest_v1",
+        "identifier": "finbuddy_walkforward_v1",
         "feature_parameters": {
             "include_timeframes": [
                 "15m"
