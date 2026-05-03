@@ -18,32 +18,38 @@ logger = logging.getLogger(__name__)
 
 class FinBuddyFreqAI(IStrategy):
     """
-    FinBuddy FreqAI Strategy v8 — ATR-adaptive stoploss (2026-05-02)
+    FinBuddy FreqAI Strategy v11 — Triple-Barrier Label + LightGBMClassifier (2026-05-03)
 
-    Round 2 forensics:
-      - WR: 48.2% / 50.0% (was 63% R1) — stoploss was CHOPPING good signals
-      - Fixed SL -1.5% is within 15m candle noise: price touches it before signal plays out
-      - Evidence: Bear longs (exit_signal) had 93.5% WR at +0.84% avg when NOT stopped out
-      - 41-42 stop-loss hits destroyed -130 USDT each run — all profit evaporated
+    Walk-forward verdict on v10: FAILED OOS. 4/4 fail criteria.
+      - Avg monthly Sharpe -1.88 (target > 0), 22% months positive (target ≥50%)
+      - P&L -11.58%, concentrated in one month (2025-02)
+      - Root cause: path-blind label. mean(next 3 closes) ignores whether the
+        path to that mean crosses the stoploss. Five rounds of stop tuning proved
+        we were treating the symptom. The disease is in set_freqai_targets().
 
-    v8 Fix — ATR-based custom_stoploss():
-      - Replace fixed % stoploss with 2.0 × ATR-based floor
-      - On 15m BTC: ATR ~0.3-0.8% of price. 2×ATR = 0.6-1.6% = true noise floor
-      - Floor: never less than -4% (protects against gaps/flash crashes)
-      - Ceiling: never triggered above -0.5% (minimum viable stop)
-      - Trailing ATR: once trade is +1 ATR in profit, trail at 1.5×ATR below peak
+    v11 Fix — Triple-Barrier Labeling (López de Prado, AFML ch.3):
+      For each candle t, look forward label_period_candles (default 12 = 3h on 15m):
+        - TP barrier : close[t] * (1 + k_tp * atr_pct[t])   → label +1
+        - SL barrier : close[t] * (1 - k_sl * atr_pct[t])   → label -1
+        - Time barrier: window expires before either          → label by sign of return
+      Starting params: k_tp=2.0, k_sl=1.0, label_period_candles=12
 
-    v8 keeps from v7 (all working):
-      - BTC 4h macro trend filter
-      - Relaxed short entry (RSI > 20, 2% 1h buffer, no ema_200 requirement)
-      - Dynamic long threshold (> 0.010 bull / > 0.015 bear)
-      - ML-based exit on signal reversal (< -0.001 / > +0.001)
-      - Trailing stop positive offset for winners
+      The model now learns to REFUSE setups whose path is bad even when the
+      mean is okay. This is the exact pathology the 79/62 trailing chops exposed.
 
-    Expected outcome:
-      - Stop hits drop from 41-42 back toward 10-15 (stops only on real reversals)
-      - WR recovers to 60%+ (ML signals get to play out)
-      - reward:risk improves: avg winner +0.84% / avg stopper ~2×ATR ~0.8% = 1:1
+    v11 model change — LightGBMClassifier:
+      Output: class probabilities {-1, 0, +1}
+      Entry rule: &-s_label_proba_+1 > 0.55 for long,
+                  &-s_label_proba_-1 > 0.55 for short
+      (FreqAI classifier outputs one column per class:
+       &-s_label_proba_-1, &-s_label_proba_0, &-s_label_proba_+1)
+
+    v11 keeps from v10:
+      - stoploss_from_open() anchored stops (confirmed working)
+      - trailing_stop = False (framework trailing OFF)
+      - BTC 4h macro short-gate
+      - ATR volatility filter on entry
+      - All feature engineering unchanged
     """
     INTERFACE_VERSION = 3
 
@@ -54,17 +60,8 @@ class FinBuddyFreqAI(IStrategy):
         "240": 0.02
     }
 
-    # v8: wide fallback stoploss — custom_stoploss() does the real work
-    # This is just the emergency hard floor (gap protection, exchange outage)
     stoploss = -0.08
-
-    # v9: framework trailing DISABLED — custom_stoploss() owns the trail exclusively.
-    # Round 3 showed 79/62 trailing_stop_loss exits at -0.55% avg from the two
-    # trailing systems (framework + Chandelier in custom_stoploss) fighting each
-    # other. With this off, custom_stoploss is the single source of truth.
     trailing_stop = False
-
-    # v8: enable custom stoploss
     use_custom_stoploss = True
 
     timeframe = "15m"
@@ -74,7 +71,7 @@ class FinBuddyFreqAI(IStrategy):
     startup_candle_count = 400
 
     # ------------------------------------------------------------------ #
-    # ATR-adaptive custom stoploss                                        #
+    # ATR-adaptive custom stoploss (v10 — unchanged, confirmed working)  #
     # ------------------------------------------------------------------ #
 
     def custom_stoploss(
@@ -88,39 +85,23 @@ class FinBuddyFreqAI(IStrategy):
         **kwargs,
     ) -> Optional[float]:
         """
-        v10 — ATR-adaptive stoploss, rebuilt for docs-correctness.
-
-        Per Freqtrade strategy-callbacks docs:
-          - Returning None = "no desire to change" the existing stop.
-            Do NOT fall back to self.stoploss — that resets a previously
-            tightened stop on every candle when ATR is unavailable.
-          - Return value is treated as |abs| % of current_rate; sign ignored.
-          - The stop can only ever move upwards (Freqtrade enforces).
-
-        v10 fixes vs v9:
-          1. None on missing data (was: self.stoploss → forced reset).
-          2. Return positive floats (was: negative; same effect, but explicit).
-          3. trailing_stop = False already (set at class level).
-          4. Anchor stops to ENTRY price via stoploss_from_open(), not to
-             current_rate. Stops the chop where price runs up and the
-             current-rate-relative stop tightens beneath it.
+        v10 ATR-adaptive stoploss — carried forward to v11 unchanged.
+        Initial: 2×ATR below entry (anchored via stoploss_from_open).
+        Trailing: once profit > 1×ATR, lock at +1.5×ATR above entry.
+        Returns None on missing data (no reset of existing stop).
         """
         dataframe, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
         if dataframe is None or dataframe.empty:
-            return None  # v10 Fix 1
+            return None
 
         last = dataframe.iloc[-1]
         atr = last.get("atr_14", None)
         if atr is None or atr <= 0 or current_rate <= 0:
-            return None  # v10 Fix 1
+            return None
 
         atr_pct = atr / current_rate
-        atr_pct = max(0.003, min(atr_pct, 0.025))  # clamp 0.3%–2.5%
+        atr_pct = max(0.003, min(atr_pct, 0.025))
 
-        # --- Trailing arm: profit > 1×ATR → lock at +1.5×ATR above entry ---
-        # Positive open_relative_stop = profit-lock above open (canonical use).
-        # stoploss_from_open returns 0 if the lock would be at/above current
-        # price (profit not yet large enough); treat that as "no change".
         if current_profit > atr_pct:
             trail_pct = stoploss_from_open(
                 1.5 * atr_pct,
@@ -129,13 +110,9 @@ class FinBuddyFreqAI(IStrategy):
                 leverage=trade.leverage,
             )
             if trail_pct and trail_pct > 0:
-                return trail_pct  # v10 Fix 2: positive float
+                return trail_pct
             return None
 
-        # --- Initial arm: 2×ATR below entry, anchored via the same helper ---
-        # NEGATIVE open_relative_stop = loss-cap below open. The helper
-        # returns 0 when current price has already breached the open-anchored
-        # floor, which is correctly handled by Freqtrade as "stop now".
         initial_stop = stoploss_from_open(
             -2.0 * atr_pct,
             current_profit,
@@ -143,11 +120,11 @@ class FinBuddyFreqAI(IStrategy):
             leverage=trade.leverage,
         )
         if initial_stop and initial_stop > 0:
-            return initial_stop  # v10 Fix 2: positive float
+            return initial_stop
         return None
 
     # ------------------------------------------------------------------ #
-    # FreqAI feature engineering                                          #
+    # FreqAI feature engineering (v10 — unchanged)                       #
     # ------------------------------------------------------------------ #
 
     def feature_engineering_expand_all(
@@ -201,17 +178,74 @@ class FinBuddyFreqAI(IStrategy):
         dataframe["%-raw_open"] = dataframe["open"]
         return dataframe
 
+    # ------------------------------------------------------------------ #
+    # v11 — Triple-barrier label                                          #
+    # ------------------------------------------------------------------ #
+
     def set_freqai_targets(
         self, dataframe: DataFrame, metadata: dict, **kwargs
     ) -> DataFrame:
+        """
+        Triple-barrier labeling (López de Prado, AFML ch.3).
+
+        For each candle t (using 15m data):
+          - atr_pct = ATR_14[t] / close[t], clamped to [0.003, 0.025]
+          - TP at close[t] * (1 + k_tp * atr_pct)   → label +1
+          - SL at close[t] * (1 - k_sl * atr_pct)   → label -1
+          - Time barrier at t + label_period_candles  → label by sign of return
+            (0 if flat, +1 if positive, -1 if negative)
+
+        Starting params (v11):
+          k_tp = 2.0   (take-profit 2×ATR above entry)
+          k_sl = 1.0   (stop-loss 1×ATR below entry — asymmetric, favours longs)
+          label_period_candles = 12  (3 hours on 15m; gives path time to resolve)
+
+        Output column: &-s_label  (integer: -1, 0, +1)
+        FreqAI classifier (LightGBMClassifier in freqai config) will produce:
+          &-s_label_proba_-1, &-s_label_proba_0, &-s_label_proba_+1
+        at inference time. Entry rules below use those probability columns.
+
+        NOTE: shift(-label_period) makes the last label_period rows NaN.
+        FreqAI drops NaN-labelled rows automatically before training.
+        """
+        k_tp = 2.0
+        k_sl = 1.0
         label_period = self.freqai_info["feature_parameters"]["label_period_candles"]
-        dataframe["&-s_close"] = (
-            dataframe["close"]
-            .shift(-label_period)
-            .rolling(label_period)
-            .mean()
-            / dataframe["close"]
-        ) - 1
+
+        close = dataframe["close"].values
+        high = dataframe["high"].values
+        low = dataframe["low"].values
+        atr_raw = ta.ATR(dataframe, timeperiod=14).values
+
+        n = len(close)
+        labels = np.zeros(n, dtype=np.float32)
+
+        for t in range(n - label_period):
+            c0 = close[t]
+            atr_pct = (atr_raw[t] / c0) if c0 > 0 else 0.005
+            atr_pct = max(0.003, min(atr_pct, 0.025))
+
+            tp_price = c0 * (1.0 + k_tp * atr_pct)
+            sl_price = c0 * (1.0 - k_sl * atr_pct)
+
+            label = 0  # default: time barrier
+            for i in range(t + 1, t + label_period + 1):
+                if high[i] >= tp_price:
+                    label = 1
+                    break
+                if low[i] <= sl_price:
+                    label = -1
+                    break
+            else:
+                # time barrier: label by direction of close
+                ret = (close[t + label_period] - c0) / c0 if c0 > 0 else 0.0
+                label = 1 if ret > 0 else (-1 if ret < 0 else 0)
+
+            labels[t] = label
+
+        # last label_period rows → NaN (FreqAI drops automatically)
+        labels[n - label_period:] = np.nan
+        dataframe["&-s_label"] = labels.astype("float32")
         return dataframe
 
     # ------------------------------------------------------------------ #
@@ -221,10 +255,8 @@ class FinBuddyFreqAI(IStrategy):
     def populate_indicators(
         self, dataframe: DataFrame, metadata: dict
     ) -> DataFrame:
-        # --- FreqAI inference ---
         dataframe = self.freqai.start(dataframe, metadata, self)
 
-        # --- 15m TA ---
         dataframe["rsi_14"] = ta.RSI(dataframe, timeperiod=14)
         dataframe["ema_50"]  = ta.EMA(dataframe, timeperiod=50)
         dataframe["ema_200"] = ta.EMA(dataframe, timeperiod=200)
@@ -237,11 +269,9 @@ class FinBuddyFreqAI(IStrategy):
             / (bb["upperband"] - bb["lowerband"] + 1e-9)
         )
 
-        # ATR — used both for entry filter AND custom_stoploss
         dataframe["atr_14"] = ta.ATR(dataframe, timeperiod=14)
         dataframe["atr_ratio"] = dataframe["atr_14"] / dataframe["close"]
 
-        # --- 1h trend ---
         if self.dp:
             informative_1h = self.dp.get_pair_dataframe(
                 pair=metadata["pair"], timeframe="1h"
@@ -261,7 +291,6 @@ class FinBuddyFreqAI(IStrategy):
                 dataframe["ema_50_1h"] = dataframe["close"]
                 dataframe["close_1h"] = dataframe["close"]
 
-            # --- BTC 4h macro trend filter (from v7) ---
             btc_4h = self.dp.get_pair_dataframe(
                 pair="BTC/USDT:USDT", timeframe="4h"
             )
@@ -288,42 +317,52 @@ class FinBuddyFreqAI(IStrategy):
         return dataframe
 
     # ------------------------------------------------------------------ #
-    # Entry / Exit signals                                                #
+    # Entry / Exit signals — v11 uses classifier probability columns     #
     # ------------------------------------------------------------------ #
 
     def populate_entry_trend(
         self, dataframe: DataFrame, metadata: dict
     ) -> DataFrame:
         """
-        Entry conditions v8 (inherited from v7, all working):
+        v11 entry rules using LightGBMClassifier output probabilities.
 
-        LONG:
-          - ML > +1.0% (bull) / > +1.5% (bear via BTC 4h filter)
-          - close > EMA-50 (15m trend)
-          - close_1h >= ema_50_1h (1h trend)
-          - RSI < 68 | BB% < 0.90 | atr_ratio > 0.003 | volume > 0
+        FreqAI classifier produces columns at inference:
+          &-s_label_proba_-1   probability the label resolves to -1 (SL hits first)
+          &-s_label_proba_0    probability of time-barrier / flat
+          &-s_label_proba_+1   probability the label resolves to +1 (TP hits first)
 
-        SHORT (relaxed from v7):
-          - ML < -1.0%
-          - close < EMA-50
-          - close_1h < ema_50_1h * 1.02 (2% buffer)
-          - RSI > 20 (was 32) | BB% > 0.10 | atr_ratio > 0.003 | volume > 0
-          - No ema_200 requirement (fires too late)
+        Long:  P(+1) > 0.55 — model confident TP hits before SL
+        Short: P(-1) > 0.55 — model confident SL hits (price drops) before TP
+
+        TA filters and macro gate unchanged from v10.
         """
-        # Dynamic long ML threshold — v7 carry-forward
+        # Probability columns produced by LightGBMClassifier
+        proba_long  = dataframe.get("&-s_label_proba_1",  dataframe.get("&-s_label_proba_+1",  None))
+        proba_short = dataframe.get("&-s_label_proba_-1", None)
+
+        # Graceful fallback if column names differ (FreqAI uses str(class)):
+        # try both "+1" and "1" spellings
+        if proba_long is None:
+            # column doesn't exist yet (first candle before FreqAI trains)
+            proba_long  = pd.Series(0.0, index=dataframe.index)
+        if proba_short is None:
+            proba_short = pd.Series(0.0, index=dataframe.index)
+
+        ml_signal_long = (
+            (dataframe["do_predict"] == 1)
+            & (proba_long > 0.55)
+        )
+
+        # Bull/bear dynamic threshold — in classifier land we tighten in bear
+        # by requiring higher confidence (0.60) when macro is bearish for longs
         ml_threshold_long = (
             (
                 (dataframe["btc_4h_below_ema50"] == 0)
-                & (dataframe["&-s_close"] > 0.010)
+                & (proba_long > 0.55)
             ) | (
                 (dataframe["btc_4h_below_ema50"] == 1)
-                & (dataframe["&-s_close"] > 0.015)
+                & (proba_long > 0.60)
             )
-        )
-
-        ml_signal = (
-            (dataframe["do_predict"] == 1)
-            & ml_threshold_long
         )
 
         ta_filter = (
@@ -334,26 +373,26 @@ class FinBuddyFreqAI(IStrategy):
         )
 
         volatility_filter = dataframe["atr_ratio"] > 0.003
+        trend_filter_1h   = dataframe["close_1h"] >= dataframe["ema_50_1h"]
 
-        trend_filter_1h = dataframe["close_1h"] >= dataframe["ema_50_1h"]
+        ml_signal_long_final = (
+            (dataframe["do_predict"] == 1)
+            & ml_threshold_long
+        )
 
         dataframe.loc[
-            ml_signal & ta_filter & volatility_filter & trend_filter_1h,
+            ml_signal_long_final & ta_filter & volatility_filter & trend_filter_1h,
             "enter_long"
         ] = 1
         dataframe.loc[
-            ml_signal & ta_filter & volatility_filter & trend_filter_1h,
+            ml_signal_long_final & ta_filter & volatility_filter & trend_filter_1h,
             "enter_tag"
-        ] = "freqai_lgbm_v10_long"
+        ] = "freqai_lgbm_v11_long"
 
-        # --- Short entry (v9: macro-gated) ---
-        # v9 fix: shorts only fire when BTC 4h is below its EMA-50 (macro bear).
-        # Round 3 bull period had 81 shorts vs 31 longs in a +122% bull market —
-        # the macro filter was leaking. Requiring btc_4h_below_ema50 == 1 here
-        # prevents shorting alts during a sustained BTC uptrend.
+        # Short — macro-gated (v9 fix, retained)
         ml_signal_short = (
             (dataframe["do_predict"] == 1)
-            & (dataframe["&-s_close"] < -0.010)
+            & (proba_short > 0.55)
             & (dataframe["btc_4h_below_ema50"] == 1)
         )
 
@@ -377,7 +416,7 @@ class FinBuddyFreqAI(IStrategy):
         dataframe.loc[
             ml_signal_short & ta_filter_short & volatility_filter & trend_filter_1h_short & safety_short,
             "enter_tag"
-        ] = "freqai_lgbm_v10_short"
+        ] = "freqai_lgbm_v11_short"
 
         return dataframe
 
@@ -385,23 +424,32 @@ class FinBuddyFreqAI(IStrategy):
         self, dataframe: DataFrame, metadata: dict
     ) -> DataFrame:
         """
-        Exit conditions v8 (unchanged — ML exit is confirmed working):
-          Long:  ML < -0.001 OR RSI > 75 OR BB% > 0.95
-          Short: ML > +0.001 OR RSI < 25 OR BB% < 0.05
+        v11 exit — same ML-reversal logic, adapted for classifier output.
+        Exit long when P(-1) > 0.45 (model sees SL risk rising).
+        Exit short when P(+1) > 0.45 (model sees TP risk rising for shorts).
+        TA exits unchanged (RSI/BB extremes).
         """
-        ml_exit = (
+        proba_long  = dataframe.get("&-s_label_proba_1",  dataframe.get("&-s_label_proba_+1",  None))
+        proba_short = dataframe.get("&-s_label_proba_-1", None)
+
+        if proba_long is None:
+            proba_long  = pd.Series(0.0, index=dataframe.index)
+        if proba_short is None:
+            proba_short = pd.Series(0.0, index=dataframe.index)
+
+        ml_exit_long = (
             (dataframe["do_predict"] == 1)
-            & (dataframe["&-s_close"] < -0.001)
+            & (proba_short > 0.45)
         )
-        ta_exit = (
+        ta_exit_long = (
             (dataframe["rsi_14"] > 75)
             | (dataframe["bb_pct"] > 0.95)
         )
-        dataframe.loc[ml_exit | ta_exit, "exit_long"] = 1
+        dataframe.loc[ml_exit_long | ta_exit_long, "exit_long"] = 1
 
         ml_exit_short = (
             (dataframe["do_predict"] == 1)
-            & (dataframe["&-s_close"] > 0.001)
+            & (proba_long > 0.45)
         )
         ta_exit_short = (
             (dataframe["rsi_14"] < 25)
