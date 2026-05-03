@@ -1,63 +1,45 @@
 {
-  "_comment": "Jarvis strategy registry. Every signal references a strategy_id from here. The Karpathy loop promotes/demotes strategies by editing this file.",
-  "schema_version": "1.0",
-
   "strategies": [
     {
-      "strategy_id": "rsi_macd_ai_v1",
-      "name": "RSI + MACD + AI filter v1",
-      "description": "Baseline strategy currently running in N8N v3. RSI and MACD classical signals confirmed by an AI (Groq Llama 3.3 70B) decision layer.",
-      "status": "active",
-      "promoted_at": "2026-04-21",
+      "strategy_id": "triple_barrier_mean_reversion_v1",
+      "hypothesis": "Use L\u00f3pez de Prado triple-barrier labels with asymmetric TP/SL to catch oversold bounces",
       "timeframe": "15m",
-      "indicators": ["RSI_14", "MACD_12_26_9", "ATR_14"],
-      "ai_layer": {
-        "provider": "groq",
-        "model": "llama-3.3-70b-versatile"
-      },
-      "backtest": {
-        "status": "pending_walk_forward",
-        "last_validated": null,
-        "win_rate": null,
-        "sharpe": null,
-        "max_drawdown": null
-      },
-      "_note": "Current production strategy. Walk-forward validation required before graduating to 'validated' status."
+      "indicators": [
+        "ATR_14",
+        "RSI_14",
+        "EMA_50"
+      ],
+      "entry_long": "RSI < 40 AND close > EMA50 AND triple_barrier_label_proba > 0.55",
+      "entry_short": "RSI > 60 AND close < EMA50 AND macro_regime != BULL",
+      "exit_rule": "triple_barrier hit or time barrier (12 candles)",
+      "regime_filter": [
+        "BULL",
+        "NEUTRAL"
+      ],
+      "proposed_by": "reasoning_agent",
+      "status": "backtest_queued",
+      "proposed_at": "2026-05-03",
+      "queued_at": "2026-05-03"
     },
     {
-      "strategy_id": "hmm_regime_adaptive_v1",
-      "name": "HMM Regime-Adaptive v1 (placeholder)",
-      "description": "Planned strategy that adapts entry/exit rules based on HMM regime classification. Not yet implemented.",
-      "status": "planned",
-      "promoted_at": null,
+      "strategy_id": "btc_dominance_momentum_v1",
+      "hypothesis": "When BTC dominance breaks 20d SMA upside, rotate from alts into BTC; hedge alts with tight stops",
       "timeframe": "15m",
-      "indicators": [],
-      "backtest": {
-        "status": "not_started"
-      },
-      "_note": "Implementation blocked on HMM engine build."
-    },
-    {
-      "strategy_id": "turtle_breakout_v1",
-      "name": "Turtle Breakout (Donchian 20/55) v1 (placeholder)",
-      "description": "Classical Turtle Trading breakout with 2% ATR-based position sizing. Planned.",
-      "status": "planned",
-      "promoted_at": null,
-      "timeframe": "1h",
-      "indicators": ["DONCHIAN_20", "DONCHIAN_55", "ATR_14"],
-      "backtest": {
-        "status": "not_started"
-      },
-      "_note": "Baseline quantitative strategy — expected to be the first walk-forward validated candidate."
+      "indicators": [
+        "BTC_DOM_20_SMA",
+        "ATR_14"
+      ],
+      "entry_long": "BTC_DOM > BTC_DOM_20_SMA AND market_cap_change_24h > 1%",
+      "entry_short": "BTC_DOM break below 20d AND fear_greed < 40",
+      "exit_rule": "opposite SMA break or 2\u00d7ATR stop",
+      "regime_filter": [
+        "NEUTRAL",
+        "BULL"
+      ],
+      "proposed_by": "reasoning_agent",
+      "status": "backtest_queued",
+      "proposed_at": "2026-05-03",
+      "queued_at": "2026-05-03"
     }
-  ],
-
-  "status_legend": {
-    "planned": "Not implemented yet.",
-    "in_development": "Code exists, not validated.",
-    "backtesting": "Walk-forward validation in progress.",
-    "paper_trading": "Running live on paper trades for track record.",
-    "active": "Emitting real signals that the executor acts on.",
-    "deprecated": "No longer emits signals. Kept for historical reference."
-  }
+  ]
 }
