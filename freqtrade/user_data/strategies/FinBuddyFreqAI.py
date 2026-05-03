@@ -164,6 +164,26 @@ class FinBuddyFreqAI(IStrategy):
             return 0.0
         return max(min_stake or 0, proposed_stake * multiplier)
 
+    def _get_tradingview_signal(self):
+        """Load latest TradingView webhook signal."""
+        import json, os
+        from datetime import datetime, timezone
+        signal_file = "/home/ubuntu/var/www/html/trade/freqtrade/user_data/data/external/tradingview_signals.json"
+        try:
+            with open(signal_file) as f:
+                signals = json.load(f)
+            if not signals:
+                return {"tv_supertrend_bullish": 0, "tv_signal_age_minutes": 999}
+            latest = signals[-1]
+            ts = datetime.fromisoformat(latest["timestamp"].replace("Z", "+00:00"))
+            age = (datetime.now(timezone.utc) - ts).seconds / 60
+            return {
+                "tv_supertrend_bullish": 1 if latest.get("signal", "") == "BUY" else 0,
+                "tv_signal_age_minutes": round(age, 1)
+            }
+        except Exception:
+            return {"tv_supertrend_bullish": 0, "tv_signal_age_minutes": 999}
+
     # ------------------------------------------------------------------ #
     # FreqAI feature engineering (v10 — unchanged)                       #
     # ------------------------------------------------------------------ #
@@ -217,6 +237,11 @@ class FinBuddyFreqAI(IStrategy):
         dataframe["%-raw_close"] = dataframe["close"]
         dataframe["%-raw_volume"] = dataframe["volume"]
         dataframe["%-raw_open"] = dataframe["open"]
+
+        tv = self._get_tradingview_signal()
+        dataframe["%-tv_supertrend_bullish"] = tv["tv_supertrend_bullish"]
+        dataframe["%-tv_signal_age_minutes"] = tv["tv_signal_age_minutes"]
+
         return dataframe
 
     # ------------------------------------------------------------------ #
