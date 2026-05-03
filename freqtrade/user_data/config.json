@@ -39,7 +39,10 @@
     "ccxt_async_config": {},
     "pair_whitelist": [
       "BTC/USDT:USDT",
-      "ETH/USDT:USDT"
+      "ETH/USDT:USDT",
+      "SOL/USDT:USDT",
+      "BNB/USDT:USDT",
+      "XRP/USDT:USDT"
     ],
     "pair_blacklist": [
       "BNB/.*",
@@ -56,44 +59,13 @@
   },
   "pairlists": [
     {
-      "method": "VolumePairList",
-      "number_assets": 30,
-      "sort_key": "quoteVolume",
-      "min_value": 5000000,
-      "refresh_period": 1800
-    },
-    {
-      "method": "SpreadFilter",
-      "max_spread_ratio": 0.005
-    },
-    {
-      "method": "PriceFilter",
-      "low_price_ratio": 0.01,
-      "min_price": 0.01
-    },
-    {
-      "method": "RangeStabilityFilter",
-      "lookback_days": 3,
-      "min_rate_of_change": 0.05,
-      "refresh_period": 1440
-    },
-    {
-      "method": "VolatilityFilter",
-      "lookback_days": 3,
-      "min_volatility": 0.02,
-      "max_volatility": 0.75,
-      "refresh_period": 86400
-    },
-    {
-      "method": "ShuffleFilter",
-      "seed": 42
+      "method": "StaticPairList"
     }
   ],
   "telegram": {
     "enabled": true,
     "token": "",
-    "chat_id": "5622292536",
-    "_token_note": "REDACTED in repo. Live token is set on server only \u2014 paste into the on-server config or supply via env. Rotate via @BotFather: this token was previously committed."
+    "chat_id": "5622292536"
   },
   "api_server": {
     "enabled": true,
@@ -147,7 +119,7 @@
         "15m"
       ],
       "include_corr_pairlist": [
-        "BTC/USDT"
+        "BTC/USDT:USDT"
       ],
       "label_period_candles": 3,
       "include_shifted_candles": 2,
