@@ -1,5 +1,7 @@
 # FinBuddy Project Hub
 
+> **Phase boundary:** As of 2026-05-03, all performance evaluation and future research are considered **Futures Mode only** (Binance USDT-M Perpetual, long AND short). Any older spot-only conclusions or metrics are kept only as historical context and must NOT be used to judge the current system.
+
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
 **Status:** 🟢 v11 deployed · Phases 0–7 wired · Futures infra online · Walk-forward / label redesign next
