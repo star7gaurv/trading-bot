@@ -43,6 +43,7 @@ async def receive_signal(request: Request):
     return {"status": "ok", "received": signal}
 
 @app.get("/health")
+@app.get("/tradingview/health")
 def health():
     try:
         with open(SIGNAL_FILE) as f:

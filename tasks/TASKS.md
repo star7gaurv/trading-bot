@@ -17,7 +17,7 @@
 | 3 | [phase-3-hmm-regime.md](phase-3-hmm-regime.md) | ⚠️ **Code deployed** (2026-05-03) | 5-regime HMM engine wired into strategy + memory |
 | 4 | [phase-4-obsidian-memory.md](phase-4-obsidian-memory.md) | ⚠️ **Code deployed** (2026-05-03) | Obsidian vault auto-write + git auto-commit |
 | 5 | [phase-5-karpathy-loop.md](phase-5-karpathy-loop.md) | ⚠️ **Code deployed** (2026-05-03) | Nightly research loop — Gemini + DeepSeek R1 |
-| 6 | [phase-6-tradingview.md](phase-6-tradingview.md) | ⚠️ **Skeleton only** — uvicorn not installed | TradingView webhook skeleton created, not running |
+| 6 | [phase-6-tradingview.md](phase-6-tradingview.md) | ✅ **Live** (2026-05-03) — webhook + Nginx proxy | TradingView webhook live; Task 6.2 (TV alert config) is manual |
 | 7 | [phase-7-executor.md](phase-7-executor.md) | ⚠️ **Code deployed** (2026-05-03) | Python signal executor — paper trading mode |
 | 8 | [phase-8-futures-setup.md](phase-8-futures-setup.md) | ⬜ **Pending** | Futures account setup — Binance USDT-M, leverage config, isolated margin |
 | 9 | [phase-9-futures-risk.md](phase-9-futures-risk.md) | ⬜ **Pending** | Futures risk engine — position sizing, liquidation guards, funding rate monitor |
@@ -28,17 +28,13 @@
 ## 🚨 Current Focus (as of 2026-05-03)
 
 **Immediate next step:**
-1. Fix Phase 6 open item: install `uvicorn` + start TradingView webhook receiver
-   ```bash
-   pip install fastapi uvicorn --break-system-packages
-   cd /home/ubuntu/var/www/html/trade/freqtrade/user_data/scripts/tradingview
-   nohup uvicorn webhook_receiver:app --host 0.0.0.0 --port 9999 &
-   ```
-2. Verify walk-forward backtest (Phase 1, Task 1.3) — check:
+1. ✅ Phase 6 webhook live — `https://trade.star7gaurav.in/tradingview/health` returns 200 OK
+2. Manual: configure TradingView free alert pointing to webhook (Task 6.2 — Gaurav)
+3. Verify walk-forward backtest (Phase 1, Task 1.3) — check:
    ```bash
    tail -f /home/ubuntu/var/www/html/trade/logs/backtest_phase1.log
    ```
-3. Once backtest passes (Sharpe > 0.5, WR > 50%, DD < 20%, PF > 1.2) → begin Phase 8
+4. Once backtest passes (Sharpe > 0.5, WR > 50%, DD < 20%, PF > 1.2) → begin Phase 8
 
 ---
 
@@ -60,10 +56,10 @@
 ## Overall Progress
 
 ```
-Phases Complete:     1 / 11 (Phase 0)
+Phases Complete:     2 / 11 (Phases 0, 6)
 Phases In Progress:  1 / 11 (Phase 1)
 Phases Deployed:     5 / 11 (Phases 2, 3, 4, 5, 7 — needs verification)
-Phases Pending:      4 / 11 (Phases 6 partial, 8, 9, 10)
+Phases Pending:      3 / 11 (Phases 8, 9, 10)
 ```
 
 ---

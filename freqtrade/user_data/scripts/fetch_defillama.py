@@ -5,16 +5,16 @@ from datetime import datetime
 OUT = "/home/ubuntu/var/www/html/trade/freqtrade/user_data/data/external/defillama.json"
 
 def fetch():
-    r = requests.get("https://api.llama.fi/v2/globalCharts", timeout=15)
+    r = requests.get("https://api.llama.fi/v2/historicalChainTvl", timeout=15)
     r.raise_for_status()
     data = r.json()
 
     if len(data) >= 2:
-        current_tvl = data[-1][1]
-        prev_tvl = data[-2][1]
+        current_tvl = data[-1].get("tvl", 0)
+        prev_tvl = data[-2].get("tvl", 0)
         change_24h_pct = round((current_tvl - prev_tvl) / prev_tvl * 100, 4) if prev_tvl else 0
     else:
-        current_tvl = data[-1][1] if data else 0
+        current_tvl = data[-1].get("tvl", 0) if data else 0
         change_24h_pct = 0
 
     result = {
