@@ -65,10 +65,16 @@ class FinBuddyFreqAI(IStrategy):
     use_custom_stoploss = True
 
     timeframe = "15m"
-    informative_timeframes = ["1h", "4h"]
+    informative_timeframes = ["1h", "4h", "1d"]
 
     can_short = True
     startup_candle_count = 400
+
+    # v11.1 — BTC daily MA200 macro-regime gate.
+    # Long  entries require  BTC_1d_close > BTC_1d_MA200 (macro bull).
+    # Short entries require  BTC_1d_close < BTC_1d_MA200 (macro bear).
+    # Toggle via env BTC_MA200_GATE=0 to disable for ablation testing.
+    use_btc_ma200_gate = (__import__("os").environ.get("BTC_MA200_GATE", "1") == "1")
 
     # ------------------------------------------------------------------ #
     # ATR-adaptive custom stoploss (v10 — unchanged, confirmed working)  #
@@ -375,10 +381,34 @@ class FinBuddyFreqAI(IStrategy):
                 )
             else:
                 dataframe["btc_4h_below_ema50"] = 0
+
+            # v11.1 — BTC daily MA200 macro regime
+            btc_1d = self.dp.get_pair_dataframe(
+                pair="BTC/USDT:USDT", timeframe="1d"
+            )
+            if not btc_1d.empty:
+                btc_1d["btc_ma200_1d"] = ta.SMA(btc_1d, timeperiod=200)
+                btc_1d["btc_macro_bull"] = (
+                    btc_1d["close"] > btc_1d["btc_ma200_1d"]
+                ).astype(int)
+                btc_1d = btc_1d[["date", "btc_macro_bull"]].copy()
+                btc_1d["date"] = pd.to_datetime(btc_1d["date"])
+                dataframe = pd.merge_asof(
+                    dataframe.sort_values("date"),
+                    btc_1d.sort_values("date"),
+                    on="date",
+                    direction="backward",
+                )
+            else:
+                dataframe["btc_macro_bull"] = 1
         else:
             dataframe["ema_50_1h"] = dataframe["close"]
             dataframe["close_1h"] = dataframe["close"]
             dataframe["btc_4h_below_ema50"] = 0
+            dataframe["btc_macro_bull"] = 1
+
+        if "btc_macro_bull" not in dataframe.columns:
+            dataframe["btc_macro_bull"] = 1
 
         return dataframe
 
@@ -441,9 +471,18 @@ class FinBuddyFreqAI(IStrategy):
         volatility_filter = dataframe["atr_ratio"] > 0.003
         trend_filter_1h   = dataframe["close_1h"] >= dataframe["ema_50_1h"]
 
+        # v11.1 macro-bull gate — long requires BTC daily > MA200
+        if self.use_btc_ma200_gate:
+            macro_long_gate  = (dataframe["btc_macro_bull"] == 1)
+            macro_short_gate = (dataframe["btc_macro_bull"] == 0)
+        else:
+            macro_long_gate  = pd.Series(True, index=dataframe.index)
+            macro_short_gate = pd.Series(True, index=dataframe.index)
+
         ml_signal_long_final = (
             (dataframe["do_predict"] == 1)
             & ml_threshold_long
+            & macro_long_gate
         )
 
         dataframe.loc[
@@ -460,6 +499,7 @@ class FinBuddyFreqAI(IStrategy):
             (dataframe["do_predict"] == 1)
             & (proba_short > 0.55)
             & (dataframe["btc_4h_below_ema50"] == 1)
+            & macro_short_gate
         )
 
         ta_filter_short = (

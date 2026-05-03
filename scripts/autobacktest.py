@@ -65,6 +65,11 @@ GRID_FILE = SCRIPT_DIR / "autobacktest_grid.json"
 # Temp strategy file written to /tmp — always writable regardless of opc ownership
 TEMP_STRATEGY_PATH = Path("/tmp/FinBuddyFreqAI_test.py")
 
+# Timerange is configurable via BACKTEST_TIMERANGE env var
+# Default = bear/spot legacy window. Bull futures campaign: 20240101-20250101
+import os
+BACKTEST_TIMERANGE = os.environ.get("BACKTEST_TIMERANGE", "20250101-20260401")
+
 
 def load_grid():
     with open(GRID_FILE) as f:
@@ -214,7 +219,7 @@ def run_backtest(config: dict, temp_strategy_path: Path) -> dict:
                 "docker", "exec", "freqtrade",
                 "freqtrade", "download-data",
                 "--config", "/freqtrade/scripts/backtest_config.json",
-                "--timerange", "20250101-20260401",
+                "--timerange", BACKTEST_TIMERANGE,
                 "--timeframes", "5m", "15m", "1h",
                 "--pairs", "BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT",
             ],
@@ -249,7 +254,7 @@ def run_backtest(config: dict, temp_strategy_path: Path) -> dict:
                 "--strategy", "FinBuddyFreqAI_test",
                 "--strategy-path", "/tmp",
                 "--freqaimodel", "FinBuddyLLMModel",
-                "--timerange", "20250101-20260401",
+                "--timerange", BACKTEST_TIMERANGE,
                 "--timeframe", "15m",
                 "--export", "trades",
             ],
