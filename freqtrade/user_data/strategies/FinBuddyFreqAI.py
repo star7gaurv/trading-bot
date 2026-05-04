@@ -15,7 +15,14 @@ import logging
 import sys
 import os
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'scripts'))
+for _p in [
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'scripts'),
+    '/freqtrade/user_data/scripts',
+    '/home/ubuntu/var/www/html/trade/freqtrade/user_data/scripts',
+]:
+    if os.path.isdir(_p):
+        sys.path.insert(0, os.path.realpath(_p))
+        break
 from risk_engine import RiskEngine
 _risk_engine = RiskEngine()
 
