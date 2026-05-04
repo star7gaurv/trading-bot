@@ -27,6 +27,7 @@ services:
       - GROQ_API_KEY=${GROQ_API_KEY}
     volumes:
       - "./user_data:/freqtrade/user_data"
+      - "/home/ubuntu/var/www/html/trade/finbuddy_memory:/freqtrade/finbuddy_memory:ro"
     # Expose api on port 8080 (localhost only)
     # Please read the https://www.freqtrade.io/en/stable/rest-api/ documentation
     # for more information.

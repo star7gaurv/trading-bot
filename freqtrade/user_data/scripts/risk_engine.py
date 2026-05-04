@@ -83,6 +83,17 @@ class RiskEngine:
             return False
         return abs(current_dd) < DD_LIMIT
 
+    def get_regime(self, path) -> str:
+        try:
+            import os
+            p = path if os.path.exists(path) else path.replace('/freqtrade/', '/home/ubuntu/var/www/html/trade/freqtrade/')
+            return json.loads(open(p).read()).get('regime', 'NEUTRAL').upper()
+        except Exception:
+            return 'NEUTRAL'
+
+    def stake_multiplier(self, regime: str) -> float:
+        return {'BULL': 1.0, 'NEUTRAL': 0.75, 'BEAR': 0.5, 'CRASH': 0.0}.get(regime, 0.75)
+
 
 def _selftest():
     re = RiskEngine()
