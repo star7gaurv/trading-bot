@@ -78,7 +78,6 @@ class FinBuddyFreqAI(IStrategy):
     use_custom_stoploss = True
 
     timeframe = "15m"
-    informative_timeframes = ["1h", "4h", "1d"]
 
     can_short = True
     startup_candle_count = 400
@@ -88,6 +87,14 @@ class FinBuddyFreqAI(IStrategy):
     # Short entries require  BTC_1d_close < BTC_1d_MA200 (macro bear).
     # Toggle via env BTC_MA200_GATE=0 to disable for ablation testing.
     use_btc_ma200_gate = (__import__("os").environ.get("BTC_MA200_GATE", "1") == "1")
+
+    def informative_pairs(self):
+        pairs = self.dp.current_whitelist()
+        informative = [(pair, "1h") for pair in pairs]
+        informative += [(pair, "4h") for pair in pairs]
+        informative += [("BTC/USDT:USDT", "1d")]
+        informative += [("BTC/USDT:USDT", "4h")]
+        return informative
 
     # ------------------------------------------------------------------ #
     # ATR-adaptive custom stoploss (v10 — unchanged, confirmed working)  #
