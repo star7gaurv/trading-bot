@@ -182,7 +182,8 @@ def grade(metrics: dict) -> bool:
             result_str = f"{RED}  FAIL  {RESET}"
             all_pass = False
 
-        print(f"  {label:<20} {value:{fmt}:>10}  {threshold_str:>12}  {result_str}")
+        value_str = format(value, fmt)
+        print(f"  {label:<20} {value_str:>10}  {threshold_str:>12}  {result_str}")
 
     print(f"\n{BOLD}{'=' * 60}{RESET}")
     if all_pass:

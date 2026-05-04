@@ -22,3 +22,18 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# FreqAI model artifacts (large, regenerated each backtest)
+freqtrade/user_data/models/**/*.pkl
+freqtrade/user_data/models/**/*.backup.pkl
+
+# FreqAI model artifacts (large, regenerated each backtest)
+freqtrade/user_data/models/**/*.pkl
+freqtrade/user_data/models/**/*.backup.pkl
+
+# FreqAI runtime params (regenerated on every retrain)
+freqtrade/user_data/models/**/run_params.json
+
+# Executor runtime database
+freqtrade/user_data/executor.sqlite
+freqtrade/user_data/executor.sqlite-*

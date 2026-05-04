@@ -1,115 +1,117 @@
 {
-    "$schema": "https://schema.freqtrade.io/schema.json",
-    "_comment": "Backtest-only config for Task 1.3. No live keys, no Telegram, no API server.",
-    "max_open_trades": 4,
-    "stake_currency": "USDT",
-    "stake_amount": 200,
-    "tradable_balance_ratio": 0.99,
-    "fiat_display_currency": "USD",
-    "dry_run": true,
-    "dry_run_wallet": 1000,
-    "cancel_open_orders_on_exit": false,
-    "trading_mode": "spot",
-    "margin_mode": "",
-    "exchange": {
-        "name": "binance",
-        "key": "",
-        "secret": "",
-        "ccxt_config": {},
-        "ccxt_async_config": {},
-        "pair_whitelist": [
-            "BTC/USDT",
-            "ETH/USDT",
-            "SOL/USDT",
-            "BNB/USDT",
-            "XRP/USDT"
-        ],
-        "pair_blacklist": [
-            "BNB/.*",
-            "D/USDT",
-            "CHIP/USDT",
-            "SOMI/USDT",
-            "ZBT/USDT",
-            "GIGGLE/USDT",
-            "BARD/USDT",
-            "BIO/USDT",
-            "WLFI/USDT"
-        ]
-    },
-    "pairlists": [
-        {
-            "method": "StaticPairList"
-        }
+  "$schema": "https://schema.freqtrade.io/schema.json",
+  "_comment": "Backtest-only config for Task 1.3. No live keys, no Telegram, no API server.",
+  "max_open_trades": 4,
+  "stake_currency": "USDT",
+  "stake_amount": 200,
+  "tradable_balance_ratio": 0.99,
+  "fiat_display_currency": "USD",
+  "dry_run": true,
+  "dry_run_wallet": 1000,
+  "cancel_open_orders_on_exit": false,
+  "trading_mode": "futures",
+  "margin_mode": "isolated",
+  "exchange": {
+    "name": "binance",
+    "key": "",
+    "secret": "",
+    "ccxt_config": {},
+    "ccxt_async_config": {},
+    "pair_whitelist": [
+      "BTC/USDT:USDT",
+      "ETH/USDT:USDT",
+      "SOL/USDT:USDT",
+      "BNB/USDT:USDT",
+      "XRP/USDT:USDT"
     ],
-    "telegram": {
-        "enabled": false,
-        "token": "disabled",
-        "chat_id": "0"
+    "pair_blacklist": [
+      "BNB/.*",
+      "D/USDT",
+      "CHIP/USDT",
+      "SOMI/USDT",
+      "ZBT/USDT",
+      "GIGGLE/USDT",
+      "BARD/USDT",
+      "BIO/USDT",
+      "WLFI/USDT"
+    ]
+  },
+  "pairlists": [
+    {
+      "method": "StaticPairList"
+    }
+  ],
+  "telegram": {
+    "enabled": false,
+    "token": "disabled",
+    "chat_id": "0"
+  },
+  "api_server": {
+    "enabled": false,
+    "listen_ip_address": "127.0.0.1",
+    "listen_port": 8080,
+    "verbosity": "error",
+    "enable_openapi": false,
+    "jwt_secret_key": "disabled",
+    "CORS_origins": [],
+    "username": "disabled",
+    "password": "disabled"
+  },
+  "bot_name": "finbuddy_backtest",
+  "initial_state": "running",
+  "stoploss": -0.035,
+  "strategy": "FinBuddyFreqAI",
+  "strategy_path": "user_data/strategies",
+  "internals": {
+    "process_throttle_secs": 5
+  },
+  "freqai": {
+    "enabled": true,
+    "purge_old_models": false,
+    "train_period_days": 30,
+    "backtest_period_days": 7,
+    "live_retrain_hours": 4,
+    "identifier": "finbuddy_backtest_v12",
+    "feature_parameters": {
+      "include_timeframes": [
+        "15m",
+        "1h",
+        "4h"
+      ],
+      "include_corr_pairlist": [
+        "BTC/USDT:USDT"
+      ],
+      "label_period_candles": 12,
+      "include_shifted_candles": 2,
+      "indicator_periods_candles": [
+        10,
+        20,
+        50
+      ]
     },
-    "api_server": {
-        "enabled": false,
-        "listen_ip_address": "127.0.0.1",
-        "listen_port": 8080,
-        "verbosity": "error",
-        "enable_openapi": false,
-        "jwt_secret_key": "disabled",
-        "CORS_origins": [],
-        "username": "disabled",
-        "password": "disabled"
+    "data_split_parameters": {
+      "test_size": 0.15
     },
-    "bot_name": "finbuddy_backtest",
-    "initial_state": "running",
-    "stoploss": -0.035,
-    "strategy": "FinBuddyFreqAI",
-    "strategy_path": "user_data/strategies",
-    "internals": {
-        "process_throttle_secs": 5
-    },
-    "freqai": {
-        "enabled": true,
-        "purge_old_models": false,
-        "train_period_days": 30,
-        "backtest_period_days": 7,
-        "live_retrain_hours": 4,
-        "identifier": "finbuddy_backtest_v1",
-        "feature_parameters": {
-            "include_timeframes": [
-                "15m"
-            ],
-            "include_corr_pairlist": [
-                "BTC/USDT"
-            ],
-            "label_period_candles": 3,
-            "include_shifted_candles": 2,
-            "indicator_periods_candles": [
-                10,
-                20,
-                50
-            ]
-        },
-        "data_split_parameters": {
-            "test_size": 0.15
-        },
-        "model_training_parameters": {
-            "n_estimators": 100,
-            "learning_rate": 0.05
-        }
-    },
-    "freqaimodel": "FinBuddyLLMModel",
-    "entry_pricing": {
-        "price_side": "same",
-        "ask_last_balance": 0.0,
-        "use_order_book": false,
-        "order_book_top": 1
-    },
-    "exit_pricing": {
-        "price_side": "same",
-        "ask_last_balance": 0.0,
-        "use_order_book": false,
-        "order_book_top": 1
-    },
-    "minimal_roi": {
-        "0": 0.1
-    },
-    "timeframe": "15m"
+    "model_training_parameters": {
+      "n_estimators": 100,
+      "learning_rate": 0.05
+    }
+  },
+  "freqaimodel": "LightGBMClassifier",
+  "entry_pricing": {
+    "price_side": "same",
+    "ask_last_balance": 0.0,
+    "use_order_book": true,
+    "order_book_top": 1
+  },
+  "exit_pricing": {
+    "price_side": "same",
+    "bid_last_balance": 0.0,
+    "use_order_book": true,
+    "order_book_top": 1
+  },
+  "minimal_roi": {
+    "0": 0.1
+  },
+  "timeframe": "15m"
 }

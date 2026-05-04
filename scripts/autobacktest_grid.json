@@ -1,5 +1,5 @@
 {
-  "_comment": "v3 grid — Option C: trailing stop offset + ML exit threshold. Round 2 (36 combos) confirmed roi_multiplier is dead lever. Attacking win/loss asymmetry from both ends: tighter trail (bigger winners) + faster ML exit (smaller losers).",
+  "_comment": "v11 grid — LightGBMClassifier proba thresholds. Values are absolute proba (0..1), not regression deltas. trailing_offset removed (v11 has framework trailing OFF, custom_stoploss owns the trail).",
   "strategy_file": "freqtrade/user_data/strategies/FinBuddyFreqAI.py",
   "backtest_script": "scripts/run_backtest.sh",
   "parse_script": "scripts/parse_backtest.py",
@@ -14,19 +14,18 @@
   },
   "grid": {
     "stoploss": [-0.020, -0.025, -0.030],
-    "trailing_offset": [0.018, 0.020, 0.022, 0.025],
-    "ml_exit_threshold": [-0.001, -0.002, -0.003],
-    "ml_threshold": [0.009, 0.011],
+    "ml_threshold": [0.50, 0.55, 0.60, 0.65, 0.70],
+    "ml_exit_threshold": [0.40, 0.45, 0.50],
     "atr_threshold": [0.002, 0.003]
   },
   "_grid_rationale": {
-    "stoploss": "Round 2 best at -0.030. Still the primary hard-floor lever. Testing -0.020 to -0.030.",
-    "trailing_offset": "NEW v3: Offset at which trailing activates. Lower = lock in gains sooner. Testing 0.018-0.025 (1.8%-2.5% profit triggers trail).",
-    "ml_exit_threshold": "NEW v3: How fast to exit on ML signal reversal. -0.001=very fast, -0.003=v5 original. Faster exit = smaller avg loser.",
-    "ml_threshold": "Entry threshold. 0.009 gave 65% WR. 0.011 gave 48% (too few trades). Both tested.",
-    "atr_threshold": "Skip flat market entries. 0.002=looser, 0.003=stricter. Both tested."
+    "stoploss": "Class attr; v11 keeps -0.020 to -0.030 sweep.",
+    "ml_threshold": "Entry proba threshold for long+short. Bear branch auto-tightens to +0.05.",
+    "ml_exit_threshold": "Exit proba threshold (opposite-class probability cut-off).",
+    "atr_threshold": "ATR/close volatility floor."
   },
-  "_removed_from_v2": {
-    "roi_multiplier": "CONFIRMED DEAD LEVER (Round 2, 36 combos). FreqAI ML exit fires before ROI is ever hit. Removed permanently from grid."
+  "_removed_from_v3": {
+    "trailing_offset": "v11 disables framework trailing — custom_stoploss handles it. Lever is dead.",
+    "roi_multiplier": "Confirmed dead in v6 round 2."
   }
 }

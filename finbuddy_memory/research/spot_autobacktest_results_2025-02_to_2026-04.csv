@@ -1,0 +1,2 @@
+run,timestamp,ml_threshold,trend_ema_period_1h,rsi_entry_ceiling,trades,win_rate,sharpe,max_drawdown,profit_factor,total_profit,pass,error
+... (archived spot/bear-era autobacktests; see README in same folder)

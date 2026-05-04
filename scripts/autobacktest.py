@@ -65,6 +65,11 @@ GRID_FILE = SCRIPT_DIR / "autobacktest_grid.json"
 # Temp strategy file written to /tmp — always writable regardless of opc ownership
 TEMP_STRATEGY_PATH = Path("/tmp/FinBuddyFreqAI_test.py")
 
+# Timerange is configurable via BACKTEST_TIMERANGE env var.
+# Default = bear/spot legacy window. Bull futures campaign: 20240101-20250101
+import os
+BACKTEST_TIMERANGE = os.environ.get("BACKTEST_TIMERANGE", "20250101-20260401")
+
 
 def load_grid():
     with open(GRID_FILE) as f:
@@ -75,31 +80,50 @@ def load_grid():
 # Strategy patcher (v4: adds trailing_offset + ml_exit_threshold)     #
 # ------------------------------------------------------------------ #
 
+# v11 PATCH_RULES — strategy now uses LightGBMClassifier proba thresholds,
+# not regression on &-s_close. Old regex matched zero locations — every grid
+# combo ran on the unpatched strategy and produced 0 trades.
+#
+# v11 mapping:
+#   ml_threshold       → entry confidence on proba_long / proba_short (default 0.55)
+#                        Also bumps the bear-tighten 0.60 by the same delta.
+#   ml_exit_threshold  → exit confidence on opposite-class proba (default 0.45)
+#   stoploss           → class attr `stoploss = -0.08`
+#   atr_threshold      → `dataframe["atr_ratio"] > 0.003`
+#   trailing_offset    → DROPPED. v11 disables framework trailing
+#                        (custom_stoploss owns the trail) so this lever is dead.
+def _replace_after(pattern_with_prefix, value):
+    """Replace numeric literal that follows the captured prefix(es)."""
+    def repl(m):
+        prefix = next((g for g in m.groups() if g is not None), "")
+        return f"{prefix}{float(value)}"
+    return repl
+
 PATCH_RULES = {
-    # Entry ML threshold: &-s_close > X)  # v6: grid param ml_threshold
+    # Both 0.55 entry-confidence thresholds (long + short)
     "ml_threshold": (
-        r"(dataframe\[\"&-s_close\"\]\s*>\s*)([0-9.]+)(\)\s*# v6: grid param ml_threshold)",
-        lambda v: rf"\g<1>{v}\g<3>",
+        r"(proba_long\s*>\s*)0\.55|(proba_short\s*>\s*)0\.55",
+        0,
     ),
-    # Hard stoploss
+    # Bear-tighten branch (0.60) — bumped by ml_threshold + 0.05 if present
+    "ml_threshold_bear": (
+        r"(proba_long\s*>\s*)0\.60",
+        0,
+    ),
+    # Module-level class attribute stoploss
     "stoploss": (
-        r"(stoploss\s*=\s*)(-[0-9.]+)",
-        lambda v: rf"\g<1>{float(v)}",
+        r"(^    stoploss\s*=\s*)(?:-[0-9.]+)",
+        re.MULTILINE,
     ),
-    # Trailing stop offset — when trail activates
-    "trailing_offset": (
-        r"(trailing_stop_positive_offset\s*=\s*)([0-9.]+)(\s*# v6:)",
-        lambda v: rf"\g<1>{float(v)}\g<3>",
-    ),
-    # ML exit threshold — how fast to cut losers: &-s_close < X)  # v6:
+    # Both exit thresholds (0.45 default)
     "ml_exit_threshold": (
-        r"(dataframe\[\"&-s_close\"\]\s*<\s*)(-[0-9.]+)(\)\s*# v6:)",
-        lambda v: rf"\g<1>{float(v)}\g<3>",
+        r"(proba_long\s*>\s*)0\.45|(proba_short\s*>\s*)0\.45",
+        0,
     ),
-    # ATR volatility gate
+    # ATR ratio gate (default 0.003)
     "atr_threshold": (
-        r"(dataframe\[\"atr_ratio\"\]\s*>\s*)([0-9.]+)(\s*# v6: grid param atr_threshold)",
-        lambda v: rf"\g<1>{float(v)}\g<3>",
+        r"(dataframe\[\"atr_ratio\"\]\s*>\s*)0\.003",
+        0,
     ),
 }
 
@@ -112,14 +136,21 @@ def write_patched_strategy(original_path: Path, params: dict) -> Path:
     original = original_path.read_text()
     patched = original
 
-    for param, value in params.items():
+    # Auto-derive bear-tightened threshold from ml_threshold (preserve +0.05 gap)
+    effective = dict(params)
+    if "ml_threshold" in effective and "ml_threshold_bear" not in effective:
+        effective["ml_threshold_bear"] = round(float(effective["ml_threshold"]) + 0.05, 4)
+
+    for param, value in effective.items():
         if param not in PATCH_RULES:
             continue
-        pattern, replacement_fn = PATCH_RULES[param]
-        if not re.search(pattern, patched):
+        pattern, flags = PATCH_RULES[param]
+        if not re.search(pattern, patched, flags):
             print(f"  [WARN] Patch for '{param}' found no match in strategy file.")
             continue
-        patched = re.sub(pattern, replacement_fn(value), patched)
+        patched, n = re.subn(pattern, _replace_after(pattern, value), patched, flags=flags)
+        if n == 0:
+            print(f"  [WARN] Patch for '{param}' applied 0 substitutions.")
 
     patched = patched.replace(
         "class FinBuddyFreqAI(IStrategy):",
@@ -214,8 +245,8 @@ def run_backtest(config: dict, temp_strategy_path: Path) -> dict:
                 "docker", "exec", "freqtrade",
                 "freqtrade", "download-data",
                 "--config", "/freqtrade/scripts/backtest_config.json",
-                "--timerange", "20250101-20260401",
-                "--timeframes", "5m", "15m", "1h",
+                "--timerange", BACKTEST_TIMERANGE,
+                "--timeframes", "5m", "15m", "1h", "4h", "1d",
                 "--pairs", "BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT",
             ],
             capture_output=True, text=True, timeout=600
@@ -248,10 +279,13 @@ def run_backtest(config: dict, temp_strategy_path: Path) -> dict:
                 "--config", "/freqtrade/scripts/backtest_config.json",
                 "--strategy", "FinBuddyFreqAI_test",
                 "--strategy-path", "/tmp",
-                "--freqaimodel", "FinBuddyLLMModel",
-                "--timerange", "20250101-20260401",
+                # v11 expects LightGBMClassifier proba columns. backtest_config.json
+                # already sets freqaimodel=LightGBMClassifier — don't override here
+                # (FinBuddyLLMModel inherits from LightGBMRegressor, output schema mismatch).
+                "--timerange", BACKTEST_TIMERANGE,
                 "--timeframe", "15m",
                 "--export", "trades",
+                "--cache", "none",
             ],
             capture_output=True, text=True, timeout=1800
         )
@@ -299,7 +333,7 @@ def check_pass(metrics: dict, criteria: dict) -> bool:
 
 CSV_HEADERS = [
     "run", "timestamp", "ml_threshold", "stoploss",
-    "trailing_offset", "ml_exit_threshold", "atr_threshold",
+    "ml_exit_threshold", "atr_threshold",
     "trades", "win_rate", "sharpe", "max_drawdown", "profit_factor",
     "total_profit", "pass", "error",
 ]

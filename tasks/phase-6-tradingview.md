@@ -22,9 +22,13 @@ TradingView paid (Pro, ~$15/month) allows:
 ---
 
 ## Task 6.1 — Set Up Webhook Receiver on Server
-**Status:** ⬜ Pending  
-**Effort:** 2 hours  
+**Status:** ✅ Complete (2026-05-03)
+**Effort:** 2 hours
 **File:** `freqtrade/user_data/scripts/tradingview/webhook_receiver.py`
+
+> Live: uvicorn running on :9999, Nginx proxies /tradingview to it.
+> `https://trade.star7gaurav.in/tradingview/health` returns 200 OK.
+> @reboot cron installed; pip installed fastapi+uvicorn+pytrends.
 
 Lightweight FastAPI server that receives TradingView alert payloads.
 
@@ -115,8 +119,12 @@ location /tradingview {
 ---
 
 ## Task 6.3 — Wire TradingView Signals into FreqAI Features
-**Status:** ⬜ Pending (after 6.1)  
+**Status:** ✅ Complete (2026-05-03)
 **Effort:** 1 hour
+
+> `_get_tradingview_signal()` method added to `FinBuddyFreqAI.py`; TV features
+> exposed via `feature_engineering_std()` as `%-tv_supertrend_bullish` and
+> `%-tv_signal_age_minutes`.
 
 In `FinBuddyFreqAI.py`, read `tradingview_signals.json` and add as features:
 
@@ -144,8 +152,8 @@ def read_tradingview_signals(self):
 ---
 
 ## Phase 6 Complete When
-- [ ] Webhook receiver running on port 9999 and surviving reboots
-- [ ] Nginx proxying /tradingview to receiver
-- [ ] At least 1 TradingView alert firing to server (verify in logs)
-- [ ] `tradingview_signals.json` updating on alert fire
-- [ ] FreqAI reads TradingView signal as a feature
+- [x] Webhook receiver running on port 9999 and surviving reboots (@reboot cron in place)
+- [x] Nginx proxying /tradingview to receiver (verified 200 OK on /tradingview/health)
+- [ ] At least 1 TradingView alert firing to server (manual TV alert setup pending — Task 6.2)
+- [ ] `tradingview_signals.json` updating on alert fire (will populate when alert fires)
+- [x] FreqAI reads TradingView signal as a feature
