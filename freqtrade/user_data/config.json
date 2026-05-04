@@ -33,8 +33,8 @@
   },
   "exchange": {
     "name": "binance",
-    "key": "BINANCE_API_KEY_REMOVED",
-    "secret": "BINANCE_API_SECRET_REMOVED",
+    "key": "",
+    "secret": "",
     "ccxt_config": {},
     "ccxt_async_config": {},
     "pair_whitelist": [
@@ -55,7 +55,8 @@
       "CHIP/USDT",
       "SOMI/USDT",
       "ZBT/USDT"
-    ]
+    ],
+    "_key_note": "Set via FREQTRADE__EXCHANGE__KEY env var in freqtrade/.env (gitignored)"
   },
   "pairlists": [
     {
