@@ -17,7 +17,7 @@
 | 3 | [phase-3-hmm-regime.md](phase-3-hmm-regime.md) | ✅ **Verified** (2026-05-03) — regime NEUTRAL, cron clean | 5-regime HMM engine wired into strategy + memory |
 | 4 | [phase-4-obsidian-memory.md](phase-4-obsidian-memory.md) | ✅ **Verified** (2026-05-03) — auto-commits every 15m | Obsidian vault auto-write + git auto-commit |
 | 5 | [phase-5-karpathy-loop.md](phase-5-karpathy-loop.md) | ✅ **Verified** (2026-05-03) — research notes + hypotheses generated | Nightly research loop — Gemini + DeepSeek R1 |
-| 6 | [phase-6-tradingview.md](phase-6-tradingview.md) | ✅ **Live** (2026-05-03) — webhook + Nginx proxy | TradingView webhook live; Task 6.2 (TV alert config) is manual |
+| 6 | [phase-6-tradingview.md](phase-6-tradingview.md) | 🔴 **Abandoned** (2026-05-04) — TradingView alerts require paid plan | Dropped — TradingView paid feature; FreqAI is sole signal source |
 | 7 | [phase-7-executor.md](phase-7-executor.md) | ✅ **Verified** (2026-05-03) — cron clean, no exceptions | Python signal executor — paper trading mode |
 | 8 | [phase-8-futures-setup.md](phase-8-futures-setup.md) | 🔄 **In Progress** (2026-05-03) — config checker live; Binance manual checklist pending | Futures account setup — Binance USDT-M, leverage config, isolated margin |
 | 9 | [phase-9-futures-risk.md](phase-9-futures-risk.md) | 🔄 **In Progress** (2026-05-03) — RiskEngine scaffold + 10/10 self-test passing | Futures risk engine — position sizing, liquidation guards, funding rate monitor |
@@ -25,16 +25,14 @@
 
 ---
 
-## 🚨 Current Focus (as of 2026-05-03)
+## 🚨 Current Focus (as of 2026-05-04)
 
 **Immediate next step:**
-1. ✅ Phase 6 webhook live — `https://trade.star7gaurav.in/tradingview/health` returns 200 OK
-2. Manual: configure TradingView free alert pointing to webhook (Task 6.2 — Gaurav)
-3. Verify walk-forward backtest (Phase 1, Task 1.3) — check:
-   ```bash
-   tail -f /home/ubuntu/var/www/html/trade/logs/backtest_phase1.log
-   ```
-4. Once backtest passes (Sharpe > 0.5, WR > 50%, DD < 20%, PF > 1.2) → begin Phase 8
+1. ✅ Phase 8 complete — Binance futures connected, finbuddy_memory mounted in container
+2. ✅ Phase 9 complete — RiskEngine wired into custom_stake_amount (regime-aware sizing)
+3. 🔄 Phase 1 grid running — 90 combos, BACKTEST_TIMERANGE=20240101-20250101, PID 327995
+4. Once any combo passes (Sharpe > 0.5, WR > 50%, DD < 20%, PF > 1.2) → begin Phase 10 go-live
+5. Phase 6 (TradingView) abandoned — TV alerts are a paid feature; FreqAI is sole signal source
 
 ---
 

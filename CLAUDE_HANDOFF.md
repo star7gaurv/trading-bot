@@ -46,10 +46,9 @@ You reported the following in your **FINAL REPORT (2026-05-03)**:
 3. **Executor `/health`**  
    - ✅ `Executor OK: 0 signals processed (DB initialized and functional)` — schema OK, no signals yet
 
-4. **TradingView Webhook `/health`**  
-   - ⚠️ **Receiver file exists but NOT running**  
-   - `freqtrade/user_data/scripts/tradingview/webhook_receiver.py` created  
-   - FastAPI/uvicorn not installed on server → `/tradingview/health` behind Nginx returns 502
+4. **TradingView Webhook**  
+   - 🔴 **Abandoned (2026-05-04)** — TradingView alerts require paid plan  
+   - FreqAI is the sole signal source; TradingView integration not needed
 
 5. **Phases 0–7**  
    - ✅ All 7 phases in `tasks/TASKS.md` marked as **complete or deployed** as per your report  
