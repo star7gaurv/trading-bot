@@ -31,7 +31,21 @@ logger = logging.getLogger(__name__)
 
 class FinBuddyFreqAI(IStrategy):
     """
-    FinBuddy FreqAI Strategy v11 — Triple-Barrier Label + LightGBMClassifier (2026-05-03)
+    FinBuddy FreqAI Strategy v12 — Hold Class + Aligned Stops + Multi-TF (2026-05-04)
+
+    Round 4 (v11) verdict: FAIL. 90/90 combos negative Sharpe (best -5.43).
+    Root causes (line-cited in finbuddy_memory/research/v12_strategy_plan.md):
+      Bug #1 — label k_sl=1.0 vs custom_stoploss -2.0×ATR (geometry mismatch)
+      Bug #2 — HOLD class collapsed to NaN (model cannot abstain)
+      Bug #3 — FreqAI saw only 15m features (blind to 1h/4h context)
+      Bug #4 — trail at +1.5×ATR vs initial -2.0×ATR (R:R = 0.75:1, structurally negative)
+
+    v12 fixes (all four, in one pass):
+      #1+#4 (geometry): k_sl=1.5, initial stop -1.5×ATR, trail +2.0×ATR.
+                        Realized R:R = 1.33:1, positive expected value at WR>50%.
+      #2 (hold class):  Triple-barrier label keeps "H" for time-barrier candles.
+                        Entry rules require proba_H < 0.4 to fire.
+      #3 (multi-TF):    config.json include_timeframes = ["15m","1h","4h"].
 
     Walk-forward verdict on v10: FAILED OOS. 4/4 fail criteria.
       - Avg monthly Sharpe -1.88 (target > 0), 22% months positive (target ≥50%)
@@ -111,9 +125,11 @@ class FinBuddyFreqAI(IStrategy):
         **kwargs,
     ) -> Optional[float]:
         """
-        v10 ATR-adaptive stoploss — carried forward to v11 unchanged.
-        Initial: 2×ATR below entry (anchored via stoploss_from_open).
-        Trailing: once profit > 1×ATR, lock at +1.5×ATR above entry.
+        v12 ATR-adaptive stoploss — geometry rebalanced for positive R:R.
+        Initial: 1.5×ATR below entry (anchored via stoploss_from_open).
+        Trailing: once profit > 1×ATR, lock at +2.0×ATR above entry.
+        Realized R:R = 2.0/1.5 ≈ 1.33:1 (was 1.5/2.0 = 0.75:1 in v11).
+        k_sl in label is set to 1.5 to match this initial stop exactly.
         Returns None on missing data (no reset of existing stop).
         """
         dataframe, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
@@ -130,7 +146,7 @@ class FinBuddyFreqAI(IStrategy):
 
         if current_profit > atr_pct:
             trail_pct = stoploss_from_open(
-                1.5 * atr_pct,
+                2.0 * atr_pct,
                 current_profit,
                 is_short=trade.is_short,
                 leverage=trade.leverage,
@@ -140,7 +156,7 @@ class FinBuddyFreqAI(IStrategy):
             return None
 
         initial_stop = stoploss_from_open(
-            -2.0 * atr_pct,
+            -1.5 * atr_pct,
             current_profit,
             is_short=trade.is_short,
             leverage=trade.leverage,
@@ -280,37 +296,39 @@ class FinBuddyFreqAI(IStrategy):
         return dataframe
 
     # ------------------------------------------------------------------ #
-    # v11 — Triple-barrier label                                          #
+    # v12 — Triple-barrier label with HOLD class                          #
     # ------------------------------------------------------------------ #
 
     def set_freqai_targets(
         self, dataframe: DataFrame, metadata: dict, **kwargs
     ) -> DataFrame:
         """
-        Triple-barrier labeling (López de Prado, AFML ch.3).
+        Triple-barrier labeling (López de Prado, AFML ch.3) — v12.
 
         For each candle t (using 15m data):
           - atr_pct = ATR_14[t] / close[t], clamped to [0.003, 0.025]
-          - TP at close[t] * (1 + k_tp * atr_pct)   → label +1
-          - SL at close[t] * (1 - k_sl * atr_pct)   → label -1
-          - Time barrier at t + label_period_candles  → label by sign of return
-            (0 if flat, +1 if positive, -1 if negative)
+          - TP at close[t] * (1 + k_tp * atr_pct)   → label "L"
+          - SL at close[t] * (1 - k_sl * atr_pct)   → label "S"
+          - Neither hit within label_period candles  → label "H" (HOLD)
 
-        Starting params (v11):
+        v12 params:
           k_tp = 2.0   (take-profit 2×ATR above entry)
-          k_sl = 1.0   (stop-loss 1×ATR below entry — asymmetric, favours longs)
-          label_period_candles = 12  (3 hours on 15m; gives path time to resolve)
+          k_sl = 1.5   (stop-loss 1.5×ATR below entry — matches custom_stoploss)
+          label_period_candles = 12  (3 hours on 15m)
 
-        Output column: &-s_label  (integer: -1, 0, +1)
-        FreqAI classifier (LightGBMClassifier in freqai config) will produce:
-          &-s_label_proba_-1, &-s_label_proba_0, &-s_label_proba_+1
-        at inference time. Entry rules below use those probability columns.
+        v12 changes from v11:
+          1. k_sl 1.0 → 1.5 to match custom_stoploss initial stop.
+          2. HOLD ("H") class now retained instead of dropped — model can
+             abstain on candles whose path resolves neither TP nor SL within
+             the time window. Entry rules require proba_H < 0.4 to fire.
 
-        NOTE: shift(-label_period) makes the last label_period rows NaN.
-        FreqAI drops NaN-labelled rows automatically before training.
+        FreqAI classifier emits one proba column per class:
+          "L" → P(TP hit first), "S" → P(SL hit first), "H" → P(no resolution).
+
+        NOTE: last label_period rows → NaN (FreqAI drops automatically).
         """
         k_tp = 2.0
-        k_sl = 1.0
+        k_sl = 1.5
         label_period = self.freqai_info["feature_parameters"]["label_period_candles"]
 
         close = dataframe["close"].values
@@ -329,7 +347,7 @@ class FinBuddyFreqAI(IStrategy):
             tp_price = c0 * (1.0 + k_tp * atr_pct)
             sl_price = c0 * (1.0 - k_sl * atr_pct)
 
-            label = 0  # default: time barrier
+            label = 0  # default: time barrier (HOLD)
             for i in range(t + 1, t + label_period + 1):
                 if high[i] >= tp_price:
                     label = 1
@@ -337,26 +355,17 @@ class FinBuddyFreqAI(IStrategy):
                 if low[i] <= sl_price:
                     label = -1
                     break
-            else:
-                # time barrier: label by direction of close
-                ret = (close[t + label_period] - c0) / c0 if c0 > 0 else 0.0
-                label = 1 if ret > 0 else (-1 if ret < 0 else 0)
+            # No else clause — time-barrier candles stay as HOLD (0).
 
             labels[t] = label
 
-        # v11.2 — encode targets as strings ("L"/"S"). Two reasons:
-        #  1. FreqAI's data_kitchen.remove_features_from_df does
-        #     `col.startswith("%")` over dataframe.columns; with float-typed
-        #     classes the per-class proba columns FreqAI adds end up as float
-        #     scalars (1.0 / -1.0), which raises AttributeError.
-        #  2. Collapse the rare class-0 (exact-flat time-barrier) rows to NaN
-        #     so train/val splits always see the same {L, S} class set —
-        #     LightGBM otherwise raises "y contains previously unseen
-        #     labels: [0.0]" when the validation split has a class the train
-        #     split does not.
+        # v12 — three-class encoding: L/S/H. HOLD is no longer dropped.
+        # The model now learns to abstain when neither TP nor SL hits in the
+        # label window. Entry rules require proba_H < 0.4 to fire (so the
+        # model must be confident there IS a directional resolution).
         labels_str = np.where(
             labels == 1.0, "L",
-            np.where(labels == -1.0, "S", None)
+            np.where(labels == -1.0, "S", "H")
         )
         # Tail of length label_period → NaN (FreqAI drops automatically)
         labels_str[n - label_period:] = None
@@ -477,8 +486,8 @@ class FinBuddyFreqAI(IStrategy):
 
         TA filters and macro gate unchanged from v10.
         """
-        # v11.2 — string class labels => FreqAI proba columns are named "L" / "S".
-        # Defensive fallbacks kept for older feather formats.
+        # v12 — three-class proba columns: "L" / "S" / "H".
+        # Defensive fallbacks kept for legacy two-class feather files.
         proba_long = (
             dataframe.get("L",
             dataframe.get("1.0",
@@ -489,16 +498,28 @@ class FinBuddyFreqAI(IStrategy):
             dataframe.get("-1.0",
             dataframe.get("-1", None)))
         )
+        proba_hold = (
+            dataframe.get("H",
+            dataframe.get("0.0",
+            dataframe.get("0", None)))
+        )
 
         if proba_long is None:
             # column doesn't exist yet (first candle before FreqAI trains)
             proba_long  = pd.Series(0.0, index=dataframe.index)
         if proba_short is None:
             proba_short = pd.Series(0.0, index=dataframe.index)
+        if proba_hold is None:
+            # No H column yet (legacy v11 model still loaded) → never gate-block.
+            proba_hold = pd.Series(0.0, index=dataframe.index)
+
+        # v12 — HOLD gate: model must NOT predict "no resolution" with high prob.
+        not_hold = proba_hold < 0.4
 
         ml_signal_long = (
             (dataframe["do_predict"] == 1)
             & (proba_long > 0.55)
+            & not_hold
         )
 
         # Bull/bear dynamic threshold — in classifier land we tighten in bear
@@ -535,6 +556,7 @@ class FinBuddyFreqAI(IStrategy):
             (dataframe["do_predict"] == 1)
             & ml_threshold_long
             & macro_long_gate
+            & not_hold
         )
 
         dataframe.loc[
@@ -546,12 +568,13 @@ class FinBuddyFreqAI(IStrategy):
             "enter_tag"
         ] = "freqai_lgbm_v11_long"
 
-        # Short — macro-gated (v9 fix, retained)
+        # Short — macro-gated (v9 fix, retained) + v12 HOLD gate
         ml_signal_short = (
             (dataframe["do_predict"] == 1)
             & (proba_short > 0.55)
             & (dataframe["btc_4h_below_ema50"] == 1)
             & macro_short_gate
+            & not_hold
         )
 
         ta_filter_short = (
