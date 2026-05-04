@@ -14,7 +14,7 @@
   },
   "grid": {
     "stoploss": [-0.020, -0.025, -0.030],
-    "ml_threshold": [0.50, 0.55, 0.60],
+    "ml_threshold": [0.50, 0.55, 0.60, 0.65, 0.70],
     "ml_exit_threshold": [0.40, 0.45, 0.50],
     "atr_threshold": [0.002, 0.003]
   },

@@ -12,6 +12,12 @@ from freqtrade.persistence import Trade
 import talib.abstract as ta
 import freqtrade.vendor.qtpylib.indicators as qtpylib
 import logging
+import sys
+import os
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'scripts'))
+from risk_engine import RiskEngine
+_risk_engine = RiskEngine()
 
 logger = logging.getLogger(__name__)
 
@@ -164,11 +170,20 @@ class FinBuddyFreqAI(IStrategy):
         side: str,
         **kwargs,
     ) -> float:
-        regime = self._get_current_regime()
-        multiplier = self._REGIME_MULTIPLIERS.get(regime, 1.0)
+        REGIME_FILE = os.path.join(os.path.dirname(__file__), '../../finbuddy_memory/regimes/current.json')
+        regime = _risk_engine.get_regime(REGIME_FILE)
+        multiplier = _risk_engine.stake_multiplier(regime)
+        current_profit_ratio = kwargs.get('current_profit_ratio', 0.0) or 0.0
+        if not _risk_engine.max_drawdown_gate(abs(current_profit_ratio)):
+            logger.warning(f"[RiskEngine] DD gate CLOSED — skipping trade (dd={current_profit_ratio:.2%})")
+            return 0
         if multiplier == 0.0:
-            return 0.0
-        return max(min_stake or 0, proposed_stake * multiplier)
+            logger.warning(f"[RiskEngine] CRASH regime — skipping trade")
+            return 0
+        base_stake = min(proposed_stake, max_stake)
+        result = round(base_stake * multiplier, 2)
+        logger.info(f"[RiskEngine] stake={result} regime={regime} mult={multiplier}")
+        return max(result, min_stake or 0)
 
     def _get_tradingview_signal(self):
         """Load latest TradingView webhook signal."""

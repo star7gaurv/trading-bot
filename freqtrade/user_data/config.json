@@ -33,8 +33,8 @@
   },
   "exchange": {
     "name": "binance",
-    "key": "",
-    "secret": "",
+    "key": "BINANCE_API_KEY_REMOVED",
+    "secret": "BINANCE_API_SECRET_REMOVED",
     "ccxt_config": {},
     "ccxt_async_config": {},
     "pair_whitelist": [
@@ -64,7 +64,7 @@
   ],
   "telegram": {
     "enabled": true,
-    "token": "",
+    "token": "REDACTED-FREQTRADE__TELEGRAM__TOKEN",
     "chat_id": "5622292536"
   },
   "api_server": {
@@ -121,7 +121,7 @@
       "include_corr_pairlist": [
         "BTC/USDT:USDT"
       ],
-      "label_period_candles": 3,
+      "label_period_candles": 12,
       "include_shifted_candles": 2,
       "indicator_periods_candles": [
         10,
