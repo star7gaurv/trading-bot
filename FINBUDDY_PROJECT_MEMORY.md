@@ -162,7 +162,7 @@ These are rules from the official Freqtrade develop docs that directly impact ou
 | Phase | File | Status | Focus |
 |---|---|---|---|
 | 0 | `tasks/phase-0-foundation.md` | ✅ Complete | Foundation — FreqTrade, Telegram, server, N8N cleanup |
-| 1 | `tasks/phase-1-freqai-brain.md` | 🟡 In Progress | FreqAI brain — futures long+short, v11 + label work |
+| 1 | `tasks/phase-1-freqai-brain.md` | 🟡 In Progress | FreqAI brain — futures long+short, v11 failing → v12 plan drafted at `finbuddy_memory/research/v12_strategy_plan.md` (awaiting Gaurav review) |
 | 2 | `tasks/phase-2-data-enrichment.md` | ✅ Live | External data fetchers + combined_context.json |
 | 3 | `tasks/phase-3-hmm-regime.md` | ✅ Live | 5-regime HMM engine + regime-aware sizing hooks |
 | 4 | `tasks/phase-4-obsidian-memory.md` | ✅ Live | Obsidian vault auto-write + auto git commit |
