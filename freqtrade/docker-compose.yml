@@ -25,6 +25,8 @@ services:
       - XAI_API_KEY=${XAI_API_KEY}
       - GROK_MODEL=grok-3-mini
       - GROQ_API_KEY=${GROQ_API_KEY}
+      - FREQTRADE__EXCHANGE__KEY=${FREQTRADE__EXCHANGE__KEY}
+      - FREQTRADE__EXCHANGE__SECRET=${FREQTRADE__EXCHANGE__SECRET}
     volumes:
       - "./user_data:/freqtrade/user_data"
       - "/home/ubuntu/var/www/html/trade/finbuddy_memory:/freqtrade/finbuddy_memory:ro"
