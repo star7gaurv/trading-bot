@@ -3,7 +3,7 @@
 FinBuddyLLMModel — Custom FreqAI Model v2
 ==========================================
 Architecture:
-  1. LightGBM trains on OHLCV + TA indicators (inherited from LightGBMRegressor)
+  1. LightGBM trains on OHLCV + TA indicators (inherited from LightGBMClassifier)
   2. predict() checks signal confidence (abs prediction > threshold)
   3. High-confidence signals get LLM confirmation via WATERFALL fallback chain:
        Primary  : xAI Grok   (GROK_MODEL env var, default grok-3-mini)
@@ -43,11 +43,11 @@ import pandas as pd
 from pandas import DataFrame
 
 try:
-    from freqtrade.freqai.prediction_models.LightGBMRegressor import LightGBMRegressor
-    BASE_CLASS = LightGBMRegressor
+    from freqtrade.freqai.prediction_models.LightGBMClassifier import LightGBMClassifier
+    BASE_CLASS = LightGBMClassifier
 except ImportError:
-    from freqtrade.freqai.base_models.BaseRegressionModel import BaseRegressionModel
-    BASE_CLASS = BaseRegressionModel
+    from freqtrade.freqai.base_models.BaseClassifierModel import BaseClassifierModel
+    BASE_CLASS = BaseClassifierModel
 
 try:
     import requests
@@ -65,7 +65,7 @@ DEFAULT_XAI_MODEL  = "grok-3-mini"
 DEFAULT_GROQ_MODEL = "llama-3.3-70b-versatile"
 
 # ── Thresholds & weights ───────────────────────────────────────────────────────
-CONFIDENCE_THRESHOLD = 0.006   # abs prediction must exceed 0.6% to trigger LLM
+CONFIDENCE_THRESHOLD = 0.05    # classifier: prob must deviate >5% from neutral (0.5) to trigger LLM
 LGBM_WEIGHT          = 0.60
 LLM_WEIGHT           = 0.40
 COOLDOWN_SECONDS     = 3600    # 60-min per-pair cooldown (shared, any provider resets it)
@@ -83,8 +83,9 @@ LLM_MULTIPLIERS = {
 class FinBuddyLLMModel(BASE_CLASS):
     """
     Custom FreqAI model: LightGBM + LLM confirmation with waterfall fallback.
-    Inherits all training / feature-engineering from LightGBMRegressor.
-    Only predict() is overridden to add the LLM confirmation layer.
+    Inherits all training / feature-engineering from LightGBMClassifier.
+    Labels are "L" (long), "S" (short), "hold". fit() and predict() handle
+    string labels natively; predict() is overridden for LLM confirmation.
     """
 
     def __init__(self, **kwargs):
@@ -121,73 +122,95 @@ class FinBuddyLLMModel(BASE_CLASS):
                 "All LLM calls disabled — LightGBM signal used as-is."
             )
 
+    # ── fit() — explicit pass-through; LightGBMClassifier handles L/S natively ──
+
+    def fit(self, data_dictionary: Dict, dk: Any, **kwargs) -> Any:
+        """Pass through to LightGBMClassifier.fit(). Labels "L", "S", "hold" are
+        label-encoded internally by the parent; no manual encoding needed."""
+        return super().fit(data_dictionary, dk, **kwargs)
+
     # ── Core predict override ──────────────────────────────────────────────────
 
     def predict(
         self, unfiltered_df: DataFrame, dk: Any, **kwargs
     ) -> Tuple[DataFrame, DataFrame]:
         """
-        Step 1: LightGBM prediction (parent).
+        Step 1: LightGBMClassifier prediction (parent) — returns class + probabilities.
         Step 2: For high-confidence candles, call LLM waterfall.
-        Step 3: Blend and return.
+        Step 3: Apply LLM outcome: CONFIRM keeps class, REJECT/HOLD overrides to 'hold'.
         """
-        # 1. LightGBM prediction
+        # 1. Classifier prediction
         pred_df, do_predict = super().predict(unfiltered_df, dk, **kwargs)
 
-        # 2. LLM confirmation gate
         if requests is None:
             return pred_df, do_predict
 
-        llm_available = bool(self._xai_api_key or self._groq_api_key)
-        if not llm_available:
+        if not bool(self._xai_api_key or self._groq_api_key):
             return pred_df, do_predict
 
         pair = dk.pair if hasattr(dk, "pair") else "UNKNOWN"
-        target_col = "&-s_close"
-
-        if target_col not in pred_df.columns:
-            logger.debug(f"[FinBuddyLLMModel] {pair}: target col '{target_col}' not found")
+        pred_col = "&-s_close"
+        if pred_col not in pred_df.columns:
+            logger.debug(f"[FinBuddyLLMModel] {pair}: '{pred_col}' not in pred_df")
             return pred_df, do_predict
 
-        last_pred = pred_df[target_col].iloc[-1]
+        last_class = pred_df[pred_col].iloc[-1]
+
+        # Probability of the predicted direction (classifier output)
+        prob_col = "proba_long" if "proba_long" in pred_df.columns else None
+        if prob_col is None and "&-s_close_L" in pred_df.columns:
+            prob_col = "&-s_close_L"
+        last_prob = float(pred_df[prob_col].iloc[-1]) if prob_col else 0.5
+
+        # Confidence = deviation from 0.5 (neutral probability)
+        confidence = abs(last_prob - 0.5)
+
         if hasattr(do_predict, "iloc"):
             last_do_predict = do_predict.iloc[-1, 0] if not do_predict.empty else 0
         else:
             last_do_predict = int(do_predict[-1]) if len(do_predict) > 0 else 0
 
-        # Gate: only call LLM if model is trained, signal is strong, cooldown elapsed
         if (
             last_do_predict == 1
-            and abs(last_pred) >= CONFIDENCE_THRESHOLD
+            and last_class in ("L", "S")
+            and confidence >= CONFIDENCE_THRESHOLD
             and self._is_cooldown_elapsed(pair)
         ):
-            market_context = self._build_market_context(unfiltered_df, pair, last_pred)
+            # Proxy for _build_market_context: map probability to signed -1..1
+            lgbm_proxy = (last_prob - 0.5) * 2.0
+            if last_class == "S":
+                lgbm_proxy = -abs(lgbm_proxy)
+            market_context = self._build_market_context(unfiltered_df, pair, lgbm_proxy)
             llm_outcome, provider_used = self._call_llm_waterfall(pair, market_context)
 
-            if llm_outcome in LLM_MULTIPLIERS:
-                multiplier = LLM_MULTIPLIERS[llm_outcome]
-                blended = last_pred * LGBM_WEIGHT + last_pred * multiplier * LLM_WEIGHT
-                pred_df.at[pred_df.index[-1], target_col] = blended
+            if llm_outcome == "CONFIRM":
                 logger.info(
-                    f"[FinBuddyLLMModel] {pair} | Provider={provider_used} | "
-                    f"LGBM={last_pred:.4f} | LLM={llm_outcome} (x{multiplier}) | "
-                    f"Blended={blended:.4f}"
+                    f"[FinBuddyLLMModel] {pair} | {provider_used}: CONFIRM → keeping {last_class} "
+                    f"(prob={last_prob:.3f})"
+                )
+            elif llm_outcome in ("REJECT", "HOLD"):
+                pred_df.at[pred_df.index[-1], pred_col] = "hold"
+                logger.info(
+                    f"[FinBuddyLLMModel] {pair} | {provider_used}: {llm_outcome} → "
+                    f"class overridden to 'hold' (was {last_class}, prob={last_prob:.3f})"
                 )
             else:
                 logger.warning(
-                    f"[FinBuddyLLMModel] {pair}: unexpected outcome '{llm_outcome}' from {provider_used}, "
-                    f"using raw LGBM={last_pred:.4f}"
+                    f"[FinBuddyLLMModel] {pair}: unexpected LLM outcome '{llm_outcome}', "
+                    f"keeping {last_class}"
                 )
         else:
             if last_do_predict != 1:
                 reason = f"do_predict={last_do_predict}"
-            elif abs(last_pred) < CONFIDENCE_THRESHOLD:
-                reason = f"abs({last_pred:.4f}) < threshold={CONFIDENCE_THRESHOLD}"
+            elif last_class not in ("L", "S"):
+                reason = f"class='{last_class}' (hold/no signal)"
+            elif confidence < CONFIDENCE_THRESHOLD:
+                reason = f"confidence={confidence:.3f} < threshold={CONFIDENCE_THRESHOLD}"
             else:
                 remaining = int(COOLDOWN_SECONDS - (time.time() - self._last_llm_call.get(pair, 0)))
                 reason = f"cooldown active ({remaining}s remaining)"
             logger.debug(
-                f"[FinBuddyLLMModel] {pair}: LLM skipped ({reason}), LGBM={last_pred:.4f}"
+                f"[FinBuddyLLMModel] {pair}: LLM skipped ({reason})"
             )
 
         return pred_df, do_predict
