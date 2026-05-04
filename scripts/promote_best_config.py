@@ -82,8 +82,9 @@ def select_best(rows):
     if healthy:
         healthy.sort(key=lambda r: _f(r["sharpe"]), reverse=True)
         return healthy[0], "primary"
-    fallback = [r for r in rows if (_f(r["trades"]) or 0) >= 30]
+    fallback = [r for r in rows if (_f(r["trades"]) or 0) >= 30 and (_f(r["sharpe"]) or -1) > 0]
     if not fallback:
+        print("NO PROMOTABLE CONFIG — all combos negative Sharpe")
         return None, "none"
     fallback.sort(key=lambda r: _f(r["sharpe"]) or -1e9, reverse=True)
     return fallback[0], "fallback"
