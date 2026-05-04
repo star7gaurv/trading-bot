@@ -1,9 +1,63 @@
 # 🤝 FinBuddy — Handoff Note for Claude Code
 
-**Written by:** Perplexity AI  
-**Date:** 2026-05-03  
+**Written by:** Claude Code  
+**Date:** 2026-05-04  
 **For:** Claude Code (next session)  
 **Branch:** `gaurav`
+
+---
+
+## 🔴 Round 4 Grid — COMPLETE, VERDICT: FAIL (2026-05-04)
+
+- Grid: 90/90 combos done. Window 20240101-20250101 (bull, BTC +122%).
+- **Best:** Sharpe **-5.43**, WR 51.5%, PF 0.749 at ml_threshold=0.70, sl=-0.02 (run 28).
+- **Verdict: DO NOT PROMOTE.** All 90 combos negative Sharpe.
+- promote_best_config.py refused fallback (Sharpe>0 floor blocked it).
+- No walkforward.md written (verdict is failure, not promotion).
+
+### Why it failed (4 confirmed bugs, full plan at `finbuddy_memory/research/v12_strategy_plan.md`):
+1. Label `k_sl=1.0` vs `custom_stoploss -2.0×ATR` — mismatch, model trains on stop that never fires.
+2. Hold class collapsed to NaN — model cannot abstain → 1000–4000 trades/yr structural over-trading.
+3. FreqAI `include_timeframes=["15m"]` only — model blind to 1h/4h context.
+4. Trailing geometry caps winners at +1.5×ATR, losers run to -2×ATR → R:R ≈ 0.75:1.
+
+### Next: v12 redesign (awaiting Gaurav review of `v12_strategy_plan.md`).
+
+## ✅ Task 5 Complete (2026-05-04)
+
+- FinBuddyLLMModel.py deployed (Classifier base, commit c58c8c1)
+- config.json freqaimodel → FinBuddyLLMModel
+- Container restarted and API confirmed up
+
+## 📋 Go-Live Checklist (2026-05-04 — POST-R4)
+
+```
+=== FinBuddy Go-Live Checklist ===
+
+  [FAIL] Walk-forward verdict — R4 FAILED (no walkforward.md written by promote)
+  [PASS] trading_mode = futures
+  [PASS] margin_mode = isolated
+  [PASS] config.json exchange.key is empty — credentials via env var only
+  [PASS] .env FREQTRADE__EXCHANGE__SECRET set
+  [PASS] pairlists[0] = StaticPairList
+  [PASS] label_period_candles = 12
+  [PASS] RiskEngine importable — stake_multiplier(NEUTRAL)=0.75
+  [PASS] docker freqtrade running
+  [PASS] dry_run = True (safety check)
+  [WARN] Binance API has Futures permission — manually verify on binance.com
+
+=== Summary: 9/11 PASS | 1 FAIL | 1 WARN ===
+Blockers:
+  • Walk-forward verdict (build v12, re-run grid, promote)
+```
+
+**Phase 10 go-live blocked.** All infra checks pass; only blocker is the
+strategy itself failing the walk-forward gate. v12 plan must land before
+any further `dry_run=false` work.
+
+---
+
+**Written by:** Perplexity AI (original 2026-05-03), updated by Claude Code 2026-05-04
 
 > This file is the **live action queue** for Claude Code. It should always reflect
 > the **next concrete ops steps** on the server, assuming the repo is already
