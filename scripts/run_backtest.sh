@@ -60,7 +60,7 @@ echo "[1/3] Downloading historical data (BTC/USDT, ETH/USDT, 15m, 5m, 1h)..."
 # never aborts the download.
 docker exec freqtrade freqtrade download-data \
   --config /freqtrade/scripts/backtest_config.json \
-  --timerange 20250101-20260401 \
+  --timerange 20240101-20250101 \
   --timeframes 5m 15m 1h \
   --pairs BTC/USDT ETH/USDT SOL/USDT BNB/USDT XRP/USDT \
   2>&1 | tee -a "$LOG_FILE" || true
@@ -69,7 +69,7 @@ echo ""
 echo "[2/3] Running walk-forward backtest..."
 echo "    Strategy   : FinBuddyFreqAI"
 echo "    FreqAI Model: FinBuddyLLMModel"
-echo "    Timerange  : 20250101-20260401"
+echo "    Timerange  : 20240101-20250101 (bull period)"
 echo "    Timeframe  : 15m"
 echo ""
 
@@ -81,7 +81,7 @@ docker exec \
     --config /freqtrade/scripts/backtest_config.json \
     --strategy FinBuddyFreqAI \
     --freqaimodel FinBuddyLLMModel \
-    --timerange 20250101-20260401 \
+    --timerange 20240101-20250101 \
     --timeframe 15m \
     --export trades \
     2>&1 | tee -a "$LOG_FILE" || true

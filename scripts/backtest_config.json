@@ -79,7 +79,7 @@
       "include_corr_pairlist": [
         "BTC/USDT:USDT"
       ],
-      "label_period_candles": 3,
+      "label_period_candles": 12,
       "include_shifted_candles": 2,
       "indicator_periods_candles": [
         10,
