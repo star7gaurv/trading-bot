@@ -5,7 +5,7 @@
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
 **Status:** 🟢 v11 deployed · Phases 0–7 wired · Futures infra online · Walk-forward / label redesign next
-**Last Updated:** 2026-05-03 (Perplexity — post 7-phase infra run)
+**Last Updated:** 2026-05-04 (Claude Code — Phase 8+9 complete, label fix, risk engine wired)
 
 ---
 
@@ -144,7 +144,7 @@ These are rules from the official Freqtrade develop docs that directly impact ou
 | Component | Status | Notes |
 |---|---|---|
 | **FreqTrade futures** | ✅ Running, dry-run | FinBuddyFreqAI v11, Binance USDT-M, isolated margin |
-| **Phase 1 — FreqAI brain** | 🟡 Active | v11 deployed; label/Walk-forward work still open (see CLAUDE_HANDOFF) |
+| **Phase 1 — FreqAI brain** | 🟡 Active | v11 deployed; label_period=12, ml_threshold grid up to 0.70, grid re-running |
 | **Phase 2 — Data enrichment** | ✅ Live | All 5 fetchers + master aggregator cron’d |
 | **Phase 3 — HMM regimes** | ✅ Live | 5-regime HMM writes `regimes/current.{json,md}` every 4h |
 | **Phase 4 — Obsidian memory** | ✅ Live | CONTEXT + signals/research auto-written + git auto-commit |
@@ -169,8 +169,8 @@ These are rules from the official Freqtrade develop docs that directly impact ou
 | 5 | `tasks/phase-5-karpathy-loop.md` | ✅ Live | Nightly research loop (Gemini + DeepSeek R1) |
 | 6 | `tasks/phase-6-tradingview.md` | ⚠️ Partial | TV webhook FastAPI app created; uvicorn not installed / not running |
 | 7 | `tasks/phase-7-executor.md` | ✅ Live (paper) | Python signal executor + `/health` endpoint |
-| 8 | `tasks/phase-8-futures-setup.md` | ⬜ Pending | Futures account setup refinement (dedicated API key, leverage caps, separate config) |
-| 9 | `tasks/phase-9-futures-risk.md` | ⬜ Pending | Futures risk engine — liquidation guard, funding monitor, DD watchdog |
+| 8 | `tasks/phase-8-futures-setup.md` | ✅ Complete | Binance futures activated, API key configured, finbuddy_memory mounted in container |
+| 9 | `tasks/phase-9-futures-risk.md` | ✅ Complete | RiskEngine wired into custom_stake_amount: get_regime() + stake_multiplier() + DD gate |
 | 10 | `tasks/phase-10-live-migration.md` | ⬜ Pending | Dry-run → live capital migration, kill switch, go-live protocol |
 
 ---
