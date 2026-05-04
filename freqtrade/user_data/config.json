@@ -138,6 +138,5 @@
       "learning_rate": 0.05
     }
   },
-  "freqaimodel": "LightGBMClassifier",
-  "_freqaimodel_note": "Set to LightGBMClassifier to match v11 strategy (proba columns -1.0 / 1.0). FinBuddyLLMModel is a Regressor and is incompatible with v11; rewrite as Classifier subclass before re-enabling."
+  "freqaimodel": "FinBuddyLLMModel"
 }
