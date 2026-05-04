@@ -360,16 +360,17 @@ class FinBuddyFreqAI(IStrategy):
             labels[t] = label
 
         # v12 — three-class encoding: L/S/H. HOLD is no longer dropped.
-        # The model now learns to abstain when neither TP nor SL hits in the
-        # label window. Entry rules require proba_H < 0.4 to fire (so the
-        # model must be confident there IS a directional resolution).
-        labels_str = np.where(
-            labels == 1.0, "L",
-            np.where(labels == -1.0, "S", "H")
-        )
-        # Tail of length label_period → NaN (FreqAI drops automatically)
-        labels_str[n - label_period:] = None
-        dataframe["&-s_label"] = pd.Series(labels_str, index=dataframe.index, dtype=object)
+        # IMPORTANT: must build into object dtype from the start. np.where
+        # with all-string branches returns <U1 dtype, which silently truncates
+        # None → "N" on assignment and breaks training (LightGBM raises
+        # "y contains previously unseen labels: 'N'"). Direct fill avoids it.
+        labels_obj = np.empty(n, dtype=object)
+        labels_obj[labels == 1.0] = "L"
+        labels_obj[labels == -1.0] = "S"
+        labels_obj[labels == 0.0] = "H"
+        # Tail of length label_period → None (FreqAI drops automatically)
+        labels_obj[n - label_period:] = None
+        dataframe["&-s_label"] = pd.Series(labels_obj, index=dataframe.index, dtype=object)
         return dataframe
 
     # ------------------------------------------------------------------ #
