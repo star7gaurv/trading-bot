@@ -12,7 +12,19 @@
 
 ---
 
-## ✅ What’s Already Done On Server (From Your Last Session)
+## ✅ Current State (May 4 2026 PM — Claude Code)
+
+- v11.2 live in docker, Binance futures connected (dry-run), FinBuddyFreqAI v11 loaded
+- RiskEngine wired into custom_stake_amount: regime-aware stake sizing active (NEUTRAL → 0.75×)
+- label_period_candles=12 in both config.json and backtest_config.json
+- ml_threshold grid extended to [0.50, 0.55, 0.60, 0.65, 0.70] (90 total combos)
+- finbuddy_memory/regimes/ bind-mounted into container at /freqtrade/finbuddy_memory/regimes/
+- Bull grid running: BACKTEST_TIMERANGE=20240101-20250101, PID 327995, /tmp/bull_futures_backtest.log
+- Pending: walk-forward result from current grid, Phase 10 go-live decision
+
+---
+
+## ✅ What’s Already Done On Server (From Previous Session — 2026-05-03)
 
 You reported the following in your **FINAL REPORT (2026-05-03)**:
 
