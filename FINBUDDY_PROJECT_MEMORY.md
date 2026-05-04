@@ -149,7 +149,7 @@ These are rules from the official Freqtrade develop docs that directly impact ou
 | **Phase 3 — HMM regimes** | ✅ Live | 5-regime HMM writes `regimes/current.{json,md}` every 4h |
 | **Phase 4 — Obsidian memory** | ✅ Live | CONTEXT + signals/research auto-written + git auto-commit |
 | **Phase 5 — Karpathy loop** | ✅ Live | Nightly Gemini + DeepSeek research at 02:00 |
-| **Phase 6 — TradingView webhook** | ⚠️ Skeleton | Receiver file created; FastAPI/uvicorn missing; service not running yet |
+| **Phase 6 — TradingView webhook** | 🔴 Abandoned | TradingView alerts require paid plan — dropped. FreqAI is sole signal source. |
 | **Phase 7 — Executor** | ✅ Live (paper) | Signal executor cron every 5 min; `/health` OK; 0 signals processed so far |
 | **N8N pipeline** | 🔴 Permanently disabled | FreqAI is sole signal source |
 
@@ -167,7 +167,7 @@ These are rules from the official Freqtrade develop docs that directly impact ou
 | 3 | `tasks/phase-3-hmm-regime.md` | ✅ Live | 5-regime HMM engine + regime-aware sizing hooks |
 | 4 | `tasks/phase-4-obsidian-memory.md` | ✅ Live | Obsidian vault auto-write + auto git commit |
 | 5 | `tasks/phase-5-karpathy-loop.md` | ✅ Live | Nightly research loop (Gemini + DeepSeek R1) |
-| 6 | `tasks/phase-6-tradingview.md` | ⚠️ Partial | TV webhook FastAPI app created; uvicorn not installed / not running |
+| 6 | `tasks/phase-6-tradingview.md` | 🔴 Abandoned | TradingView alerts are a paid feature — dropped (2026-05-04) |
 | 7 | `tasks/phase-7-executor.md` | ✅ Live (paper) | Python signal executor + `/health` endpoint |
 | 8 | `tasks/phase-8-futures-setup.md` | ✅ Complete | Binance futures activated, API key configured, finbuddy_memory mounted in container |
 | 9 | `tasks/phase-9-futures-risk.md` | ✅ Complete | RiskEngine wired into custom_stake_amount: get_regime() + stake_multiplier() + DD gate |
