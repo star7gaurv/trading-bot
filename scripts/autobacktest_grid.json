@@ -1,5 +1,5 @@
 {
-  "_comment": "v11 grid — LightGBMClassifier proba thresholds. Values are absolute proba (0..1), not regression deltas. trailing_offset removed (v11 has framework trailing OFF, custom_stoploss owns the trail).",
+  "_comment": "v13 grid — 3 exit bugs fixed. stoploss widened so custom_stoploss controls R:R. ml_exit_threshold raised so winners aren't cut prematurely.",
   "strategy_file": "freqtrade/user_data/strategies/FinBuddyFreqAI.py",
   "backtest_script": "scripts/run_backtest.sh",
   "parse_script": "scripts/parse_backtest.py",
@@ -13,19 +13,20 @@
     "profit_factor": 1.2
   },
   "grid": {
-    "stoploss": [-0.020, -0.025, -0.030],
+    "stoploss": [-0.08, -0.10, -0.12],
     "ml_threshold": [0.50, 0.55, 0.60, 0.65, 0.70],
-    "ml_exit_threshold": [0.40, 0.45, 0.50],
+    "ml_exit_threshold": [0.60, 0.65, 0.70],
     "atr_threshold": [0.002, 0.003]
   },
   "_grid_rationale": {
-    "stoploss": "Class attr; v11 keeps -0.020 to -0.030 sweep.",
+    "stoploss": "Bug A fix: must be wider than max ATR stop (-1.5*2.5%=-3.75%) so custom_stoploss always fires first. -0.08/-0.10/-0.12 all qualify.",
     "ml_threshold": "Entry proba threshold for long+short. Bear branch auto-tightens to +0.05.",
-    "ml_exit_threshold": "Exit proba threshold (opposite-class probability cut-off).",
+    "ml_exit_threshold": "Bug C fix: raised from [0.40,0.45,0.50] to [0.60,0.65,0.70]. Old 0.45 cut winners at <1% gain. Now requires high reversal confidence to exit.",
     "atr_threshold": "ATR/close volatility floor."
   },
-  "_removed_from_v3": {
-    "trailing_offset": "v11 disables framework trailing — custom_stoploss handles it. Lever is dead.",
-    "roi_multiplier": "Confirmed dead in v6 round 2."
+  "_bugs_fixed_v13": {
+    "A": "stoploss grid widened: -0.02/-0.025/-0.03 → -0.08/-0.10/-0.12",
+    "B": "minimal_roi in strategy changed to {0:0.99} — disabled. custom_stoploss trail owns all exits.",
+    "C": "ml_exit_threshold default raised from 0.45 to 0.65 in strategy + grid sweep"
   }
 }

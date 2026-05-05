@@ -31,61 +31,47 @@ logger = logging.getLogger(__name__)
 
 class FinBuddyFreqAI(IStrategy):
     """
-    FinBuddy FreqAI Strategy v12 — Hold Class + Aligned Stops + Multi-TF (2026-05-04)
+    FinBuddy FreqAI Strategy v13 — Exit Fix + Wide Stop Floor + 15m-Only (2026-05-05)
 
-    Round 4 (v11) verdict: FAIL. 90/90 combos negative Sharpe (best -5.43).
-    Root causes (line-cited in finbuddy_memory/research/v12_strategy_plan.md):
-      Bug #1 — label k_sl=1.0 vs custom_stoploss -2.0×ATR (geometry mismatch)
-      Bug #2 — HOLD class collapsed to NaN (model cannot abstain)
-      Bug #3 — FreqAI saw only 15m features (blind to 1h/4h context)
-      Bug #4 — trail at +1.5×ATR vs initial -2.0×ATR (R:R = 0.75:1, structurally negative)
+    R5 (v12) verdict: FAIL. 90/90 combos negative Sharpe (best -5.43, identical to R4).
+    v12 changes (Hold class, multi-TF, ATR multiplier) had zero effect.
 
-    v12 fixes (all four, in one pass):
-      #1+#4 (geometry): k_sl=1.5, initial stop -1.5×ATR, trail +2.0×ATR.
-                        Realized R:R = 1.33:1, positive expected value at WR>50%.
-      #2 (hold class):  Triple-barrier label keeps "H" for time-barrier candles.
-                        Entry rules require proba_H < 0.4 to fire.
-      #3 (multi-TF):    config.json include_timeframes = ["15m","1h","4h"].
+    R5 root-cause analysis — 3 compounding exit bugs:
+      Bug A — Grid stoploss too tight (-0.02 to -0.03): autobacktest patches BOTH
+               config AND strategy stoploss, making the hard floor tighter than
+               ATR-based stop in volatile periods (ATR>1.33%). Hard floor fires
+               instead of custom_stoploss, breaking the intended R:R geometry.
+               Fix: grid sweep -0.08 to -0.12 (wider than max ATR stop of 3.75%).
 
-    Walk-forward verdict on v10: FAILED OOS. 4/4 fail criteria.
-      - Avg monthly Sharpe -1.88 (target > 0), 22% months positive (target ≥50%)
-      - P&L -11.58%, concentrated in one month (2025-02)
-      - Root cause: path-blind label. mean(next 3 closes) ignores whether the
-        path to that mean crosses the stoploss. Five rounds of stop tuning proved
-        we were treating the symptom. The disease is in set_freqai_targets().
+      Bug B — minimal_roi {"240": 0.02} exposed during grid: autobacktest removes
+               the config's minimal_roi override, exposing the strategy's table.
+               Winners exit at +2% after 4h by ROI; losers ride to full ATR stop.
+               This alone causes avg_win < avg_loss regardless of WR.
+               Fix: minimal_roi = {"0": 0.99} — effectively disabled, custom_stoploss
+               trail owns ALL winner exits.
 
-    v11 Fix — Triple-Barrier Labeling (López de Prado, AFML ch.3):
-      For each candle t, look forward label_period_candles (default 12 = 3h on 15m):
-        - TP barrier : close[t] * (1 + k_tp * atr_pct[t])   → label +1
-        - SL barrier : close[t] * (1 - k_sl * atr_pct[t])   → label -1
-        - Time barrier: window expires before either          → label by sign of return
-      Starting params: k_tp=2.0, k_sl=1.0, label_period_candles=12
+      Bug C — ML exit threshold 0.45 too low: proba_short > 0.45 fires constantly
+               in a 3-class model (P(L)+P(S)+P(H)=1; P(S)>0.45 happens frequently
+               when model is uncertain). Cuts winning longs at <1% gain while
+               losers wait for the stoploss. Avg_win ≈ 0.7×avg_loss → PF=0.749.
+               Fix: raise exit threshold to 0.65 (requires high reversal confidence).
 
-      The model now learns to REFUSE setups whose path is bad even when the
-      mean is okay. This is the exact pathology the 79/62 trailing chops exposed.
+    Additional improvements in v13:
+      - Revert include_timeframes to ["15m"] only: multi-TF degraded model with
+        30-day training window (too few 4h candles for LightGBM to learn from).
+      - Increase train_period_days from 30 to 60: more data → better model.
+      - Add class_names declaration for consistent probability column ordering.
 
-    v11 model change — LightGBMClassifier:
-      Output: class probabilities {-1, 0, +1}
-      Entry rule: &-s_label_proba_+1 > 0.55 for long,
-                  &-s_label_proba_-1 > 0.55 for short
-      (FreqAI classifier outputs one column per class:
-       &-s_label_proba_-1, &-s_label_proba_0, &-s_label_proba_+1)
-
-    v11 keeps from v10:
+    Retained from v12:
+      - k_sl=1.5, initial stop -1.5×ATR, trail +2.0×ATR (R:R=1.33:1)
+      - HOLD ("H") class with proba_H < 0.4 gate
       - stoploss_from_open() anchored stops (confirmed working)
-      - trailing_stop = False (framework trailing OFF)
-      - BTC 4h macro short-gate
-      - ATR volatility filter on entry
-      - All feature engineering unchanged
+      - trailing_stop = False (custom_stoploss owns the trail)
+      - BTC 4h/daily macro gates
     """
     INTERFACE_VERSION = 3
 
-    minimal_roi = {
-        "0": 0.10,
-        "60": 0.06,
-        "120": 0.04,
-        "240": 0.02
-    }
+    minimal_roi = {"0": 0.99}
 
     stoploss = -0.08
     trailing_stop = False
@@ -327,6 +313,8 @@ class FinBuddyFreqAI(IStrategy):
 
         NOTE: last label_period rows → NaN (FreqAI drops automatically).
         """
+        self.freqai.class_names = ["H", "L", "S"]
+
         k_tp = 2.0
         k_sl = 1.5
         label_period = self.freqai_info["feature_parameters"]["label_period_candles"]
@@ -629,7 +617,7 @@ class FinBuddyFreqAI(IStrategy):
 
         ml_exit_long = (
             (dataframe["do_predict"] == 1)
-            & (proba_short > 0.45)
+            & (proba_short > 0.65)
         )
         ta_exit_long = (
             (dataframe["rsi_14"] > 75)
@@ -639,7 +627,7 @@ class FinBuddyFreqAI(IStrategy):
 
         ml_exit_short = (
             (dataframe["do_predict"] == 1)
-            & (proba_long > 0.45)
+            & (proba_long > 0.65)
         )
         ta_exit_short = (
             (dataframe["rsi_14"] < 25)
