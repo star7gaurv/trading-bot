@@ -57,7 +57,12 @@
             "OP/USDT:USDT",
             "APT/USDT:USDT",
             "SUI/USDT:USDT",
-            "UNI/USDT:USDT"
+            "UNI/USDT:USDT",
+            "TON/USDT:USDT",
+            "DASH/USDT:USDT",
+            "ENA/USDT:USDT",
+            "TAO/USDT:USDT",
+            "ONDO/USDT:USDT"
         ],
         "pair_blacklist": [
             "BNB/.*",
