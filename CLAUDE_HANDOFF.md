@@ -7,6 +7,35 @@
 
 ---
 
+## 🔴 Round 5 Grid (v12) — COMPLETE, VERDICT: FAIL (2026-05-05)
+
+- Grid: 90/90 combos done. Window 20240101-20250101 (bull, BTC +122%).
+- **Best real result:** Sharpe **-5.43**, WR 51.5%, PF 0.749, Trades 979/yr at ml_threshold=0.70, sl=-0.02.
+- **Verdict: DO NOT PROMOTE.** 90/90 combos negative Sharpe.
+- v12 changes (Hold class, multi-TF, ATR multiplier fix) did NOT improve over R4. Same best Sharpe.
+
+### R5 vs R4 comparison:
+| | R4 (v11) | R5 (v12) |
+|---|---|---|
+| Best Sharpe | -5.43 | -5.43 |
+| Best WR | 51.5% | 51.5% |
+| Best PF | 0.749 | 0.749 |
+| Trade range | 979–4264/yr | 979–4264/yr |
+
+### Why v12 failed to improve — new findings:
+1. **Hold class P(H) < 0.4 almost always** — not_hold filter is effectively inactive. P(H) is typically 0.05–0.25; the 0.40 threshold never blocks entries.
+2. **Multi-TF features (1h+4h) degraded predictions** — added feature noise with 30-day training window. More features + same training data = worse model.
+3. **Hard stoploss floor (-2% to -3%) overrides ATR-based custom_stoploss** — when ATR-stop > hard floor (common in volatile crypto), the config stoploss is the actual exit. Changing ATR multipliers in code has no effect in these cases. R:R stuck at 0.749 PF.
+4. **v12 Sharpe distribution widened** — v12 worst is -34 Sharpe (vs -22 in R4); multi-TF features create more instability.
+
+### Root insight for Perplexity:
+The `stoploss` config parameter (hard floor) is likely the ACTIVE stop in most losing trades (ATR-based stops often exceed -3%). This neutralizes all code-level ATR tuning. PF is driven by the config floor, not custom_stoploss geometry.
+
+**Action needed (Perplexity decision):**
+- Option A: Test with wider hard floor (stoploss=-0.05/-0.08) so ATR-based exits actually control the R:R
+- Option B: Remove multi-TF features, revert to 2-class (no H), keep only Bug #1 fix (k_sl alignment)  
+- Option C: Switch primary timeframe to 1h (fewer but higher quality signals)
+
 ## 🔴 Round 4 Grid — COMPLETE, VERDICT: FAIL (2026-05-04)
 
 - Grid: 90/90 combos done. Window 20240101-20250101 (bull, BTC +122%).
@@ -15,13 +44,11 @@
 - promote_best_config.py refused fallback (Sharpe>0 floor blocked it).
 - No walkforward.md written (verdict is failure, not promotion).
 
-### Why it failed (4 confirmed bugs, full plan at `finbuddy_memory/research/v12_strategy_plan.md`):
+### Why R4 failed (4 confirmed bugs, full plan at `finbuddy_memory/research/v12_strategy_plan.md`):
 1. Label `k_sl=1.0` vs `custom_stoploss -2.0×ATR` — mismatch, model trains on stop that never fires.
 2. Hold class collapsed to NaN — model cannot abstain → 1000–4000 trades/yr structural over-trading.
 3. FreqAI `include_timeframes=["15m"]` only — model blind to 1h/4h context.
 4. Trailing geometry caps winners at +1.5×ATR, losers run to -2×ATR → R:R ≈ 0.75:1.
-
-### Next: v12 redesign (awaiting Gaurav review of `v12_strategy_plan.md`).
 
 ## ✅ Task 5 Complete (2026-05-04)
 
