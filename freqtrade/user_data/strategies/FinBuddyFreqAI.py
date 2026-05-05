@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 class FinBuddyFreqAI(IStrategy):
     """
-    FinBuddy FreqAI Strategy v13 — Exit Fix + Wide Stop Floor + 15m-Only (2026-05-05)
+    FinBuddy FreqAI Strategy v15 — 1h TF + Pullback Entry + ema_20 Gate (2026-05-05)
 
     R5 (v12) verdict: FAIL. 90/90 combos negative Sharpe (best -5.43, identical to R4).
     v12 changes (Hold class, multi-TF, ATR multiplier) had zero effect.
