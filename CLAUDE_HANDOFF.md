@@ -7,6 +7,50 @@
 
 ---
 
+## 🔴 Round 6 Grid (v13) — COMPLETE, VERDICT: FAIL BUT MAJOR PROGRESS (2026-05-05)
+
+- Grid: 90/90 combos done. Window 20240101-20250101 (bull, BTC +122%).
+- **Best:** Sharpe **-1.10**, WR 44.4%, PF 0.868, DD 4.7%, Trades 349/yr at ml_threshold=0.70, sl=-0.08.
+- **Verdict: DO NOT PROMOTE.** But exit bug fixes produced massive improvement.
+
+### R6 vs all prior rounds:
+| Metric | R4 (v11) | R5 (v12) | R6 (v13) | Target |
+|---|---|---|---|---|
+| Best Sharpe | -5.43 | -5.43 | **-1.10** | > 0.5 |
+| Best WR | 51.5% | 51.5% | 44.4% | > 50% |
+| Best PF | 0.749 | 0.749 | **0.868** | > 1.2 |
+| Best DD | 12.4% | 12.4% | **4.7%** | < 20% |
+| Min trades/yr | 979 | 979 | **349** | < 500 |
+
+DD ✅ and trades/yr ✅ now pass. Still failing: Sharpe, WR, PF.
+
+### What the v13 exit fixes confirmed:
+- Bug A confirmed: stoploss now doesn't matter (-0.08/-0.10/-0.12 give identical results → custom_stoploss truly in control)
+- Bug B confirmed: PF improved 0.749→0.868 (avg_win/avg_loss now 1.087, up from 0.706)
+- Bug C confirmed: WR dropped 51.5%→44.4% — the previous 51.5% WR was ARTIFICIAL (quick exits at 0.45 threshold counted as small wins, masking the model's true accuracy)
+
+### Root cause of remaining failure — label horizon mismatch:
+- Labels say "will hit TP within 12 candles (3h)"
+- Trades have NO TIME-LIMIT exit → can run for 24-48+ hours
+- A trade labeled "L" (TP hit at 3h) may continue, reverse, and hit stoploss at hour 8
+- This makes trade WR (44%) different from label accuracy (unknown, probably higher)
+- Model is "right" about 3-hour direction but trade outcome is measured over unlimited time
+
+### Next fix for Perplexity (v14 options):
+**Option A (most likely fix): Add `custom_exit` time-limit at 24 candles (6h)**
+  - Exit all trades at 6h if not already profitable or stopped out
+  - Aligns trade duration with label horizon → trade WR ≈ model accuracy
+  - Simple one-method addition to strategy
+
+**Option B: Increase label_period from 12→24-36 candles**
+  - Labels trained on 6-9h horizon instead of 3h
+  - More candles = higher label accuracy for actual trade duration
+  - Risk: more H labels (longer horizon → more time-barriers)
+
+**Option C: Increase training data**
+  - Current: 60 days. Try 90 days (13,000 labeled candles)
+  - More data → better generalization, less sampling noise at 349 trades/yr
+
 ## 🔴 Round 5 Grid (v12) — COMPLETE, VERDICT: FAIL (2026-05-05)
 
 - Grid: 90/90 combos done. Window 20240101-20250101 (bull, BTC +122%).
