@@ -151,6 +151,15 @@ class FinBuddyFreqAI(IStrategy):
             return initial_stop
         return None
 
+    def custom_exit(self, pair: str, trade: "Trade", current_time: datetime,
+                    current_rate: float, current_profit: float, **kwargs):
+        # Time-limit exit: close trade after 24 candles (6h on 15m TF)
+        # Aligns trade lifetime with label_period_candles=12 × 2 buffer
+        candles_open = int((current_time - trade.open_date_utc).total_seconds() / 900)
+        if candles_open >= 24:
+            return "time_limit_exit"
+        return None
+
     # ------------------------------------------------------------------ #
     # Phase 3 — Regime-aware position sizing                             #
     # ------------------------------------------------------------------ #
