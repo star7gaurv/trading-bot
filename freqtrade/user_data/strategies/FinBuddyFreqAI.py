@@ -66,7 +66,7 @@ class FinBuddyFreqAI(IStrategy):
     # Long  entries require  BTC_1d_close > BTC_1d_MA200 (macro bull).
     # Short entries require  BTC_1d_close < BTC_1d_MA200 (macro bear).
     # Toggle via env BTC_MA200_GATE=0 to disable for ablation testing.
-    use_btc_ma200_gate = (__import__("os").environ.get("BTC_MA200_GATE", "1") == "1")
+    use_btc_ma200_gate = (__import__("os").environ.get("BTC_MA200_GATE", "0") == "1")
 
     # ------------------------------------------------------------------ #
     # ATR-adaptive custom stoploss (v10 — unchanged, confirmed working)  #
@@ -510,11 +510,10 @@ class FinBuddyFreqAI(IStrategy):
             "enter_tag"
         ] = "freqai_lgbm_v15_long"
 
-        # Short — macro-gated (v9 fix, retained)
+        # Short — model-gated (v17: removed hardcoded btc_4h_below_ema50 deadlock)
         ml_signal_short = (
             (dataframe["do_predict"] == 1)
             & (proba_short > 0.60)
-            & (dataframe["btc_4h_below_ema50"] == 1)
             & macro_short_gate
         )
 
