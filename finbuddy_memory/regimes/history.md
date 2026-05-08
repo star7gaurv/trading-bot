@@ -10,3 +10,4 @@
 ---
 *Do not edit manually. New rows appended by the HMM engine on each transition.*
 | 2026-05-08 | NEUTRAL → BEAR | Confidence: 80.0% |
+| 2026-05-08 | BEAR → NEUTRAL | Confidence: 70.0% |
