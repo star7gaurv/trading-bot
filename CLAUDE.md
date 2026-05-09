@@ -452,6 +452,33 @@ Fully specced in `docs/signal-contract.md`. Key fields:
 - [[finbuddy_memory/signals/log]] ← signal history
 - [[finbuddy_memory/regimes/current]] ← live regime
 
+### May 9, 2026 — Evening (Claude Code) — v17 symmetric barriers + central LLM client
+
+**Root cause diagnosed: WR stuck at 42.5% = label base rate (not model failure)**
+
+Walk-forward run T130947 (first clean, lookahead-bias-fixed run) showed WR=42.5% across all 17 folds. Analysis found this equals the mathematical base rate P(L label) = k_sl/(k_tp+k_sl) = 1.5/3.5 = 42.9%. Model has zero OOS directional edge — it just predicts the base rate.
+
+Two root causes:
+1. **Label asymmetry** (k_sl=1.5 < k_tp=2.0): SL closer than TP → 57% of resolved candles are S labels → LightGBM biased toward predicting S → WR ≈ base rate of 43%.
+2. **Degenerate models** (68 "No further splits" warnings per fold): When LightGBM can't find useful feature splits, it outputs pavg≈0.68 (S base rate) for every candle → proba_short=0.68 > 0.60 → constant shorts regardless of direction.
+
+**Fixes applied (commit 22075c4, v17):**
+- `k_sl = 1.5 → 2.0` in set_freqai_targets: symmetric barriers → P(L)=50% base rate; degenerate models output 0.50 < 0.60 threshold → auto-filtered
+- `custom_stoploss` initial stop: -1.5×ATR → -2.0×ATR (matches new k_sl)
+- Regime kill-switches extended: CRASH+BEAR → no longs; BULL+EUPHORIA → no shorts (was: only CRASH blocked longs, only EUPHORIA blocked shorts)
+- FreqAI identifier: `finbuddy_v16_clean_1778316280` → `finbuddy_v17_sym_1778353539` (forces retrain)
+- Live bot restarted at 19:05 UTC, retraining all 25 pairs with symmetric labels
+
+**Also delivered in this session (earlier):**
+- Central LLM client (`scripts/llm_client.py`) — 7 verified providers (NVIDIA NIM + OpenRouter)
+- FinBuddyLLMModel v3 — imports from central client, removed dead XAI/Groq code
+- ML threshold 0.55 → 0.60 (flat, matches R8 grid winner)
+- Karpathy backtest_runner rewritten (was a stub, now runs real docker exec backtests)
+- Watchdog: docker_since_min=90 cap to prevent 510-min timeout on training check
+- Removed dead `_get_tradingview_signal()` method (Phase 6 abandoned)
+
+**WF #5 (T190609) running** — validates symmetric barrier fix. Expected: WR > 50% in bull folds (BULL/EUPHORIA → shorts blocked), WR > 50% in bear folds (BEAR/CRASH → longs blocked). If aggregate WR > 50%, Phase 10 (live migration) gate criteria can be re-evaluated.
+
 ---
 
 *This file must be updated at the end of every major session. It is the operational memory for any Claude instance opening this repo.*
