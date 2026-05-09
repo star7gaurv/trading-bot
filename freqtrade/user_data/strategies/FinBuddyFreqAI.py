@@ -210,6 +210,63 @@ class FinBuddyFreqAI(IStrategy):
         logger.info(f"[RiskEngine] stake={result} regime={regime} mult={multiplier}")
         return max(result, min_stake or 0)
 
+    # ------------------------------------------------------------------ #
+    # Correlation-aware position gate (added v16.2)                       #
+    # ------------------------------------------------------------------ #
+    # Pairs are grouped into clusters that move together (high BTC beta,
+    # L2 ecosystem, etc.).  At most MAX_CLUSTER_POSITIONS open trades are
+    # allowed from any single cluster to avoid over-concentration when e.g.
+    # BTC sells off and all MEGA_CAP longs lose simultaneously.
+    # ------------------------------------------------------------------ #
+
+    _PAIR_CLUSTER: dict[str, str] = {
+        "BTC/USDT:USDT":  "MEGA_CAP",
+        "ETH/USDT:USDT":  "MEGA_CAP",
+        "SOL/USDT:USDT":  "MEGA_CAP",
+        "XRP/USDT:USDT":  "MEGA_CAP",
+        "ADA/USDT:USDT":  "MEGA_CAP",
+        "AVAX/USDT:USDT": "MEGA_CAP",
+        "DOT/USDT:USDT":  "MEGA_CAP",
+        "LINK/USDT:USDT": "MEGA_CAP",
+        "ATOM/USDT:USDT": "MEGA_CAP",
+        "NEAR/USDT:USDT": "MEGA_CAP",
+        "ARB/USDT:USDT":  "L2",
+        "OP/USDT:USDT":   "L2",
+        "APT/USDT:USDT":  "L2",
+        "SUI/USDT:USDT":  "L2",
+        # Everything else → "ALTCOIN" (independent enough)
+    }
+    _MAX_CLUSTER_POSITIONS = 2  # hard cap per cluster
+
+    def confirm_trade_entry(
+        self,
+        pair: str,
+        order_type: str,
+        amount: float,
+        rate: float,
+        time_in_force: str,
+        current_time: datetime,
+        entry_tag: str | None,
+        side: str,
+        **kwargs,
+    ) -> bool:
+        cluster = self._PAIR_CLUSTER.get(pair, "ALTCOIN")
+        if cluster == "ALTCOIN":
+            return True  # no limit on diverse altcoins
+
+        open_trades = Trade.get_trades_proxy(is_open=True)
+        cluster_open = sum(
+            1 for t in open_trades
+            if self._PAIR_CLUSTER.get(t.pair, "ALTCOIN") == cluster
+        )
+        if cluster_open >= self._MAX_CLUSTER_POSITIONS:
+            logger.info(
+                f"[CorrLimit] Blocking {pair} entry: cluster={cluster} "
+                f"already has {cluster_open}/{self._MAX_CLUSTER_POSITIONS} open trades."
+            )
+            return False
+        return True
+
     def _get_tradingview_signal(self):
         """Load latest TradingView webhook signal."""
         import json, os
