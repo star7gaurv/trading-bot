@@ -18,3 +18,4 @@
 - **2026-05-09 12:30 UTC** — Walk-forward status: ❌ ['❌ WR 30.3% (need >50%)', '❌ Sharpe -10.435 (need >0.5)', '✅ Worst DD 19.3%', '❌ PF 0.430 (need >1.2)'] — median Sharpe ?, WR ?% (FinBuddyFreqAI_2024-01-01_2026-04-01_20260509T091607)
 - **2026-05-09 12:30 UTC** — Walk-forward status: ❌ FAIL — WR 30.3%, Sharpe -10.44, DD 19.3%, PF 0.43 (419 trades, run `FinBuddyFreqAI_2024-01-01_2026-04-01_20260509T091607`)
 - **2026-05-09 13:22 UTC** — Walk-forward status: ⏳ Running — 0/21 folds (FinBuddyFreqAI_2024-01-01_2026-04-01_20260509T130947)
+- **2026-05-09 16:00 UTC** — Walk-forward status: ❌ FAIL — WR 42.5%, Sharpe -5.83, DD 15.7%, PF 0.67 (8045 trades, run `FinBuddyFreqAI_2024-01-01_2026-04-01_20260509T130947`)
