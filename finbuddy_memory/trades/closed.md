@@ -4,6 +4,19 @@
 > One row per closed trade. The brain reads this back via Karpathy loop
 > and external research scripts to find which slots/regimes pay off.
 
+## Caveats — read before drawing conclusions
+
+- **Trades 26–29 (2026-05-09 BTC/ETH/DOGE/BCH shorts, all losses)** were
+  fired under a buggy 3-class HOLD label scheme. After the v16 fix that
+  removed HOLD, the next "fix" mapped time-barrier candles to "S" (short),
+  which baked in a systematic short bias. Both bugs are now resolved
+  in v16.1 (commit pending) — time-barrier candles are dropped from
+  training entirely. Trades 26–29 should NOT be treated as legitimate
+  signal-quality evidence.
+- **Trades 1–25** are legacy v11 spot trades from April 2026 on BTC only.
+  Not v15/v16 evidence either.
+- **First clean v16.1 trades** will be at trade id 30+ after 2026-05-09 retrain.
+
 | Closed (UTC) | Pair | Side | Hold | P&L % | P&L $ | Exit | Regime | Tag |
 |---|---|---|---|---|---|---|---|---|
 | 2026-04-05 22:46:16 | BTC/USDT | LONG | 1d3h | +1.04% | +2.07 | roi | NEUTRAL | force_entry |

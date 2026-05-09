@@ -327,9 +327,13 @@ class FinBuddyFreqAI(IStrategy):
         nearly always hit within 6 candles in volatile crypto. HOLD samples are
         so rare that LightGBM trains a 2-class model, but FreqAI data_drawer
         expects 3 columns ("H","L","S") and crashes with KeyError('H').
-        Fix: time-barrier candles (neither TP nor SL) are mapped to "S" — a
-        conservative tie-break (don't enter long if time runs out). Pure 2-class
-        model matches what the R8 backtests actually ran.
+
+        v16.1 — time-barrier samples are DROPPED (label=None), not forced to "S".
+        Earlier draft mapped time-barrier → "S" as a "conservative tie-break",
+        but that bakes a systematic short bias into training: sideways-market
+        candles get labeled as bearish. The clean fix is to train only on
+        RESOLVED candles (TP hit → L, SL hit → S) and let FreqAI drop the
+        unresolved ones automatically (None labels are dropped before fit).
         """
         self.freqai.class_names = ["L", "S"]
 
@@ -343,6 +347,7 @@ class FinBuddyFreqAI(IStrategy):
         atr_raw = ta.ATR(dataframe, timeperiod=14).values
 
         n = len(close)
+        # 0 = unresolved (time barrier). Set to ±1 only when TP/SL actually hits.
         labels = np.zeros(n, dtype=np.float32)
 
         for t in range(n - label_period):
@@ -353,22 +358,22 @@ class FinBuddyFreqAI(IStrategy):
             tp_price = c0 * (1.0 + k_tp * atr_pct)
             sl_price = c0 * (1.0 - k_sl * atr_pct)
 
-            label = -1  # default: time barrier → conservative "S" (no TP in window)
             for i in range(t + 1, t + label_period + 1):
                 if high[i] >= tp_price:
-                    label = 1
+                    labels[t] = 1
                     break
                 if low[i] <= sl_price:
-                    label = -1
+                    labels[t] = -1
                     break
+            # else: labels[t] stays 0 (unresolved → drop in encoding step)
 
-            labels[t] = label
-
-        # 2-class encoding: L (TP hit) and S (SL hit or time barrier).
-        labels_obj = np.empty(n, dtype=object)
+        # 2-class encoding. Time-barrier (0) → None so FreqAI drops them.
+        # Training signal is restricted to RESOLVED candles only — no
+        # sideways-as-bearish pollution.
+        labels_obj = np.full(n, None, dtype=object)
         labels_obj[labels == 1.0] = "L"
-        labels_obj[labels != 1.0] = "S"
-        # Tail of length label_period → None (FreqAI drops automatically)
+        labels_obj[labels == -1.0] = "S"
+        # Tail of length label_period → None (cannot peek into future)
         labels_obj[n - label_period:] = None
         dataframe["&-s_label"] = pd.Series(labels_obj, index=dataframe.index, dtype=object)
         return dataframe
