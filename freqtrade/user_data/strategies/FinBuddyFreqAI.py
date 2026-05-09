@@ -659,7 +659,7 @@ class FinBuddyFreqAI(IStrategy):
         dataframe.loc[
             ml_signal_long_final & ta_filter & volatility_filter & trend_filter_1h,
             "enter_tag"
-        ] = "freqai_lgbm_v11_long"
+        ] = "freqai_lgbm_v16_long"
 
         # Short — model-gated (v17: removed hardcoded btc_4h_below_ema50 deadlock).
         ml_signal_short = (
@@ -688,7 +688,7 @@ class FinBuddyFreqAI(IStrategy):
         dataframe.loc[
             ml_signal_short & ta_filter_short & volatility_filter & trend_filter_1h_short & safety_short,
             "enter_tag"
-        ] = "freqai_lgbm_v11_short"
+        ] = "freqai_lgbm_v16_short"
 
         # v16 — HMM regime kill-switches.
         # Override entry signals when the regime is at a tail-risk extreme.
