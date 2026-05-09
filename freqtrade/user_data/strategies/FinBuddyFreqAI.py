@@ -33,43 +33,12 @@ logger = logging.getLogger(__name__)
 
 class FinBuddyFreqAI(IStrategy):
     """
-    FinBuddy FreqAI Strategy v15 — 1h TF + Pullback Entry + ema_20 Gate (2026-05-05)
+    FinBuddy FreqAI Strategy v17 — 1h TF, Futures Long/Short, Symmetric Barriers (2026-05-09)
 
-    R5 (v12) verdict: FAIL. 90/90 combos negative Sharpe (best -5.43, identical to R4).
-    v12 changes (Hold class, multi-TF, ATR multiplier) had zero effect.
-
-    R5 root-cause analysis — 3 compounding exit bugs:
-      Bug A — Grid stoploss too tight (-0.02 to -0.03): autobacktest patches BOTH
-               config AND strategy stoploss, making the hard floor tighter than
-               ATR-based stop in volatile periods (ATR>1.33%). Hard floor fires
-               instead of custom_stoploss, breaking the intended R:R geometry.
-               Fix: grid sweep -0.08 to -0.12 (wider than max ATR stop of 3.75%).
-
-      Bug B — minimal_roi {"240": 0.02} exposed during grid: autobacktest removes
-               the config's minimal_roi override, exposing the strategy's table.
-               Winners exit at +2% after 4h by ROI; losers ride to full ATR stop.
-               This alone causes avg_win < avg_loss regardless of WR.
-               Fix: minimal_roi = {"0": 0.99} — effectively disabled, custom_stoploss
-               trail owns ALL winner exits.
-
-      Bug C — ML exit threshold 0.45 too low: proba_short > 0.45 fires constantly
-               in a 3-class model (P(L)+P(S)+P(H)=1; P(S)>0.45 happens frequently
-               when model is uncertain). Cuts winning longs at <1% gain while
-               losers wait for the stoploss. Avg_win ≈ 0.7×avg_loss → PF=0.749.
-               Fix: raise exit threshold to 0.65 (requires high reversal confidence).
-
-    Additional improvements in v13:
-      - Revert include_timeframes to ["15m"] only: multi-TF degraded model with
-        30-day training window (too few 4h candles for LightGBM to learn from).
-      - Increase train_period_days from 30 to 60: more data → better model.
-      - Add class_names declaration for consistent probability column ordering.
-
-    Retained from v12:
-      - k_sl=1.5, initial stop -1.5×ATR, trail +2.0×ATR (R:R=1.33:1)
-      - HOLD ("H") class with proba_H < 0.4 gate
-      - stoploss_from_open() anchored stops (confirmed working)
-      - trailing_stop = False (custom_stoploss owns the trail)
-      - BTC 4h/daily macro gates
+    2-class LightGBM classifier (L/S). Triple-barrier labeling with k_tp=k_sl=2.0
+    (symmetric → P(L)=50% base rate, degenerate models auto-filtered at 0.60 threshold).
+    Regime kill-switches: CRASH/BEAR block longs, BULL/EUPHORIA block shorts.
+    custom_stoploss: 2.0×ATR initial, trail locks at +2.0×ATR once profit > 1×ATR.
     """
     INTERFACE_VERSION = 3
 
@@ -79,7 +48,7 @@ class FinBuddyFreqAI(IStrategy):
     trailing_stop = False
     use_custom_stoploss = True
 
-    timeframe = "15m"
+    timeframe = "1h"
 
     can_short = True
     startup_candle_count = 400
@@ -88,7 +57,7 @@ class FinBuddyFreqAI(IStrategy):
     # Long  entries require  BTC_1d_close > BTC_1d_MA200 (macro bull).
     # Short entries require  BTC_1d_close < BTC_1d_MA200 (macro bear).
     # Toggle via env BTC_MA200_GATE=0 to disable for ablation testing.
-    use_btc_ma200_gate = (__import__("os").environ.get("BTC_MA200_GATE", "1") == "1")
+    use_btc_ma200_gate = (__import__("os").environ.get("BTC_MA200_GATE", "0") == "1")
 
     def informative_pairs(self):
         pairs = self.dp.current_whitelist()
@@ -99,7 +68,7 @@ class FinBuddyFreqAI(IStrategy):
         return informative
 
     # ------------------------------------------------------------------ #
-    # ATR-adaptive custom stoploss (v10 — unchanged, confirmed working)  #
+    # ATR-adaptive custom stoploss (v17 — symmetric 2.0×ATR barriers)   #
     # ------------------------------------------------------------------ #
 
     def custom_stoploss(
@@ -154,9 +123,9 @@ class FinBuddyFreqAI(IStrategy):
 
     def custom_exit(self, pair: str, trade: "Trade", current_time: datetime,
                     current_rate: float, current_profit: float, **kwargs):
-        # Time-limit exit: close trade after 24 candles (6h on 15m TF)
-        # Aligns trade lifetime with label_period_candles=12 × 2 buffer
-        candles_open = int((current_time - trade.open_date_utc).total_seconds() / 900)
+        # Time-limit exit: close trade after 24 candles (24h on 1h TF)
+        # 4× label_period_candles=6 — gives signal time to play out while capping dead positions
+        candles_open = int((current_time - trade.open_date_utc).total_seconds() / 3600)
         if candles_open >= 24:
             return "time_limit_exit"
         return None
@@ -371,34 +340,28 @@ class FinBuddyFreqAI(IStrategy):
         return dataframe
 
     # ------------------------------------------------------------------ #
-    # v12 — Triple-barrier label with HOLD class                          #
+    # v17 — Triple-barrier labeling (symmetric k_tp=k_sl=2.0, 2-class)  #
     # ------------------------------------------------------------------ #
 
     def set_freqai_targets(
         self, dataframe: DataFrame, metadata: dict, **kwargs
     ) -> DataFrame:
         """
-        Triple-barrier labeling (López de Prado, AFML ch.3) — v12.
+        Triple-barrier labeling (López de Prado, AFML ch.3) — v17.
 
-        For each candle t (using 15m data):
+        For each candle t (using 1h data):
           - atr_pct = ATR_14[t] / close[t], clamped to [0.003, 0.025]
           - TP at close[t] * (1 + k_tp * atr_pct)   → label "L"
           - SL at close[t] * (1 - k_sl * atr_pct)   → label "S"
-          - Neither hit within label_period candles  → label "H" (HOLD)
+          - Neither hit within label_period candles  → dropped (label=None)
 
-        v12 params:
+        v17 params:
           k_tp = 2.0   (take-profit 2×ATR above entry)
-          k_sl = 2.0   (stop-loss 2×ATR below entry — symmetric, matches custom_stoploss)
-          label_period_candles = 12  (3 hours on 15m)
-
-        v12 changes from v11:
-          1. k_sl 1.0 → 1.5 to match custom_stoploss initial stop.
-          2. HOLD ("H") class now retained instead of dropped — model can
-             abstain on candles whose path resolves neither TP nor SL within
-             the time window. Entry rules require proba_H < 0.4 to fire.
+          k_sl = 2.0   (stop-loss 2×ATR below entry — symmetric, P(L)=50% base rate)
+          label_period_candles = 6  (6 hours on 1h TF)
 
         FreqAI classifier emits one proba column per class:
-          "L" → P(TP hit first), "S" → P(SL hit first), "H" → P(no resolution).
+          "L" → P(TP hit first), "S" → P(SL hit first).
 
         NOTE: last label_period rows → NaN (FreqAI drops automatically).
 
@@ -551,29 +514,20 @@ class FinBuddyFreqAI(IStrategy):
         return dataframe
 
     # ------------------------------------------------------------------ #
-    # Entry / Exit signals — v11 uses classifier probability columns     #
+    # Entry / Exit signals — v17 classifier probability columns          #
     # ------------------------------------------------------------------ #
 
     def populate_entry_trend(
         self, dataframe: DataFrame, metadata: dict
     ) -> DataFrame:
         """
-        v11 entry rules using LightGBMClassifier output probabilities.
+        v17 entry rules — 2-class LightGBM (L/S), 0.60 threshold.
 
-        FreqAI's LightGBMClassifier emits one probability column per class,
-        named with the stringified class label only (no `&-s_label_proba_` prefix).
-        Labels are float32, so the columns are "1.0" and "-1.0".
-        Verified from models/finbuddy_backtest_v11/backtesting_predictions/*.feather
-        whose columns are: ['date', '&-s_label', '&-s_label_mean',
-        '&-s_label_std', '-1.0', '1.0', 'do_predict'].
-
-        Long:  P(+1) > 0.55 — model confident TP hits before SL
-        Short: P(-1) > 0.55 — model confident SL hits (price drops) before TP
-
-        TA filters and macro gate unchanged from v10.
+        Long:  proba_L > 0.60 + TA filter + regime not CRASH/BEAR
+        Short: proba_S > 0.60 + TA filter + regime not BULL/EUPHORIA
         """
-        # v12 — three-class proba columns: "L" / "S" / "H".
-        # Defensive fallbacks kept for legacy two-class feather files.
+        # v17 — two-class proba columns: "L" / "S".
+        # Defensive fallbacks kept for legacy feather files.
         proba_long = (
             dataframe.get("L",
             dataframe.get("1.0",
@@ -603,7 +557,7 @@ class FinBuddyFreqAI(IStrategy):
         volatility_filter = dataframe["atr_ratio"] > 0.003
         trend_filter_1h   = dataframe["close_1h"] >= dataframe["ema_50_1h"]
 
-        # v11.1 macro-bull gate — long requires BTC daily > MA200
+        # v11.1 macro-bull gate — opt-in via BTC_MA200_GATE=1 env var
         if self.use_btc_ma200_gate:
             macro_long_gate  = (dataframe["btc_macro_bull"] == 1)
             macro_short_gate = (dataframe["btc_macro_bull"] == 0)
@@ -624,7 +578,7 @@ class FinBuddyFreqAI(IStrategy):
         dataframe.loc[
             ml_signal_long_final & ta_filter & volatility_filter & trend_filter_1h,
             "enter_tag"
-        ] = "freqai_lgbm_v16_long"
+        ] = "freqai_lgbm_v17_long"
 
         # Short — model-gated (v17: removed hardcoded btc_4h_below_ema50 deadlock).
         ml_signal_short = (
@@ -653,7 +607,7 @@ class FinBuddyFreqAI(IStrategy):
         dataframe.loc[
             ml_signal_short & ta_filter_short & volatility_filter & trend_filter_1h_short & safety_short,
             "enter_tag"
-        ] = "freqai_lgbm_v16_short"
+        ] = "freqai_lgbm_v17_short"
 
         # v17 — full trend-following regime kill-switches.
         # CRASH+BEAR: downtrends — no new longs (shorts only).
@@ -678,13 +632,13 @@ class FinBuddyFreqAI(IStrategy):
         self, dataframe: DataFrame, metadata: dict
     ) -> DataFrame:
         """
-        v16 — regime-aware asymmetric exit thresholds.
+        v17 — regime-aware asymmetric exit thresholds.
 
         In CRASH/BEAR: exit longs fast (proba_short > 0.55) — limit damage.
                       Hold shorts longer (proba_long > 0.65) — let winners run.
         In BULL/EUPHORIA: hold longs longer (proba_short > 0.65).
                          Exit shorts fast (proba_long > 0.55).
-        In NEUTRAL: symmetric 0.65 thresholds (legacy v15 behavior).
+        In NEUTRAL: symmetric 0.65 thresholds.
 
         TA exits unchanged (RSI/BB extremes).
         """
@@ -704,7 +658,7 @@ class FinBuddyFreqAI(IStrategy):
         if proba_short is None:
             proba_short = pd.Series(0.0, index=dataframe.index)
 
-        # v16: regime-aware exit thresholds
+        # v17: regime-aware exit thresholds
         regime = self._get_current_regime()
         if regime in ("CRASH", "BEAR"):
             long_exit_thr, short_exit_thr = 0.55, 0.65   # bail longs fast, hold shorts
