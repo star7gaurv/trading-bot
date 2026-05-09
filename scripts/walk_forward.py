@@ -3,7 +3,7 @@
 FinBuddy Walk-Forward Validator
 
 Runs FreqTrade backtests in rolling folds (train N months, test 1 month, slide).
-The aggregated out-of-sample stats are the real test of v15/v16 — anything
+The aggregated out-of-sample stats are the real test — anything
 better in-sample is suspected overfit until walk-forward agrees.
 
 Usage:

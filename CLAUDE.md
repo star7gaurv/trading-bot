@@ -184,9 +184,11 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 ### ❌ Retired: `AiGuardrailStrategy.py`
 - Superseded by `FinBuddyFreqAI.py`. Do not reference or restart.
 
-### Deployed but not active: `FinBuddyLLMModel.py` (Task 1.2)
-- Custom FreqAI model with Grok-3-Mini LLM confirmation layer
-- Committed to `freqtrade/user_data/freqaimodels/` — not currently wired into config
+### ✅ Active: `FinBuddyLLMModel.py` (Task 1.2)
+- Custom FreqAI model wrapping LightGBM with central LLM confirmation layer (`llm_client.py`)
+- `config.json` line 161: `"freqaimodel": "FinBuddyLLMModel"` — IS wired in and active
+- High-confidence signals (proba deviation > threshold) get LLM confirmation via NVIDIA/OpenRouter
+- Falls through to raw LightGBM if all LLM providers fail (safe degradation)
 
 ---
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Karpathy backtest runner — validates current v16 strategy on a short OOS window.
+Karpathy backtest runner — validates current strategy on a short OOS window.
 
 Runs `freqtrade backtesting` inside the live container (docker exec) on a
 3-pair, 3-month window.  Fast (~2 min), no extra container, uses cached data.
@@ -122,7 +122,7 @@ def _run_backtest() -> dict | None:
 
 def run_backtests(hypotheses=None) -> list:
     """
-    Validate current v16 strategy on a short OOS window.
+    Validate current strategy on a short OOS window.
     Mark parameter-only hypotheses as needing implementation (not auto-runnable).
     """
     registry = _load_registry()
@@ -136,13 +136,13 @@ def run_backtests(hypotheses=None) -> list:
         s["reviewed_at"]  = today
         s["review_note"]  = (
             "Hypothesis queued for manual implementation. "
-            "Auto-backtest validates current v16 config only."
+            "Auto-backtest validates current live config only."
         )
         print(f"PENDING IMPLEMENTATION: {s['strategy_id']}")
         results.append({"strategy_id": s["strategy_id"], "status": "needs_implementation"})
 
-    # Run live backtest on current v16 strategy
-    print(f"[backtest_runner] Running v16 backtest on {PAIRS} for {TIMERANGE}...")
+    # Run live backtest on current strategy
+    print(f"[backtest_runner] Running backtest on {PAIRS} for {TIMERANGE}...")
     metrics = _run_backtest()
 
     if metrics:
@@ -170,7 +170,7 @@ def run_backtests(hypotheses=None) -> list:
             f"[backtest_runner] {status} — WR {wr*100:.1f}% | "
             f"DD {dd*100:.1f}% | PF {pf:.2f} | Sharpe {shr:.3f}"
         )
-        results.append({"strategy_id": "v16_current", "status": "pass" if passed else "fail", **verdict})
+        results.append({"strategy_id": "current", "status": "pass" if passed else "fail", **verdict})
     else:
         print("[backtest_runner] Backtest did not produce parseable results — skipping registry update")
 
