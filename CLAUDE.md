@@ -111,45 +111,40 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ---
 
-## What Is Live and Working Right Now (verified 2026-04-30 by Claude Code)
+## What Is Live and Working Right Now (verified 2026-05-09 by Claude Code)
 
 ### FreqTrade
-- Running **`FinBuddyFreqAI.py` (v10)** in dry-run mode on **Binance Futures USDT-M** — long+short, ATR-adaptive `custom_stoploss()` anchored to entry via `stoploss_from_open()`
-- FreqAI + LightGBM training per pair, live
-- 1000 USDT virtual wallet, max 4 open trades, 200 USDT stake per trade
-- API accessible at `http://localhost:8080/api/v1` with credentials `bot:REDACTED-FREQTRADE__API_SERVER__PASSWORD`
-- Whitelist: ~20 Binance pairs on 15-minute timeframe
+- Running **`FinBuddyFreqAI.py` (v16.2)** in dry-run mode on **Binance Futures USDT-M** — long+short
+- FreqAI identifier: `finbuddy_v16_clean_1778316280` — 25 pairs, all trained, zero KeyError H
+- 1000 USDT virtual wallet, max 4 open trades, 200 USDT stake × regime multiplier
+- API: `http://localhost:8080/api/v1` — user: `bot`, pass: `REDACTED-FREQTRADE__API_SERVER__PASSWORD`
+- Whitelist: **25 pairs**, **1h timeframe**
+- First clean trades: #30 BTC short, #31 TON short, #32 DASH short (2026-05-09 10:00 UTC)
 
 ### N8N
-- 🔴 **Fully disabled as of 2026-04-30** — FreqAI is now the sole signal source
-- Container still exists on server but pipeline workflow turned off
-- Will be fully removed once FreqAI is validated live
+- 🔴 **Permanently disabled** — FreqAI is sole signal source
 
 ### OpenClaw ("Jack")
-- ☠️ **Abandoned** — was only used as an OpenRouter proxy; dropped when OpenRouter was dropped
+- ☠️ **Permanently abandoned** — was only used as an OpenRouter proxy
 
 ### Telegram
-- **FreqTrade native bot** (token `8557119080:...`) — ✅ live on server, fires trade notifications directly
-- **N8N/FinBuddy bot** (token `7799143446:...`) — ⏸️ idle (N8N disabled)
+- **FreqTrade native bot** (token `8557119080:...`) — ✅ live, fires trade notifications + watchdog alerts + daily summary
 - Both post to Chat ID: `5622292536`
-- Note: tokens intentionally NOT committed to repo config.json — live only on server
 
-### Obsidian Memory Vault
-- Location: `finbuddy_memory/` in this repo
-- This folder IS the FinBuddy brain's living memory — open as an Obsidian vault
-- `finbuddy_memory/CONTEXT.md` is the master summary injected into every AI prompt
-- `memory_writer.py` committed (Phase 4) but crons not yet installed
-
----
-
-## ⚠️ What Is Committed But NOT Yet Deployed
-
-| Component | File | Status |
-|---|---|---|
-| FinBuddyLLMModel.py (Task 1.2) | `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` | ✅ Committed — ❌ Deploy on futures strategy (not spot) |
-| Backtest scripts (Task 1.3) | `scripts/run_backtest.sh`, `parse_backtest.py`, `tune_stoploss.sh` | ✅ Committed — ❌ Repurpose for futures |
-| Phase 2 external data fetchers | `scripts/phase2/` | ✅ Committed — ❌ Crons not installed |
-| Phase 4 memory writer | `scripts/phase4/memory_writer.py` + `setup_cron.sh` | ✅ Committed — ❌ Crons not installed |
+### All Crons Live (verified 2026-05-09)
+```
+0 * * * *    auto_commit.sh                    # vault git commit hourly
+*/15 * * * * fetch_all_external.py             # Phase 2 data
+0 */4 * * *  hmm_regime_detector.py            # Phase 3 HMM
+*/15 * * * * memory_writer.py && git_commit.sh # Phase 4 memory
+0 2 * * *    karpathy/run_loop.py              # Phase 5 research
+*/5 * * * *  executor/executor.py              # Phase 7 executor
+*/30 * * * * watchdog.py                       # Telegram alert: container/training/heartbeat
+*/15 * * * * trade_postmortem.py               # Closed-trade ledger → closed.md
+0 8 * * *    pair_performance.py               # Per-pair WR/PF report
+0 8 * * *    daily_summary.py                  # Telegram morning digest
+0 6 * * *    run_promotion.sh                  # Daily promotion check
+```
 
 ---
 
@@ -174,20 +169,24 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ## Current Strategy
 
-### ✅ Active: `FinBuddyFreqAI.py` v10 — Futures Long/Short
-- Binance Futures USDT-M (perpetual, isolated margin)
-- Long + short signals from FreqAI LightGBM
-- `custom_stoploss()` rebuilt per Freqtrade docs: returns None on missing data, anchors stops to entry price via `stoploss_from_open()` (initial: 2×ATR below open, trailing: 1.5×ATR above open)
-- `trailing_stop = False` (custom_stoploss owns the trail; framework trailing was double-stopping in v8/v9)
-- Macro short-gate: shorts only fire when BTC 4h close < BTC 4h EMA-50
+### ✅ Active: `FinBuddyFreqAI.py` v16.2 — Futures Long/Short (2026-05-09)
+- Binance Futures USDT-M (perpetual, isolated margin), **1h TF**, 25 pairs, `can_short=True`
+- FreqAI LightGBM **2-class model** (`["L","S"]`) — time-barrier candles DROPPED (not mapped to S)
+- FreqAI identifier: `finbuddy_v16_clean_1778316280` — all 25 pairs trained, zero KeyError H
+- `custom_stoploss()` anchored via `stoploss_from_open()`, `trailing_stop=False`
+- **Regime-aware exits** (v16): CRASH/BEAR → exit longs at 0.55, BULL/EUPHORIA → exit shorts at 0.55, NEUTRAL → symmetric 0.65
+- **HMM kill-switches**: CRASH → no longs, EUPHORIA → no shorts
+- **Correlation cluster cap** (v16.2): max 2 trades from MEGA_CAP cluster (BTC/ETH/SOL/etc) or L2 cluster (ARB/OP/etc) — enforced via `confirm_trade_entry()`
+- **Funding-rate long guard** (v16.2): blocks new longs if BTC perpetual funding >0.05%/8h
+- Enter tags: `freqai_lgbm_v16_long` / `freqai_lgbm_v16_short`
+- `BTC_MA200_GATE` env var defaults to `"0"` — opt-in only
 
 ### ❌ Retired: `AiGuardrailStrategy.py`
 - Superseded by `FinBuddyFreqAI.py`. Do not reference or restart.
 
-### Pending: `FinBuddyLLMModel.py` (Task 1.2)
-- Custom FreqAI model: LightGBM signal blended with Grok-3-Mini confirmation layer
-- Committed to `freqtrade/user_data/freqaimodels/` but NOT deployed
-- **Deploy on futures strategy — NOT on spot v6**
+### Deployed but not active: `FinBuddyLLMModel.py` (Task 1.2)
+- Custom FreqAI model with Grok-3-Mini LLM confirmation layer
+- Committed to `freqtrade/user_data/freqaimodels/` — not currently wired into config
 
 ---
 
@@ -224,26 +223,27 @@ Acceptance targets: **Sharpe > 0.5, WR > 50%, DD < 20%, PF > 1.2**
 
 WR ✅ and DD ✅ pass on both legs. Sharpe and PF still under target but the gap closed dramatically (Sharpe target 0.5; PF target 1.2).
 
-### Next: walk-forward / out-of-sample validation before v11
-R5 numbers are still in-sample. Before further tuning we walk the window: train months 1–6, test month 7, slide. If the lift survives OOS, we have a real strategy. If not, we are overfitting and v11 must address that first.
+### Walk-forward OOS validation (running 2026-05-09)
+`scripts/walk_forward.py` running overnight — 21 folds, 2024-01-01 → 2026-04-01. Results gate Phase 10.
+Check: `tail -f ~/.finbuddy/logs/walk_forward.log`
 
 ---
 
-## Full Build Roadmap (Post-Pivot)
+## Full Build Roadmap (verified 2026-05-09)
 
 | Phase | File | Status | Focus |
 |---|---|---|---|
-| 0 | `tasks/phase-0-foundation.md` | ✅ **5/5 Complete** (2026-04-27) | Foundation — FreqTrade, Telegram, server |
-| 1 | `tasks/phase-1-freqai-brain.md` | 🔄 **Rewriting for futures** | FreqAI brain — long + short |
-| 2 | `tasks/phase-2-funding-rate.md` | ⬜ Pending | Funding rate farming module |
-| 3 | `tasks/phase-3-hmm-regime.md` | ⬜ Pending | HMM 5-regime engine (critical for futures) |
-| 4 | `tasks/phase-4-external-data.md` | ⚠️ Code ready — crons not installed | External data fetchers |
-| 5 | `tasks/phase-5-grid-trading.md` | ⬜ Pending | Grid trading module (sideways) |
-| 6 | `tasks/phase-6-obsidian-memory.md` | ⚠️ Code ready — crons not installed | Memory auto-write |
-| 7 | `tasks/phase-7-karpathy-loop.md` | ⬜ Pending | Self-improving research loop |
-| 8 | `tasks/phase-8-arb.md` | ⬜ Pending | Spot-futures basis + stat arb |
-| 9 | `tasks/phase-9-spot.md` | ⬜ Pending | Spot trading (secondary) |
-| 10 | `tasks/phase-10-executor.md` | ⬜ Pending | Multi-user executor + SaaS |
+| 0 | `tasks/phase-0-foundation.md` | ✅ **Complete** (2026-04-27) | Foundation — FreqTrade, Telegram, server |
+| 1 | `tasks/phase-1-freqai-brain.md` | 🔄 **In Progress** — v16.2 live, walk-forward running | FreqAI brain — long + short, 2-class model |
+| 2 | `tasks/phase-2-data-enrichment.md` | ✅ **Live** — cron every 15m | External data fetchers — Fear & Greed, CoinGecko, CryptoPanic, DefiLlama, Google Trends |
+| 3 | `tasks/phase-3-hmm-regime.md` | ✅ **Live** — cron every 4h | HMM 5-regime engine wired into strategy |
+| 4 | `tasks/phase-4-obsidian-memory.md` | ✅ **Live** — cron every 15m | Obsidian vault auto-write + git auto-commit |
+| 5 | `tasks/phase-5-karpathy-loop.md` | ✅ **Live** — cron 02:00 daily | Nightly research loop — Gemini + DeepSeek R1 |
+| 6 | `tasks/phase-6-tradingview.md` | 🔴 **Abandoned** (2026-05-04) | TV alerts require paid plan — permanently dropped |
+| 7 | `tasks/phase-7-executor.md` | ✅ **Live** — cron every 5m | Python signal executor (paper mode) |
+| 8 | `tasks/phase-8-futures-setup.md` | ✅ **Complete** (2026-05-05) | Binance futures API, isolated margin |
+| 9 | `tasks/phase-9-futures-risk.md` | ✅ **Complete** (2026-05-09) | Risk engine: regime sizing + cluster cap + funding guard |
+| 10 | `tasks/phase-10-live-migration.md` | ⬜ **BLOCKED** | Needs walk-forward PASS or 6-month dry-run track record |
 
 ---
 
@@ -382,6 +382,41 @@ Fully specced in `docs/signal-contract.md`. Key fields:
 - Full vision expanded: all crypto market types as modular plugins (perp, funding rate, grid, arb, spot, DCA)
 - Revised 10-phase roadmap committed
 - `FINBUDDY_PROJECT_MEMORY.md`, `CLAUDE.md`, `CLAUDE_HANDOFF.md` all updated
+
+### May 3–5, 2026 (Claude Code)
+- Phase 8 (futures setup) + Phase 9 (risk engine) completed
+- `FinBuddyLLMModel.py` (Task 1.2) deployed — xAI Grok-3-Mini signal confirmation layer wired into FreqAI
+- `FinBuddyFreqAI.py` v15 deployed — 1h TF, label_period=6, 90-combo grid run (R8)
+- **R8 winners**: ml_threshold=0.60, ml_exit=0.60, label_period=6, atr_threshold=0.002
+- Bull window (2024-01-01→2025-01-01) ALL PASS: Sharpe +1.49, WR 57.7%, DD 2.5%, PF >1.2
+- Bear window (2025-01-01→2026-04-01) partial: WR 58.7% ✅, DD 7.0% ✅, Sharpe -0.114 ❌, PF 0.979 ❌
+- RiskEngine wired: regime-aware stake sizing in `custom_stake_amount()`, DD gate active
+- Watchdog (`scripts/watchdog.py`) created — cron every 30m, Telegram on container down/training stale/heartbeat lost
+- Trade postmortem (`scripts/trade_postmortem.py`) created — cron every 15m, closed trades → `finbuddy_memory/trades/closed.md`
+- Walk-forward validator (`scripts/walk_forward.py`) created — OOS rolling-fold, gates Phase 10
+- Fresh FreqAI identifier `finbuddy_v15_clean_1778268802` deployed — all 25 pairs trained
+- Walk-forward: `docker-compose` bug (was `docker compose`) fixed; timerange bug (test-only → train+test) fixed; data download pre-step added
+
+### May 8, 2026 — 7-Day No-Trade Crisis (Claude Code)
+- **Crisis discovered**: Bot running, training ticking, but ZERO trades for 7 days straight
+- **Root cause 1**: Old identifier `finbuddy_lgbm_v15` had partial state (4 pairs) — 21 new pairs never trained. Fix: new identifier `finbuddy_v15_clean_1778268802` → all 25 pairs retrained.
+- **Root cause 2**: `datasieve.pipeline WARNING - Could not find step di` — confirmed cosmetic, NOT blocking
+- **Root cause 3**: Macro filter deadlock — BTC at $80k between MA200 ($83k) and 4h EMA50 ($79k). Long required `btc_macro_bull==1` (FALSE), short required hardcoded `btc_4h_below_ema50==1` (FALSE). Zero trades possible. Fix: defaulted `BTC_MA200_GATE=0` (opt-in), removed hardcoded short filter.
+- Commit `d127347`: "fix: unstick v15 — disable BTC MA200 gate, remove hard btc_4h_below_ema50 short filter, fresh FreqAI identifier"
+- v16 Tier 1 build: regime-aware asymmetric exits, HMM kill-switches, v17 short filter finally removed
+- `scripts/daily_summary.py` created — daily 8 AM Telegram digest (regime, open trades L/S split, P&L, stats)
+- `daily_summary.py` added to crontab at `0 8 * * *`
+
+### May 9, 2026 (Claude Code)
+- **v16.1 clean 2-class model**: time-barrier candles dropped entirely (label=None not mapped to "S"). Fixed KeyError: 'H' crash affecting 20+ pairs. New identifier `finbuddy_v16_clean_1778316280`. All 25 pairs trained in 40s.
+- **v16.2 additions**: `confirm_trade_entry()` with (1) BTC funding-rate long guard (blocks if funding >0.05%/8h) + (2) correlation cluster cap (max 2 trades per MEGA_CAP or L2 cluster). Cache at `/freqtrade/user_data/data/external/funding_rate_cache.json`.
+- Enter tags updated: `freqai_lgbm_v11_long/short` → `freqai_lgbm_v16_long/short`
+- **Watchdog fix 1**: Training false alert from Docker buffer eviction by 6770 KeyError H errors. Added file-log fallback (`use_file_fallback=True`) scanning `freqtrade.log` + rotated files.
+- **Watchdog fix 2**: Heartbeat false alert from Docker daemon slowdown during `docker-compose run`. Raised timeout 15s→30s, enabled file fallback for heartbeat check too.
+- **Walk-forward**: Data downloaded (all 25 pairs, 2024-01-01→2026-04-01, futures). 21 folds running. Results in `walkforward_results/FinBuddyFreqAI_2024-01-01_2026-04-01_20260509T091607/`.
+- **First clean trades**: Trades #30–32 fired — first valid v16.1/v16.2 signals. (Trades 1–25 = legacy v11 spot, 26–29 = biased HOLD bug, 30+ = clean v16.)
+- Dead cron entries removed: `@reboot openclaw`, `@reboot uvicorn webhook_receiver`
+- All project context files synced to v16.2 state
 
 ---
 
