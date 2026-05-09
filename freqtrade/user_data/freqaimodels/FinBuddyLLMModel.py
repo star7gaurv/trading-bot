@@ -6,8 +6,8 @@ Architecture:
   1. LightGBM trains on OHLCV + TA indicators (inherited from LightGBMClassifier)
   2. predict() checks signal confidence (prob deviation from 0.5)
   3. High-confidence signals get LLM confirmation via central llm_client.py
-     Task chain "signal": nvidia-deepseek-v4-flash → nvidia-glm-5 → nvidia-kimi-k2
-                          → nvidia-llama-70b → openrouter-glm-free → raw LGBM
+     Task chain "signal": nvidia-mistral-medium → nvidia-llama-70b → nvidia-kimi-k2
+                          → openrouter-gpt-oss-20b → ... → raw LGBM if all fail
   4. LLM outcome: CONFIRM keeps class / REJECT or HOLD overrides to 'hold'
 
 Keys required (in freqtrade/.env):
@@ -88,15 +88,16 @@ class FinBuddyLLMModel(BASE_CLASS):
             return pred_df, do_predict
 
         pair    = dk.pair if hasattr(dk, "pair") else "UNKNOWN"
-        pred_col = "&-s_close"
+        # FreqAI classifier stores prediction in "&-s_label" (matches strategy's
+        # set_freqai_targets target column). Probabilities are in "L" and "S".
+        pred_col = "&-s_label"
         if pred_col not in pred_df.columns:
             return pred_df, do_predict
 
         last_class = pred_df[pred_col].iloc[-1]
 
-        prob_col = next(
-            (c for c in ("proba_long", "&-s_close_L") if c in pred_df.columns), None
-        )
+        # Probability of the "L" class — matches strategy class_names = ["L", "S"]
+        prob_col = next((c for c in ("L", "proba_long", "&-s_label_L") if c in pred_df.columns), None)
         last_prob  = float(pred_df[prob_col].iloc[-1]) if prob_col else 0.5
         confidence = abs(last_prob - 0.5)
 
