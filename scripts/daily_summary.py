@@ -1,0 +1,191 @@
+#!/usr/bin/env python3
+"""
+FinBuddy Daily Telegram Summary
+
+Sends a morning digest to Telegram every day at 8 AM (alongside pair_performance).
+Covers what matters most at a glance:
+  - Current HMM regime
+  - Open trades (count, side breakdown, unrealised P&L)
+  - Yesterday's closed-trade P&L
+  - Last training age (from file log)
+  - Bot uptime / container status
+
+No external dependencies beyond what's already on the server.
+Reads from:
+  - config.json (Telegram credentials, API)
+  - finbuddy_memory/regimes/current.json (regime)
+  - FreqTrade REST API (open/closed trades)
+  - freqtrade/user_data/logs/freqtrade.log (last training event)
+"""
+from __future__ import annotations
+
+import json
+import re
+import sys
+import urllib.parse
+import urllib.request
+from base64 import b64encode
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+CONFIG_PATH = Path("/home/ubuntu/var/www/html/trade/freqtrade/user_data/config.json")
+REGIME_PATH = Path("/home/ubuntu/var/www/html/trade/finbuddy_memory/regimes/current.json")
+FILE_LOG    = Path("/home/ubuntu/var/www/html/trade/freqtrade/user_data/logs/freqtrade.log")
+API_BASE    = "http://localhost:8080/api/v1"
+API_USER    = "bot"
+API_PASS    = "REDACTED-FREQTRADE__API_SERVER__PASSWORD"
+LOG_TS_RE   = re.compile(r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})")
+
+
+# ---------- helpers ----------
+
+def now_utc() -> datetime:
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+def api_get(path: str) -> dict | list | None:
+    url = f"{API_BASE}{path}"
+    creds = b64encode(f"{API_USER}:{API_PASS}".encode()).decode()
+    req = urllib.request.Request(url, headers={"Authorization": f"Basic {creds}"})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            return json.loads(r.read().decode())
+    except Exception as e:
+        print(f"WARN: API {path} failed: {e}", file=sys.stderr)
+        return None
+
+
+def telegram_send(token: str, chat_id: str, msg: str) -> bool:
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    data = urllib.parse.urlencode({
+        "chat_id": chat_id,
+        "text": msg,
+        "parse_mode": "Markdown",
+        "disable_web_page_preview": "true",
+    }).encode()
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, data=data), timeout=10) as r:
+            return r.status == 200
+    except Exception as e:
+        print(f"ERR: telegram failed: {e}", file=sys.stderr)
+        return False
+
+
+def load_telegram_creds() -> tuple[str, str] | None:
+    try:
+        cfg = json.loads(CONFIG_PATH.read_text())
+        tg = cfg.get("telegram") or {}
+        return tg.get("token"), tg.get("chat_id")
+    except Exception:
+        return None, None
+
+
+def current_regime() -> str:
+    try:
+        data = json.loads(REGIME_PATH.read_text())
+        return data.get("regime", "UNKNOWN")
+    except Exception:
+        return "UNKNOWN"
+
+
+def last_training_age() -> str:
+    """Return human-readable age of most recent 'Done training' in file log."""
+    try:
+        lines = FILE_LOG.read_text(errors="replace").splitlines()
+        last_ts = None
+        for line in lines:
+            if "Done training" not in line:
+                continue
+            m = LOG_TS_RE.match(line)
+            if not m:
+                continue
+            try:
+                ts = datetime.strptime(m.group(1), "%Y-%m-%d %H:%M:%S")
+                if last_ts is None or ts > last_ts:
+                    last_ts = ts
+            except ValueError:
+                pass
+        if last_ts is None:
+            return "unknown"
+        age = now_utc() - last_ts
+        h = int(age.total_seconds() // 3600)
+        m_ = int((age.total_seconds() % 3600) // 60)
+        return f"{h}h {m_}m ago"
+    except Exception:
+        return "unknown"
+
+
+def regime_emoji(regime: str) -> str:
+    return {
+        "BULL": "🟢", "EUPHORIA": "🚀",
+        "NEUTRAL": "⚪", "BEAR": "🔴", "CRASH": "💥",
+    }.get(regime, "❓")
+
+
+# ---------- main ----------
+
+def main() -> None:
+    token, chat_id = load_telegram_creds()
+    if not (token and chat_id):
+        print("ERR: no Telegram credentials in config.json", file=sys.stderr)
+        sys.exit(1)
+
+    regime = current_regime()
+    training_age = last_training_age()
+
+    # Open trades
+    open_data = api_get("/status") or []
+    open_count = len(open_data)
+    longs  = sum(1 for t in open_data if not t.get("is_short", False))
+    shorts = open_count - longs
+    unreal_pnl = sum(t.get("profit_abs", 0.0) for t in open_data)
+
+    # Yesterday closed trades
+    yesterday_start = (now_utc() - timedelta(days=1)).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    ).isoformat()
+    trades_data = api_get(f"/trades?limit=200") or {}
+    all_trades = trades_data.get("trades", []) if isinstance(trades_data, dict) else []
+    yesterday_closed = [
+        t for t in all_trades
+        if t.get("close_date") and t.get("close_date", "") >= yesterday_start
+    ]
+    yday_pnl = sum(t.get("profit_abs", 0.0) for t in yesterday_closed)
+    yday_wins = sum(1 for t in yesterday_closed if t.get("profit_abs", 0) > 0)
+    yday_count = len(yesterday_closed)
+
+    # Bot performance summary
+    profit_data = api_get("/profit") or {}
+    total_trades = profit_data.get("trade_count", 0)
+    total_pnl = profit_data.get("profit_closed_coin", 0.0)
+
+    # Build message
+    lines = [
+        f"📊 *FinBuddy Daily Summary* — {now_utc().strftime('%Y-%m-%d')}",
+        "",
+        f"{regime_emoji(regime)} *Regime:* `{regime}`",
+        f"🧠 *Last training:* {training_age}",
+        "",
+        f"📂 *Open trades:* {open_count}  ({longs}L / {shorts}S)",
+        f"💰 *Unrealised P&L:* {'%+.2f' % unreal_pnl} USDT",
+        "",
+        f"📅 *Yesterday:* {yday_count} closed",
+    ]
+    if yday_count:
+        wr = yday_wins / yday_count * 100
+        lines.append(f"   WR {wr:.0f}% | P&L {'%+.2f' % yday_pnl} USDT")
+    else:
+        lines.append("   No closed trades yesterday")
+    lines += [
+        "",
+        f"📈 *All-time:* {total_trades} trades | {'%+.2f' % total_pnl} USDT",
+    ]
+
+    msg = "\n".join(lines)
+    print(msg)
+    ok = telegram_send(token, chat_id, msg)
+    sys.exit(0 if ok else 1)
+
+
+if __name__ == "__main__":
+    main()
