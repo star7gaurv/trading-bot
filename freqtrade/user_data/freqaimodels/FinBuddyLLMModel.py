@@ -122,8 +122,15 @@ class FinBuddyLLMModel(BASE_CLASS):
                 logger.info(f"[FinBuddyLLMModel] {pair}: CONFIRM — keeping {last_class} (prob={last_prob:.3f})")
             elif outcome in ("REJECT", "HOLD"):
                 pred_df.at[pred_df.index[-1], pred_col] = "hold"
+                # Also zero out the probability columns so the strategy's 0.60 threshold is not met.
+                # The strategy gates on "L"/"S" proba columns, not on the label — setting
+                # the label to "hold" alone does nothing without this.
+                for prob_c in ("L", "S"):
+                    if prob_c in pred_df.columns:
+                        pred_df.at[pred_df.index[-1], prob_c] = 0.5
                 logger.info(
-                    f"[FinBuddyLLMModel] {pair}: {outcome} — overriding {last_class}→hold (prob={last_prob:.3f})"
+                    f"[FinBuddyLLMModel] {pair}: {outcome} — suppressed {last_class} signal "
+                    f"(prob reset to 0.5, was {last_prob:.3f})"
                 )
 
         return pred_df, do_predict
