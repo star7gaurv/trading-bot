@@ -120,6 +120,44 @@
       "status": "in_development",
       "proposed_at": "2026-05-09",
       "proposed_by": "reasoning_agent"
+    },
+    {
+      "strategy_id": "volatility_breakout_20260509",
+      "hypothesis": "Price breakouts from volatility contraction patterns predict trend continuation with high probability",
+      "timeframe": "1h",
+      "indicators": [
+        "ATR",
+        "BB",
+        "RSI"
+      ],
+      "entry_long": "Close > BB upper band AND RSI > 50 AND ATR increasing",
+      "entry_short": "Close < BB lower band AND RSI < 50 AND ATR increasing",
+      "exit_rule": "Take profit at 2x ATR distance or stop loss at 1.5x ATR distance",
+      "regime_filter": [
+        "trending"
+      ],
+      "status": "in_development",
+      "proposed_at": "2026-05-09",
+      "proposed_by": "reasoning_agent"
+    },
+    {
+      "strategy_id": "rsi_divergence_20260509",
+      "hypothesis": "Multi-timeframe RSI divergence patterns combined with volume confirmation predict reversals",
+      "timeframe": "1h",
+      "indicators": [
+        "RSI",
+        "Volume",
+        "MACD"
+      ],
+      "entry_long": "RSI divergence bullish AND Volume > 1.5x average AND MACD histogram positive",
+      "entry_short": "RSI divergence bearish AND Volume > 1.5x average AND MACD histogram negative",
+      "exit_rule": "RSI crossing midline or opposite divergence pattern appears",
+      "regime_filter": [
+        "mean_reverting"
+      ],
+      "status": "in_development",
+      "proposed_at": "2026-05-09",
+      "proposed_by": "reasoning_agent"
     }
   ]
 }
