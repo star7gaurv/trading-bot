@@ -90,6 +90,11 @@ def run_backtest(strategy: str, tf: str, train_start: datetime,
     print(f"[fold {fold}] backtesting {test_label} (full window {timerange}){id_str} ...")
     cmd = [
         "docker-compose", "run", "--rm",
+        # Use a large backtest wallet so stake depletion never silences the test window.
+        # With stake_amount="unlimited" + tradable_balance_ratio=0.99 and 4 max trades,
+        # each fold starts with 10 000 USDT so even a 60 % loss still leaves ~4 000 USDT
+        # to trade through the test month without hitting the stake floor.
+        "-e", "FREQTRADE__DRY_RUN_WALLET=10000",
     ]
     if freqai_identifier:
         # Override config.json's freqai.identifier without editing the file
@@ -116,7 +121,7 @@ def run_backtest(strategy: str, tf: str, train_start: datetime,
     return target
 
 
-def _compute_metrics_from_trades(trades: list[dict], starting_balance: float = 1000.0) -> dict:
+def _compute_metrics_from_trades(trades: list[dict], starting_balance: float = 10000.0) -> dict:
     """Compute trades/WR/PF/max_drawdown/sharpe from a per-trade list.
 
     Sharpe is annualised from daily aggregated PnL (not per-trade) — the

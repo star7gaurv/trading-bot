@@ -3,7 +3,9 @@
 set -u
 ROOT="/home/ubuntu/var/www/html/trade"
 CSV="$ROOT/_autobacktest_results.csv"
-LOG="/tmp/finbuddy_promotion_$(date -u +%Y%m%d).log"
+LOGDIR="/home/ubuntu/.finbuddy/logs"
+mkdir -p "$LOGDIR"
+LOG="$LOGDIR/run_promotion.log"
 
 [ -s "$CSV" ] || { echo "[promotion] no results yet" >> "$LOG"; exit 0; }
 # Skip if grid still running
