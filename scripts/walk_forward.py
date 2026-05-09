@@ -68,19 +68,34 @@ def daterange_folds(start: str, end: str, train_m: int, test_m: int, slide_m: in
         cursor = cursor + relativedelta(months=slide_m)
 
 
-def run_backtest(strategy: str, tf: str, train_start: datetime, test_start: datetime, test_end: datetime, run_dir: Path, fold: int) -> Path | None:
+def run_backtest(strategy: str, tf: str, train_start: datetime,
+                 test_start: datetime, test_end: datetime,
+                 run_dir: Path, fold: int,
+                 freqai_identifier: str | None = None) -> Path | None:
     """Run a single backtest fold via docker-compose. Returns path to result json or None.
 
     Timerange = train_start → test_end (full window so FreqAI can train on the
     first portion and predict on the test portion).  FreqAI internally uses
     train_period_days (90) to decide how much data is training vs prediction.
+
+    If `freqai_identifier` is set, it overrides config.json via the
+    FREQTRADE__FREQAI__IDENTIFIER env var. CRITICAL for walk-forward: without
+    a fresh identifier, FreqAI loads cached live-bot models that were trained
+    on FUTURE data, causing lookahead bias.
     """
     timerange = f"{train_start.strftime('%Y%m%d')}-{test_end.strftime('%Y%m%d')}"
     test_label = f"{test_start.strftime('%Y%m%d')}-{test_end.strftime('%Y%m%d')}"
     log_path = run_dir / f"fold_{fold:02d}_{test_label}.log"
-    print(f"[fold {fold}] backtesting {test_label} (full window {timerange}) ...")
+    id_str = f"  [identifier={freqai_identifier}]" if freqai_identifier else ""
+    print(f"[fold {fold}] backtesting {test_label} (full window {timerange}){id_str} ...")
     cmd = [
-        "docker-compose", "run", "--rm", "freqtrade",
+        "docker-compose", "run", "--rm",
+    ]
+    if freqai_identifier:
+        # Override config.json's freqai.identifier without editing the file
+        cmd += ["-e", f"FREQTRADE__FREQAI__IDENTIFIER={freqai_identifier}"]
+    cmd += [
+        "freqtrade",
         "backtesting",
         "--strategy", strategy,
         "--timeframe", tf,
@@ -353,10 +368,17 @@ def main():
             args.train_months, args.test_months, args.slide_months
         ))
 
-    run_id = f"{args.strategy}_{args.start}_{args.end}_{datetime.now().strftime('%Y%m%dT%H%M%S')}"
+    run_stamp = datetime.now().strftime("%Y%m%dT%H%M%S")
+    run_id = f"{args.strategy}_{args.start}_{args.end}_{run_stamp}"
     run_dir = RESULTS_BASE / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
     print(f"Walk-forward run: {run_dir}")
+
+    # Use a unique throwaway FreqAI identifier per fold to FORCE fresh training
+    # from scratch within each fold's data window. Without this, FreqAI loads
+    # cached live-bot models trained on data that's in the future relative to
+    # the fold's window — lookahead bias that invalidates walk-forward.
+    fold_identifier_base = f"wf_{run_stamp}"
 
     if not args.skip_download:
         download_data(args.start, args.end, args.timeframe)
@@ -367,7 +389,9 @@ def main():
     for fold, ts, te, vs, ve in daterange_folds(
         args.start, args.end, args.train_months, args.test_months, args.slide_months
     ):
-        rp = run_backtest(args.strategy, args.timeframe, ts, vs, ve, run_dir, fold)
+        fold_id = f"{fold_identifier_base}_f{fold:02d}"
+        rp = run_backtest(args.strategy, args.timeframe, ts, vs, ve, run_dir, fold,
+                          freqai_identifier=fold_id)
         if rp is None:
             continue
         fr = parse_fold(rp, fold, vs, ve)
