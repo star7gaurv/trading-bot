@@ -48,3 +48,4 @@
 | 2026-05-09 01:50:38 | BCH/USDT:USDT | SHORT | 4h50m | -0.67% | -1.00 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v11_short |
 | 2026-05-09 13:00:14 | DASH/USDT:USDT | SHORT | 2h49m | -0.91% | -1.37 | exit_signal | NEUTRAL | freqai_lgbm_v11_short |
 | 2026-05-09 15:00:11 | DOGE/USDT:USDT | SHORT | 1h59m | +0.82% | +1.23 | exit_signal | NEUTRAL | freqai_lgbm_v11_short |
+| 2026-05-09 20:01:31 | TAO/USDT:USDT | SHORT | 3h01m | -1.17% | -1.75 | exit_signal | NEUTRAL | freqai_lgbm_v11_short |
