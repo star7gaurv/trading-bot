@@ -41,6 +41,8 @@ CONTAINER = "freqtrade"
 TRAINING_MAX_AGE_MIN = 8 * 60   # 8h
 HEARTBEAT_MAX_AGE_MIN = 5       # 5m
 ALERT_COOLDOWN_MIN = 60         # don't repeat same alert within 1h
+DISK_USAGE_WARN_PCT = 80        # warn when filesystem usage exceeds this %
+DISK_USAGE_CRITICAL_PCT = 90    # critical alert at this %
 
 LOG_LINE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})")
 
@@ -87,6 +89,20 @@ def telegram_send(msg: str) -> bool:
     except Exception as e:
         print(f"ERR: telegram send failed: {e}", file=sys.stderr)
         return False
+
+
+def check_disk_usage() -> tuple[int, int, str]:
+    """Returns (used_pct, available_gb, mount_point) for / filesystem.
+    Returns (-1, -1, '?') on failure."""
+    try:
+        import shutil
+        usage = shutil.disk_usage("/")
+        used_pct = int((usage.used / usage.total) * 100)
+        available_gb = int(usage.free / (1024**3))
+        return used_pct, available_gb, "/"
+    except Exception as e:
+        print(f"WARN: disk check failed: {e}", file=sys.stderr)
+        return -1, -1, "?"
 
 
 def container_running(name: str) -> bool:
@@ -251,6 +267,23 @@ def main() -> int:
             issues.append("heartbeat")
         else:
             maybe_recover(state, "heartbeat", "✅ FinBuddy heartbeat resumed.")
+
+    # 4. disk usage — Oracle free tier ~50GB, FreqAI models accumulate silently
+    used_pct, avail_gb, mount = check_disk_usage()
+    if used_pct >= DISK_USAGE_CRITICAL_PCT:
+        maybe_alert(state, "disk",
+                    f"🚨 *FinBuddy disk CRITICAL* — `{mount}` at {used_pct}% used "
+                    f"({avail_gb}GB free). Bot will fail when disk fills. "
+                    f"Clean old FreqAI models or rotated logs NOW.")
+        issues.append("disk")
+    elif used_pct >= DISK_USAGE_WARN_PCT:
+        maybe_alert(state, "disk",
+                    f"⚠️ *FinBuddy disk warning* — `{mount}` at {used_pct}% used "
+                    f"({avail_gb}GB free). Consider cleaning old model dirs.")
+        issues.append("disk")
+    elif used_pct >= 0:
+        maybe_recover(state, "disk",
+                      f"✅ FinBuddy disk pressure cleared — {mount} at {used_pct}% ({avail_gb}GB free).")
 
     save_state(state)
     if issues:
