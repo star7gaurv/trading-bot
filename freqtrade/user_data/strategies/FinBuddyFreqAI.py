@@ -4,8 +4,10 @@ from functools import reduce
 from datetime import datetime
 from typing import Optional
 
+import json
 import numpy as np
 import pandas as pd
+from pathlib import Path
 from pandas import DataFrame
 from freqtrade.strategy import IStrategy, stoploss_from_open
 from freqtrade.persistence import Trade
@@ -238,6 +240,38 @@ class FinBuddyFreqAI(IStrategy):
     }
     _MAX_CLUSTER_POSITIONS = 2  # hard cap per cluster
 
+    # Funding-rate long guard (added v16.2)
+    # When BTC perpetual funding rate is very high, longs are overcrowded and
+    # expensive. Block new longs above threshold to avoid entering bubble tops.
+    _FUNDING_LONG_BLOCK_THRESHOLD = 0.0005   # 0.05% per 8h (extreme bullish)
+    # Use container-writable path; falls back gracefully if dir missing
+    _FUNDING_CACHE_FILE = Path("/freqtrade/user_data/data/external/funding_rate_cache.json")
+    _FUNDING_CACHE_TTL_MIN = 15
+
+    def _get_btc_funding_rate(self) -> float | None:
+        """Return latest BTC perpetual funding rate with 15-min on-disk cache."""
+        import time
+        import urllib.request
+        cache = self._FUNDING_CACHE_FILE
+        try:
+            if cache.exists():
+                cached = json.loads(cache.read_text())
+                if (time.time() - cached.get("ts", 0)) / 60 < self._FUNDING_CACHE_TTL_MIN:
+                    return cached.get("funding_rate")
+        except Exception:
+            pass
+        try:
+            url = "https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT"
+            with urllib.request.urlopen(url, timeout=5) as r:
+                data = json.loads(r.read().decode())
+            rate = float(data.get("lastFundingRate", 0))
+            cache.parent.mkdir(parents=True, exist_ok=True)
+            cache.write_text(json.dumps({"funding_rate": rate, "ts": time.time()}))
+            return rate
+        except Exception as e:
+            logger.warning(f"[FundingGuard] fetch failed: {e}")
+            return None
+
     def confirm_trade_entry(
         self,
         pair: str,
@@ -250,21 +284,31 @@ class FinBuddyFreqAI(IStrategy):
         side: str,
         **kwargs,
     ) -> bool:
-        cluster = self._PAIR_CLUSTER.get(pair, "ALTCOIN")
-        if cluster == "ALTCOIN":
-            return True  # no limit on diverse altcoins
+        # 1. Funding-rate long guard
+        if side == "long":
+            funding = self._get_btc_funding_rate()
+            if funding is not None and funding > self._FUNDING_LONG_BLOCK_THRESHOLD:
+                logger.info(
+                    f"[FundingGuard] Blocking long on {pair}: "
+                    f"BTC funding={funding:.4%} > {self._FUNDING_LONG_BLOCK_THRESHOLD:.4%}"
+                )
+                return False
 
-        open_trades = Trade.get_trades_proxy(is_open=True)
-        cluster_open = sum(
-            1 for t in open_trades
-            if self._PAIR_CLUSTER.get(t.pair, "ALTCOIN") == cluster
-        )
-        if cluster_open >= self._MAX_CLUSTER_POSITIONS:
-            logger.info(
-                f"[CorrLimit] Blocking {pair} entry: cluster={cluster} "
-                f"already has {cluster_open}/{self._MAX_CLUSTER_POSITIONS} open trades."
+        # 2. Correlation cluster cap
+        cluster = self._PAIR_CLUSTER.get(pair, "ALTCOIN")
+        if cluster != "ALTCOIN":
+            open_trades = Trade.get_trades_proxy(is_open=True)
+            cluster_open = sum(
+                1 for t in open_trades
+                if self._PAIR_CLUSTER.get(t.pair, "ALTCOIN") == cluster
             )
-            return False
+            if cluster_open >= self._MAX_CLUSTER_POSITIONS:
+                logger.info(
+                    f"[CorrLimit] Blocking {pair} entry: cluster={cluster} "
+                    f"already has {cluster_open}/{self._MAX_CLUSTER_POSITIONS} open trades."
+                )
+                return False
+
         return True
 
     def _get_tradingview_signal(self):
