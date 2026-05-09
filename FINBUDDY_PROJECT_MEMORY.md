@@ -22,7 +22,7 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 ---
 
 <!-- AUTO-SYNC-START -->
-> 🤖 *Auto-synced by `scripts/sync_context.py` at 2026-05-09 19:34 UTC*
+> 🤖 *Auto-synced by `scripts/sync_context.py` at 2026-05-09 20:00 UTC*
 
 ## 🚀 Live System State (Auto-Synced)
 
@@ -33,7 +33,7 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 | **Whitelist** | 25 pairs | Binance USDT-M perpetuals |
 | **Regime** | ⚖️ NEUTRAL | From HMM (updates every 4h) |
 | **Open trades** | 3 (0L / 3S) | Live positions |
-| **Closed trades** | 36 | All-time P&L: 9.00 USDT |
+| **Closed trades** | 36 | All-time P&L: 7.10 USDT |
 | **Last training** | unknown | Age of most recent 'Done training' log event |
 | **Walk-forward** | ⏳ Running — 0/21 folds (FinBuddyFreqAI_2024-01-01_2026-04-01_20260509T190609) | OOS validator — gates Phase 10 |
 
