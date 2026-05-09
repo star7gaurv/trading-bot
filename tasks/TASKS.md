@@ -12,27 +12,34 @@
 | Phase | File | Status | Description |
 |---|---|---|---|
 | 0 | [phase-0-foundation.md](phase-0-foundation.md) | ✅ **5/5 Complete** (2026-04-27) | Fix loose ends, clean up, wire everything together |
-| 1 | [phase-1-freqai-brain.md](phase-1-freqai-brain.md) | 🔄 **In Progress** — rewriting for futures | FreqAI brain — long + short, v10 active |
+| 1 | [phase-1-freqai-brain.md](phase-1-freqai-brain.md) | 🔄 **In Progress** — v16.2 live, walk-forward running | FreqAI brain — long + short, v16.2 (2-class, regime exits, corr limit, funding guard) |
 | 2 | [phase-2-data-enrichment.md](phase-2-data-enrichment.md) | ✅ **Verified** (2026-05-03) — cron clean, combined_context.json updating | External data fetchers — Fear & Greed, CoinGecko, CryptoPanic, DefiLlama, Google Trends |
 | 3 | [phase-3-hmm-regime.md](phase-3-hmm-regime.md) | ✅ **Verified** (2026-05-03) — regime NEUTRAL, cron clean | 5-regime HMM engine wired into strategy + memory |
 | 4 | [phase-4-obsidian-memory.md](phase-4-obsidian-memory.md) | ✅ **Verified** (2026-05-03) — auto-commits every 15m | Obsidian vault auto-write + git auto-commit |
 | 5 | [phase-5-karpathy-loop.md](phase-5-karpathy-loop.md) | ✅ **Verified** (2026-05-03) — research notes + hypotheses generated | Nightly research loop — Gemini + DeepSeek R1 |
 | 6 | [phase-6-tradingview.md](phase-6-tradingview.md) | 🔴 **Abandoned** (2026-05-04) — TradingView alerts require paid plan | Dropped — TradingView paid feature; FreqAI is sole signal source |
 | 7 | [phase-7-executor.md](phase-7-executor.md) | ✅ **Verified** (2026-05-03) — cron clean, no exceptions | Python signal executor — paper trading mode |
-| 8 | [phase-8-futures-setup.md](phase-8-futures-setup.md) | 🔄 **In Progress** (2026-05-03) — config checker live; Binance manual checklist pending | Futures account setup — Binance USDT-M, leverage config, isolated margin |
-| 9 | [phase-9-futures-risk.md](phase-9-futures-risk.md) | 🔄 **In Progress** (2026-05-03) — RiskEngine scaffold + 10/10 self-test passing | Futures risk engine — position sizing, liquidation guards, funding rate monitor |
-| 10 | [phase-10-live-migration.md](phase-10-live-migration.md) | ⬜ **Pending** | Live capital migration — dry-run to real money, kill switch, go-live protocol |
+| 8 | [phase-8-futures-setup.md](phase-8-futures-setup.md) | ✅ **Complete** (2026-05-05) — Binance futures API connected, finbuddy_memory mounted | Futures account setup — Binance USDT-M, leverage config, isolated margin |
+| 9 | [phase-9-futures-risk.md](phase-9-futures-risk.md) | ✅ **Complete** (2026-05-05) — RiskEngine live in custom_stake_amount + confirm_trade_entry | Futures risk engine — regime-aware sizing, cluster cap, funding-rate long guard |
+| 10 | [phase-10-live-migration.md](phase-10-live-migration.md) | ⬜ **BLOCKED** — needs walk-forward PASS or 6-month dry-run track record | Live capital migration — dry-run to real money, kill switch, go-live protocol |
 
 ---
 
-## 🚨 Current Focus (as of 2026-05-04)
+## 🚨 Current Focus (as of 2026-05-09)
 
-**Immediate next step:**
-1. ✅ Phase 8 complete — Binance futures connected, finbuddy_memory mounted in container
-2. ✅ Phase 9 complete — RiskEngine wired into custom_stake_amount (regime-aware sizing)
-3. 🔄 Phase 1 grid running — 90 combos, BACKTEST_TIMERANGE=20240101-20250101, PID 327995
-4. Once any combo passes (Sharpe > 0.5, WR > 50%, DD < 20%, PF > 1.2) → begin Phase 10 go-live
-5. Phase 6 (TradingView) abandoned — TV alerts are a paid feature; FreqAI is sole signal source
+**Strategy: v16.2 live** — 2-class LightGBM (time-barrier dropped), regime-aware exits,
+HMM kill-switches, correlation cluster cap (max 2/cluster), funding-rate long guard.
+
+**Immediate next steps:**
+1. ⏳ Walk-forward OOS validation running — started 2026-05-09 ~09:15 UTC (PID 659785). Check log: `tail -f ~/.finbuddy/logs/walk_forward.log`. Results in `walkforward_results/`.
+2. ⏳ Accumulate clean v16.1/v16.2 trades (trade ID 30+) — first unbiased signals since deployment.
+3. Once walk-forward PASSES (Sharpe > 0.5, WR > 50%, DD < 20%, PF > 1.2) → begin Phase 10 go-live.
+
+**Monitoring (all cron'd):**
+- Watchdog: every 30m (file-log fallback added 2026-05-09)
+- Daily summary: 8 AM UTC (Telegram PnL digest)
+- Trade postmortem: every 15m
+- Pair performance: 8 AM UTC
 
 ---
 
