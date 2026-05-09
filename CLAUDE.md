@@ -418,6 +418,27 @@ Fully specced in `docs/signal-contract.md`. Key fields:
 - Dead cron entries removed: `@reboot openclaw`, `@reboot uvicorn webhook_receiver`
 - All project context files synced to v16.2 state
 
+### May 9, 2026 — Afternoon (Claude Code) — Anti-staleness + automation hardening + WF integrity
+
+**Anti-staleness system (3 layers):**
+- `scripts/sync_context.py` (cron 4h) — reads live data and rewrites `<!-- AUTO-SYNC -->` block in FINBUDDY_PROJECT_MEMORY.md, appends state-changes to `finbuddy_memory/session_events.md`, auto-commits.
+- `.git/hooks/pre-commit` — soft warning when strategy/config/scripts change without doc update.
+- `<!-- AUTO-SYNC -->` markers in FINBUDDY_PROJECT_MEMORY.md so live-state table is machine-maintained.
+
+**Four pure-Python automations (zero token cost):**
+- `scripts/walkforward_notify.py` (cron 30m) — Telegrams PASS/FAIL when a walk-forward run completes (presence of `summary.json`).
+- `scripts/trade_postmortem.py` — added `check_trade_bias()`: alerts when last 10 trades are ≥85% one-sided (catches model-bias failure mode early; 6h cooldown).
+- `scripts/watchdog.py` — added disk-usage check (warn 80%, critical 90%). Oracle free tier has no native warning.
+- `scripts/walkforward_monthly.sh` (cron 1st of month, 03:00) + `scripts/download_data_daily.sh` (cron 04:30) — auto-runs walk-forward on a 27-month window monthly using fresh data; flock prevents overlap.
+
+**Walk-forward bugs fixed (commits `752a046`, `5e1eaf9`):**
+- Parser bug 1: read `max_drawdown_account` (correct field), not `max_drawdown` (didn't exist) → DD always 0%.
+- Parser bug 2: aggregated metrics over the full 7-month timerange instead of the 1-month test window → fold 5 reported 2,079 trades instead of ~71. Fixed by parsing the per-trade list and filtering by `close_date ∈ [test_start, test_end)`.
+- Sharpe now computed from daily-aggregated PnL (252-day annualisation), not bogus full-window number.
+- Added `--reparse <run_id>` flag to re-aggregate completed runs without re-running 2h backtests.
+- **Methodology bug — lookahead bias**: WF was loading the live bot's cached `finbuddy_v16_clean_*` models (trained on data through May 2026) and using them to predict on backtest dates from May 2024 forward. Fixed by passing `FREQTRADE__FREQAI__IDENTIFIER=wf_<ts>_f<NN>` per fold via env var on `docker-compose run`, forcing fresh in-window training.
+- **Implication**: every walk-forward run before today's commits is invalid. Next monthly run will use the fixed code automatically.
+
 ---
 
 ## 🔗 Related Files (Obsidian Links)

@@ -117,11 +117,18 @@ def read_walkforward_status() -> str:
     if summary.exists():
         try:
             data = json.loads(summary.read_text())
-            verdict = data.get("verdict", "?")
-            sharpe = data.get("median_sharpe", "?")
-            wr = data.get("median_win_rate", "?")
-            icon = "✅" if verdict == "PASS" else "❌"
-            return f"{icon} {verdict} — median Sharpe {sharpe}, WR {wr}% ({latest.name})"
+            passed = data.get("pass", False)
+            agg = data.get("aggregate", {})
+            icon = "✅ PASS" if passed else "❌ FAIL"
+            wr = agg.get("weighted_win_rate", 0)
+            sharpe = agg.get("weighted_sharpe", 0)
+            dd = agg.get("worst_drawdown", 0)
+            pf = agg.get("weighted_profit_factor", 0)
+            n_trades = agg.get("total_trades", 0)
+            return (
+                f"{icon} — WR {wr:.1%}, Sharpe {sharpe:.2f}, DD {dd:.1%}, "
+                f"PF {pf:.2f} ({n_trades} trades, run `{latest.name}`)"
+            )
         except Exception:
             pass
     # running: count fold result files
