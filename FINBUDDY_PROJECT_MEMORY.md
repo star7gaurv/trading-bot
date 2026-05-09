@@ -45,11 +45,15 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 | Script | Schedule | Purpose |
 |---|---|---|
-| `scripts/watchdog.py` | Cron every 30m | Telegram alert: container down, training stale (>8h), heartbeat lost (>5m). File-log fallback prevents false alerts from Docker buffer eviction or slow docker daemon. |
-| `scripts/trade_postmortem.py` | Cron every 15m | Appends every closed trade to `finbuddy_memory/trades/closed.md` with regime tag. |
+| `scripts/watchdog.py` | Cron every 30m | Telegram alert: container down, training stale (>8h), heartbeat lost (>5m), **disk >80%**. File-log fallback prevents false alerts from Docker buffer eviction or slow docker daemon. |
+| `scripts/trade_postmortem.py` | Cron every 15m | Appends every closed trade to `finbuddy_memory/trades/closed.md` with regime tag. **Bias detector**: Telegram alert if last 10 trades are ≥85% one-sided (6h cooldown). |
 | `scripts/daily_summary.py` | Cron 8am daily | Telegram morning digest: regime, open trades (L/S split), yesterday P&L, all-time stats, last training age. |
 | `scripts/pair_performance.py` | Cron 8am daily | Per-pair WR/PF/profit table (last 7 days). |
-| `scripts/walk_forward.py` | On demand | Rolling-fold OOS validator (train 6mo / test 1mo, 21 folds). Downloads data. Gates Phase 10. |
+| `scripts/sync_context.py` | Cron every 4h | Auto-syncs the `<!-- AUTO-SYNC -->` block in this file with live state; appends state-change events to `finbuddy_memory/session_events.md`; auto-commits. |
+| `scripts/walkforward_notify.py` | Cron every 30m | Watches `walkforward_results/` for completed runs (`summary.json` present) and Telegrams the PASS/FAIL verdict. Idempotent. |
+| `scripts/walkforward_monthly.sh` | Cron 1st of month 03:00 UTC | Auto-runs `walk_forward.py` on a 27-month window. flock(1) prevents overlap. |
+| `scripts/download_data_daily.sh` | Cron 04:30 UTC daily | Refreshes 3 days of futures OHLCV/funding/mark data so monthly WF can use `--skip-download`. |
+| `scripts/walk_forward.py` | On-demand + monthly cron | Rolling-fold OOS validator (train 6mo / test 1mo, 21 folds). Gates Phase 10. |
 
 ---
 
