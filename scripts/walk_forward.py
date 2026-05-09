@@ -68,13 +68,19 @@ def daterange_folds(start: str, end: str, train_m: int, test_m: int, slide_m: in
         cursor = cursor + relativedelta(months=slide_m)
 
 
-def run_backtest(strategy: str, tf: str, test_start: datetime, test_end: datetime, run_dir: Path, fold: int) -> Path | None:
-    """Run a single backtest fold via docker compose. Returns path to result json or None."""
-    timerange = f"{test_start.strftime('%Y%m%d')}-{test_end.strftime('%Y%m%d')}"
-    log_path = run_dir / f"fold_{fold:02d}_{timerange}.log"
-    print(f"[fold {fold}] backtesting {timerange} ...")
+def run_backtest(strategy: str, tf: str, train_start: datetime, test_start: datetime, test_end: datetime, run_dir: Path, fold: int) -> Path | None:
+    """Run a single backtest fold via docker-compose. Returns path to result json or None.
+
+    Timerange = train_start → test_end (full window so FreqAI can train on the
+    first portion and predict on the test portion).  FreqAI internally uses
+    train_period_days (90) to decide how much data is training vs prediction.
+    """
+    timerange = f"{train_start.strftime('%Y%m%d')}-{test_end.strftime('%Y%m%d')}"
+    test_label = f"{test_start.strftime('%Y%m%d')}-{test_end.strftime('%Y%m%d')}"
+    log_path = run_dir / f"fold_{fold:02d}_{test_label}.log"
+    print(f"[fold {fold}] backtesting {test_label} (full window {timerange}) ...")
     cmd = [
-        "docker", "compose", "run", "--rm", "freqtrade",
+        "docker-compose", "run", "--rm", "freqtrade",
         "backtesting",
         "--strategy", strategy,
         "--timeframe", tf,
@@ -169,6 +175,26 @@ def grade(agg: dict) -> tuple[bool, list[str]]:
     return ok, msgs
 
 
+def download_data(start: str, end: str, tf: str) -> bool:
+    """Download futures OHLCV + mark + funding data for all whitelisted pairs."""
+    timerange = f"{start.replace('-', '')}-{end.replace('-', '')}"
+    print(f"[data] Downloading futures data for {timerange} @ {tf} ...")
+    cmd = [
+        "docker-compose", "run", "--rm", "freqtrade",
+        "download-data",
+        "--timeframe", tf,
+        "--timerange", timerange,
+        "--trading-mode", "futures",
+        "--prepend",
+    ]
+    proc = subprocess.run(cmd, cwd=COMPOSE_DIR, timeout=7200)
+    if proc.returncode != 0:
+        print("[data] WARNING: download-data returned non-zero — some pairs may be missing data.")
+        return False
+    print("[data] Download complete.")
+    return True
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--start", required=True, help="YYYY-MM-DD outer window start")
@@ -178,6 +204,7 @@ def main():
     p.add_argument("--slide-months", type=int, default=1)
     p.add_argument("--strategy", default="FinBuddyFreqAI")
     p.add_argument("--timeframe", default="1h")
+    p.add_argument("--skip-download", action="store_true", help="Skip data download (use if data already downloaded)")
     args = p.parse_args()
 
     run_id = f"{args.strategy}_{args.start}_{args.end}_{datetime.now().strftime('%Y%m%dT%H%M%S')}"
@@ -185,11 +212,16 @@ def main():
     run_dir.mkdir(parents=True, exist_ok=True)
     print(f"Walk-forward run: {run_dir}")
 
+    if not args.skip_download:
+        download_data(args.start, args.end, args.timeframe)
+    else:
+        print("[data] Skipping download (--skip-download set).")
+
     folds: list[FoldResult] = []
     for fold, ts, te, vs, ve in daterange_folds(
         args.start, args.end, args.train_months, args.test_months, args.slide_months
     ):
-        rp = run_backtest(args.strategy, args.timeframe, vs, ve, run_dir, fold)
+        rp = run_backtest(args.strategy, args.timeframe, ts, vs, ve, run_dir, fold)
         if rp is None:
             continue
         fr = parse_fold(rp, fold, vs, ve)

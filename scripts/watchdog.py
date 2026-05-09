@@ -100,32 +100,76 @@ def container_running(name: str) -> bool:
         return False
 
 
-def latest_log_match(pattern: str, since_min: int) -> datetime | None:
-    """Return timestamp of most recent log line matching pattern, or None."""
+FILE_LOG = Path("/home/ubuntu/var/www/html/trade/freqtrade/user_data/logs/freqtrade.log")
+FILE_LOG_ROTATED = [
+    Path("/home/ubuntu/var/www/html/trade/freqtrade/user_data/logs/freqtrade.log.1"),
+    Path("/home/ubuntu/var/www/html/trade/freqtrade/user_data/logs/freqtrade.log.2"),
+]
+
+
+def _scan_lines_for_pattern(lines: list[str], pattern: str, cutoff: datetime) -> datetime | None:
+    """Scan log lines for pattern, return newest timestamp >= cutoff or None."""
+    last_ts = None
+    for line in lines:
+        if pattern not in line:
+            continue
+        m = LOG_LINE_RE.match(line)
+        if not m:
+            continue
+        try:
+            ts = datetime.strptime(m.group(1), "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            continue
+        if ts < cutoff:
+            continue
+        if last_ts is None or ts > last_ts:
+            last_ts = ts
+    return last_ts
+
+
+def latest_log_match(pattern: str, since_min: int, use_file_fallback: bool = False) -> datetime | None:
+    """Return timestamp of most recent log line matching pattern, or None.
+
+    Primary source: docker logs (current container buffer).
+    Fallback (use_file_fallback=True): if docker logs yields no match, also
+    scan the on-disk log file.  This guards against Docker's log buffer being
+    evicted by error-message spam (the root cause of the 2026-05-09 false alert).
+    """
+    cutoff = now_utc() - timedelta(minutes=since_min)
+    docker_result = None
     try:
         out = subprocess.run(
             ["docker", "logs", CONTAINER, "--since", f"{since_min}m"],
             capture_output=True, text=True, timeout=15,
         )
-        if out.returncode != 0:
-            return None
-        # docker logs writes to stderr by default for freqtrade
-        haystack = out.stdout + "\n" + out.stderr
-        last_ts = None
-        for line in haystack.splitlines():
-            if pattern in line:
-                m = LOG_LINE_RE.match(line)
-                if m:
-                    try:
-                        ts = datetime.strptime(m.group(1), "%Y-%m-%d %H:%M:%S")
-                        if last_ts is None or ts > last_ts:
-                            last_ts = ts
-                    except ValueError:
-                        pass
-        return last_ts
+        if out.returncode == 0:
+            haystack = (out.stdout + "\n" + out.stderr).splitlines()
+            docker_result = _scan_lines_for_pattern(haystack, pattern, cutoff)
     except Exception as e:
         print(f"ERR: docker logs failed: {e}", file=sys.stderr)
+
+    if docker_result is not None:
+        return docker_result
+
+    if not use_file_fallback:
         return None
+
+    # Fallback: scan on-disk log files (handles Docker buffer eviction by error spam)
+    file_result = None
+    for log_path in [FILE_LOG] + FILE_LOG_ROTATED:
+        if not log_path.exists():
+            continue
+        try:
+            lines = log_path.read_text(errors="replace").splitlines()
+            ts = _scan_lines_for_pattern(lines, pattern, cutoff)
+            if ts and (file_result is None or ts > file_result):
+                file_result = ts
+        except Exception as e:
+            print(f"ERR: reading {log_path}: {e}", file=sys.stderr)
+
+    if file_result:
+        print(f"INFO: docker logs had no match; file log found pattern at {file_result}")
+    return file_result
 
 
 # ---------- alert plumbing ----------
@@ -169,7 +213,9 @@ def main() -> int:
                   f"✅ FinBuddy recovered — container `{CONTAINER}` is running again.")
 
     # 2. recent training event
-    last_train = latest_log_match("Done training", since_min=TRAINING_MAX_AGE_MIN + 30)
+    # use_file_fallback=True: if Docker's buffer is evicted by error spam,
+    # fall back to the on-disk freqtrade.log so we don't false-alert.
+    last_train = latest_log_match("Done training", since_min=TRAINING_MAX_AGE_MIN + 30, use_file_fallback=True)
     if last_train is None:
         maybe_alert(state, "training",
                     f"⚠️ *FinBuddy stuck* — no `Done training` event in last {TRAINING_MAX_AGE_MIN//60}h. "
