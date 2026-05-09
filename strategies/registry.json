@@ -100,6 +100,26 @@
       "proposed_at": "2026-05-09",
       "proposed_by": "reasoning_agent",
       "queued_at": "2026-05-03"
+    },
+    {
+      "strategy_id": "stop_loss_audit_20260509",
+      "hypothesis": "Hard stop_loss exits drive 15-50% of trades at 0% WR; test raising ml_threshold to 0.65 to reduce false entries that immediately hit the stop.",
+      "timeframe": "1h",
+      "indicators": [
+        "ml_pred_proba_long",
+        "ml_pred_proba_short"
+      ],
+      "entry_long": "ml_pred_proba_long > 0.65",
+      "entry_short": "ml_pred_proba_short > 0.65",
+      "exit_rule": "exit_signal or custom_stoploss",
+      "regime_filter": [
+        "NEUTRAL",
+        "BULL",
+        "BEAR"
+      ],
+      "status": "in_development",
+      "proposed_at": "2026-05-09",
+      "proposed_by": "reasoning_agent"
     }
   ]
 }

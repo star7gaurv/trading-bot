@@ -1,66 +1,19 @@
 #!/usr/bin/env python3
 """Reasoning agent — generates de-duplicated strategy hypotheses from research text.
-Uses Grok-3-Mini when available; falls back to context-driven rules.
+Uses the central llm_client for AI hypothesis generation (task="reasoning").
 Hypothesis IDs always include a date suffix so they are never duplicates across runs.
 """
 import json
-import os
-import urllib.request
-import urllib.error
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT     = Path("/home/ubuntu/var/www/html/trade")
 REGISTRY = ROOT / "strategies/registry.json"
-XAI_API_URL = "https://api.x.ai/v1/chat/completions"
 
-
-def _load_xai_key() -> str:
-    key = os.environ.get("XAI_API_KEY", "")
-    if key:
-        return key
-    try:
-        for line in (ROOT / "freqtrade/.env").read_text().splitlines():
-            if line.startswith("XAI_API_KEY="):
-                return line.split("=", 1)[1].strip()
-    except Exception:
-        pass
-    return ""
-
-
-def _call_grok(prompt: str, system: str = "", max_tokens: int = 700) -> str | None:
-    key = _load_xai_key()
-    if not key:
-        return None
-    messages = []
-    if system:
-        messages.append({"role": "system", "content": system})
-    messages.append({"role": "user", "content": prompt})
-    payload = json.dumps({
-        "model": "grok-3-mini",
-        "messages": messages,
-        "max_tokens": max_tokens,
-        "temperature": 0.5,
-    }).encode()
-    req = urllib.request.Request(
-        XAI_API_URL,
-        data=payload,
-        headers={"Content-Type": "application/json", "Authorization": f"Bearer {key}"},
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            data = json.loads(resp.read().decode())
-        return data["choices"][0]["message"]["content"].strip()
-    except urllib.error.HTTPError as e:
-        if e.code == 403:
-            print(f"[reasoning] XAI 403 — no credits. Using rule-based fallback.")
-        else:
-            print(f"[reasoning] XAI HTTP {e.code}")
-        return None
-    except Exception as e:
-        print(f"[reasoning] XAI error: {e}")
-        return None
+# Import central LLM client (one directory up from karpathy/)
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from llm_client import call_llm
 
 
 def _rule_based_hypotheses(research_text: str, today: str) -> list:
@@ -105,7 +58,6 @@ def _rule_based_hypotheses(research_text: str, today: str) -> list:
             "regime_filter": ["NEUTRAL"],
         })
 
-    # Always generate at least one hypothesis
     if not hypotheses:
         hypotheses.append({
             "strategy_id": f"stop_loss_audit_{suffix}",
@@ -130,12 +82,11 @@ def _load_registry() -> dict:
 
 
 def run_reasoning(research_text: str) -> list:
-    registry  = _load_registry()
-    existing  = {s["strategy_id"] for s in registry.get("strategies", [])}
-    today     = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    suffix    = today.replace("-", "")
+    registry = _load_registry()
+    existing = {s["strategy_id"] for s in registry.get("strategies", [])}
+    today    = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    suffix   = today.replace("-", "")
 
-    # Try LLM first
     system_prompt = (
         "You are FinBuddy's strategy designer for a FreqAI LightGBM futures bot (long+short, 1h TF, 25 pairs). "
         "Based on the research text, propose exactly 2 NEW trading hypotheses. "
@@ -143,7 +94,8 @@ def run_reasoning(research_text: str) -> list:
         "strategy_id (must end with _" + suffix + " and not be in this list: " + json.dumps(sorted(existing)) + "), "
         "hypothesis, timeframe, indicators (list), entry_long, entry_short, exit_rule, regime_filter (list)."
     )
-    raw = _call_grok(research_text, system=system_prompt, max_tokens=700)
+
+    raw = call_llm(research_text, system=system_prompt, task="reasoning", max_tokens=700)
 
     hypotheses = []
     if raw:
@@ -164,7 +116,7 @@ def run_reasoning(research_text: str) -> list:
     new_hypotheses = [h for h in hypotheses if h.get("strategy_id") not in existing]
 
     for h in new_hypotheses:
-        h["status"] = "in_development"
+        h["status"]      = "in_development"
         h["proposed_at"] = today
         h["proposed_by"] = "reasoning_agent"
         registry["strategies"].append(h)
