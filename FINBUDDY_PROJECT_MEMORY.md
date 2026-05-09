@@ -21,27 +21,23 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 ---
 
-## 🚀 Current System State (as of 2026-05-09)
+<!-- AUTO-SYNC-START -->
+> 🤖 *Auto-synced by `scripts/sync_context.py` at 2026-05-09 10:42 UTC*
+
+## 🚀 Live System State (Auto-Synced)
 
 | Component | Status | Notes |
 |---|---|---|
-| **FreqTrade** | ✅ Running, dry-run | FinBuddyFreqAI **v16.2**, Binance USDT-M, isolated margin, port 8080 |
-| **Strategy** | ✅ v16.2 | 1h TF, can_short=True, 2-class LightGBM (L/S only, no HOLD). Regime-aware asymmetric exits, HMM kill-switches, cluster cap (max 2/cluster), BTC funding guard (>0.05%/8h blocks longs). |
-| **FreqAI identifier** | `finbuddy_v16_clean_1778316280` | Fresh 2026-05-09; all 25 pairs trained; zero KeyError H since 08:44 restart |
-| **Whitelist** | 25 pairs | BTC ETH SOL XRP DOGE LTC BCH DOT TRX ZEC ADA AVAX LINK ATOM NEAR ARB OP APT SUI UNI TON DASH ENA TAO ONDO |
-| **Clean trades** | ✅ Trades #30+ | Trades 1–25 = legacy v11 spot; 26–29 = biased HOLD bug; **30+ = first valid v16 signals** |
-| **Phase 1 — FreqAI brain** | ⚠️ Conditional Pass | Bull ALL PASS (R8: Sharpe +1.49, WR 57.7%, DD 2.5%). Bear: WR/DD pass, Sharpe/PF miss. Walk-forward is the gate. |
-| **Phase 2 — Data enrichment** | ✅ Live | `fetch_all_external.py` cron every 15 min → `combined_context.json` |
-| **Phase 3 — HMM regime** | ✅ Live | `hmm_regime_detector.py` cron every 4h → `regimes/current.{json,md}` |
-| **Phase 4 — Obsidian memory** | ✅ Live | `memory_writer.py` + `git_commit.sh` cron every 15 min |
-| **Phase 5 — Karpathy loop** | ✅ Live | Nightly research at 02:00 (Gemini + DeepSeek R1) |
-| **Phase 6 — TradingView** | 🔴 Abandoned | Requires paid TradingView plan — dropped permanently 2026-05-04 |
-| **Phase 7 — Executor** | ✅ Live (paper) | `executor.py` cron every 5 min; 0 signals processed |
-| **Phase 8 — Futures setup** | ✅ Complete | Binance futures API, isolated margin, finbuddy_memory mounted in container |
-| **Phase 9 — Risk engine** | ✅ Complete | RiskEngine in `custom_stake_amount()` + `confirm_trade_entry()`; regime-aware sizing, cluster cap, funding guard |
-| **Phase 10 — Go-live** | ⬜ BLOCKED | Needs walk-forward PASS (Sharpe>0.5, WR>50%, DD<20%, PF>1.2) OR 6-month dry-run track record |
-| **Walk-forward** | ⏳ RUNNING | Started 2026-05-09 09:15 UTC. 21 folds (train 6mo/test 1mo). Log: `~/.finbuddy/logs/walk_forward.log` |
-| **N8N pipeline** | 🔴 Permanently disabled | FreqAI is sole signal source since 2026-04-30 |
+| **FreqTrade** | ✅ Running, dry-run | Strategy v16.2, Binance USDT-M, isolated margin, port 8080 |
+| **FreqAI identifier** | `finbuddy_v16_clean_1778316280` | Active model key |
+| **Whitelist** | 25 pairs | Binance USDT-M perpetuals |
+| **Regime** | ⚖️ NEUTRAL | From HMM (updates every 4h) |
+| **Open trades** | 3 (0L / 3S) | Live positions |
+| **Closed trades** | 32 | All-time P&L: 4.33 USDT |
+| **Last training** | unknown | Age of most recent 'Done training' log event |
+| **Walk-forward** | ⏳ Running — 10/21 folds done (FinBuddyFreqAI_2024-01-01_2026-04-01_20260509T091607) | OOS validator — gates Phase 10 |
+
+<!-- AUTO-SYNC-END -->
 
 ---
 
