@@ -101,8 +101,84 @@ def run_backtest(strategy: str, tf: str, train_start: datetime, test_start: date
     return target
 
 
+def _compute_metrics_from_trades(trades: list[dict], starting_balance: float = 1000.0) -> dict:
+    """Compute trades/WR/PF/max_drawdown/sharpe from a per-trade list.
+
+    Sharpe is annualised from daily aggregated PnL (not per-trade) — the
+    standard Freqtrade convention. Drawdown is computed from the equity
+    curve built by replaying trades in close_date order.
+    """
+    n = len(trades)
+    if n == 0:
+        return {
+            "trades": 0, "wins": 0, "win_rate": 0.0,
+            "profit_total_abs": 0.0, "profit_factor": 0.0,
+            "max_drawdown": 0.0, "sharpe": 0.0,
+        }
+
+    profits = [float(t.get("profit_abs") or 0.0) for t in trades]
+    wins = sum(1 for p in profits if p > 0)
+    total = sum(profits)
+    gross_win = sum(p for p in profits if p > 0)
+    gross_loss = -sum(p for p in profits if p < 0)
+    if gross_loss > 0:
+        pf = gross_win / gross_loss
+    else:
+        # all wins (or no losers) — clamp to a high but finite number
+        pf = float("inf") if gross_win > 0 else 0.0
+
+    # Equity curve & max drawdown (account-relative, like Freqtrade reports)
+    sorted_trades = sorted(trades, key=lambda t: t.get("close_date") or "")
+    equity = starting_balance
+    peak = equity
+    max_dd = 0.0
+    daily: dict[str, float] = {}
+    for t in sorted_trades:
+        p = float(t.get("profit_abs") or 0.0)
+        equity += p
+        if equity > peak:
+            peak = equity
+        if peak > 0:
+            dd = (peak - equity) / peak
+            if dd > max_dd:
+                max_dd = dd
+        # bucket by close-date for daily Sharpe
+        day = (t.get("close_date") or "")[:10]
+        if day:
+            daily[day] = daily.get(day, 0.0) + p
+
+    # Daily-aggregated annualised Sharpe (252 trading days/yr convention)
+    if len(daily) >= 2:
+        import statistics
+        # Convert to daily-return ratios on starting balance
+        daily_returns = [v / starting_balance for v in daily.values()]
+        mean = statistics.mean(daily_returns)
+        sd = statistics.stdev(daily_returns)
+        sharpe = (mean / sd) * (252 ** 0.5) if sd > 0 else 0.0
+    else:
+        sharpe = 0.0
+
+    return {
+        "trades": n,
+        "wins": wins,
+        "win_rate": wins / n,
+        "profit_total_abs": total,
+        "profit_factor": pf if pf != float("inf") else 999.0,
+        "max_drawdown": max_dd,
+        "sharpe": sharpe,
+    }
+
+
 def parse_fold(result_path: Path, fold: int, test_start: datetime, test_end: datetime) -> FoldResult | None:
-    """Read FreqTrade's .last_result.json (which points to the actual result file)."""
+    """Parse a fold's backtest result, filtering trades to the OOS test window only.
+
+    The backtest timerange is `train_start → test_end` (so FreqAI has data to
+    train on), but the strategy emits signals across the whole window. For walk-
+    forward integrity we MUST evaluate only the test slice [test_start, test_end).
+    Aggregate fields like `sharpe` and `max_drawdown_account` from FreqTrade's
+    JSON cover the full window and are unusable here — we recompute from the
+    per-trade list.
+    """
     pointer = json.loads(result_path.read_text())
     actual_zip = pointer.get("latest_backtest")
     if not actual_zip:
@@ -111,22 +187,42 @@ def parse_fold(result_path: Path, fold: int, test_start: datetime, test_end: dat
     if actual_path.suffix == ".zip":
         import zipfile
         with zipfile.ZipFile(actual_path) as zf:
-            inner = [n for n in zf.namelist() if n.endswith(".json")][0]
-            data = json.loads(zf.read(inner).decode())
+            # the main result JSON is the one without a suffix marker like _config
+            candidates = [n for n in zf.namelist()
+                          if n.endswith(".json") and "_config" not in n]
+            if not candidates:
+                print(f"  [fold {fold}] no result JSON found in {actual_zip}")
+                return None
+            data = json.loads(zf.read(candidates[0]).decode())
     else:
         data = json.loads(actual_path.read_text())
+
     strat_data = next(iter(data.get("strategy", {}).values()), {})
-    summary = strat_data.get("results_per_pair", [{}])[-1]  # TOTAL row last
+    all_trades = strat_data.get("trades", []) or []
+    starting_balance = float(strat_data.get("starting_balance", 1000.0))
+
+    # Filter to test window only — close_date is "YYYY-MM-DD HH:MM:SS+00:00"
+    ts_iso = test_start.strftime("%Y-%m-%d")
+    te_iso = test_end.strftime("%Y-%m-%d")
+    test_trades = [
+        t for t in all_trades
+        if (cd := (t.get("close_date") or "")[:10]) and ts_iso <= cd < te_iso
+    ]
+
+    print(f"  [fold {fold}] window {ts_iso}→{te_iso}: "
+          f"all_trades={len(all_trades)} test_window={len(test_trades)}")
+
+    m = _compute_metrics_from_trades(test_trades, starting_balance)
     return FoldResult(
         fold=fold,
-        test_start=test_start.date().isoformat(),
-        test_end=test_end.date().isoformat(),
-        trades=int(summary.get("trades", 0)),
-        win_rate=float(summary.get("wins", 0)) / max(int(summary.get("trades", 1)), 1),
-        sharpe=float(strat_data.get("sharpe", 0.0)),
-        max_drawdown=float(strat_data.get("max_drawdown", 0.0)),
-        profit_factor=float(strat_data.get("profit_factor", 0.0)),
-        profit_total_abs=float(strat_data.get("profit_total_abs", 0.0)),
+        test_start=ts_iso,
+        test_end=te_iso,
+        trades=m["trades"],
+        win_rate=m["win_rate"],
+        sharpe=m["sharpe"],
+        max_drawdown=m["max_drawdown"],
+        profit_factor=m["profit_factor"],
+        profit_total_abs=m["profit_total_abs"],
     )
 
 
@@ -195,6 +291,44 @@ def download_data(start: str, end: str, tf: str) -> bool:
     return True
 
 
+def reparse_existing_run(run_dir: Path,
+                         start: str, end: str,
+                         train_m: int, test_m: int, slide_m: int) -> int:
+    """Re-aggregate an already-completed walkforward_results/<run_id>/ using the
+    current parse_fold() logic, without re-running any backtests. Use this after
+    fixing a parser bug — overwrites summary.json with corrected metrics."""
+    if not run_dir.exists():
+        print(f"ERR: {run_dir} does not exist", file=sys.stderr)
+        return 1
+    folds: list[FoldResult] = []
+    for fold, ts, te, vs, ve in daterange_folds(start, end, train_m, test_m, slide_m):
+        result_pointer = run_dir / f"fold_{fold:02d}_result.json"
+        if not result_pointer.exists():
+            print(f"  [fold {fold}] missing pointer file — skipping")
+            continue
+        fr = parse_fold(result_pointer, fold, vs, ve)
+        if fr is None:
+            print(f"  [fold {fold}] parse failed — skipping")
+            continue
+        folds.append(fr)
+        print(f"  [fold {fold}] trades={fr.trades} WR={fr.win_rate:.1%} "
+              f"Sharpe={fr.sharpe:.3f} DD={fr.max_drawdown:.1%} PF={fr.profit_factor:.3f} "
+              f"P&L={fr.profit_total_abs:+.2f}")
+
+    summary_path = run_dir / "summary.json"
+    agg = aggregate(folds)
+    ok, msgs = grade(agg) if agg.get("total_trades") else (False, ["❌ no trades across all folds"])
+    summary = {"folds": [asdict(f) for f in folds], "aggregate": agg, "pass": ok, "verdict": msgs}
+    summary_path.write_text(json.dumps(summary, indent=2))
+
+    print("\n=== Walk-Forward Summary (reparsed) ===")
+    for m in msgs:
+        print(" ", m)
+    print(f"\nFolds: {len(folds)}  Total trades: {agg.get('total_trades', 0)}")
+    print(f"Summary: {summary_path}")
+    return 0 if ok else 2
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--start", required=True, help="YYYY-MM-DD outer window start")
@@ -205,7 +339,19 @@ def main():
     p.add_argument("--strategy", default="FinBuddyFreqAI")
     p.add_argument("--timeframe", default="1h")
     p.add_argument("--skip-download", action="store_true", help="Skip data download (use if data already downloaded)")
+    p.add_argument("--reparse", metavar="RUN_DIR",
+                   help="Re-aggregate an existing walkforward_results/<run_id>/ "
+                        "using current parser (no backtests re-run). Pass full path or just run_id.")
     args = p.parse_args()
+
+    if args.reparse:
+        run_dir = Path(args.reparse)
+        if not run_dir.is_absolute():
+            run_dir = RESULTS_BASE / args.reparse
+        sys.exit(reparse_existing_run(
+            run_dir, args.start, args.end,
+            args.train_months, args.test_months, args.slide_months
+        ))
 
     run_id = f"{args.strategy}_{args.start}_{args.end}_{datetime.now().strftime('%Y%m%dT%H%M%S')}"
     run_dir = RESULTS_BASE / run_id
