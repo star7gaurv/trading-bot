@@ -311,26 +311,6 @@ class FinBuddyFreqAI(IStrategy):
 
         return True
 
-    def _get_tradingview_signal(self):
-        """Load latest TradingView webhook signal."""
-        import json, os
-        from datetime import datetime, timezone
-        signal_file = "/home/ubuntu/var/www/html/trade/freqtrade/user_data/data/external/tradingview_signals.json"
-        try:
-            with open(signal_file) as f:
-                signals = json.load(f)
-            if not signals:
-                return {"tv_supertrend_bullish": 0, "tv_signal_age_minutes": 999}
-            latest = signals[-1]
-            ts = datetime.fromisoformat(latest["timestamp"].replace("Z", "+00:00"))
-            age = (datetime.now(timezone.utc) - ts).seconds / 60
-            return {
-                "tv_supertrend_bullish": 1 if latest.get("signal", "") == "BUY" else 0,
-                "tv_signal_age_minutes": round(age, 1)
-            }
-        except Exception:
-            return {"tv_supertrend_bullish": 0, "tv_signal_age_minutes": 999}
-
     # ------------------------------------------------------------------ #
     # FreqAI feature engineering (v10 — unchanged)                       #
     # ------------------------------------------------------------------ #
@@ -611,22 +591,8 @@ class FinBuddyFreqAI(IStrategy):
         if proba_short is None:
             proba_short = pd.Series(0.0, index=dataframe.index)
 
-        ml_signal_long = (
-            (dataframe["do_predict"] == 1)
-            & (proba_long > 0.55)
-        )
-
-        # Bull/bear dynamic threshold — in classifier land we tighten in bear
-        # by requiring higher confidence (0.60) when macro is bearish for longs
-        ml_threshold_long = (
-            (
-                (dataframe["btc_4h_below_ema50"] == 0)
-                & (proba_long > 0.55)
-            ) | (
-                (dataframe["btc_4h_below_ema50"] == 1)
-                & (proba_long > 0.60)
-            )
-        )
+        # Flat 0.60 threshold — R8 grid winner. 0.55 caused 470 trades/month overtrade.
+        ml_threshold_long = (proba_long > 0.60)
 
         ta_filter = (
             (dataframe["close"] > dataframe["ema_50"])
@@ -664,7 +630,7 @@ class FinBuddyFreqAI(IStrategy):
         # Short — model-gated (v17: removed hardcoded btc_4h_below_ema50 deadlock).
         ml_signal_short = (
             (dataframe["do_predict"] == 1)
-            & (proba_short > 0.55)
+            & (proba_short > 0.60)
             & macro_short_gate
         )
 

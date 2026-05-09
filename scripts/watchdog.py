@@ -143,7 +143,12 @@ def _scan_lines_for_pattern(lines: list[str], pattern: str, cutoff: datetime) ->
     return last_ts
 
 
-def latest_log_match(pattern: str, since_min: int, use_file_fallback: bool = False) -> datetime | None:
+def latest_log_match(
+    pattern: str,
+    since_min: int,
+    use_file_fallback: bool = False,
+    docker_since_min: int | None = None,
+) -> datetime | None:
     """Return timestamp of most recent log line matching pattern, or None.
 
     Primary source: docker logs (current container buffer).
@@ -151,13 +156,18 @@ def latest_log_match(pattern: str, since_min: int, use_file_fallback: bool = Fal
     scan the on-disk log file. Handles two known failure modes:
     1. Docker buffer evicted by error-message spam (training check).
     2. Docker daemon slow during docker-compose run (heartbeat check, 2026-05-09).
+
+    docker_since_min: cap the docker logs query window to avoid timeouts on long
+    windows (e.g. training check asks for 8h+30m = 510m which reliably times out).
+    File fallback always covers the full since_min window.
     """
     cutoff = now_utc() - timedelta(minutes=since_min)
+    query_min = docker_since_min if docker_since_min is not None else since_min
     docker_result = None
     try:
         out = subprocess.run(
-            ["docker", "logs", CONTAINER, "--since", f"{since_min}m"],
-            capture_output=True, text=True, timeout=30,  # raised from 15s — docker slow during compose run
+            ["docker", "logs", CONTAINER, "--since", f"{query_min}m"],
+            capture_output=True, text=True, timeout=30,
         )
         if out.returncode == 0:
             haystack = (out.stdout + "\n" + out.stderr).splitlines()
@@ -232,7 +242,14 @@ def main() -> int:
     # 2. recent training event
     # use_file_fallback=True: if Docker's buffer is evicted by error spam,
     # fall back to the on-disk freqtrade.log so we don't false-alert.
-    last_train = latest_log_match("Done training", since_min=TRAINING_MAX_AGE_MIN + 30, use_file_fallback=True)
+    # docker_since_min=90 prevents 510-min docker log queries timing out.
+    # File fallback covers the full 8h+ window via freqtrade.log.
+    last_train = latest_log_match(
+        "Done training",
+        since_min=TRAINING_MAX_AGE_MIN + 30,
+        use_file_fallback=True,
+        docker_since_min=90,
+    )
     if last_train is None:
         maybe_alert(state, "training",
                     f"⚠️ *FinBuddy stuck* — no `Done training` event in last {TRAINING_MAX_AGE_MIN//60}h. "
