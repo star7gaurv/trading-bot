@@ -113,11 +113,10 @@ class FinBuddyFreqAI(IStrategy):
         **kwargs,
     ) -> Optional[float]:
         """
-        v12 ATR-adaptive stoploss — geometry rebalanced for positive R:R.
-        Initial: 1.5×ATR below entry (anchored via stoploss_from_open).
+        v17 ATR-adaptive stoploss — symmetric barriers (k_tp=k_sl=2.0).
+        Initial: 2.0×ATR below entry (matches k_sl=2.0 in set_freqai_targets).
         Trailing: once profit > 1×ATR, lock at +2.0×ATR above entry.
-        Realized R:R = 2.0/1.5 ≈ 1.33:1 (was 1.5/2.0 = 0.75:1 in v11).
-        k_sl in label is set to 1.5 to match this initial stop exactly.
+        Symmetric R:R = 1:1; any WR > 50% is genuine alpha (no base-rate bias).
         Returns None on missing data (no reset of existing stop).
         """
         dataframe, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
@@ -144,7 +143,7 @@ class FinBuddyFreqAI(IStrategy):
             return None
 
         initial_stop = stoploss_from_open(
-            -1.5 * atr_pct,
+            -2.0 * atr_pct,
             current_profit,
             is_short=trade.is_short,
             leverage=trade.leverage,
@@ -389,7 +388,7 @@ class FinBuddyFreqAI(IStrategy):
 
         v12 params:
           k_tp = 2.0   (take-profit 2×ATR above entry)
-          k_sl = 1.5   (stop-loss 1.5×ATR below entry — matches custom_stoploss)
+          k_sl = 2.0   (stop-loss 2×ATR below entry — symmetric, matches custom_stoploss)
           label_period_candles = 12  (3 hours on 15m)
 
         v12 changes from v11:
@@ -419,7 +418,7 @@ class FinBuddyFreqAI(IStrategy):
         self.freqai.class_names = ["L", "S"]
 
         k_tp = 2.0
-        k_sl = 1.5
+        k_sl = 2.0  # v17: symmetric barriers — P(L)=50% base rate, degenerate models filtered at 0.60 threshold
         label_period = self.freqai_info["feature_parameters"]["label_period_candles"]
 
         close = dataframe["close"].values
@@ -656,18 +655,18 @@ class FinBuddyFreqAI(IStrategy):
             "enter_tag"
         ] = "freqai_lgbm_v16_short"
 
-        # v16 — HMM regime kill-switches.
-        # Override entry signals when the regime is at a tail-risk extreme.
-        # Stake-side sizing is already regime-aware via custom_stake_amount,
-        # but we want a hard NO on long entries during CRASH and a hard NO
-        # on short entries during EUPHORIA — blow-off tops eat shorts.
+        # v17 — full trend-following regime kill-switches.
+        # CRASH+BEAR: downtrends — no new longs (shorts only).
+        # BULL+EUPHORIA: uptrends — no new shorts (longs only).
+        # NEUTRAL: both directions allowed.
+        # This eliminates systematic losses from trading against the macro trend.
         regime = self._get_current_regime()
-        if regime == "CRASH":
+        if regime in ("CRASH", "BEAR"):
             dataframe.loc[:, "enter_long"] = 0
             dataframe.loc[dataframe["enter_long"] == 0, "enter_tag"] = (
                 dataframe["enter_tag"].where(dataframe["enter_short"] == 1, None)
             )
-        elif regime == "EUPHORIA":
+        elif regime in ("BULL", "EUPHORIA"):
             dataframe.loc[:, "enter_short"] = 0
             dataframe.loc[dataframe["enter_short"] == 0, "enter_tag"] = (
                 dataframe["enter_tag"].where(dataframe["enter_long"] == 1, None)
