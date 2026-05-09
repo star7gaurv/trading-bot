@@ -4,8 +4,8 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status:** 🟢 v16.2 live · 25 pairs · Walk-forward running · First clean trades #30–32 fired  
-**Last Updated:** 2026-05-09 (Claude Code — v16.1 clean model, v16.2 confirm_trade_entry, watchdog hardened, walk-forward launched, daily summary added)
+**Status:** 🟢 v17 live · 25 pairs · Walk-forward #5 running · FinBuddyLLMModel active · 36 closed trades  
+**Last Updated:** 2026-05-09 evening (Claude Code — v17 symmetric barriers, LLM layer bugs fixed, full stale-state audit, walk-forward #5 started)
 
 ---
 
@@ -57,7 +57,7 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 ---
 
-## 📈 Backtest History — Futures (v6 → v16)
+## 📈 Backtest History — Futures (v6 → v17)
 
 ### Rounds 1–5 (v6 → v10): Stop-Loss Architecture Sweep
 
@@ -119,9 +119,9 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 | Model | Provider | Env Var | Cost | Role |
 |---|---|---|---|---|
-| **grok-3-mini** | xAI | `XAI_API_KEY` | $0.10/M | ✅ Real-time signal confirmation — PRIMARY |
-| **grok-3** | xAI | `XAI_API_KEY` | $2/M | Optional upgrade if needed |
-| **claude-sonnet-4-5** | Anthropic | `ANTHROPIC_API_KEY` | $3/$15/M | ✅ Claude Code — deploy, monitor, debug |
+| **NVIDIA NIM (7 models)** | NVIDIA | `NVIDIA_API_KEY` | Free tier | ✅ Signal confirmation via FinBuddyLLMModel — PRIMARY chain |
+| **OpenRouter free** | OpenRouter | `OPENROUTER_API_KEY` | Free tier | ✅ Signal confirmation fallback |
+| **claude-sonnet-4-6** | Anthropic | `ANTHROPIC_API_KEY` | Per use | Claude Code — deploy, monitor, debug |
 | **gemini-2.5-flash** | Google | `GEMINI_API_KEY` | Free tier | Nightly research loop (Phase 5) |
 | **deepseek-chat** | DeepSeek | `DEEPSEEK_API_KEY` | ~$0.01/M | Future bulk hypothesis generation |
 
@@ -158,7 +158,7 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 | Phase | Status | Focus |
 |---|---|---|
 | 0 — Foundation | ✅ Complete | FreqTrade, Telegram, server, N8N cleanup |
-| 1 — FreqAI Brain | ⚠️ Conditional Pass | v16.2 live; bull ALL PASS; bear WR/DD pass; walk-forward is the gate to Phase 10 |
+| 1 — FreqAI Brain | 🔄 In Progress | v17 live (symmetric barriers, LLM layer active); WF #5 running — gate to Phase 10 |
 | 2 — Data Enrichment | ✅ Live | 5 external fetchers + combined_context.json, cron every 15m |
 | 3 — HMM Regime | ✅ Live | 5-regime HMM + regime-aware sizing hooks, cron every 4h |
 | 4 — Obsidian Memory | ✅ Live | CONTEXT auto-write + vault git-commit, cron every 15m |

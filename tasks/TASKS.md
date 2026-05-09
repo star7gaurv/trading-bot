@@ -12,7 +12,7 @@
 | Phase | File | Status | Description |
 |---|---|---|---|
 | 0 | [phase-0-foundation.md](phase-0-foundation.md) | ✅ **5/5 Complete** (2026-04-27) | Fix loose ends, clean up, wire everything together |
-| 1 | [phase-1-freqai-brain.md](phase-1-freqai-brain.md) | 🔄 **In Progress** — v16.2 live, walk-forward running | FreqAI brain — long + short, v16.2 (2-class, regime exits, corr limit, funding guard) |
+| 1 | [phase-1-freqai-brain.md](phase-1-freqai-brain.md) | 🔄 **In Progress** — v17 live, walk-forward #5 running | FreqAI brain — long + short, v17 (symmetric barriers, FinBuddyLLMModel active) |
 | 2 | [phase-2-data-enrichment.md](phase-2-data-enrichment.md) | ✅ **Verified** (2026-05-03) — cron clean, combined_context.json updating | External data fetchers — Fear & Greed, CoinGecko, CryptoPanic, DefiLlama, Google Trends |
 | 3 | [phase-3-hmm-regime.md](phase-3-hmm-regime.md) | ✅ **Verified** (2026-05-03) — regime NEUTRAL, cron clean | 5-regime HMM engine wired into strategy + memory |
 | 4 | [phase-4-obsidian-memory.md](phase-4-obsidian-memory.md) | ✅ **Verified** (2026-05-03) — auto-commits every 15m | Obsidian vault auto-write + git auto-commit |
@@ -27,12 +27,11 @@
 
 ## 🚨 Current Focus (as of 2026-05-09)
 
-**Strategy: v16.2 live** — 2-class LightGBM (time-barrier dropped), regime-aware exits,
-HMM kill-switches, correlation cluster cap (max 2/cluster), funding-rate long guard.
+**Strategy: v17 live** — symmetric barriers k_tp=k_sl=2.0, regime kill-switches (CRASH/BEAR→no longs, BULL/EUPHORIA→no shorts), FinBuddyLLMModel active (LightGBM + LLM confirmation layer, 7 providers).
 
 **Immediate next steps:**
-1. ⏳ Walk-forward OOS validation running — started 2026-05-09 ~09:15 UTC (PID 659785). Check log: `tail -f ~/.finbuddy/logs/walk_forward.log`. Results in `walkforward_results/`.
-2. ⏳ Accumulate clean v16.1/v16.2 trades (trade ID 30+) — first unbiased signals since deployment.
+1. ⏳ Walk-forward #5 (T190609) running — started 2026-05-09 19:06 UTC. First clean v17 OOS run. Check: `tail -f ~/.finbuddy/logs/walk_forward.log`. walkforward_notify.py will Telegram result.
+2. ⏳ Accumulate clean v17 trades — 36 closed, 3 open.
 3. Once walk-forward PASSES (Sharpe > 0.5, WR > 50%, DD < 20%, PF > 1.2) → begin Phase 10 go-live.
 
 **Monitoring (all cron'd):**
@@ -61,10 +60,11 @@ HMM kill-switches, correlation cluster cap (max 2/cluster), funding-rate long gu
 ## Overall Progress
 
 ```
-Phases Complete:     2 / 11 (Phases 0, 6)
+Phases Complete:     3 / 11 (Phases 0, 8, 9)
 Phases In Progress:  1 / 11 (Phase 1)
-Phases Deployed:     5 / 11 (Phases 2, 3, 4, 5, 7 — needs verification)
-Phases Pending:      3 / 11 (Phases 8, 9, 10)
+Phases Live:         5 / 11 (Phases 2, 3, 4, 5, 7)
+Phases Blocked:      1 / 11 (Phase 10 — needs WF PASS or 6-month track record)
+Phases Abandoned:    1 / 11 (Phase 6 — TradingView requires paid plan)
 ```
 
 ---
