@@ -46,68 +46,71 @@ _ENV_CANDIDATES = [
     Path("/freqtrade/user_data/../../../.env"),  # won't exist but safe
 ]
 
-_NVIDIA_URL    = "https://integrate.api.nvidia.com/v1/chat/completions"
+_NVIDIA_URL     = "https://integrate.api.nvidia.com/v1/chat/completions"
 _OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 # (url, key_env_var, model_id)
+# All providers below VERIFIED working as of 2026-05-09.
+# Removed: deepseek-v4-pro/flash (downloadable-only, never respond via API),
+#          kimi-k2-thinking (thinking tokens overflow 30s timeout),
+#          glm-4.5-air:free (null content), llama-8b:free (404 deprecated),
+#          qwen:free (429 provider rate-cap on OpenRouter free tier).
 _PROVIDERS: dict[str, tuple[str, str, str]] = {
-    # ── NVIDIA NIM ──────────────────────────────────────────────────────────
-    # Best for research & analysis (large context, strong instruction following)
-    "nvidia-deepseek-v4-pro":    (_NVIDIA_URL, "NVIDIA_API_KEY", "deepseek-ai/deepseek-v4-pro"),
-    # Faster / lighter DeepSeek for low-latency signal tasks
-    "nvidia-deepseek-v4-flash":  (_NVIDIA_URL, "NVIDIA_API_KEY", "deepseek-ai/deepseek-v4-flash"),
-    # Kimi K2 standard — strong general-purpose model
-    "nvidia-kimi-k2":            (_NVIDIA_URL, "NVIDIA_API_KEY", "moonshotai/kimi-k2-instruct"),
-    # Kimi K2 Thinking — dedicated reasoning / chain-of-thought model
-    "nvidia-kimi-k2-thinking":   (_NVIDIA_URL, "NVIDIA_API_KEY", "moonshotai/kimi-k2-thinking"),
-    # Qwen3 Coder — good at structured JSON output (hypothesis generation)
-    "nvidia-qwen3-coder":        (_NVIDIA_URL, "NVIDIA_API_KEY", "qwen/qwen3-coder-480b-a35b-instruct"),
-    # Mistral Medium — reliable mid-tier general model
-    "nvidia-mistral-medium":     (_NVIDIA_URL, "NVIDIA_API_KEY", "mistralai/mistral-medium-3.5-128b"),
-    # Llama 3.3 70B — proven fallback
-    "nvidia-llama-70b":          (_NVIDIA_URL, "NVIDIA_API_KEY", "meta/llama-3.3-70b-instruct"),
-    # GLM-5.1 — supports enable_thinking, fast
-    "nvidia-glm-5":              (_NVIDIA_URL, "NVIDIA_API_KEY", "z-ai/glm-5.1"),
-    # ── OpenRouter free tier ─────────────────────────────────────────────────
-    "openrouter-glm-free":       (_OPENROUTER_URL, "OPENROUTER_API_KEY", "z-ai/glm-4.5-air:free"),
-    "openrouter-llama-free":     (_OPENROUTER_URL, "OPENROUTER_API_KEY", "meta-llama/llama-3.1-8b-instruct:free"),
+    # ── NVIDIA NIM (verified working) ───────────────────────────────────────
+    "nvidia-kimi-k2":        (_NVIDIA_URL, "NVIDIA_API_KEY", "moonshotai/kimi-k2-instruct"),       # 0.5s
+    "nvidia-mistral-medium": (_NVIDIA_URL, "NVIDIA_API_KEY", "mistralai/mistral-medium-3.5-128b"), # 0.3s fastest
+    "nvidia-llama-70b":      (_NVIDIA_URL, "NVIDIA_API_KEY", "meta/llama-3.3-70b-instruct"),       # 0.4s
+    "nvidia-qwen3-coder":    (_NVIDIA_URL, "NVIDIA_API_KEY", "qwen/qwen3-coder-480b-a35b-instruct"), # ~20s, best JSON
+    # ── OpenRouter free tier (verified working 2026-05-09) ───────────────────
+    "openrouter-gpt-oss-20b":   (_OPENROUTER_URL, "OPENROUTER_API_KEY", "openai/gpt-oss-20b:free"),              # 1.9s
+    "openrouter-gpt-oss-120b":  (_OPENROUTER_URL, "OPENROUTER_API_KEY", "openai/gpt-oss-120b:free"),             # 2.0s best quality
+    "openrouter-nemotron-120b": (_OPENROUTER_URL, "OPENROUTER_API_KEY", "nvidia/nemotron-3-super-120b-a12b:free"), # 3.2s
 }
 
 # Per-task fallback chains — first available provider wins
 _TASK_CHAINS: dict[str, list[str]] = {
-    # Research: needs large context + broad analysis
+    # Research: large context, broad analysis — kimi-k2 strongest general model
     "research": [
-        "nvidia-deepseek-v4-pro",
+        "nvidia-kimi-k2",
+        "openrouter-gpt-oss-120b",
+        "nvidia-mistral-medium",
+        "nvidia-llama-70b",
+
+        "openrouter-gpt-oss-20b",
+        "openrouter-nemotron-120b",
+
+    ],
+    # Reasoning: structured JSON output — qwen3-coder first (best at JSON despite slow)
+    "reasoning": [
+        "nvidia-qwen3-coder",
+        "nvidia-kimi-k2",
+        "openrouter-gpt-oss-120b",
+        "nvidia-llama-70b",
+
+        "openrouter-gpt-oss-20b",
+        "openrouter-nemotron-120b",
+
+    ],
+    # Signal: speed critical — mistral fastest (0.3s), then llama (0.4s)
+    "signal": [
+        "nvidia-mistral-medium",
+        "nvidia-llama-70b",
+        "nvidia-kimi-k2",
+        "openrouter-gpt-oss-20b",
+
+
+        "openrouter-gpt-oss-120b",
+        "openrouter-nemotron-120b",
+    ],
+    "general": [
         "nvidia-kimi-k2",
         "nvidia-mistral-medium",
         "nvidia-llama-70b",
-        "openrouter-glm-free",
-        "openrouter-llama-free",
-    ],
-    # Reasoning: needs structured thinking + JSON output for hypothesis gen
-    "reasoning": [
-        "nvidia-kimi-k2-thinking",
-        "nvidia-deepseek-v4-pro",
-        "nvidia-qwen3-coder",
-        "nvidia-llama-70b",
-        "openrouter-glm-free",
-        "openrouter-llama-free",
-    ],
-    # Signal: needs speed + yes/no decision quality
-    "signal": [
-        "nvidia-deepseek-v4-flash",
-        "nvidia-glm-5",
-        "nvidia-kimi-k2",
-        "nvidia-llama-70b",
-        "openrouter-glm-free",
-        "openrouter-llama-free",
-    ],
-    "general": [
-        "nvidia-deepseek-v4-pro",
-        "nvidia-llama-70b",
-        "nvidia-glm-5",
-        "openrouter-glm-free",
-        "openrouter-llama-free",
+        "openrouter-gpt-oss-20b",
+
+
+        "openrouter-gpt-oss-120b",
+        "openrouter-nemotron-120b",
     ],
 }
 
