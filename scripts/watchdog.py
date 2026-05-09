@@ -131,16 +131,17 @@ def latest_log_match(pattern: str, since_min: int, use_file_fallback: bool = Fal
     """Return timestamp of most recent log line matching pattern, or None.
 
     Primary source: docker logs (current container buffer).
-    Fallback (use_file_fallback=True): if docker logs yields no match, also
-    scan the on-disk log file.  This guards against Docker's log buffer being
-    evicted by error-message spam (the root cause of the 2026-05-09 false alert).
+    Fallback (use_file_fallback=True): if docker logs yields no match OR times out,
+    scan the on-disk log file. Handles two known failure modes:
+    1. Docker buffer evicted by error-message spam (training check).
+    2. Docker daemon slow during docker-compose run (heartbeat check, 2026-05-09).
     """
     cutoff = now_utc() - timedelta(minutes=since_min)
     docker_result = None
     try:
         out = subprocess.run(
             ["docker", "logs", CONTAINER, "--since", f"{since_min}m"],
-            capture_output=True, text=True, timeout=15,
+            capture_output=True, text=True, timeout=30,  # raised from 15s — docker slow during compose run
         )
         if out.returncode == 0:
             haystack = (out.stdout + "\n" + out.stderr).splitlines()
@@ -233,7 +234,10 @@ def main() -> int:
                           f"✅ FinBuddy training resumed — last event {int(age.total_seconds()/60)}m ago.")
 
     # 3. recent heartbeat
-    last_hb = latest_log_match("Bot heartbeat", since_min=HEARTBEAT_MAX_AGE_MIN + 2)
+    # use_file_fallback=True: docker daemon can be slow when docker-compose run
+    # spawns a new container (walk-forward folds), causing docker logs to time out
+    # and generate a false "heartbeat lost" alert (seen 2026-05-09).
+    last_hb = latest_log_match("Bot heartbeat", since_min=HEARTBEAT_MAX_AGE_MIN + 2, use_file_fallback=True)
     if last_hb is None:
         maybe_alert(state, "heartbeat",
                     f"🚨 *FinBuddy heartbeat lost* — no `Bot heartbeat` line in last {HEARTBEAT_MAX_AGE_MIN}m. "
