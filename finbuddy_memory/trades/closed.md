@@ -32,3 +32,4 @@
 | 2026-04-27 15:18:51 | BTC/USDT | LONG | 14h18m | -3.21% | -6.43 | stop_loss | NEUTRAL | force_entry |
 | 2026-04-30 18:09:56 | BTC/USDT | LONG | 1d1h | +0.46% | +0.92 | force_exit | NEUTRAL | force_entry |
 | 2026-05-09 01:13:33 | DOGE/USDT:USDT | SHORT | 4h13m | -1.23% | -1.84 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v11_short |
+| 2026-05-09 01:50:38 | BCH/USDT:USDT | SHORT | 4h50m | -0.67% | -1.00 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v11_short |
