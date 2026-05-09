@@ -1,59 +1,133 @@
 #!/usr/bin/env python3
-"""Simplified reasoning agent — no DeepSeek API required."""
+"""Reasoning agent — generates de-duplicated strategy hypotheses from research text.
+Uses the central llm_client for AI hypothesis generation (task="reasoning").
+Hypothesis IDs always include a date suffix so they are never duplicates across runs.
+"""
 import json
-from datetime import datetime
+import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
-ROOT = Path("/home/ubuntu/var/www/html/trade")
+ROOT     = Path("/home/ubuntu/var/www/html/trade")
 REGISTRY = ROOT / "strategies/registry.json"
 
-def run_reasoning(research_text):
-    """Generate strategy specs from research."""
-    
-    # Load or create registry
-    try:
-        with open(REGISTRY) as f:
-            registry = json.load(f)
-    except Exception:
-        registry = {"strategies": []}
-    
-    # Simple rule-based strategy generation
-    hypotheses = [
-        {
-            "strategy_id": "triple_barrier_mean_reversion_v1",
-            "hypothesis": "Use López de Prado triple-barrier labels with asymmetric TP/SL to catch oversold bounces",
+# Import central LLM client (one directory up from karpathy/)
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from llm_client import call_llm
+
+
+def _rule_based_hypotheses(research_text: str, today: str) -> list:
+    """Generate context-driven hypotheses with date-unique IDs."""
+    text_lower = research_text.lower()
+    suffix = today.replace("-", "")
+    hypotheses = []
+
+    if "fear" in text_lower and ("extreme" in text_lower or "fg=" in text_lower):
+        hypotheses.append({
+            "strategy_id": f"fear_greed_contrarian_{suffix}",
+            "hypothesis": "Extreme fear reading is historically a mean-reversion long signal; test longs on 15m oversold with tight 1×ATR stop.",
             "timeframe": "15m",
-            "indicators": ["ATR_14", "RSI_14", "EMA_50"],
-            "entry_long": "RSI < 40 AND close > EMA50 AND triple_barrier_label_proba > 0.55",
-            "entry_short": "RSI > 60 AND close < EMA50 AND macro_regime != BULL",
-            "exit_rule": "triple_barrier hit or time barrier (12 candles)",
-            "regime_filter": ["BULL", "NEUTRAL"],
-            "proposed_by": "reasoning_agent"
-        },
-        {
-            "strategy_id": "btc_dominance_momentum_v1",
-            "hypothesis": "When BTC dominance breaks 20d SMA upside, rotate from alts into BTC; hedge alts with tight stops",
-            "timeframe": "15m",
-            "indicators": ["BTC_DOM_20_SMA", "ATR_14"],
-            "entry_long": "BTC_DOM > BTC_DOM_20_SMA AND market_cap_change_24h > 1%",
-            "entry_short": "BTC_DOM break below 20d AND fear_greed < 40",
-            "exit_rule": "opposite SMA break or 2×ATR stop",
+            "indicators": ["RSI_14", "ATR_14", "EMA_20"],
+            "entry_long": "fear_greed < 30 AND RSI < 28 AND close > EMA_20",
+            "entry_short": "fear_greed > 75 AND RSI > 72 AND close < EMA_20",
+            "exit_rule": "RSI mean-reverts to 50 or 1×ATR stop",
+            "regime_filter": ["NEUTRAL", "BEAR"],
+        })
+
+    if "btc dominance" in text_lower and ("elevated" in text_lower or "high" in text_lower):
+        hypotheses.append({
+            "strategy_id": f"btc_dom_threshold_adjust_{suffix}",
+            "hypothesis": "During high BTC dominance periods, raise ml_threshold to 0.65 on alt pairs to filter noise-driven signals.",
+            "timeframe": "1h",
+            "indicators": ["BTC_DOM_SMA20", "ml_pred_proba"],
+            "entry_long": "ml_pred_proba_long > 0.65 AND BTC_DOM < BTC_DOM_SMA20",
+            "entry_short": "ml_pred_proba_short > 0.65 AND BTC_DOM > BTC_DOM_SMA20",
+            "exit_rule": "exit_signal or 6h time_limit",
             "regime_filter": ["NEUTRAL", "BULL"],
-            "proposed_by": "reasoning_agent"
-        }
-    ]
-    
-    # Add to registry
-    for h in hypotheses:
-        h["status"] = "in_development"
-        h["proposed_at"] = datetime.utcnow().strftime("%Y-%m-%d")
-        registry["strategies"].append(h)
-    
-    with open(REGISTRY, "w") as f:
-        json.dump(registry, f, indent=2)
-    
-    print(f"Added {len(hypotheses)} hypotheses to registry")
+        })
+
+    if "neutral" in text_lower and "flat" in text_lower:
+        hypotheses.append({
+            "strategy_id": f"range_time_limit_{suffix}",
+            "hypothesis": "Low volatility + NEUTRAL regime → shorten time_limit to 4 candles to avoid drift losing in range-bound markets.",
+            "timeframe": "1h",
+            "indicators": ["ATR_14", "BB_width_20"],
+            "entry_long": "ml_pred_proba_long > 0.60 AND ATR_14 < ATR_14_SMA50",
+            "entry_short": "ml_pred_proba_short > 0.60 AND ATR_14 < ATR_14_SMA50",
+            "exit_rule": "exit_signal or 4h time_limit",
+            "regime_filter": ["NEUTRAL"],
+        })
+
+    if not hypotheses:
+        hypotheses.append({
+            "strategy_id": f"stop_loss_audit_{suffix}",
+            "hypothesis": "Hard stop_loss exits drive 15-50% of trades at 0% WR; test raising ml_threshold to 0.65 to reduce false entries that immediately hit the stop.",
+            "timeframe": "1h",
+            "indicators": ["ml_pred_proba_long", "ml_pred_proba_short"],
+            "entry_long": "ml_pred_proba_long > 0.65",
+            "entry_short": "ml_pred_proba_short > 0.65",
+            "exit_rule": "exit_signal or custom_stoploss",
+            "regime_filter": ["NEUTRAL", "BULL", "BEAR"],
+        })
+
     return hypotheses
 
+
+def _load_registry() -> dict:
+    try:
+        with open(REGISTRY) as f:
+            return json.load(f)
+    except Exception:
+        return {"strategies": []}
+
+
+def run_reasoning(research_text: str) -> list:
+    registry = _load_registry()
+    existing = {s["strategy_id"] for s in registry.get("strategies", [])}
+    today    = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    suffix   = today.replace("-", "")
+
+    system_prompt = (
+        "You are FinBuddy's strategy designer for a FreqAI LightGBM futures bot (long+short, 1h TF, 25 pairs). "
+        "Based on the research text, propose exactly 2 NEW trading hypotheses. "
+        "Reply ONLY with a JSON array of objects, each with: "
+        "strategy_id (must end with _" + suffix + " and not be in this list: " + json.dumps(sorted(existing)) + "), "
+        "hypothesis, timeframe, indicators (list), entry_long, entry_short, exit_rule, regime_filter (list)."
+    )
+
+    raw = call_llm(research_text, system=system_prompt, task="reasoning", max_tokens=700)
+
+    hypotheses = []
+    if raw:
+        try:
+            clean = raw.strip()
+            if clean.startswith("```"):
+                clean = "\n".join(clean.split("\n")[1:]).rsplit("```", 1)[0]
+            parsed = json.loads(clean)
+            if isinstance(parsed, list):
+                hypotheses = parsed
+        except Exception as e:
+            print(f"[reasoning] JSON parse failed ({e}), using rule-based fallback")
+
+    if not hypotheses:
+        hypotheses = _rule_based_hypotheses(research_text, today)
+
+    # Deduplicate: never add an id that's already in the registry
+    new_hypotheses = [h for h in hypotheses if h.get("strategy_id") not in existing]
+
+    for h in new_hypotheses:
+        h["status"]      = "in_development"
+        h["proposed_at"] = today
+        h["proposed_by"] = "reasoning_agent"
+        registry["strategies"].append(h)
+
+    with open(REGISTRY, "w") as f:
+        json.dump(registry, f, indent=2)
+
+    skipped = len(hypotheses) - len(new_hypotheses)
+    print(f"Added {len(new_hypotheses)} hypotheses (skipped {skipped} duplicates)")
+    return new_hypotheses
+
+
 if __name__ == "__main__":
-    run_reasoning("")
+    run_reasoning("test")

@@ -115,9 +115,9 @@ PATCH_RULES = {
         r"(^    stoploss\s*=\s*)(?:-[0-9.]+)",
         re.MULTILINE,
     ),
-    # Both exit thresholds (0.45 default)
+    # Both exit thresholds (0.65 default in v13)
     "ml_exit_threshold": (
-        r"(proba_long\s*>\s*)0\.45|(proba_short\s*>\s*)0\.45",
+        r"(proba_long\s*>\s*)0\.65|(proba_short\s*>\s*)0\.65",
         0,
     ),
     # ATR ratio gate (default 0.003)

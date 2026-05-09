@@ -42,45 +42,122 @@
       "queued_at": "2026-05-03"
     },
     {
-      "strategy_id": "triple_barrier_mean_reversion_v1",
-      "hypothesis": "Use L\u00f3pez de Prado triple-barrier labels with asymmetric TP/SL to catch oversold bounces",
+      "strategy_id": "fear_greed_contrarian_20260509",
+      "hypothesis": "Extreme fear reading is historically a mean-reversion long signal; test longs on 15m oversold with tight 1\u00d7ATR stop.",
       "timeframe": "15m",
       "indicators": [
-        "ATR_14",
         "RSI_14",
-        "EMA_50"
+        "ATR_14",
+        "EMA_20"
       ],
-      "entry_long": "RSI < 40 AND close > EMA50 AND triple_barrier_label_proba > 0.55",
-      "entry_short": "RSI > 60 AND close < EMA50 AND macro_regime != BULL",
-      "exit_rule": "triple_barrier hit or time barrier (12 candles)",
+      "entry_long": "fear_greed < 30 AND RSI < 28 AND close > EMA_20",
+      "entry_short": "fear_greed > 75 AND RSI > 72 AND close < EMA_20",
+      "exit_rule": "RSI mean-reverts to 50 or 1\u00d7ATR stop",
       "regime_filter": [
-        "BULL",
-        "NEUTRAL"
+        "NEUTRAL",
+        "BEAR"
       ],
-      "proposed_by": "reasoning_agent",
       "status": "backtest_queued",
-      "proposed_at": "2026-05-04",
+      "proposed_at": "2026-05-09",
+      "proposed_by": "reasoning_agent",
       "queued_at": "2026-05-03"
     },
     {
-      "strategy_id": "btc_dominance_momentum_v1",
-      "hypothesis": "When BTC dominance breaks 20d SMA upside, rotate from alts into BTC; hedge alts with tight stops",
-      "timeframe": "15m",
+      "strategy_id": "btc_dom_threshold_adjust_20260509",
+      "hypothesis": "During high BTC dominance periods, raise ml_threshold to 0.65 on alt pairs to filter noise-driven signals.",
+      "timeframe": "1h",
       "indicators": [
-        "BTC_DOM_20_SMA",
-        "ATR_14"
+        "BTC_DOM_SMA20",
+        "ml_pred_proba"
       ],
-      "entry_long": "BTC_DOM > BTC_DOM_20_SMA AND market_cap_change_24h > 1%",
-      "entry_short": "BTC_DOM break below 20d AND fear_greed < 40",
-      "exit_rule": "opposite SMA break or 2\u00d7ATR stop",
+      "entry_long": "ml_pred_proba_long > 0.65 AND BTC_DOM < BTC_DOM_SMA20",
+      "entry_short": "ml_pred_proba_short > 0.65 AND BTC_DOM > BTC_DOM_SMA20",
+      "exit_rule": "exit_signal or 6h time_limit",
       "regime_filter": [
         "NEUTRAL",
         "BULL"
       ],
-      "proposed_by": "reasoning_agent",
       "status": "backtest_queued",
-      "proposed_at": "2026-05-04",
+      "proposed_at": "2026-05-09",
+      "proposed_by": "reasoning_agent",
       "queued_at": "2026-05-03"
+    },
+    {
+      "strategy_id": "range_time_limit_20260509",
+      "hypothesis": "Low volatility + NEUTRAL regime \u2192 shorten time_limit to 4 candles to avoid drift losing in range-bound markets.",
+      "timeframe": "1h",
+      "indicators": [
+        "ATR_14",
+        "BB_width_20"
+      ],
+      "entry_long": "ml_pred_proba_long > 0.60 AND ATR_14 < ATR_14_SMA50",
+      "entry_short": "ml_pred_proba_short > 0.60 AND ATR_14 < ATR_14_SMA50",
+      "exit_rule": "exit_signal or 4h time_limit",
+      "regime_filter": [
+        "NEUTRAL"
+      ],
+      "status": "backtest_queued",
+      "proposed_at": "2026-05-09",
+      "proposed_by": "reasoning_agent",
+      "queued_at": "2026-05-03"
+    },
+    {
+      "strategy_id": "stop_loss_audit_20260509",
+      "hypothesis": "Hard stop_loss exits drive 15-50% of trades at 0% WR; test raising ml_threshold to 0.65 to reduce false entries that immediately hit the stop.",
+      "timeframe": "1h",
+      "indicators": [
+        "ml_pred_proba_long",
+        "ml_pred_proba_short"
+      ],
+      "entry_long": "ml_pred_proba_long > 0.65",
+      "entry_short": "ml_pred_proba_short > 0.65",
+      "exit_rule": "exit_signal or custom_stoploss",
+      "regime_filter": [
+        "NEUTRAL",
+        "BULL",
+        "BEAR"
+      ],
+      "status": "in_development",
+      "proposed_at": "2026-05-09",
+      "proposed_by": "reasoning_agent"
+    },
+    {
+      "strategy_id": "volatility_breakout_20260509",
+      "hypothesis": "Price breakouts from volatility contraction patterns predict trend continuation with high probability",
+      "timeframe": "1h",
+      "indicators": [
+        "ATR",
+        "BB",
+        "RSI"
+      ],
+      "entry_long": "Close > BB upper band AND RSI > 50 AND ATR increasing",
+      "entry_short": "Close < BB lower band AND RSI < 50 AND ATR increasing",
+      "exit_rule": "Take profit at 2x ATR distance or stop loss at 1.5x ATR distance",
+      "regime_filter": [
+        "trending"
+      ],
+      "status": "in_development",
+      "proposed_at": "2026-05-09",
+      "proposed_by": "reasoning_agent"
+    },
+    {
+      "strategy_id": "rsi_divergence_20260509",
+      "hypothesis": "Multi-timeframe RSI divergence patterns combined with volume confirmation predict reversals",
+      "timeframe": "1h",
+      "indicators": [
+        "RSI",
+        "Volume",
+        "MACD"
+      ],
+      "entry_long": "RSI divergence bullish AND Volume > 1.5x average AND MACD histogram positive",
+      "entry_short": "RSI divergence bearish AND Volume > 1.5x average AND MACD histogram negative",
+      "exit_rule": "RSI crossing midline or opposite divergence pattern appears",
+      "regime_filter": [
+        "mean_reverting"
+      ],
+      "status": "in_development",
+      "proposed_at": "2026-05-09",
+      "proposed_by": "reasoning_agent"
     }
   ]
 }

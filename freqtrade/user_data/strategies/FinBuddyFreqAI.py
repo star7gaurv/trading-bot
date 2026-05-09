@@ -4,8 +4,10 @@ from functools import reduce
 from datetime import datetime
 from typing import Optional
 
+import json
 import numpy as np
 import pandas as pd
+from pathlib import Path
 from pandas import DataFrame
 from freqtrade.strategy import IStrategy, stoploss_from_open
 from freqtrade.persistence import Trade
@@ -31,67 +33,22 @@ logger = logging.getLogger(__name__)
 
 class FinBuddyFreqAI(IStrategy):
     """
-    FinBuddy FreqAI Strategy v12 — Hold Class + Aligned Stops + Multi-TF (2026-05-04)
+    FinBuddy FreqAI Strategy v17 — 1h TF, Futures Long/Short, Symmetric Barriers (2026-05-09)
 
-    Round 4 (v11) verdict: FAIL. 90/90 combos negative Sharpe (best -5.43).
-    Root causes (line-cited in finbuddy_memory/research/v12_strategy_plan.md):
-      Bug #1 — label k_sl=1.0 vs custom_stoploss -2.0×ATR (geometry mismatch)
-      Bug #2 — HOLD class collapsed to NaN (model cannot abstain)
-      Bug #3 — FreqAI saw only 15m features (blind to 1h/4h context)
-      Bug #4 — trail at +1.5×ATR vs initial -2.0×ATR (R:R = 0.75:1, structurally negative)
-
-    v12 fixes (all four, in one pass):
-      #1+#4 (geometry): k_sl=1.5, initial stop -1.5×ATR, trail +2.0×ATR.
-                        Realized R:R = 1.33:1, positive expected value at WR>50%.
-      #2 (hold class):  Triple-barrier label keeps "H" for time-barrier candles.
-                        Entry rules require proba_H < 0.4 to fire.
-      #3 (multi-TF):    config.json include_timeframes = ["15m","1h","4h"].
-
-    Walk-forward verdict on v10: FAILED OOS. 4/4 fail criteria.
-      - Avg monthly Sharpe -1.88 (target > 0), 22% months positive (target ≥50%)
-      - P&L -11.58%, concentrated in one month (2025-02)
-      - Root cause: path-blind label. mean(next 3 closes) ignores whether the
-        path to that mean crosses the stoploss. Five rounds of stop tuning proved
-        we were treating the symptom. The disease is in set_freqai_targets().
-
-    v11 Fix — Triple-Barrier Labeling (López de Prado, AFML ch.3):
-      For each candle t, look forward label_period_candles (default 12 = 3h on 15m):
-        - TP barrier : close[t] * (1 + k_tp * atr_pct[t])   → label +1
-        - SL barrier : close[t] * (1 - k_sl * atr_pct[t])   → label -1
-        - Time barrier: window expires before either          → label by sign of return
-      Starting params: k_tp=2.0, k_sl=1.0, label_period_candles=12
-
-      The model now learns to REFUSE setups whose path is bad even when the
-      mean is okay. This is the exact pathology the 79/62 trailing chops exposed.
-
-    v11 model change — LightGBMClassifier:
-      Output: class probabilities {-1, 0, +1}
-      Entry rule: &-s_label_proba_+1 > 0.55 for long,
-                  &-s_label_proba_-1 > 0.55 for short
-      (FreqAI classifier outputs one column per class:
-       &-s_label_proba_-1, &-s_label_proba_0, &-s_label_proba_+1)
-
-    v11 keeps from v10:
-      - stoploss_from_open() anchored stops (confirmed working)
-      - trailing_stop = False (framework trailing OFF)
-      - BTC 4h macro short-gate
-      - ATR volatility filter on entry
-      - All feature engineering unchanged
+    2-class LightGBM classifier (L/S). Triple-barrier labeling with k_tp=k_sl=2.0
+    (symmetric → P(L)=50% base rate, degenerate models auto-filtered at 0.60 threshold).
+    Regime kill-switches: CRASH/BEAR block longs, BULL/EUPHORIA block shorts.
+    custom_stoploss: 2.0×ATR initial, trail locks at +2.0×ATR once profit > 1×ATR.
     """
     INTERFACE_VERSION = 3
 
-    minimal_roi = {
-        "0": 0.10,
-        "60": 0.06,
-        "120": 0.04,
-        "240": 0.02
-    }
+    minimal_roi = {"0": 0.99}
 
     stoploss = -0.08
     trailing_stop = False
     use_custom_stoploss = True
 
-    timeframe = "15m"
+    timeframe = "1h"
 
     can_short = True
     startup_candle_count = 400
@@ -100,7 +57,7 @@ class FinBuddyFreqAI(IStrategy):
     # Long  entries require  BTC_1d_close > BTC_1d_MA200 (macro bull).
     # Short entries require  BTC_1d_close < BTC_1d_MA200 (macro bear).
     # Toggle via env BTC_MA200_GATE=0 to disable for ablation testing.
-    use_btc_ma200_gate = (__import__("os").environ.get("BTC_MA200_GATE", "1") == "1")
+    use_btc_ma200_gate = (__import__("os").environ.get("BTC_MA200_GATE", "0") == "1")
 
     def informative_pairs(self):
         pairs = self.dp.current_whitelist()
@@ -111,7 +68,7 @@ class FinBuddyFreqAI(IStrategy):
         return informative
 
     # ------------------------------------------------------------------ #
-    # ATR-adaptive custom stoploss (v10 — unchanged, confirmed working)  #
+    # ATR-adaptive custom stoploss (v17 — symmetric 2.0×ATR barriers)   #
     # ------------------------------------------------------------------ #
 
     def custom_stoploss(
@@ -125,11 +82,10 @@ class FinBuddyFreqAI(IStrategy):
         **kwargs,
     ) -> Optional[float]:
         """
-        v12 ATR-adaptive stoploss — geometry rebalanced for positive R:R.
-        Initial: 1.5×ATR below entry (anchored via stoploss_from_open).
+        v17 ATR-adaptive stoploss — symmetric barriers (k_tp=k_sl=2.0).
+        Initial: 2.0×ATR below entry (matches k_sl=2.0 in set_freqai_targets).
         Trailing: once profit > 1×ATR, lock at +2.0×ATR above entry.
-        Realized R:R = 2.0/1.5 ≈ 1.33:1 (was 1.5/2.0 = 0.75:1 in v11).
-        k_sl in label is set to 1.5 to match this initial stop exactly.
+        Symmetric R:R = 1:1; any WR > 50% is genuine alpha (no base-rate bias).
         Returns None on missing data (no reset of existing stop).
         """
         dataframe, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
@@ -156,13 +112,22 @@ class FinBuddyFreqAI(IStrategy):
             return None
 
         initial_stop = stoploss_from_open(
-            -1.5 * atr_pct,
+            -2.0 * atr_pct,
             current_profit,
             is_short=trade.is_short,
             leverage=trade.leverage,
         )
         if initial_stop and initial_stop > 0:
             return initial_stop
+        return None
+
+    def custom_exit(self, pair: str, trade: "Trade", current_time: datetime,
+                    current_rate: float, current_profit: float, **kwargs):
+        # Time-limit exit: close trade after 24 candles (24h on 1h TF)
+        # 4× label_period_candles=6 — gives signal time to play out while capping dead positions
+        candles_open = int((current_time - trade.open_date_utc).total_seconds() / 3600)
+        if candles_open >= 24:
+            return "time_limit_exit"
         return None
 
     # ------------------------------------------------------------------ #
@@ -215,25 +180,104 @@ class FinBuddyFreqAI(IStrategy):
         logger.info(f"[RiskEngine] stake={result} regime={regime} mult={multiplier}")
         return max(result, min_stake or 0)
 
-    def _get_tradingview_signal(self):
-        """Load latest TradingView webhook signal."""
-        import json, os
-        from datetime import datetime, timezone
-        signal_file = "/home/ubuntu/var/www/html/trade/freqtrade/user_data/data/external/tradingview_signals.json"
+    # ------------------------------------------------------------------ #
+    # Correlation-aware position gate (added v16.2)                       #
+    # ------------------------------------------------------------------ #
+    # Pairs are grouped into clusters that move together (high BTC beta,
+    # L2 ecosystem, etc.).  At most MAX_CLUSTER_POSITIONS open trades are
+    # allowed from any single cluster to avoid over-concentration when e.g.
+    # BTC sells off and all MEGA_CAP longs lose simultaneously.
+    # ------------------------------------------------------------------ #
+
+    _PAIR_CLUSTER: dict[str, str] = {
+        "BTC/USDT:USDT":  "MEGA_CAP",
+        "ETH/USDT:USDT":  "MEGA_CAP",
+        "SOL/USDT:USDT":  "MEGA_CAP",
+        "XRP/USDT:USDT":  "MEGA_CAP",
+        "ADA/USDT:USDT":  "MEGA_CAP",
+        "AVAX/USDT:USDT": "MEGA_CAP",
+        "DOT/USDT:USDT":  "MEGA_CAP",
+        "LINK/USDT:USDT": "MEGA_CAP",
+        "ATOM/USDT:USDT": "MEGA_CAP",
+        "NEAR/USDT:USDT": "MEGA_CAP",
+        "ARB/USDT:USDT":  "L2",
+        "OP/USDT:USDT":   "L2",
+        "APT/USDT:USDT":  "L2",
+        "SUI/USDT:USDT":  "L2",
+        # Everything else → "ALTCOIN" (independent enough)
+    }
+    _MAX_CLUSTER_POSITIONS = 2  # hard cap per cluster
+
+    # Funding-rate long guard (added v16.2)
+    # When BTC perpetual funding rate is very high, longs are overcrowded and
+    # expensive. Block new longs above threshold to avoid entering bubble tops.
+    _FUNDING_LONG_BLOCK_THRESHOLD = 0.0005   # 0.05% per 8h (extreme bullish)
+    # Use container-writable path; falls back gracefully if dir missing
+    _FUNDING_CACHE_FILE = Path("/freqtrade/user_data/data/external/funding_rate_cache.json")
+    _FUNDING_CACHE_TTL_MIN = 15
+
+    def _get_btc_funding_rate(self) -> float | None:
+        """Return latest BTC perpetual funding rate with 15-min on-disk cache."""
+        import time
+        import urllib.request
+        cache = self._FUNDING_CACHE_FILE
         try:
-            with open(signal_file) as f:
-                signals = json.load(f)
-            if not signals:
-                return {"tv_supertrend_bullish": 0, "tv_signal_age_minutes": 999}
-            latest = signals[-1]
-            ts = datetime.fromisoformat(latest["timestamp"].replace("Z", "+00:00"))
-            age = (datetime.now(timezone.utc) - ts).seconds / 60
-            return {
-                "tv_supertrend_bullish": 1 if latest.get("signal", "") == "BUY" else 0,
-                "tv_signal_age_minutes": round(age, 1)
-            }
+            if cache.exists():
+                cached = json.loads(cache.read_text())
+                if (time.time() - cached.get("ts", 0)) / 60 < self._FUNDING_CACHE_TTL_MIN:
+                    return cached.get("funding_rate")
         except Exception:
-            return {"tv_supertrend_bullish": 0, "tv_signal_age_minutes": 999}
+            pass
+        try:
+            url = "https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT"
+            with urllib.request.urlopen(url, timeout=5) as r:
+                data = json.loads(r.read().decode())
+            rate = float(data.get("lastFundingRate", 0))
+            cache.parent.mkdir(parents=True, exist_ok=True)
+            cache.write_text(json.dumps({"funding_rate": rate, "ts": time.time()}))
+            return rate
+        except Exception as e:
+            logger.warning(f"[FundingGuard] fetch failed: {e}")
+            return None
+
+    def confirm_trade_entry(
+        self,
+        pair: str,
+        order_type: str,
+        amount: float,
+        rate: float,
+        time_in_force: str,
+        current_time: datetime,
+        entry_tag: str | None,
+        side: str,
+        **kwargs,
+    ) -> bool:
+        # 1. Funding-rate long guard
+        if side == "long":
+            funding = self._get_btc_funding_rate()
+            if funding is not None and funding > self._FUNDING_LONG_BLOCK_THRESHOLD:
+                logger.info(
+                    f"[FundingGuard] Blocking long on {pair}: "
+                    f"BTC funding={funding:.4%} > {self._FUNDING_LONG_BLOCK_THRESHOLD:.4%}"
+                )
+                return False
+
+        # 2. Correlation cluster cap
+        cluster = self._PAIR_CLUSTER.get(pair, "ALTCOIN")
+        if cluster != "ALTCOIN":
+            open_trades = Trade.get_trades_proxy(is_open=True)
+            cluster_open = sum(
+                1 for t in open_trades
+                if self._PAIR_CLUSTER.get(t.pair, "ALTCOIN") == cluster
+            )
+            if cluster_open >= self._MAX_CLUSTER_POSITIONS:
+                logger.info(
+                    f"[CorrLimit] Blocking {pair} entry: cluster={cluster} "
+                    f"already has {cluster_open}/{self._MAX_CLUSTER_POSITIONS} open trades."
+                )
+                return False
+
+        return True
 
     # ------------------------------------------------------------------ #
     # FreqAI feature engineering (v10 — unchanged)                       #
@@ -296,39 +340,48 @@ class FinBuddyFreqAI(IStrategy):
         return dataframe
 
     # ------------------------------------------------------------------ #
-    # v12 — Triple-barrier label with HOLD class                          #
+    # v17 — Triple-barrier labeling (symmetric k_tp=k_sl=2.0, 2-class)  #
     # ------------------------------------------------------------------ #
 
     def set_freqai_targets(
         self, dataframe: DataFrame, metadata: dict, **kwargs
     ) -> DataFrame:
         """
-        Triple-barrier labeling (López de Prado, AFML ch.3) — v12.
+        Triple-barrier labeling (López de Prado, AFML ch.3) — v17.
 
-        For each candle t (using 15m data):
+        For each candle t (using 1h data):
           - atr_pct = ATR_14[t] / close[t], clamped to [0.003, 0.025]
           - TP at close[t] * (1 + k_tp * atr_pct)   → label "L"
           - SL at close[t] * (1 - k_sl * atr_pct)   → label "S"
-          - Neither hit within label_period candles  → label "H" (HOLD)
+          - Neither hit within label_period candles  → dropped (label=None)
 
-        v12 params:
+        v17 params:
           k_tp = 2.0   (take-profit 2×ATR above entry)
-          k_sl = 1.5   (stop-loss 1.5×ATR below entry — matches custom_stoploss)
-          label_period_candles = 12  (3 hours on 15m)
-
-        v12 changes from v11:
-          1. k_sl 1.0 → 1.5 to match custom_stoploss initial stop.
-          2. HOLD ("H") class now retained instead of dropped — model can
-             abstain on candles whose path resolves neither TP nor SL within
-             the time window. Entry rules require proba_H < 0.4 to fire.
+          k_sl = 2.0   (stop-loss 2×ATR below entry — symmetric, P(L)=50% base rate)
+          label_period_candles = 6  (6 hours on 1h TF)
 
         FreqAI classifier emits one proba column per class:
-          "L" → P(TP hit first), "S" → P(SL hit first), "H" → P(no resolution).
+          "L" → P(TP hit first), "S" → P(SL hit first).
 
         NOTE: last label_period rows → NaN (FreqAI drops automatically).
+
+        v16 — HOLD class removed (2-class model: L / S only).
+        Root cause of KeyError: with label_period_candles=6, TP/SL barriers are
+        nearly always hit within 6 candles in volatile crypto. HOLD samples are
+        so rare that LightGBM trains a 2-class model, but FreqAI data_drawer
+        expects 3 columns ("H","L","S") and crashes with KeyError('H').
+
+        v16.1 — time-barrier samples are DROPPED (label=None), not forced to "S".
+        Earlier draft mapped time-barrier → "S" as a "conservative tie-break",
+        but that bakes a systematic short bias into training: sideways-market
+        candles get labeled as bearish. The clean fix is to train only on
+        RESOLVED candles (TP hit → L, SL hit → S) and let FreqAI drop the
+        unresolved ones automatically (None labels are dropped before fit).
         """
+        self.freqai.class_names = ["L", "S"]
+
         k_tp = 2.0
-        k_sl = 1.5
+        k_sl = 2.0  # v17: symmetric barriers — P(L)=50% base rate, degenerate models filtered at 0.60 threshold
         label_period = self.freqai_info["feature_parameters"]["label_period_candles"]
 
         close = dataframe["close"].values
@@ -337,6 +390,7 @@ class FinBuddyFreqAI(IStrategy):
         atr_raw = ta.ATR(dataframe, timeperiod=14).values
 
         n = len(close)
+        # 0 = unresolved (time barrier). Set to ±1 only when TP/SL actually hits.
         labels = np.zeros(n, dtype=np.float32)
 
         for t in range(n - label_period):
@@ -347,29 +401,24 @@ class FinBuddyFreqAI(IStrategy):
             tp_price = c0 * (1.0 + k_tp * atr_pct)
             sl_price = c0 * (1.0 - k_sl * atr_pct)
 
-            label = 0  # default: time barrier (HOLD)
             for i in range(t + 1, t + label_period + 1):
                 if high[i] >= tp_price:
-                    label = 1
+                    labels[t] = 1
                     break
                 if low[i] <= sl_price:
-                    label = -1
+                    labels[t] = -1
                     break
-            # No else clause — time-barrier candles stay as HOLD (0).
+            # else: labels[t] stays 0 (unresolved → drop in encoding step)
 
-            labels[t] = label
-
-        # v12 — three-class encoding: L/S/H. HOLD is no longer dropped.
-        # The model now learns to abstain when neither TP nor SL hits in the
-        # label window. Entry rules require proba_H < 0.4 to fire (so the
-        # model must be confident there IS a directional resolution).
-        labels_str = np.where(
-            labels == 1.0, "L",
-            np.where(labels == -1.0, "S", "H")
-        )
-        # Tail of length label_period → NaN (FreqAI drops automatically)
-        labels_str[n - label_period:] = None
-        dataframe["&-s_label"] = pd.Series(labels_str, index=dataframe.index, dtype=object)
+        # 2-class encoding. Time-barrier (0) → None so FreqAI drops them.
+        # Training signal is restricted to RESOLVED candles only — no
+        # sideways-as-bearish pollution.
+        labels_obj = np.full(n, None, dtype=object)
+        labels_obj[labels == 1.0] = "L"
+        labels_obj[labels == -1.0] = "S"
+        # Tail of length label_period → None (cannot peek into future)
+        labels_obj[n - label_period:] = None
+        dataframe["&-s_label"] = pd.Series(labels_obj, index=dataframe.index, dtype=object)
         return dataframe
 
     # ------------------------------------------------------------------ #
@@ -465,29 +514,20 @@ class FinBuddyFreqAI(IStrategy):
         return dataframe
 
     # ------------------------------------------------------------------ #
-    # Entry / Exit signals — v11 uses classifier probability columns     #
+    # Entry / Exit signals — v17 classifier probability columns          #
     # ------------------------------------------------------------------ #
 
     def populate_entry_trend(
         self, dataframe: DataFrame, metadata: dict
     ) -> DataFrame:
         """
-        v11 entry rules using LightGBMClassifier output probabilities.
+        v17 entry rules — 2-class LightGBM (L/S), 0.60 threshold.
 
-        FreqAI's LightGBMClassifier emits one probability column per class,
-        named with the stringified class label only (no `&-s_label_proba_` prefix).
-        Labels are float32, so the columns are "1.0" and "-1.0".
-        Verified from models/finbuddy_backtest_v11/backtesting_predictions/*.feather
-        whose columns are: ['date', '&-s_label', '&-s_label_mean',
-        '&-s_label_std', '-1.0', '1.0', 'do_predict'].
-
-        Long:  P(+1) > 0.55 — model confident TP hits before SL
-        Short: P(-1) > 0.55 — model confident SL hits (price drops) before TP
-
-        TA filters and macro gate unchanged from v10.
+        Long:  proba_L > 0.60 + TA filter + regime not CRASH/BEAR
+        Short: proba_S > 0.60 + TA filter + regime not BULL/EUPHORIA
         """
-        # v12 — three-class proba columns: "L" / "S" / "H".
-        # Defensive fallbacks kept for legacy two-class feather files.
+        # v17 — two-class proba columns: "L" / "S".
+        # Defensive fallbacks kept for legacy feather files.
         proba_long = (
             dataframe.get("L",
             dataframe.get("1.0",
@@ -498,41 +538,14 @@ class FinBuddyFreqAI(IStrategy):
             dataframe.get("-1.0",
             dataframe.get("-1", None)))
         )
-        proba_hold = (
-            dataframe.get("H",
-            dataframe.get("0.0",
-            dataframe.get("0", None)))
-        )
-
+        # v16: HOLD class removed — pure 2-class model (L/S). No proba_hold needed.
         if proba_long is None:
-            # column doesn't exist yet (first candle before FreqAI trains)
             proba_long  = pd.Series(0.0, index=dataframe.index)
         if proba_short is None:
             proba_short = pd.Series(0.0, index=dataframe.index)
-        if proba_hold is None:
-            # No H column yet (legacy v11 model still loaded) → never gate-block.
-            proba_hold = pd.Series(0.0, index=dataframe.index)
 
-        # v12 — HOLD gate: model must NOT predict "no resolution" with high prob.
-        not_hold = proba_hold < 0.4
-
-        ml_signal_long = (
-            (dataframe["do_predict"] == 1)
-            & (proba_long > 0.55)
-            & not_hold
-        )
-
-        # Bull/bear dynamic threshold — in classifier land we tighten in bear
-        # by requiring higher confidence (0.60) when macro is bearish for longs
-        ml_threshold_long = (
-            (
-                (dataframe["btc_4h_below_ema50"] == 0)
-                & (proba_long > 0.55)
-            ) | (
-                (dataframe["btc_4h_below_ema50"] == 1)
-                & (proba_long > 0.60)
-            )
-        )
+        # Flat 0.60 threshold — R8 grid winner. 0.55 caused 470 trades/month overtrade.
+        ml_threshold_long = (proba_long > 0.60)
 
         ta_filter = (
             (dataframe["close"] > dataframe["ema_50"])
@@ -544,7 +557,7 @@ class FinBuddyFreqAI(IStrategy):
         volatility_filter = dataframe["atr_ratio"] > 0.003
         trend_filter_1h   = dataframe["close_1h"] >= dataframe["ema_50_1h"]
 
-        # v11.1 macro-bull gate — long requires BTC daily > MA200
+        # v11.1 macro-bull gate — opt-in via BTC_MA200_GATE=1 env var
         if self.use_btc_ma200_gate:
             macro_long_gate  = (dataframe["btc_macro_bull"] == 1)
             macro_short_gate = (dataframe["btc_macro_bull"] == 0)
@@ -556,7 +569,6 @@ class FinBuddyFreqAI(IStrategy):
             (dataframe["do_predict"] == 1)
             & ml_threshold_long
             & macro_long_gate
-            & not_hold
         )
 
         dataframe.loc[
@@ -566,15 +578,13 @@ class FinBuddyFreqAI(IStrategy):
         dataframe.loc[
             ml_signal_long_final & ta_filter & volatility_filter & trend_filter_1h,
             "enter_tag"
-        ] = "freqai_lgbm_v11_long"
+        ] = "freqai_lgbm_v17_long"
 
-        # Short — macro-gated (v9 fix, retained) + v12 HOLD gate
+        # Short — model-gated (v17: removed hardcoded btc_4h_below_ema50 deadlock).
         ml_signal_short = (
             (dataframe["do_predict"] == 1)
-            & (proba_short > 0.55)
-            & (dataframe["btc_4h_below_ema50"] == 1)
+            & (proba_short > 0.60)
             & macro_short_gate
-            & not_hold
         )
 
         ta_filter_short = (
@@ -597,7 +607,24 @@ class FinBuddyFreqAI(IStrategy):
         dataframe.loc[
             ml_signal_short & ta_filter_short & volatility_filter & trend_filter_1h_short & safety_short,
             "enter_tag"
-        ] = "freqai_lgbm_v11_short"
+        ] = "freqai_lgbm_v17_short"
+
+        # v17 — full trend-following regime kill-switches.
+        # CRASH+BEAR: downtrends — no new longs (shorts only).
+        # BULL+EUPHORIA: uptrends — no new shorts (longs only).
+        # NEUTRAL: both directions allowed.
+        # This eliminates systematic losses from trading against the macro trend.
+        regime = self._get_current_regime()
+        if regime in ("CRASH", "BEAR"):
+            dataframe.loc[:, "enter_long"] = 0
+            dataframe.loc[dataframe["enter_long"] == 0, "enter_tag"] = (
+                dataframe["enter_tag"].where(dataframe["enter_short"] == 1, None)
+            )
+        elif regime in ("BULL", "EUPHORIA"):
+            dataframe.loc[:, "enter_short"] = 0
+            dataframe.loc[dataframe["enter_short"] == 0, "enter_tag"] = (
+                dataframe["enter_tag"].where(dataframe["enter_long"] == 1, None)
+            )
 
         return dataframe
 
@@ -605,9 +632,14 @@ class FinBuddyFreqAI(IStrategy):
         self, dataframe: DataFrame, metadata: dict
     ) -> DataFrame:
         """
-        v11 exit — same ML-reversal logic, adapted for classifier output.
-        Exit long when P(-1) > 0.45 (model sees SL risk rising).
-        Exit short when P(+1) > 0.45 (model sees TP risk rising for shorts).
+        v17 — regime-aware asymmetric exit thresholds.
+
+        In CRASH/BEAR: exit longs fast (proba_short > 0.55) — limit damage.
+                      Hold shorts longer (proba_long > 0.65) — let winners run.
+        In BULL/EUPHORIA: hold longs longer (proba_short > 0.65).
+                         Exit shorts fast (proba_long > 0.55).
+        In NEUTRAL: symmetric 0.65 thresholds.
+
         TA exits unchanged (RSI/BB extremes).
         """
         proba_long = (
@@ -626,9 +658,18 @@ class FinBuddyFreqAI(IStrategy):
         if proba_short is None:
             proba_short = pd.Series(0.0, index=dataframe.index)
 
+        # v17: regime-aware exit thresholds
+        regime = self._get_current_regime()
+        if regime in ("CRASH", "BEAR"):
+            long_exit_thr, short_exit_thr = 0.55, 0.65   # bail longs fast, hold shorts
+        elif regime in ("BULL", "EUPHORIA"):
+            long_exit_thr, short_exit_thr = 0.65, 0.55   # hold longs, bail shorts fast
+        else:
+            long_exit_thr, short_exit_thr = 0.65, 0.65   # NEUTRAL — symmetric
+
         ml_exit_long = (
             (dataframe["do_predict"] == 1)
-            & (proba_short > 0.45)
+            & (proba_short > long_exit_thr)
         )
         ta_exit_long = (
             (dataframe["rsi_14"] > 75)
@@ -638,7 +679,7 @@ class FinBuddyFreqAI(IStrategy):
 
         ml_exit_short = (
             (dataframe["do_predict"] == 1)
-            & (proba_long > 0.45)
+            & (proba_long > short_exit_thr)
         )
         ta_exit_short = (
             (dataframe["rsi_14"] < 25)

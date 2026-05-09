@@ -1,0 +1,207 @@
+{
+  "folds": [
+    {
+      "fold": 5,
+      "test_start": "2024-11-01",
+      "test_end": "2024-12-01",
+      "trades": 312,
+      "win_rate": 0.4935897435897436,
+      "sharpe": -1.6041801900210766,
+      "max_drawdown": 0.05114987834692229,
+      "profit_factor": 0.9040736210003273,
+      "profit_total_abs": -166.29559556
+    },
+    {
+      "fold": 6,
+      "test_start": "2024-12-01",
+      "test_end": "2025-01-01",
+      "trades": 401,
+      "win_rate": 0.3865336658354115,
+      "sharpe": -11.465454274082763,
+      "max_drawdown": 0.1566817358347809,
+      "profit_factor": 0.5795437459106406,
+      "profit_total_abs": -1440.39366404
+    },
+    {
+      "fold": 7,
+      "test_start": "2025-01-01",
+      "test_end": "2025-02-01",
+      "trades": 356,
+      "win_rate": 0.4887640449438202,
+      "sharpe": -2.6852506754223464,
+      "max_drawdown": 0.047015040625355706,
+      "profit_factor": 0.8295430517130609,
+      "profit_total_abs": -281.85306628
+    },
+    {
+      "fold": 8,
+      "test_start": "2025-02-01",
+      "test_end": "2025-03-01",
+      "trades": 423,
+      "win_rate": 0.408983451536643,
+      "sharpe": -8.26972568990453,
+      "max_drawdown": 0.1504819201408062,
+      "profit_factor": 0.5536268461257691,
+      "profit_total_abs": -1330.74019329
+    },
+    {
+      "fold": 9,
+      "test_start": "2025-03-01",
+      "test_end": "2025-04-01",
+      "trades": 630,
+      "win_rate": 0.4523809523809524,
+      "sharpe": -4.094262493073562,
+      "max_drawdown": 0.12580796132135003,
+      "profit_factor": 0.6437180484580697,
+      "profit_total_abs": -1145.89720913
+    },
+    {
+      "fold": 10,
+      "test_start": "2025-04-01",
+      "test_end": "2025-05-01",
+      "trades": 540,
+      "win_rate": 0.39814814814814814,
+      "sharpe": -9.693127914516394,
+      "max_drawdown": 0.12393751039302049,
+      "profit_factor": 0.5937440341282505,
+      "profit_total_abs": -1231.16990055
+    },
+    {
+      "fold": 11,
+      "test_start": "2025-05-01",
+      "test_end": "2025-06-01",
+      "trades": 288,
+      "win_rate": 0.4409722222222222,
+      "sharpe": -5.465195804200746,
+      "max_drawdown": 0.038760040477445204,
+      "profit_factor": 0.6675583939871876,
+      "profit_total_abs": -350.60899104
+    },
+    {
+      "fold": 12,
+      "test_start": "2025-06-01",
+      "test_end": "2025-07-01",
+      "trades": 416,
+      "win_rate": 0.41586538461538464,
+      "sharpe": -9.393982576266588,
+      "max_drawdown": 0.044227954054999824,
+      "profit_factor": 0.5649002003859898,
+      "profit_total_abs": -437.59531344
+    },
+    {
+      "fold": 13,
+      "test_start": "2025-07-01",
+      "test_end": "2025-08-01",
+      "trades": 214,
+      "win_rate": 0.4439252336448598,
+      "sharpe": -3.029789360337628,
+      "max_drawdown": 0.024346591272000843,
+      "profit_factor": 0.7257926405776104,
+      "profit_total_abs": -170.54481684
+    },
+    {
+      "fold": 14,
+      "test_start": "2025-08-01",
+      "test_end": "2025-09-01",
+      "trades": 351,
+      "win_rate": 0.4672364672364672,
+      "sharpe": -4.689012602957828,
+      "max_drawdown": 0.038273158516606044,
+      "profit_factor": 0.6983308956829907,
+      "profit_total_abs": -305.00052715
+    },
+    {
+      "fold": 15,
+      "test_start": "2025-09-01",
+      "test_end": "2025-10-01",
+      "trades": 439,
+      "win_rate": 0.428246013667426,
+      "sharpe": -5.278168334840292,
+      "max_drawdown": 0.04031564571123594,
+      "profit_factor": 0.6897364668926887,
+      "profit_total_abs": -362.36099757
+    },
+    {
+      "fold": 16,
+      "test_start": "2025-10-01",
+      "test_end": "2025-11-01",
+      "trades": 542,
+      "win_rate": 0.36900369003690037,
+      "sharpe": -6.691278793335842,
+      "max_drawdown": 0.08804417925024328,
+      "profit_factor": 0.624510519890546,
+      "profit_total_abs": -790.69434726
+    },
+    {
+      "fold": 17,
+      "test_start": "2025-11-01",
+      "test_end": "2025-12-01",
+      "trades": 691,
+      "win_rate": 0.4356005788712012,
+      "sharpe": -2.9751280379746374,
+      "max_drawdown": 0.07392100420632895,
+      "profit_factor": 0.849978186446005,
+      "profit_total_abs": -502.89788482
+    },
+    {
+      "fold": 18,
+      "test_start": "2025-12-01",
+      "test_end": "2026-01-01",
+      "trades": 651,
+      "win_rate": 0.36251920122887865,
+      "sharpe": -8.500018776672013,
+      "max_drawdown": 0.12497045579265555,
+      "profit_factor": 0.5031660755605226,
+      "profit_total_abs": -1157.26016752
+    },
+    {
+      "fold": 19,
+      "test_start": "2026-01-01",
+      "test_end": "2026-02-01",
+      "trades": 649,
+      "win_rate": 0.4622496147919877,
+      "sharpe": -1.8128274892433067,
+      "max_drawdown": 0.040906288411001336,
+      "profit_factor": 0.8878761564765795,
+      "profit_total_abs": -178.72873665
+    },
+    {
+      "fold": 20,
+      "test_start": "2026-02-01",
+      "test_end": "2026-03-01",
+      "trades": 499,
+      "win_rate": 0.4168336673346693,
+      "sharpe": -5.065237655423059,
+      "max_drawdown": 0.06995670487305099,
+      "profit_factor": 0.6354794609673129,
+      "profit_total_abs": -608.52597181
+    },
+    {
+      "fold": 21,
+      "test_start": "2026-03-01",
+      "test_end": "2026-04-01",
+      "trades": 643,
+      "win_rate": 0.4199066874027994,
+      "sharpe": -7.0924249372824795,
+      "max_drawdown": 0.06764622752928967,
+      "profit_factor": 0.5590760859056747,
+      "profit_total_abs": -636.64319468
+    }
+  ],
+  "aggregate": {
+    "folds": 17,
+    "total_trades": 8045,
+    "weighted_win_rate": 0.42486016159105033,
+    "weighted_sharpe": -5.834628103557566,
+    "worst_drawdown": 0.1566817358347809,
+    "weighted_profit_factor": 0.6720720405248443,
+    "total_profit_abs": -11097.21057763
+  },
+  "pass": false,
+  "verdict": [
+    "\u274c WR 42.5% (need >50%)",
+    "\u274c Sharpe -5.835 (need >0.5)",
+    "\u2705 Worst DD 15.7%",
+    "\u274c PF 0.672 (need >1.2)"
+  ]
+}
