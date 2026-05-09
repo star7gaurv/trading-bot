@@ -114,8 +114,8 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 ## What Is Live and Working Right Now (verified 2026-05-09 by Claude Code)
 
 ### FreqTrade
-- Running **`FinBuddyFreqAI.py` (v16.2)** in dry-run mode on **Binance Futures USDT-M** — long+short
-- FreqAI identifier: `finbuddy_v16_clean_1778316280` — 25 pairs, all trained, zero KeyError H
+- Running **`FinBuddyFreqAI.py` (v17)** in dry-run mode on **Binance Futures USDT-M** — long+short
+- FreqAI identifier: `finbuddy_v17_sym_1778353539` — 25 pairs, all trained, symmetric barriers
 - 1000 USDT virtual wallet, max 4 open trades, 200 USDT stake × regime multiplier
 - API: `http://localhost:8080/api/v1` — user: `bot`, pass: `REDACTED-FREQTRADE__API_SERVER__PASSWORD`
 - Whitelist: **25 pairs**, **1h timeframe**
@@ -169,16 +169,16 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ## Current Strategy
 
-### ✅ Active: `FinBuddyFreqAI.py` v16.2 — Futures Long/Short (2026-05-09)
+### ✅ Active: `FinBuddyFreqAI.py` v17 — Futures Long/Short (2026-05-09)
 - Binance Futures USDT-M (perpetual, isolated margin), **1h TF**, 25 pairs, `can_short=True`
-- FreqAI LightGBM **2-class model** (`["L","S"]`) — time-barrier candles DROPPED (not mapped to S)
-- FreqAI identifier: `finbuddy_v16_clean_1778316280` — all 25 pairs trained, zero KeyError H
-- `custom_stoploss()` anchored via `stoploss_from_open()`, `trailing_stop=False`
-- **Regime-aware exits** (v16): CRASH/BEAR → exit longs at 0.55, BULL/EUPHORIA → exit shorts at 0.55, NEUTRAL → symmetric 0.65
-- **HMM kill-switches**: CRASH → no longs, EUPHORIA → no shorts
+- FreqAI LightGBM **2-class model** (`["L","S"]`) — symmetric barriers k_tp=k_sl=2.0, P(L)=50%
+- FreqAI identifier: `finbuddy_v17_sym_1778353539` — 25 pairs, all trained
+- `custom_stoploss()`: 2.0×ATR initial (matches k_sl), trail locks at +2.0×ATR, `trailing_stop=False`
+- **Regime-aware exits** (v17): CRASH/BEAR → exit longs at 0.55, BULL/EUPHORIA → exit shorts at 0.55, NEUTRAL → symmetric 0.65
+- **HMM kill-switches** (v17): CRASH/BEAR → no longs, BULL/EUPHORIA → no shorts (full trend-following)
 - **Correlation cluster cap** (v16.2): max 2 trades from MEGA_CAP cluster (BTC/ETH/SOL/etc) or L2 cluster (ARB/OP/etc) — enforced via `confirm_trade_entry()`
 - **Funding-rate long guard** (v16.2): blocks new longs if BTC perpetual funding >0.05%/8h
-- Enter tags: `freqai_lgbm_v16_long` / `freqai_lgbm_v16_short`
+- Enter tags: `freqai_lgbm_v17_long` / `freqai_lgbm_v17_short`
 - `BTC_MA200_GATE` env var defaults to `"0"` — opt-in only
 
 ### ❌ Retired: `AiGuardrailStrategy.py`
@@ -234,7 +234,7 @@ Check: `tail -f ~/.finbuddy/logs/walk_forward.log`
 | Phase | File | Status | Focus |
 |---|---|---|---|
 | 0 | `tasks/phase-0-foundation.md` | ✅ **Complete** (2026-04-27) | Foundation — FreqTrade, Telegram, server |
-| 1 | `tasks/phase-1-freqai-brain.md` | 🔄 **In Progress** — v16.2 live, walk-forward running | FreqAI brain — long + short, 2-class model |
+| 1 | `tasks/phase-1-freqai-brain.md` | 🔄 **In Progress** — v17 live, walk-forward running | FreqAI brain — long + short, 2-class model |
 | 2 | `tasks/phase-2-data-enrichment.md` | ✅ **Live** — cron every 15m | External data fetchers — Fear & Greed, CoinGecko, CryptoPanic, DefiLlama, Google Trends |
 | 3 | `tasks/phase-3-hmm-regime.md` | ✅ **Live** — cron every 4h | HMM 5-regime engine wired into strategy |
 | 4 | `tasks/phase-4-obsidian-memory.md` | ✅ **Live** — cron every 15m | Obsidian vault auto-write + git auto-commit |
@@ -478,6 +478,22 @@ Two root causes:
 - Removed dead `_get_tradingview_signal()` method (Phase 6 abandoned)
 
 **WF #5 (T190609) running** — validates symmetric barrier fix. Expected: WR > 50% in bull folds (BULL/EUPHORIA → shorts blocked), WR > 50% in bear folds (BEAR/CRASH → longs blocked). If aggregate WR > 50%, Phase 10 (live migration) gate criteria can be re-evaluated.
+
+### May 9, 2026 — Late Evening (Claude Code) — stale-string cleanup
+
+Comprehensive audit and cleanup of FinBuddyFreqAI.py to match live v17 state:
+- Class docstring: "v15" → clean v17 summary (removed v12/v13 history)
+- `timeframe`: "15m" → "1h" (config.json overrides to 1h, strategy now matches)
+- `BTC_MA200_GATE` default: "1" → "0" (opt-in per design; default was never changed)
+- `custom_stoploss` section header: "v10" → "v17"
+- `custom_exit`: division `/ 900` (15m candle count) → `/ 3600` (1h candle count) — actual bug fix, time limit was 6h instead of intended 24h; comment updated
+- Triple-barrier section header: "v12 with HOLD" → "v17 symmetric"
+- `set_freqai_targets` docstring: stale v12 params/history → v17 (1h data, k_sl=2.0, lp=6)
+- Entry section header: "v11" → "v17"
+- `populate_entry_trend` docstring: stale v11 feather-file refs removed
+- `enter_tag`: `freqai_lgbm_v16_long/short` → `v17`
+- `populate_exit_trend` docstring: "v16" → "v17"
+- CLAUDE.md "What Is Live" + "Current Strategy" sections: v16.2/old identifier → v17
 
 ---
 
