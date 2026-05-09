@@ -16,3 +16,4 @@
 - **2026-05-09 10:42 UTC** — 🎯 Trade milestone reached: 25 closed trades
 - **2026-05-09 12:00 UTC** — Walk-forward status: ❌ ['❌ WR 41.7% (need >50%)', '❌ Sharpe -29.335 (need >0.5)', '✅ Worst DD 0.0%', '❌ PF 0.654 (need >1.2)'] — median Sharpe ?, WR ?% (FinBuddyFreqAI_2024-01-01_2026-04-01_20260509T091607)
 - **2026-05-09 12:30 UTC** — Walk-forward status: ❌ ['❌ WR 30.3% (need >50%)', '❌ Sharpe -10.435 (need >0.5)', '✅ Worst DD 19.3%', '❌ PF 0.430 (need >1.2)'] — median Sharpe ?, WR ?% (FinBuddyFreqAI_2024-01-01_2026-04-01_20260509T091607)
+- **2026-05-09 12:30 UTC** — Walk-forward status: ❌ FAIL — WR 30.3%, Sharpe -10.44, DD 19.3%, PF 0.43 (419 trades, run `FinBuddyFreqAI_2024-01-01_2026-04-01_20260509T091607`)
