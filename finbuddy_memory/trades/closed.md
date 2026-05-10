@@ -53,3 +53,4 @@
 | 2026-05-10 05:35:52 | TRX/USDT:USDT | LONG | 3h05m | -0.73% | -1.36 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v17_long |
 | 2026-05-10 09:00:27 | AVAX/USDT:USDT | LONG | 0h24m | -0.25% | -0.45 | exit_signal | NEUTRAL | freqai_lgbm_v17_long |
 | 2026-05-10 16:07:35 | ATOM/USDT:USDT | LONG | 6h57m | +3.89% | +7.21 | exit_signal | NEUTRAL | freqai_lgbm_v18_long |
+| 2026-05-10 18:10:03 | TRX/USDT:USDT | LONG | 6h05m | +0.39% | +0.72 | exit_signal | NEUTRAL | freqai_lgbm_v18_long |
