@@ -33,12 +33,25 @@ logger = logging.getLogger(__name__)
 
 class FinBuddyFreqAI(IStrategy):
     """
-    FinBuddy FreqAI Strategy v17 — 1h TF, Futures Long/Short, Symmetric Barriers (2026-05-09)
+    FinBuddy FreqAI Strategy v18 — 1h TF, Futures Long/Short, Symmetric Barriers (2026-05-10)
 
-    2-class LightGBM classifier (L/S). Triple-barrier labeling with k_tp=k_sl=2.0
-    (symmetric → P(L)=50% base rate, degenerate models auto-filtered at 0.60 threshold).
+    2-class LightGBM classifier (L/S). Triple-barrier labeling with k_tp=k_sl=K_MULT
+    (symmetric → P(L)=50% base rate, degenerate models auto-filtered at ML_THRESHOLD).
     Regime kill-switches: CRASH/BEAR block longs, BULL/EUPHORIA block shorts.
-    custom_stoploss: 2.0×ATR initial, trail locks at +2.0×ATR once profit > 1×ATR.
+    custom_stoploss: K_MULT×ATR initial, trail locks at +K_MULT×ATR once profit > K_MULT×ATR.
+
+    v18 bug fix (2026-05-10):
+      v17 had two bugs in custom_stoploss that made it effectively a no-op:
+        1. Trail activated at profit > 1×ATR but locked at 2×ATR → stoploss_from_open
+           returned POSITIVE (stop above current) → FreqTrade fell back to hard -8% stop.
+        2. Both branches checked `> 0` instead of `< 0` for the valid-stop test → every
+           valid (negative) stop was discarded, only hard config stoploss ever fired.
+      Fix: trail activates at profit > K_MULT×ATR (same as lock level), and all return
+      checks use `< 0` (valid stop = below current price for longs, above for shorts).
+
+    ENV VARs for grid search:
+      FREQAI_K_MULT        float  default 2.0  — barrier multiplier + stoploss scale
+      FREQAI_ML_THRESHOLD  float  default 0.60 — entry probability threshold
     """
     INTERFACE_VERSION = 3
 
@@ -52,6 +65,12 @@ class FinBuddyFreqAI(IStrategy):
 
     can_short = True
     startup_candle_count = 400
+
+    # v18: ENV VAR configurable — read once at class load time.
+    # Grid search passes FREQAI_K_MULT / FREQAI_ML_THRESHOLD via `docker exec -e`.
+    # Defaults match v17 live config so the running bot is unaffected.
+    K_MULT       = float(os.getenv("FREQAI_K_MULT",       "2.0"))
+    ML_THRESHOLD = float(os.getenv("FREQAI_ML_THRESHOLD", "0.60"))
 
     # v11.1 — BTC daily MA200 macro-regime gate.
     # Long  entries require  BTC_1d_close > BTC_1d_MA200 (macro bull).
@@ -82,11 +101,17 @@ class FinBuddyFreqAI(IStrategy):
         **kwargs,
     ) -> Optional[float]:
         """
-        v17 ATR-adaptive stoploss — symmetric barriers (k_tp=k_sl=2.0).
-        Initial: 2.0×ATR below entry (matches k_sl=2.0 in set_freqai_targets).
-        Trailing: once profit > 1×ATR, lock at +2.0×ATR above entry.
+        v18 ATR-adaptive stoploss — symmetric barriers (k_tp=k_sl=K_MULT).
+        Initial: K_MULT×ATR below entry (matches k_sl=K_MULT in set_freqai_targets).
+        Trailing: once profit > K_MULT×ATR, lock at +K_MULT×ATR above entry.
         Symmetric R:R = 1:1; any WR > 50% is genuine alpha (no base-rate bias).
         Returns None on missing data (no reset of existing stop).
+
+        v18 fix: trail activates only when profit EXCEEDS the lock level (K_MULT×ATR),
+        not at 1×ATR. Activation below the lock caused stoploss_from_open to return a
+        POSITIVE value (desired stop above current price) which FreqTrade interpreted as
+        "use hard stoploss". Also fixed: checks now use `< 0` (valid stop) not `> 0`
+        (invalid/above-price stop) — the old `> 0` guard discarded every valid stop.
         """
         dataframe, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
         if dataframe is None or dataframe.empty:
@@ -99,25 +124,29 @@ class FinBuddyFreqAI(IStrategy):
 
         atr_pct = atr / current_rate
         atr_pct = max(0.003, min(atr_pct, 0.025))
+        lock_pct = self.K_MULT * atr_pct
 
-        if current_profit > atr_pct:
+        # Trail: once profit exceeds the lock level, trail the stop at the lock level.
+        # current_profit > lock_pct guarantees stoploss_from_open returns negative (valid).
+        if current_profit > lock_pct:
             trail_pct = stoploss_from_open(
-                2.0 * atr_pct,
+                lock_pct,
                 current_profit,
                 is_short=trade.is_short,
                 leverage=trade.leverage,
             )
-            if trail_pct and trail_pct > 0:
+            if trail_pct is not None and trail_pct < 0:
                 return trail_pct
             return None
 
+        # Initial: K_MULT×ATR below entry. Returns negative for all normal profit levels.
         initial_stop = stoploss_from_open(
-            -2.0 * atr_pct,
+            -lock_pct,
             current_profit,
             is_short=trade.is_short,
             leverage=trade.leverage,
         )
-        if initial_stop and initial_stop > 0:
+        if initial_stop is not None and initial_stop < 0:
             return initial_stop
         return None
 
@@ -380,8 +409,8 @@ class FinBuddyFreqAI(IStrategy):
         """
         self.freqai.class_names = ["L", "S"]
 
-        k_tp = 2.0
-        k_sl = 2.0  # v17: symmetric barriers — P(L)=50% base rate, degenerate models filtered at 0.60 threshold
+        k_tp = self.K_MULT
+        k_sl = self.K_MULT  # v18: ENV VAR configurable — aligned with custom_stoploss lock level
         label_period = self.freqai_info["feature_parameters"]["label_period_candles"]
 
         close = dataframe["close"].values
@@ -521,10 +550,10 @@ class FinBuddyFreqAI(IStrategy):
         self, dataframe: DataFrame, metadata: dict
     ) -> DataFrame:
         """
-        v17 entry rules — 2-class LightGBM (L/S), 0.60 threshold.
+        v18 entry rules — 2-class LightGBM (L/S), ML_THRESHOLD (default 0.60).
 
-        Long:  proba_L > 0.60 + TA filter + regime not CRASH/BEAR
-        Short: proba_S > 0.60 + TA filter + regime not BULL/EUPHORIA
+        Long:  proba_L > ML_THRESHOLD + TA filter + regime not CRASH/BEAR
+        Short: proba_S > ML_THRESHOLD + TA filter + regime not BULL/EUPHORIA
         """
         # v17 — two-class proba columns: "L" / "S".
         # Defensive fallbacks kept for legacy feather files.
@@ -544,8 +573,8 @@ class FinBuddyFreqAI(IStrategy):
         if proba_short is None:
             proba_short = pd.Series(0.0, index=dataframe.index)
 
-        # Flat 0.60 threshold — R8 grid winner. 0.55 caused 470 trades/month overtrade.
-        ml_threshold_long = (proba_long > 0.60)
+        # v18: ENV VAR configurable threshold (default 0.60 = R8 grid winner)
+        ml_threshold_long = (proba_long > self.ML_THRESHOLD)
 
         ta_filter = (
             (dataframe["close"] > dataframe["ema_50"])
@@ -578,12 +607,12 @@ class FinBuddyFreqAI(IStrategy):
         dataframe.loc[
             ml_signal_long_final & ta_filter & volatility_filter & trend_filter_1h,
             "enter_tag"
-        ] = "freqai_lgbm_v17_long"
+        ] = "freqai_lgbm_v18_long"
 
         # Short — model-gated (v17: removed hardcoded btc_4h_below_ema50 deadlock).
         ml_signal_short = (
             (dataframe["do_predict"] == 1)
-            & (proba_short > 0.60)
+            & (proba_short > self.ML_THRESHOLD)
             & macro_short_gate
         )
 
@@ -607,7 +636,7 @@ class FinBuddyFreqAI(IStrategy):
         dataframe.loc[
             ml_signal_short & ta_filter_short & volatility_filter & trend_filter_1h_short & safety_short,
             "enter_tag"
-        ] = "freqai_lgbm_v17_short"
+        ] = "freqai_lgbm_v18_short"
 
         # v17 — full trend-following regime kill-switches.
         # CRASH+BEAR: downtrends — no new longs (shorts only).

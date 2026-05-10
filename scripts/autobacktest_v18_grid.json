@@ -1,0 +1,39 @@
+{
+  "_comment": "v18 campaign grid — fixes custom_stoploss bug (v17 no-op), sweeps K_MULT+label_period alignment, ML_THRESHOLD. 12 combos × 2 windows = 24 runs.",
+  "base_config": "scripts/backtest_config.json",
+  "results_csv": "_autobacktest_v18_results.csv",
+  "backtest_results_path": "freqtrade/user_data/backtest_results",
+  "acceptance_criteria": {
+    "win_rate": 50.0,
+    "sharpe": 0.5,
+    "max_drawdown": 20.0,
+    "profit_factor": 1.2
+  },
+  "windows": {
+    "bull": "20240101-20250101",
+    "bear": "20250101-20260401"
+  },
+  "pairs_download": [
+    "BTC/USDT:USDT",
+    "ETH/USDT:USDT",
+    "SOL/USDT:USDT",
+    "XRP/USDT:USDT",
+    "DOGE/USDT:USDT"
+  ],
+  "grid": {
+    "k_mult": [1.0, 1.5, 2.0],
+    "label_period_candles": [12, 24],
+    "ml_threshold": [0.60, 0.65]
+  },
+  "_grid_rationale": {
+    "k_mult": "Aligns barrier multiplier with stoploss scale. k_mult=1.0 → 1×ATR barriers + 1×ATR SL (tight R:R, more resolved labels). k_mult=1.5 → moderate. k_mult=2.0 → v17 default (60%+ NaN — too few resolved labels in 6h window).",
+    "label_period_candles": "12h (2× label) gives more resolution time vs 24h. Both sweep with k_mult to see which combo resolves enough labels while keeping R:R valid.",
+    "ml_threshold": "0.60 = R8 winner. 0.65 = higher precision, fewer but higher-quality signals. Tests whether stricter filter improves PF."
+  },
+  "_bugs_fixed_v18": {
+    "A": "custom_stoploss trail activated at profit > 1×ATR but locked at 2×ATR — stoploss_from_open returned POSITIVE (stop above current price) → FreqTrade fell back to hard -8% stop. Every winner capped at hard stoploss distance.",
+    "B": "custom_stoploss return checks used `> 0` (valid stop = negative) → EVERY valid stop was discarded. Both initial and trail stops were dead. Only hard -8% config stoploss fired.",
+    "C": "backtest_config.json had include_timeframes: ['15m'] instead of ['1h'] — mismatched live config, different feature set trained.",
+    "D": "backtest_config.json had BNB/USDT:USDT (blacklisted) and train_period_days=60 (vs live 90)."
+  }
+}
