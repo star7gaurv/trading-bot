@@ -117,9 +117,11 @@
         "BULL",
         "BEAR"
       ],
-      "status": "in_development",
+      "status": "needs_implementation",
       "proposed_at": "2026-05-09",
-      "proposed_by": "reasoning_agent"
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-10",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
     },
     {
       "strategy_id": "volatility_breakout_20260509",
@@ -136,9 +138,11 @@
       "regime_filter": [
         "trending"
       ],
-      "status": "in_development",
+      "status": "needs_implementation",
       "proposed_at": "2026-05-09",
-      "proposed_by": "reasoning_agent"
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-10",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
     },
     {
       "strategy_id": "rsi_divergence_20260509",
@@ -155,9 +159,57 @@
       "regime_filter": [
         "mean_reverting"
       ],
-      "status": "in_development",
+      "status": "needs_implementation",
       "proposed_at": "2026-05-09",
-      "proposed_by": "reasoning_agent"
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-10",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "alt_outperformance_btc_range_20260510",
+      "hypothesis": "When BTC dominance remains at or below 58% while BTC price stays within a tight range (\u00b10.3%), alt-coin futures will outperform BTC futures due to capital rotation into higher-beta assets.",
+      "timeframe": "1h",
+      "indicators": [
+        "btc_dominance",
+        "btc_price_change",
+        "eth_rsi",
+        "bnb_rsi",
+        "sol_price_change"
+      ],
+      "entry_long": "btc_dominance <= 58.0 and abs(btc_price_change) < 0.3 and eth_rsi > 55 and sol_price_change > 0.4",
+      "entry_short": "btc_dominance <= 58.0 and abs(btc_price_change) < 0.3 and bnb_rsi > 55",
+      "exit_rule": "btc_dominance > 58.5 or abs(btc_price_change) > 0.5 or holding_period > 6",
+      "regime_filter": [
+        "NEUTRAL"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-10",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-10",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "orderbook_imbalance_breakdown_20260510",
+      "hypothesis": "When sell-side order book depth remains more than 10% thinner than buy-side depth for over 2 hours, BTC is prone to sudden sell-offs due to liquidity imbalance.",
+      "timeframe": "1h",
+      "indicators": [
+        "orderbook_sell_depth",
+        "orderbook_buy_depth",
+        "orderbook_imbalance",
+        "btc_price_drop_30min"
+      ],
+      "entry_long": "",
+      "entry_short": "orderbook_imbalance > 0.12 and btc_price_drop_30min < -1.0",
+      "exit_rule": "price moves favorably by 0.8% or stop_loss < -1.0%",
+      "regime_filter": [
+        "NEUTRAL",
+        "BEARISH"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-10",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-10",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
     }
   ]
 }
