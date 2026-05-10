@@ -21,3 +21,4 @@
 - **2026-05-09 16:00 UTC** — Walk-forward status: ❌ FAIL — WR 42.5%, Sharpe -5.83, DD 15.7%, PF 0.67 (8045 trades, run `FinBuddyFreqAI_2024-01-01_2026-04-01_20260509T130947`)
 - **2026-05-09 19:34 UTC** — FreqAI identifier changed: finbuddy_v16_clean_1778316280 → finbuddy_v17_sym_1778353539
 - **2026-05-09 19:34 UTC** — Walk-forward status: ⏳ Running — 0/21 folds (FinBuddyFreqAI_2024-01-01_2026-04-01_20260509T190609)
+- **2026-05-10 00:00 UTC** — Walk-forward status: ❌ FAIL — WR 47.0%, Sharpe -5.12, DD 21.8%, PF 0.73 (8535 trades, run `FinBuddyFreqAI_2024-01-01_2026-04-01_20260509T190609`)

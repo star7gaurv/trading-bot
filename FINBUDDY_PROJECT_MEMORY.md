@@ -22,7 +22,7 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 ---
 
 <!-- AUTO-SYNC-START -->
-> 🤖 *Auto-synced by `scripts/sync_context.py` at 2026-05-09 20:00 UTC*
+> 🤖 *Auto-synced by `scripts/sync_context.py` at 2026-05-10 00:00 UTC*
 
 ## 🚀 Live System State (Auto-Synced)
 
@@ -32,10 +32,10 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 | **FreqAI identifier** | `finbuddy_v17_sym_1778353539` | Active model key |
 | **Whitelist** | 25 pairs | Binance USDT-M perpetuals |
 | **Regime** | ⚖️ NEUTRAL | From HMM (updates every 4h) |
-| **Open trades** | 3 (0L / 3S) | Live positions |
-| **Closed trades** | 36 | All-time P&L: 7.10 USDT |
-| **Last training** | unknown | Age of most recent 'Done training' log event |
-| **Walk-forward** | ⏳ Running — 0/21 folds (FinBuddyFreqAI_2024-01-01_2026-04-01_20260509T190609) | OOS validator — gates Phase 10 |
+| **Open trades** | 4 (2L / 2S) | Live positions |
+| **Closed trades** | 38 | All-time P&L: 7.10 USDT |
+| **Last training** | 49m ago | Age of most recent 'Done training' log event |
+| **Walk-forward** | ❌ FAIL — WR 47.0%, Sharpe -5.12, DD 21.8%, PF 0.73 (8535 trades, run `FinBuddyFreqAI_2024-01-01_2026-04-01_20260509T190609`) | OOS validator — gates Phase 10 |
 
 <!-- AUTO-SYNC-END -->
 
