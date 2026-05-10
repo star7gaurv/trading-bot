@@ -30,6 +30,30 @@ _risk_engine = RiskEngine()
 
 logger = logging.getLogger(__name__)
 
+# ── datasieve compatibility shim ───────────────────────────────────────────────
+# FreqTrade 2026.5 + datasieve: Pipeline._validate_arguments accesses
+# self.features_in, but some code paths in backtesting can call
+# transform(outlier_check=True) before features_in is populated.
+# Safe fallback: if features_in is missing, use feature_list (same data,
+# just a rename between datasieve versions).
+try:
+    import datasieve.pipeline as _dsp
+
+    _orig_validate = _dsp.Pipeline._validate_arguments
+
+    def _patched_validate(self, X, y, sample_weight, fit=False, outlier_check=False):
+        if not fit and not hasattr(self, "features_in"):
+            if hasattr(self, "feature_list") and len(self.feature_list) > 0:
+                self.features_in = self.feature_list
+            elif hasattr(X, "columns"):
+                self.features_in = list(X.columns)
+        return _orig_validate(self, X, y, sample_weight, fit=fit, outlier_check=outlier_check)
+
+    _dsp.Pipeline._validate_arguments = _patched_validate
+    logger.info("[FinBuddyFreqAI] datasieve Pipeline.features_in patch applied")
+except Exception as _shim_err:
+    logger.debug(f"[FinBuddyFreqAI] datasieve shim skipped: {_shim_err}")
+
 
 class FinBuddyFreqAI(IStrategy):
     """

@@ -48,8 +48,13 @@ log = logging.getLogger(__name__)
 # ── Paths ──────────────────────────────────────────────────────────────────
 REPO_ROOT      = Path("/home/ubuntu/var/www/html/trade")
 GRID_JSON      = REPO_ROOT / "scripts" / "autobacktest_v18_grid.json"
-BASE_CONFIG    = "/freqtrade/scripts/backtest_config.json"   # inside container
+BASE_CONFIG    = "/freqtrade/user_data/backtest_config.json"  # inside container (user_data is mounted)
 RESULTS_DIR    = REPO_ROOT / "freqtrade" / "user_data" / "backtest_results"
+# Overlay configs go to user_data too (only mounted volume accessible inside container)
+OVERLAY_HOST_DIR      = REPO_ROOT / "freqtrade" / "user_data"
+OVERLAY_CONTAINER_DIR = "/freqtrade/user_data"
+# docker-compose.yml is here; run docker-compose from this directory
+COMPOSE_DIR = REPO_ROOT / "freqtrade"
 OUTPUT_CSV     = REPO_ROOT / "_autobacktest_v18_results.csv"
 CONTAINER      = "freqtrade"
 
@@ -68,8 +73,11 @@ def _tg(msg: str) -> None:
         log.warning(f"[Telegram] send failed: {e}")
 
 # ── Config overlay writer ──────────────────────────────────────────────────
-def _write_overlay(label_period: int, identifier: str) -> str:
-    """Write a minimal config overlay to /tmp. Returns container path."""
+def _write_overlay(label_period: int, identifier: str) -> tuple:
+    """
+    Write a minimal config overlay to user_data/ (the only mounted volume).
+    Returns (host_path, container_path).
+    """
     overlay = {
         "freqai": {
             "identifier": identifier,
@@ -78,40 +86,52 @@ def _write_overlay(label_period: int, identifier: str) -> str:
             }
         }
     }
-    host_path = f"/tmp/v18_overlay_{identifier}.json"
+    filename   = f"_v18_overlay_{identifier}.json"
+    host_path  = str(OVERLAY_HOST_DIR / filename)
+    cont_path  = f"{OVERLAY_CONTAINER_DIR}/{filename}"
     with open(host_path, "w") as f:
         json.dump(overlay, f)
-    return host_path
-
-def _container_overlay_path(host_path: str) -> str:
-    """Map host /tmp path to container /tmp path (same on this setup)."""
-    return host_path
+    return host_path, cont_path
 
 # ── Data download ──────────────────────────────────────────────────────────
-def download_data(pairs: list, windows: list, dry_run: bool = False) -> bool:
-    """Download all required historical data once before the grid starts."""
-    # Collect all unique years needed
+def download_data(pairs: list, windows: dict, dry_run: bool = False) -> bool:
+    """
+    Download all required historical data once before the grid starts.
+
+    FreqAI needs train_period_days (90) of candles BEFORE the backtest window
+    start date. We extend the earliest window start backward by 95 days (5 days
+    buffer) to guarantee that warmup data exists.
+
+    Uses docker-compose run --rm --no-deps (same as run_one) so the download
+    runs in a clean isolated container — avoids conflicts with the live bot.
+    """
+    from datetime import datetime, timedelta
+
     all_timeranges = set(windows.values())
-    # Extend each window slightly for train_period warmup (90 days = ~3mo)
-    # FreqAI needs train_period_days before the window start.
-    # freqtrade download-data handles this with --timerange automatically.
 
-    log.info("[download] Downloading historical data for all windows...")
-    pairs_arg = " ".join(f'"{p}"' for p in pairs)
-
-    # Use the earliest start and latest end across all windows
+    # Earliest start and latest end across all selected windows
     starts = [w.split("-")[0] for w in all_timeranges]
     ends   = [w.split("-")[1] for w in all_timeranges]
-    earliest = min(starts)
-    latest   = max(ends)
-    timerange = f"{earliest}-{latest}"
+    latest = max(ends)
 
+    # Extend start backward by 95 days to cover train_period_days=90 warmup
+    earliest_dt    = datetime.strptime(min(starts), "%Y%m%d")
+    download_start = (earliest_dt - timedelta(days=95)).strftime("%Y%m%d")
+    timerange      = f"{download_start}-{latest}"
+
+    log.info(f"[download] Timerange: {timerange}  (windows: {min(starts)}–{latest}, "
+             f"pre-period: {download_start}–{min(starts)})")
+    log.info(f"[download] Pairs: {pairs}")
+
+    # Use docker-compose run (NOT docker exec) — clean container, no conflicts
     cmd = [
-        "docker", "exec", CONTAINER,
-        "freqtrade", "download-data",
+        "docker-compose", "run", "--rm", "--no-deps",
+        "freqtrade",
+        "download-data",
         "--config", BASE_CONFIG,
         "--timerange", timerange,
-        "--timeframes", "1h", "4h", "1d",
+        "--timeframes", "1h",
+        "--trading-mode", "futures",
         "--pairs",
     ] + pairs
 
@@ -120,9 +140,13 @@ def download_data(pairs: list, windows: list, dry_run: bool = False) -> bool:
         log.info("[download] DRY RUN — skipping actual download")
         return True
 
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800,
+                            cwd=str(COMPOSE_DIR))
+    out = (result.stdout + result.stderr)[-2000:]
+    log.info(f"[download] exit={result.returncode}\n{out}")
+
     if result.returncode != 0:
-        log.error(f"[download] FAILED:\n{result.stderr[-2000:]}")
+        log.error(f"[download] FAILED — exit {result.returncode}")
         return False
 
     log.info("[download] Data download complete.")
@@ -218,9 +242,8 @@ def run_one(
     ts = int(time.time())
     identifier = f"v18_k{k_mult}_l{label_period}_m{ml_threshold}_{ts}"
 
-    # Write label_period overlay
-    overlay_host = _write_overlay(label_period, identifier)
-    overlay_container = _container_overlay_path(overlay_host)
+    # Write label_period overlay (to user_data which is mounted in container)
+    overlay_host, overlay_container = _write_overlay(label_period, identifier)
 
     log.info(
         f"\n{'='*60}\n"
@@ -232,12 +255,18 @@ def run_one(
     # Snapshot ZIP count before run
     before_zips = set(RESULTS_DIR.glob("backtest-result-*.zip")) if not dry_run else set()
 
+    # Use `docker-compose run --rm` (fresh isolated container per run).
+    # This matches the proven walk-forward approach and avoids conflicts with the
+    # live bot running in the main container. `docker exec` on a live container
+    # triggers a datasieve Pipeline.features_in AttributeError in FreqAI backtest.
     cmd = [
-        "docker", "exec",
+        "docker-compose", "run", "--rm", "--no-deps",
+        # Pass ENV VARs for strategy configurable parameters
         "-e", f"FREQAI_K_MULT={k_mult}",
         "-e", f"FREQAI_ML_THRESHOLD={ml_threshold}",
-        CONTAINER,
-        "freqtrade", "backtesting",
+        "-e", "FREQTRADE__DRY_RUN_WALLET=10000",
+        "freqtrade",
+        "backtesting",
         "--config", BASE_CONFIG,
         "--config", overlay_container,
         "--strategy", "FinBuddyFreqAI",
@@ -245,6 +274,7 @@ def run_one(
         "--timerange", timerange,
         "--timeframe", "1h",
         "--export", "trades",
+        "--cache", "none",
     ]
 
     log.info(f"[run] {' '.join(cmd)}")
@@ -255,7 +285,8 @@ def run_one(
                 "profit_factor": 0.0, "trade_count": 0, "_dry_run": True}
 
     t_start = time.time()
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800,
+                            cwd=str(COMPOSE_DIR))
     elapsed = int(time.time() - t_start)
 
     # Show last 60 lines of output
@@ -287,7 +318,7 @@ def run_one(
         f"Trades={metrics['trade_count']}"
     )
 
-    # Cleanup overlay
+    # Cleanup overlay file
     try:
         os.remove(overlay_host)
     except Exception:
