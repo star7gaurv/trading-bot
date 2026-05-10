@@ -50,3 +50,4 @@
 | 2026-05-09 15:00:11 | DOGE/USDT:USDT | SHORT | 1h59m | +0.82% | +1.23 | exit_signal | NEUTRAL | freqai_lgbm_v11_short |
 | 2026-05-09 20:01:31 | TAO/USDT:USDT | SHORT | 3h01m | -1.17% | -1.75 | exit_signal | NEUTRAL | freqai_lgbm_v11_short |
 | 2026-05-10 01:24:12 | XRP/USDT:USDT | LONG | 5h22m | -0.78% | -1.46 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v17_long |
+| 2026-05-10 05:35:52 | TRX/USDT:USDT | LONG | 3h05m | -0.73% | -1.36 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v17_long |
