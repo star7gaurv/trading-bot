@@ -188,8 +188,13 @@ def _parse_result_zip(zip_path: Path) -> dict | None:
                 "profit_factor": 0.0, "trade_count": 0
             }
 
-        wins = s.get("wins", 0)
-        win_rate = (wins / total_trades * 100) if total_trades > 0 else 0.0
+        # winrate is reported directly (0.0–1.0); fall back to wins/total
+        raw_wr = s.get("winrate", None)
+        if raw_wr is not None:
+            win_rate = round(float(raw_wr) * 100, 2)
+        else:
+            wins = s.get("wins", 0)
+            win_rate = round((wins / total_trades * 100), 2) if total_trades > 0 else 0.0
 
         # Sharpe from summary (annualised)
         sharpe = s.get("sharpe", s.get("sharpe_ratio", 0.0)) or 0.0
@@ -198,15 +203,9 @@ def _parse_result_zip(zip_path: Path) -> dict | None:
         dd_account = s.get("max_drawdown_account", 0.0) or 0.0
         max_dd = round(dd_account * 100, 2)
 
-        # Profit factor
-        gross_profit = s.get("profit_sum", 0.0) or 0.0
-        gross_loss   = abs(s.get("loss_sum", 0.0) or 0.0)
-        if gross_loss > 0:
-            profit_factor = round(gross_profit / gross_loss, 3)
-        elif gross_profit > 0:
-            profit_factor = 9.99
-        else:
-            profit_factor = 0.0
+        # Profit factor — FreqTrade 2026 reports this directly in the summary.
+        # Older approach (profit_sum / loss_sum) doesn't exist in this version.
+        profit_factor = round(float(s.get("profit_factor", 0.0) or 0.0), 3)
 
         return {
             "win_rate":      round(win_rate, 2),
@@ -326,6 +325,106 @@ def run_one(
 
     return metrics
 
+# ── Reparse ────────────────────────────────────────────────────────────────
+def reparse_all(grid_cfg: dict) -> None:
+    """
+    Re-read all v18 backtest ZIPs, extract combo params from freqai_identifier,
+    and regenerate _autobacktest_v18_results.csv with the fixed parser.
+    Run this after the campaign completes to correct any parser bugs.
+    """
+    import re as _re
+    criteria = grid_cfg["acceptance_criteria"]
+    windows  = grid_cfg["windows"]
+
+    fieldnames = [
+        "run", "window", "k_mult", "label_period", "ml_threshold",
+        "win_rate", "sharpe", "max_drawdown", "profit_factor",
+        "trade_count", "pass", "wr_pass", "sharpe_pass", "dd_pass", "pf_pass",
+        "timestamp"
+    ]
+
+    zips = sorted(RESULTS_DIR.glob("backtest-result-*.zip"), key=lambda p: p.stat().st_mtime)
+    v18_zips = []
+    for z in zips:
+        # Quick check: only v18 results
+        try:
+            with zipfile.ZipFile(z) as zf:
+                jn = [n for n in zf.namelist() if n.endswith(".json")][0]
+                with zf.open(jn) as jf:
+                    d = json.load(jf)
+            sk = next(iter(d.get("strategy", {})))
+            ident = d["strategy"][sk].get("freqai_identifier", "")
+            if not ident.startswith("v18_"):
+                continue
+        except Exception:
+            continue
+        v18_zips.append((z, d))
+
+    log.info(f"[reparse] Found {len(v18_zips)} v18 ZIPs")
+    rows = []
+    for z, d in v18_zips:
+        sk  = next(iter(d["strategy"]))
+        s   = d["strategy"][sk]
+        ident = s.get("freqai_identifier", "")
+        # Parse combo from identifier: v18_k{k}_l{l}_m{m}_{ts}
+        m = _re.match(r"v18_k([\d.]+)_l(\d+)_m([\d.]+)_(\d+)", ident)
+        if not m:
+            log.warning(f"[reparse] Could not parse identifier: {ident}")
+            continue
+        k_mult        = float(m.group(1))
+        label_period  = int(m.group(2))
+        ml_threshold  = float(m.group(3))
+        ts_val        = int(m.group(4))
+
+        metrics = _parse_result_zip(z)
+        if metrics is None:
+            continue
+
+        # Infer window from timerange
+        tr = s.get("timerange", "")
+        window_name = "bull" if tr.startswith("20240101") else "bear" if tr.startswith("20250101") else tr
+
+        passed = _grade(metrics, criteria)
+        rows.append({
+            "run":            len(rows) + 1,
+            "window":         window_name,
+            "k_mult":         k_mult,
+            "label_period":   label_period,
+            "ml_threshold":   ml_threshold,
+            "win_rate":       metrics["win_rate"],
+            "sharpe":         metrics["sharpe"],
+            "max_drawdown":   metrics["max_drawdown"],
+            "profit_factor":  metrics["profit_factor"],
+            "trade_count":    metrics["trade_count"],
+            "pass":           passed,
+            "wr_pass":        metrics["win_rate"]      >= criteria["win_rate"],
+            "sharpe_pass":    metrics["sharpe"]        >= criteria["sharpe"],
+            "dd_pass":        metrics["max_drawdown"]  <= criteria["max_drawdown"],
+            "pf_pass":        metrics["profit_factor"] >= criteria["profit_factor"],
+            "timestamp":      datetime.utcnow().isoformat(),
+        })
+
+    # Sort by window then combo
+    rows.sort(key=lambda r: (r["window"], r["k_mult"], r["label_period"], r["ml_threshold"]))
+    for i, r in enumerate(rows):
+        r["run"] = i + 1
+
+    with open(OUTPUT_CSV, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+    passes = [r for r in rows if r["pass"]]
+    log.info(f"[reparse] {len(passes)}/{len(rows)} PASS — CSV rewritten: {OUTPUT_CSV}")
+    for r in rows:
+        status = "✅" if r["pass"] else "❌"
+        log.info(
+            f"  {status} [{r['window']}] k={r['k_mult']} l={r['label_period']} "
+            f"m={r['ml_threshold']} → WR={r['win_rate']}% Sh={r['sharpe']} "
+            f"DD={r['max_drawdown']}% PF={r['profit_factor']}"
+        )
+
+
 # ── Main ───────────────────────────────────────────────────────────────────
 def main():
     parser = argparse.ArgumentParser(description="FinBuddy v18 backtest campaign")
@@ -333,11 +432,18 @@ def main():
     parser.add_argument("--window", choices=["bull", "bear", "both"], default="both",
                         help="Which time window(s) to run")
     parser.add_argument("--no-download", action="store_true", help="Skip data download step")
+    parser.add_argument("--reparse", action="store_true",
+                        help="Re-read all v18 ZIPs and regenerate CSV (use after campaign completes)")
     args = parser.parse_args()
 
     # Load grid config
     with open(GRID_JSON) as f:
         grid_cfg = json.load(f)
+
+    # Reparse mode — regenerate CSV from existing ZIPs with fixed parser
+    if args.reparse:
+        reparse_all(grid_cfg)
+        return
 
     criteria    = grid_cfg["acceptance_criteria"]
     windows     = grid_cfg["windows"]
