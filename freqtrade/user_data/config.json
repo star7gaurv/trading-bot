@@ -108,7 +108,7 @@
     },
     "stoploss": -0.08,
     "webhook": {
-        "enabled": true,
+        "enabled": false,
         "url": "https://n8n.star7gaurav.in/webhook/freqtrade-events",
         "webhookstatus": {
             "type": "status",
@@ -126,7 +126,8 @@
             "profit_ratio": "{profit_ratio}",
             "profit_abs": "{profit_abs}",
             "close_rate": "{close_rate}"
-        }
+        },
+        "_note": "Disabled 2026-05-10: N8N permanently disabled. Re-enable when self-hosted webhook receiver is built."
     },
     "freqai": {
         "enabled": true,

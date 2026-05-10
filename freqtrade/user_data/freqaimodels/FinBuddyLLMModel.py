@@ -1,6 +1,6 @@
 # pragma pylint: disable=missing-docstring, invalid-name
 """
-FinBuddyLLMModel — Custom FreqAI Model v3
+FinBuddyLLMModel — Custom FreqAI Model v4
 ==========================================
 Architecture:
   1. LightGBM trains on OHLCV + TA indicators (inherited from LightGBMClassifier)
@@ -8,13 +8,20 @@ Architecture:
   3. High-confidence signals get LLM confirmation via central llm_client.py
      Task chain "signal": nvidia-mistral-medium → nvidia-llama-70b → nvidia-kimi-k2
                           → openrouter-gpt-oss-20b → ... → raw LGBM if all fail
-  4. LLM outcome: CONFIRM keeps class / REJECT or HOLD overrides to 'hold'
+  4. LLM outcome:
+     - CONFIRM → signal passes (LightGBM raw used for subsequent candles in cooldown)
+     - REJECT / HOLD → signal suppressed AND verdict cached for full cooldown window
+       so subsequent candles for this pair are also blocked (sticky veto)
 
 Keys required (in freqtrade/.env):
   NVIDIA_API_KEY      — primary, 10 free models on NVIDIA NIM
   OPENROUTER_API_KEY  — fallback, :free tier models
 
 Rate limiting: per-pair cooldown (60 min). Resets on any successful LLM call.
+Bug fix v4 (2026-05-10): REJECT/HOLD verdicts now sticky for full cooldown period.
+  v3 bug: LLM rejection only suppressed pred_df at the moment of the call; the
+  NEXT candle's predict() would bypass the filter (cooldown active but no cached
+  verdict applied) and fire raw LightGBM — allowing trades the LLM just blocked.
 """
 
 import logging
@@ -65,6 +72,10 @@ class FinBuddyLLMModel(BASE_CLASS):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._last_llm_call: Dict[str, float] = {}
+        # Sticky veto cache: pair → (verdict, timestamp). REJECT/HOLD verdicts
+        # are re-applied on every predict() call for this pair until cooldown elapses,
+        # even though the LLM itself is not re-called (rate limiting still applies).
+        self._llm_verdict_cache: Dict[str, Tuple[str, float]] = {}
 
         if not _LLM_AVAILABLE:
             logger.warning("[FinBuddyLLMModel] llm_client not found — LLM confirmation disabled.")
@@ -87,7 +98,7 @@ class FinBuddyLLMModel(BASE_CLASS):
         if not _LLM_AVAILABLE:
             return pred_df, do_predict
 
-        pair    = dk.pair if hasattr(dk, "pair") else "UNKNOWN"
+        pair = dk.pair if hasattr(dk, "pair") else "UNKNOWN"
         # FreqAI classifier stores prediction in "&-s_label" (matches strategy's
         # set_freqai_targets target column). Probabilities are in "L" and "S".
         pred_col = "&-s_label"
@@ -106,6 +117,36 @@ class FinBuddyLLMModel(BASE_CLASS):
         else:
             last_do = int(do_predict[-1]) if len(do_predict) > 0 else 0
 
+        # ── Sticky veto check ─────────────────────────────────────────────────
+        # If a REJECT/HOLD was issued in the last COOLDOWN_SECONDS, apply it to
+        # ALL high-confidence signals during the veto window — even across new
+        # candles.  (v3 bug: rejection only applied to the prediction at the
+        # moment of the LLM call; next candle bypassed the filter via raw LGBM.)
+        cached = self._llm_verdict_cache.get(pair)
+        if cached is not None:
+            cached_verdict, cached_ts = cached
+            elapsed = time.time() - cached_ts
+            if elapsed < COOLDOWN_SECONDS:
+                if (
+                    cached_verdict in ("REJECT", "HOLD")
+                    and last_do == 1
+                    and last_class in ("L", "S")
+                    and confidence >= CONFIDENCE_THRESHOLD
+                ):
+                    pred_df.at[pred_df.index[-1], pred_col] = "hold"
+                    for prob_c in ("L", "S"):
+                        if prob_c in pred_df.columns:
+                            pred_df.at[pred_df.index[-1], prob_c] = 0.5
+                    remaining = int(COOLDOWN_SECONDS - elapsed)
+                    logger.debug(
+                        f"[FinBuddyLLMModel] {pair}: sticky {cached_verdict} applied "
+                        f"({remaining}s remaining in veto window)"
+                    )
+                return pred_df, do_predict
+            # Veto window expired — clear cache
+            del self._llm_verdict_cache[pair]
+
+        # ── Fresh LLM call ────────────────────────────────────────────────────
         if (
             last_do == 1
             and last_class in ("L", "S")
@@ -118,9 +159,11 @@ class FinBuddyLLMModel(BASE_CLASS):
             context = self._build_market_context(unfiltered_df, pair, lgbm_proxy)
             outcome = self._confirm_via_llm(pair, context)
 
-            if outcome == "CONFIRM":
-                logger.info(f"[FinBuddyLLMModel] {pair}: CONFIRM — keeping {last_class} (prob={last_prob:.3f})")
-            elif outcome in ("REJECT", "HOLD"):
+            # Cache REJECT/HOLD so the veto sticks for the full cooldown window.
+            # CONFIRM is NOT cached: subsequent candles can fire on raw LightGBM
+            # (we confirmed the direction; no need to block the pair for 60 min).
+            if outcome in ("REJECT", "HOLD"):
+                self._llm_verdict_cache[pair] = (outcome, time.time())
                 pred_df.at[pred_df.index[-1], pred_col] = "hold"
                 # Also zero out the probability columns so the strategy's 0.60 threshold is not met.
                 # The strategy gates on "L"/"S" proba columns, not on the label — setting
@@ -132,6 +175,8 @@ class FinBuddyLLMModel(BASE_CLASS):
                     f"[FinBuddyLLMModel] {pair}: {outcome} — suppressed {last_class} signal "
                     f"(prob reset to 0.5, was {last_prob:.3f})"
                 )
+            else:
+                logger.info(f"[FinBuddyLLMModel] {pair}: CONFIRM — keeping {last_class} (prob={last_prob:.3f})")
 
         return pred_df, do_predict
 
