@@ -55,3 +55,4 @@
 | 2026-05-10 16:07:35 | ATOM/USDT:USDT | LONG | 6h57m | +3.89% | +7.21 | exit_signal | NEUTRAL | freqai_lgbm_v18_long |
 | 2026-05-10 18:10:03 | TRX/USDT:USDT | LONG | 6h05m | +0.39% | +0.72 | exit_signal | NEUTRAL | freqai_lgbm_v18_long |
 | 2026-05-10 23:02:07 | ETH/USDT:USDT | LONG | 2h01m | +2.11% | +3.93 | exit_signal | NEUTRAL | freqai_lgbm_v18_long |
+| 2026-05-11 16:05:16 | XRP/USDT:USDT | LONG | 19h04m | +2.08% | +3.90 | exit_signal | NEUTRAL | freqai_lgbm_v18_long |
