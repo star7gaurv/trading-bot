@@ -210,6 +210,46 @@
       "proposed_by": "reasoning_agent",
       "reviewed_at": "2026-05-10",
       "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "btc_dominance_reversal_20260511",
+      "hypothesis": "When BTC dominance exceeds 58.5% for 6 consecutive hours, a mean-reversion trade should be initiated, expecting the correction within 24 hours. The trade involves going long on high-beta altcoins and short on BTC with reduced position size (0.5x).",
+      "timeframe": "1h",
+      "indicators": [
+        "BTC_Dominance"
+      ],
+      "entry_long": "BTC_Dominance > 58.5 for 6 consecutive hours",
+      "entry_short": "BTC_Dominance > 5.85 for 6 consecutive hours",
+      "exit_rule": "Close position within 24h of entry",
+      "regime_filter": [
+        "NEUTRAL"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-11",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-11",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "volatility_breakout_20260511",
+      "hypothesis": "In low volatility regime (F&G between 45-55, Google Trends <=55, 1h realized vol < 1.2%), a 0.3% break of 24h range should trigger a 2x volatility spike. Trade this with long gamma via ATM straddles on ETH-PERP.",
+      "timeframe": "1h",
+      "indicators": [
+        "fear_greed_index",
+        "google_trends",
+        "realized_volatility"
+      ],
+      "entry_long": "fear_greed_index between 45 and 55 and realized_volatility < 1.2",
+      "entry_short": "fear_greed_index between 45 and 55 and realized_volatility < 1.2",
+      "exit_rule": "Close position on 0.3% breakout of 24h range",
+      "regime_filter": [
+        "NEUTRAL"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-11",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-11",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
     }
   ]
 }
