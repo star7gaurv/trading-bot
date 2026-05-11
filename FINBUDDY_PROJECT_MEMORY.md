@@ -4,8 +4,8 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status:** 🟢 v17 live · 25 pairs · Walk-forward #5 running · FinBuddyLLMModel active · 36 closed trades  
-**Last Updated:** 2026-05-09 evening (Claude Code — v17 symmetric barriers, LLM layer bugs fixed, full stale-state audit, walk-forward #5 started)
+**Status:** 🟡 v18 code on v17 models · 25 pairs · v18 campaign 0/24 FAIL · v19 asymmetric barriers next  
+**Last Updated:** 2026-05-11 (Claude Code — v18 campaign complete, fee-drag root cause diagnosed, v19 plan set)
 
 ---
 
@@ -57,7 +57,7 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 ---
 
-## 📈 Backtest History — Futures (v6 → v17)
+## 📈 Backtest History — Futures (v6 → v18)
 
 ### Rounds 1–5 (v6 → v10): Stop-Loss Architecture Sweep
 
@@ -84,18 +84,37 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 **Decision**: CONDITIONAL GO. Deploy, run dry-run; walk-forward OOS is the next gate.
 
+### v18 Campaign (2026-05-10): 24 Runs — 0/24 PASS
+
+**Grid**: k_mult∈{1.0,1.5,2.0} × label_period∈{12,24} × ml_threshold∈{0.60,0.65} × 2 windows (bull+bear)
+
+| Metric | Range across all 24 runs | Target | Pass? |
+|---|---|---|---|
+| Win Rate | 61–64% | >50% | ✅ Every combo |
+| Max Drawdown | 1.57–4.60% | <20% | ✅ Every combo |
+| Sharpe | −0.12 to −4.88 | >0.5 | ❌ Every combo |
+| Profit Factor | 0.83–0.996 | >1.2 | ❌ Every combo |
+
+**Root cause**: Symmetric 1:1 R:R (k_tp=k_sl). Fee drag (~$196/yr at 4.6 trades/day) exactly cancels gross edge. Losers held 2× longer (14h vs 7h), adding funding fee drag.
+
+**Grid confirmed inert**: k_mult, label_period, and ml_threshold are all insufficient. The structural R:R must change.
+
+**Fix — v19**: Asymmetric barriers `K_TP=2.0×ATR, K_SL=1.0×ATR`. At 62% WR → theoretical PF=3.26.
+
 ---
 
-## 🚀 Current State
+## 🚀 Current State (2026-05-11)
 
 | Component | Status |
 |---|---|
-| **FreqTrade** | ✅ Running, dry-run, AiGuardrailStrategy |
-| **N8N v4 Pipeline** | ✅ Active, 15-min signal generation, Groq Llama 3.3 70B |
-| **Groq AI** | ✅ Live, free tier, ~200ms response |
-| **Strategy Registry** | ✅ Created, rsi_macd_ai_v1 active (pending backtest) |
-| **Memory Vault** | ✅ Obsidian structure ready |
-| **Phase 0** | 🔴 In progress (4/5 complete) |
+| **FreqTrade** | ✅ Running, dry-run, futures isolated |
+| **Strategy** | ✅ FinBuddyFreqAI v18 code (custom_stoploss NOW ACTIVE — was dead bug in v17) |
+| **FreqAI identifier** | `finbuddy_v17_sym_1778353539` (v17 models, v18 code) |
+| **FreqAI Model** | ✅ FinBuddyLLMModel (LightGBM + Grok-3-mini LLM screen) |
+| **N8N Pipeline** | 🔴 Permanently disabled |
+| **All Crons** | ✅ Live (Phase 2–5, watchdog, postmortem, daily summary, WF notify) |
+| **Walk-forward** | ⏸️ Paused — pointless until v19 fixes R:R |
+| **Phase 10 go-live** | ⬜ BLOCKED |
 
 ---
 

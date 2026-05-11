@@ -1,341 +1,105 @@
 # 🤝 FinBuddy — Handoff Note for Claude Code
 
 **Written by:** Claude Code  
-**Date:** 2026-05-04  
+**Date:** 2026-05-11  
 **For:** Claude Code (next session)  
-**Branch:** `gaurav`
+**Branch:** `master`
 
 ---
 
-## 🔴 Round 6 Grid (v13) — COMPLETE, VERDICT: FAIL BUT MAJOR PROGRESS (2026-05-05)
+## ✅ Where We Are — Current State
 
-- Grid: 90/90 combos done. Window 20240101-20250101 (bull, BTC +122%).
-- **Best:** Sharpe **-1.10**, WR 44.4%, PF 0.868, DD 4.7%, Trades 349/yr at ml_threshold=0.70, sl=-0.08.
-- **Verdict: DO NOT PROMOTE.** But exit bug fixes produced massive improvement.
+| Item | Value |
+|---|---|
+| Live strategy | `FinBuddyFreqAI.py` **v18 code** |
+| Live FreqAI identifier | `finbuddy_v17_sym_1778353539` (v17 models, v18 stoploss logic) |
+| Enter tags in Telegram | `freqai_lgbm_v18_long` / `freqai_lgbm_v18_short` |
+| FreqAI model | `FinBuddyLLMModel` (LightGBM + Grok-3-mini screen) |
+| Pairs | 25, 1h TF, futures isolated |
+| Walk-forward | ⏸️ Paused — strategy architecture needs fixing before it's worth running |
 
-### R6 vs all prior rounds:
-| Metric | R4 (v11) | R5 (v12) | R6 (v13) | Target |
-|---|---|---|---|---|
-| Best Sharpe | -5.43 | -5.43 | **-1.10** | > 0.5 |
-| Best WR | 51.5% | 51.5% | 44.4% | > 50% |
-| Best PF | 0.749 | 0.749 | **0.868** | > 1.2 |
-| Best DD | 12.4% | 12.4% | **4.7%** | < 20% |
-| Min trades/yr | 979 | 979 | **349** | < 500 |
+### Key v18 Code Changes (shipped 2026-05-10, commits `840fad4`, `65b8064`)
+1. **`custom_stoploss` is now ACTIVE** — v17 had two bugs making it a no-op (both `>0` checks discarded valid negative stops + trail activated at wrong level). Fixed in v18.
+2. **datasieve `Pipeline.features_in` shim** — monkey-patch at module load. Prevents `AttributeError` in FreqAI backtesting when training fails mid-fold.
+3. **K_MULT / ML_THRESHOLD via ENV VARs** (`FREQAI_K_MULT`, `FREQAI_ML_THRESHOLD`, default 2.0 / 0.60)
 
-DD ✅ and trades/yr ✅ now pass. Still failing: Sharpe, WR, PF.
+---
 
-### What the v13 exit fixes confirmed:
-- Bug A confirmed: stoploss now doesn't matter (-0.08/-0.10/-0.12 give identical results → custom_stoploss truly in control)
-- Bug B confirmed: PF improved 0.749→0.868 (avg_win/avg_loss now 1.087, up from 0.706)
-- Bug C confirmed: WR dropped 51.5%→44.4% — the previous 51.5% WR was ARTIFICIAL (quick exits at 0.45 threshold counted as small wins, masking the model's true accuracy)
+## ❌ v18 Campaign — Completed 2026-05-10, 0/24 PASS
 
-### Root cause of remaining failure — label horizon mismatch:
-- Labels say "will hit TP within 12 candles (3h)"
-- Trades have NO TIME-LIMIT exit → can run for 24-48+ hours
-- A trade labeled "L" (TP hit at 3h) may continue, reverse, and hit stoploss at hour 8
-- This makes trade WR (44%) different from label accuracy (unknown, probably higher)
-- Model is "right" about 3-hour direction but trade outcome is measured over unlimited time
+**24 runs**: k_mult∈{1.0,1.5,2.0} × label_period∈{12,24} × ml_threshold∈{0.60,0.65} × bull+bear windows.
 
-### Next fix for Perplexity (v14 options):
-**Option A (most likely fix): Add `custom_exit` time-limit at 24 candles (6h)**
-  - Exit all trades at 6h if not already profitable or stopped out
-  - Aligns trade duration with label horizon → trade WR ≈ model accuracy
-  - Simple one-method addition to strategy
-
-**Option B: Increase label_period from 12→24-36 candles**
-  - Labels trained on 6-9h horizon instead of 3h
-  - More candles = higher label accuracy for actual trade duration
-  - Risk: more H labels (longer horizon → more time-barriers)
-
-**Option C: Increase training data**
-  - Current: 60 days. Try 90 days (13,000 labeled candles)
-  - More data → better generalization, less sampling noise at 349 trades/yr
-
-## 🔴 Round 5 Grid (v12) — COMPLETE, VERDICT: FAIL (2026-05-05)
-
-- Grid: 90/90 combos done. Window 20240101-20250101 (bull, BTC +122%).
-- **Best real result:** Sharpe **-5.43**, WR 51.5%, PF 0.749, Trades 979/yr at ml_threshold=0.70, sl=-0.02.
-- **Verdict: DO NOT PROMOTE.** 90/90 combos negative Sharpe.
-- v12 changes (Hold class, multi-TF, ATR multiplier fix) did NOT improve over R4. Same best Sharpe.
-
-### R5 vs R4 comparison:
-| | R4 (v11) | R5 (v12) |
+| Metric | All 24 runs | Target |
 |---|---|---|
-| Best Sharpe | -5.43 | -5.43 |
-| Best WR | 51.5% | 51.5% |
-| Best PF | 0.749 | 0.749 |
-| Trade range | 979–4264/yr | 979–4264/yr |
+| Win Rate | 61–64% ✅ | >50% |
+| Max Drawdown | 1.57–4.60% ✅ | <20% |
+| Sharpe | −0.12 to −4.88 ❌ | >0.5 |
+| Profit Factor | 0.83–0.996 ❌ | >1.2 |
 
-### Why v12 failed to improve — new findings:
-1. **Hold class P(H) < 0.4 almost always** — not_hold filter is effectively inactive. P(H) is typically 0.05–0.25; the 0.40 threshold never blocks entries.
-2. **Multi-TF features (1h+4h) degraded predictions** — added feature noise with 30-day training window. More features + same training data = worse model.
-3. **Hard stoploss floor (-2% to -3%) overrides ATR-based custom_stoploss** — when ATR-stop > hard floor (common in volatile crypto), the config stoploss is the actual exit. Changing ATR multipliers in code has no effect in these cases. R:R stuck at 0.749 PF.
-4. **v12 Sharpe distribution widened** — v12 worst is -34 Sharpe (vs -22 in R4); multi-TF features create more instability.
+**Root cause — fee drag eats the edge:**
+- Trade count: ~1,700/yr (4.6/day at max 4 positions)
+- Fee drag: 1,700 × $144 avg stake × 0.08% round-trip ≈ **$196/yr** on $10k wallet
+- Gross profit best case (k=1.0, bull): ~$195 → net: **−$9**
+- Losers held 2× longer than winners (14h vs 7h avg) → extra funding fee drag on losing positions
 
-### Root insight for Perplexity:
-The `stoploss` config parameter (hard floor) is likely the ACTIVE stop in most losing trades (ATR-based stops often exceed -3%). This neutralizes all code-level ATR tuning. PF is driven by the config floor, not custom_stoploss geometry.
+**Grid was inert**: Sweeping k_mult, label_period, ml_threshold cannot fix a structural R:R problem.
 
-**Action needed (Perplexity decision):**
-- Option A: Test with wider hard floor (stoploss=-0.05/-0.08) so ATR-based exits actually control the R:R
-- Option B: Remove multi-TF features, revert to 2-class (no H), keep only Bug #1 fix (k_sl alignment)  
-- Option C: Switch primary timeframe to 1h (fewer but higher quality signals)
-
-## 🔴 Round 4 Grid — COMPLETE, VERDICT: FAIL (2026-05-04)
-
-- Grid: 90/90 combos done. Window 20240101-20250101 (bull, BTC +122%).
-- **Best:** Sharpe **-5.43**, WR 51.5%, PF 0.749 at ml_threshold=0.70, sl=-0.02 (run 28).
-- **Verdict: DO NOT PROMOTE.** All 90 combos negative Sharpe.
-- promote_best_config.py refused fallback (Sharpe>0 floor blocked it).
-- No walkforward.md written (verdict is failure, not promotion).
-
-### Why R4 failed (4 confirmed bugs, full plan at `finbuddy_memory/research/v12_strategy_plan.md`):
-1. Label `k_sl=1.0` vs `custom_stoploss -2.0×ATR` — mismatch, model trains on stop that never fires.
-2. Hold class collapsed to NaN — model cannot abstain → 1000–4000 trades/yr structural over-trading.
-3. FreqAI `include_timeframes=["15m"]` only — model blind to 1h/4h context.
-4. Trailing geometry caps winners at +1.5×ATR, losers run to -2×ATR → R:R ≈ 0.75:1.
-
-## ✅ Task 5 Complete (2026-05-04)
-
-- FinBuddyLLMModel.py deployed (Classifier base, commit c58c8c1)
-- config.json freqaimodel → FinBuddyLLMModel
-- Container restarted and API confirmed up
-
-## 📋 Go-Live Checklist (2026-05-04 — POST-R4)
-
-```
-=== FinBuddy Go-Live Checklist ===
-
-  [FAIL] Walk-forward verdict — R4 FAILED (no walkforward.md written by promote)
-  [PASS] trading_mode = futures
-  [PASS] margin_mode = isolated
-  [PASS] config.json exchange.key is empty — credentials via env var only
-  [PASS] .env FREQTRADE__EXCHANGE__SECRET set
-  [PASS] pairlists[0] = StaticPairList
-  [PASS] label_period_candles = 12
-  [PASS] RiskEngine importable — stake_multiplier(NEUTRAL)=0.75
-  [PASS] docker freqtrade running
-  [PASS] dry_run = True (safety check)
-  [WARN] Binance API has Futures permission — manually verify on binance.com
-
-=== Summary: 9/11 PASS | 1 FAIL | 1 WARN ===
-Blockers:
-  • Walk-forward verdict (build v12, re-run grid, promote)
-```
-
-**Phase 10 go-live blocked.** All infra checks pass; only blocker is the
-strategy itself failing the walk-forward gate. v12 plan must land before
-any further `dry_run=false` work.
+**Results CSV**: `_autobacktest_v18_results.csv` (committed)
 
 ---
 
-**Written by:** Perplexity AI (original 2026-05-03), updated by Claude Code 2026-05-04
+## 🔬 Next: v19 — Asymmetric Barriers
 
-> This file is the **live action queue** for Claude Code. It should always reflect
-> the **next concrete ops steps** on the server, assuming the repo is already
-> up to date. Older backtest detail and v10 walk-forward history is now
-> captured in `CLAUDE.md` and `FINBUDDY_PROJECT_MEMORY.md`.
+**The fix**: Split `K_MULT` into separate `K_TP` and `K_SL`:
+
+```python
+K_TP = float(os.getenv("FREQAI_K_TP", "2.0"))  # take-profit barrier: 2×ATR
+K_SL = float(os.getenv("FREQAI_K_SL", "1.0"))  # stop-loss barrier:  1×ATR
+```
+
+**Why it works**: At 62% WR → theoretical PF = (0.62 × 2.0) / (0.38 × 1.0) = **3.26** — far above fee drag. Break-even WR drops from 52.5% → 35%.
+
+**Training labels** must match: "L" fires only when price reaches +K_TP×ATR before −K_SL×ATR. Sparser signal, but each one confirms a real move.
+
+**`custom_stoploss` changes needed**:
+- Initial stop: `stoploss_from_open(-K_SL×ATR, current_profit, ...)`
+- Trail lock: activates when `current_profit > K_TP×ATR`, locks at `+K_TP×ATR` from open
+
+**Proposed v19 grid**: K_TP ∈ {1.5, 2.0, 2.5} × K_SL ∈ {0.8, 1.0} × ml_threshold ∈ {0.60, 0.65, 0.70} = 18 combos × 2 windows = **36 runs**
+
+**Campaign runner**: `scripts/autobacktest_v18.py` (rename/update to v19). Update `autobacktest_v18_grid.json`. Change ENV VAR names from `FREQAI_K_MULT` → `FREQAI_K_TP` + `FREQAI_K_SL` in both strategy and grid runner.
 
 ---
 
-## ✅ Current State (May 4 2026 PM — Claude Code)
+## 📁 Key Files
 
-- v11.2 live in docker, Binance futures connected (dry-run), FinBuddyFreqAI v11 loaded
-- RiskEngine wired into custom_stake_amount: regime-aware stake sizing active (NEUTRAL → 0.75×)
-- label_period_candles=12 in both config.json and backtest_config.json
-- ml_threshold grid extended to [0.50, 0.55, 0.60, 0.65, 0.70] (90 total combos)
-- finbuddy_memory/regimes/ bind-mounted into container at /freqtrade/finbuddy_memory/regimes/
-- Bull grid running: BACKTEST_TIMERANGE=20240101-20250101, PID 327995, /tmp/bull_futures_backtest.log
-- Pending: walk-forward result from current grid, Phase 10 go-live decision
-
----
-
-## ✅ What’s Already Done On Server (From Previous Session — 2026-05-03)
-
-You reported the following in your **FINAL REPORT (2026-05-03)**:
-
-1. **FreqTrade Container Status**  
-   - ✅ RUNNING — container up for ~29 hours  
-   - `FinBuddyFreqAI` **v11** loaded  
-   - Accepting API calls on port 8080
-
-2. **Crontab (core automation)**  
-   These jobs are installed and live:
-   ```cron
-   */15 * * * * python3 /home/ubuntu/var/www/html/trade/freqtrade/user_data/scripts/fetch_all_external.py >> /home/ubuntu/.finbuddy/logs/data_fetcher.log 2>&1
-   0 */4 * * * python3 /home/ubuntu/var/www/html/trade/freqtrade/user_data/scripts/hmm_regime_detector.py >> /home/ubuntu/.finbuddy/logs/hmm_regime.log 2>&1
-   */15 * * * * python3 /home/ubuntu/var/www/html/trade/finbuddy_memory/scripts/memory_writer.py && bash /home/ubuntu/var/www/html/trade/finbuddy_memory/scripts/git_commit.sh >> /home/ubuntu/.finbuddy/logs/memory_writer.log 2>&1
-   0 2 * * * python3 /home/ubuntu/var/www/html/trade/freqtrade/user_data/scripts/karpathy/run_loop.py >> /home/ubuntu/.finbuddy/logs/karpathy.log 2>&1
-   */5 * * * * python3 /home/ubuntu/var/www/html/trade/freqtrade/user_data/scripts/executor/executor.py >> /home/ubuntu/.finbuddy/logs/executor.log 2>&1
-   ```
-
-3. **Executor `/health`**  
-   - ✅ `Executor OK: 0 signals processed (DB initialized and functional)` — schema OK, no signals yet
-
-4. **TradingView Webhook**  
-   - 🔴 **Abandoned (2026-05-04)** — TradingView alerts require paid plan  
-   - FreqAI is the sole signal source; TradingView integration not needed
-
-5. **Phases 0–7**  
-   - ✅ All 7 phases in `tasks/TASKS.md` marked as **complete or deployed** as per your report  
-   - The only partial is **Phase 6** (TradingView): app file written, but dependencies missing and process not started
-
-This handoff assumes all of the above is still true at the start of your next session.
+| File | Purpose |
+|---|---|
+| `freqtrade/user_data/strategies/FinBuddyFreqAI.py` | Active strategy — v18 code |
+| `freqtrade/user_data/config.json` | Live bot config (identifier: `finbuddy_v17_sym_1778353539`) |
+| `freqtrade/user_data/backtest_config.json` | Backtest-only config (1h, 5 pairs, no secrets) |
+| `scripts/autobacktest_v18.py` | Grid campaign runner — reuse/fork for v19 |
+| `scripts/autobacktest_v18_grid.json` | Grid definition — update for v19 |
+| `_autobacktest_v18_results.csv` | v18 results with corrected PF values |
 
 ---
 
-## 📌 Your Next Actions (In Order)
+## ⚠️ Hard-Learned Rules for Backtesting
 
-### 1. Sync Repo & Read Context
-
-```bash
-cd /home/ubuntu/var/www/html/trade
-git pull origin gaurav
-```
-
-Then skim these files (they have been updated to reflect your last session):
-- `CLAUDE.md` — master project context
-- `FINBUDDY_PROJECT_MEMORY.md` — high-level status (now includes Phases 8–10 and your crontab)
-- `tasks/TASKS.md` — authoritative phase list + statuses
-- `tasks/phase-6-tradingview.md` — detailed TradingView plan
-
-You do **not** need to re-read the huge historical backtest sections — those are for Perplexity.
+1. **Always `docker-compose run --rm --no-deps`** — never `docker exec` for backtesting. Running in the live container triggers datasieve state conflicts.
+2. **Download needs `--prepend` to fill backwards** — `download-data` only appends to file end. DOGE needed `--prepend 20230901-20240115` to cover FreqAI's 90-day warmup before the bull window.
+3. **Config path inside container**: only `./user_data:/freqtrade/user_data` is mounted. Use `/freqtrade/user_data/backtest_config.json`, not `/freqtrade/scripts/...`.
+4. **After campaign: always `--reparse`** — running process has old parser in memory. Run `python3 scripts/autobacktest_v18.py --reparse` after campaign completes to regenerate CSV with fixed parser.
+5. **Profit factor field**: FreqTrade 2026 reports `profit_factor` directly in the summary JSON. Do NOT compute from `profit_sum`/`loss_sum` (they don't exist in this version).
 
 ---
 
-### 2. Fix Phase 6: Start TradingView Webhook Service
+## 🔴 What NOT To Do
 
-Goal: get `/tradingview/health` returning 200 OK via Nginx.
-
-#### 2.1 Install FastAPI + uvicorn (if not installed)
-
-```bash
-cd /home/ubuntu/var/www/html/trade
-pip install fastapi uvicorn --break-system-packages
-```
-
-You can verify with:
-```bash
-python3 -c "import fastapi, uvicorn; print('fastapi version', fastapi.__version__)"
-```
-
-#### 2.2 Start the webhook receiver
-
-```bash
-cd /home/ubuntu/var/www/html/trade/freqtrade/user_data/scripts/tradingview
-nohup uvicorn webhook_receiver:app --host 0.0.0.0 --port 9999 --log-level warning \
-  >> /home/ubuntu/.finbuddy/logs/tradingview_webhook.log 2>&1 &
-
-sleep 3
-curl -s http://localhost:9999/health
-```
-
-You should see a small JSON with a `status` field. If it errors, check the log file.
-
-#### 2.3 Ensure it starts on reboot
-
-You already added an `@reboot` cron line when the file was created. Verify it exists:
-
-```bash
-crontab -l | grep tradingview || echo "No tradingview @reboot cron found"
-```
-
-If missing, add:
-```bash
-(crontab -l 2>/dev/null; echo "@reboot cd /home/ubuntu/var/www/html/trade/freqtrade/user_data/scripts/tradingview && uvicorn webhook_receiver:app --host 0.0.0.0 --port 9999 --log-level warning >> /home/ubuntu/.finbuddy/logs/tradingview_webhook.log 2>&1 &") | crontab -
-```
-
-#### 2.4 Verify Nginx proxy
-
-There should already be a `location /tradingview` block in the relevant site config pointing to `http://127.0.0.1:9999`. Sanity check:
-
-```bash
-grep -R "tradingview" -n /etc/nginx/sites-available
-nginx -t && sudo systemctl reload nginx
-curl -s https://trade.star7gaurav.in/tradingview/health
-```
-
-If the last curl returns JSON with 200 OK, Phase 6 is now **fully live**.
-
-Update status:
-- `tasks/phase-6-tradingview.md` → mark webhook tasks as ✅
-- `tasks/TASKS.md` → Phase 6 `⚠️ Partial` → `✅ Live`
-
-Commit:
-```bash
-cd /home/ubuntu/var/www/html/trade
-git add tasks/phase-6-tradingview.md tasks/TASKS.md
-git commit -m "phase6: TradingView webhook receiver live"
-git push origin gaurav
-```
+- Do NOT run more v18 backtests — the grid is exhausted and inert. The issue is structural R:R, not parameter tuning.
+- Do NOT restart walk-forward until v19 shows PF>1.2 in at least the bull window.
+- Do NOT modify `finbuddy_memory/` contents manually — owned by cron scripts.
 
 ---
 
-### 3. Light Sanity Checks on All Crons
-
-Do a quick one-pass check that each cron’s output looks healthy — **no deep dive**, just spot-check:
-
-```bash
-tail -n 20 /home/ubuntu/.finbuddy/logs/data_fetcher.log
-tail -n 20 /home/ubuntu/.finbuddy/logs/hmm_regime.log
-tail -n 20 /home/ubuntu/.finbuddy/logs/memory_writer.log
-tail -n 20 /home/ubuntu/.finbuddy/logs/karpathy.log
-tail -n 20 /home/ubuntu/.finbuddy/logs/executor.log
-```
-
-If any script is erroring repeatedly (stack traces, ImportError, etc.):
-- Fix only **obvious** issues (missing pip packages, bad paths)
-- Re-run that script once manually to confirm it completes without exceptions
-- Leave complex logic/strategy issues to Perplexity to change in the repo
-
-If everything looks clean, you don’t need to touch anything else here.
-
----
-
-### 4. Confirm FreqTrade v11 Health (Quick Smoke Test)
-
-A short health check on the live bot:
-
-```bash
-curl -s -u bot:REDACTED-FREQTRADE__API_SERVER__PASSWORD http://localhost:8080/api/v1/status | python3 -m json.tool | head -40
-curl -s -u bot:REDACTED-FREQTRADE__API_SERVER__PASSWORD http://localhost:8080/api/v1/profit | python3 -m json.tool | grep -E "profit_all|trade_count|winning_trades|max_drawdown"
-```
-
-You’re checking for:
-- API responds quickly
-- No obvious error messages in the JSON
-- `dry_run` true, `trade_count` reasonable, `max_drawdown` small
-
-No further changes needed here unless you see clear red flags.
-
----
-
-### 5. If You Have Extra Budget — Tag the Current State in Git
-
-Optional but nice: create a lightweight git tag for this “infra-complete” milestone:
-
-```bash
-cd /home/ubuntu/var/www/html/trade
-git tag -a v0.7-infra-complete -m "Phases 0-7 wired; executor + memory + regimes + research live"
-git push origin v0.7-infra-complete
-```
-
-This gives us a stable reference point before any future label/strategy changes.
-
----
-
-## 🧠 What NOT To Do in This Session
-
-- Do **not** run new long backtests, walk-forward jobs, or hyperopt unless explicitly added to this file by Perplexity.
-- Do **not** modify strategy logic (`FinBuddyFreqAI.py`) or FreqAI models on your own.
-- Do **not** touch `finbuddy_memory/` contents manually — they are now owned by cron scripts.
-
-Your job for this session is **ops & verification only**:
-- Get the TradingView webhook service running
-- Sanity-check the existing crons and v11 health
-- Update phase/task statuses accordingly
-
-Anything that looks like “research” or “strategy design” belongs to Perplexity and will show up here in a future revision of this file.
-
----
-
-*End of handoff — 2026-05-03. When you finish these steps, commit any status/README updates you make so Perplexity sees them next session.*
+*End of handoff — 2026-05-11*
