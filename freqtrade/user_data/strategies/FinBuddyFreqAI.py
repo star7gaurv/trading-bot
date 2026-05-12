@@ -377,19 +377,21 @@ class FinBuddyFreqAI(IStrategy):
         )
         return dataframe
 
+    # NOTE: This function was intentionally left misnamed as `feature_engineering_std`
+    # (instead of `feature_engineering_standard`) so it is NEVER called by FreqTrade.
+    # Reason: enabling it adds %-prefixed features (temporal + raw-price) that the live
+    # models were NOT trained on → causes feature-count mismatch → prediction crash.
+    # To enable: bump FreqAI identifier (forces full retrain) AND rename to
+    # `feature_engineering_standard`. Scheduled for v19 identifier bump.
     def feature_engineering_std(
         self, dataframe: DataFrame, metadata: dict, **kwargs
     ) -> DataFrame:
+        """DEAD CODE — do not rename until new identifier forces full retrain."""
         dataframe["%-day_of_week"] = pd.to_datetime(dataframe["date"]).dt.dayofweek
         dataframe["%-hour_of_day"] = pd.to_datetime(dataframe["date"]).dt.hour
         dataframe["%-raw_close"] = dataframe["close"]
         dataframe["%-raw_volume"] = dataframe["volume"]
         dataframe["%-raw_open"] = dataframe["open"]
-
-        tv = self._get_tradingview_signal()
-        dataframe["%-tv_supertrend_bullish"] = tv["tv_supertrend_bullish"]
-        dataframe["%-tv_signal_age_minutes"] = tv["tv_signal_age_minutes"]
-
         return dataframe
 
     # ------------------------------------------------------------------ #

@@ -1,23 +1,33 @@
 # pragma pylint: disable=missing-docstring, invalid-name
 """
-FinBuddyLLMModel — Custom FreqAI Model v4
+FinBuddyLLMModel — Custom FreqAI Model v5
 ==========================================
 Architecture:
   1. LightGBM trains on OHLCV + TA indicators (inherited from LightGBMClassifier)
   2. predict() checks signal confidence (prob deviation from 0.5)
-  3. High-confidence signals get LLM confirmation via central llm_client.py
+  3. LLM confirmation via central llm_client.py — but ONLY for medium-confidence signals.
+     Very high-confidence signals (confidence >= AUTO_CONFIRM_THRESHOLD) bypass LLM
+     and auto-confirm. Reason: LightGBM at 90%+ confidence has seen 174 features over
+     90 days; a 7-line text summary to an LLM cannot improve on that, and the LLM was
+     empirically rejecting 91% of signals including 90%+ probability predictions.
      Task chain "signal": nvidia-mistral-medium → nvidia-llama-70b → nvidia-kimi-k2
                           → openrouter-gpt-oss-20b → ... → raw LGBM if all fail
   4. LLM outcome:
-     - CONFIRM → signal passes (LightGBM raw used for subsequent candles in cooldown)
-     - REJECT / HOLD → signal suppressed AND verdict cached for full cooldown window
+     - CONFIRM → signal passes
+     - REJECT / HOLD → signal suppressed AND verdict cached for COOLDOWN_SECONDS
        so subsequent candles for this pair are also blocked (sticky veto)
 
 Keys required (in freqtrade/.env):
   NVIDIA_API_KEY      — primary, 10 free models on NVIDIA NIM
   OPENROUTER_API_KEY  — fallback, :free tier models
 
-Rate limiting: per-pair cooldown (60 min). Resets on any successful LLM call.
+Rate limiting: per-pair cooldown (30 min). Resets on any successful LLM call.
+Bug fix v5 (2026-05-12): Auto-confirm very high confidence signals (proba >= 0.90).
+  Root cause of v4 issue: LLM was rejecting 91% of all signals, including 90%+
+  confidence predictions from LightGBM. LLM has no access to the 174 features or
+  historical accuracy — it was making worse decisions than the raw ML model.
+  Fix: bypass LLM for confidence >= 0.40 (proba >= 0.90 or proba <= 0.10).
+  Also reduced COOLDOWN_SECONDS 3600→1800 to reduce sticky-veto overhang.
 Bug fix v4 (2026-05-10): REJECT/HOLD verdicts now sticky for full cooldown period.
   v3 bug: LLM rejection only suppressed pred_df at the moment of the call; the
   NEXT candle's predict() would bypass the filter (cooldown active but no cached
@@ -52,8 +62,10 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-CONFIDENCE_THRESHOLD = 0.05   # prob must deviate >5% from 0.5 to trigger LLM
-COOLDOWN_SECONDS     = 3600   # 60-min per-pair cooldown
+CONFIDENCE_THRESHOLD    = 0.05   # prob must deviate >5%  from 0.5 to trigger LLM check
+AUTO_CONFIRM_THRESHOLD  = 0.40   # prob deviation >= 40% → auto-confirm, skip LLM
+                                  # (proba_L >= 0.90 or proba_L <= 0.10 — ML is very sure)
+COOLDOWN_SECONDS        = 1800   # 30-min per-pair veto cooldown (was 60 min in v4)
 
 _SIGNAL_SYSTEM = (
     "You are FinBuddy's trade validator for a 25-pair crypto futures bot "
@@ -153,6 +165,18 @@ class FinBuddyLLMModel(BASE_CLASS):
             and confidence >= CONFIDENCE_THRESHOLD
             and self._is_cooldown_elapsed(pair)
         ):
+            # v5: Very high-confidence ML signals auto-confirm — no LLM call.
+            # LightGBM at proba >= 0.90 has processed 174 features and 90 days of
+            # training data. A 7-line text summary cannot add value over that, and
+            # live data showed LLM rejecting 91% of signals including 90%+ proba ones.
+            if confidence >= AUTO_CONFIRM_THRESHOLD:
+                logger.info(
+                    f"[FinBuddyLLMModel] {pair}: AUTO-CONFIRM "
+                    f"(confidence={confidence:.3f} >= {AUTO_CONFIRM_THRESHOLD}) — "
+                    f"keeping {last_class} (prob={last_prob:.3f})"
+                )
+                return pred_df, do_predict
+
             lgbm_proxy = (last_prob - 0.5) * 2.0
             if last_class == "S":
                 lgbm_proxy = -abs(lgbm_proxy)
