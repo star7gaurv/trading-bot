@@ -250,6 +250,48 @@
       "proposed_by": "reasoning_agent",
       "reviewed_at": "2026-05-11",
       "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "mean_reversion_scalping_20260512",
+      "hypothesis": "In a low-volatility, neutral market regime, short-term price swings revert within a 2-hour window, enabling scalping strategies on 1h timeframe.",
+      "timeframe": "1h",
+      "indicators": [
+        "close",
+        "volatility_mean_ask_average",
+        "volatility_mean_bid_average"
+      ],
+      "entry_long": "price_deviation_percent <= -0.4 and regime == 'NEUTRAL'",
+      "entry_short": "price_deviation_percent >= 0.4 and regime == 'NEUTRAL'",
+      "exit_rule": "((trade_duration >= 2 and price_deviation_percent <= 0.2 and price_deviation_percent >= -0.2) or (trade_duration >= 4))",
+      "regime_filter": [
+        "NEUTRAL"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-12",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-12",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "funding_divergence_alt_drift_20260512",
+      "hypothesis": "When alt-coin funding rates exceed BTC funding by more than 5 bps, the alt-coin underperforms BTC over the next 6 hours.",
+      "timeframe": "1h",
+      "indicators": [
+        "funding_rate",
+        "base_currency",
+        "quote_currency"
+      ],
+      "entry_long": "funding_rate_spread >= 0.0005 and base_currency == 'BTC'",
+      "entry_short": "funding_rate_spread >= 0.0005 and quote_currency == 'BTC'",
+      "exit_rule": "((trade_duration >= 6 and funding_rate_spread <= 0.0001) or (trade_duration >= 8))",
+      "regime_filter": [
+        "NEUTRAL"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-12",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-12",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
     }
   ]
 }
