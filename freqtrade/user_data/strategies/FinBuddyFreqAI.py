@@ -57,24 +57,32 @@ except Exception as _shim_err:
 
 class FinBuddyFreqAI(IStrategy):
     """
-    FinBuddy FreqAI Strategy v18 — 1h TF, Futures Long/Short, Symmetric Barriers (2026-05-10)
+    FinBuddy FreqAI Strategy v19 — 1h TF, Futures Long/Short, Asymmetric Barriers (2026-05-12)
 
-    2-class LightGBM classifier (L/S). Triple-barrier labeling with k_tp=k_sl=K_MULT
-    (symmetric → P(L)=50% base rate, degenerate models auto-filtered at ML_THRESHOLD).
-    Regime kill-switches: CRASH/BEAR block longs, BULL/EUPHORIA block shorts.
-    custom_stoploss: K_MULT×ATR initial, trail locks at +K_MULT×ATR once profit > K_MULT×ATR.
+    2-class LightGBM classifier (L/S). Triple-barrier labeling with ASYMMETRIC barriers:
+      K_TP (take-profit) > K_SL (stop-loss)  →  R:R > 1, PF >> 1 at same WR.
 
-    v18 bug fix (2026-05-10):
-      v17 had two bugs in custom_stoploss that made it effectively a no-op:
-        1. Trail activated at profit > 1×ATR but locked at 2×ATR → stoploss_from_open
-           returned POSITIVE (stop above current) → FreqTrade fell back to hard -8% stop.
-        2. Both branches checked `> 0` instead of `< 0` for the valid-stop test → every
-           valid (negative) stop was discarded, only hard config stoploss ever fired.
-      Fix: trail activates at profit > K_MULT×ATR (same as lock level), and all return
-      checks use `< 0` (valid stop = below current price for longs, above for shorts).
+    v19 structural fix (root cause of v18 0/24 FAIL):
+      v18 used symmetric barriers (k_tp=k_sl=K_MULT). At 62% WR with 1:1 R:R and
+      ~1,700 trades/yr, fee drag (~$196/yr at 0.08% round-trip) exactly cancels gross edge
+      (best combo: gross +$195 → PF=0.996). Grid was inert — no k_mult, label_period, or
+      ml_threshold could fix a structural R:R problem.
+
+      Fix: asymmetric barriers K_TP=2.0×ATR, K_SL=1.0×ATR:
+        - Theoretical PF at 62% WR = (0.62×2.0)/(0.38×1.0) = 3.26
+        - Break-even WR drops from 52.5% → 35%
+        - Tighter SL cuts losers fast (fewer funding fee hours on losing trades)
+        - More labels resolved per candle (SL at 1×ATR hit within 6h more often)
+
+    custom_stoploss: K_SL×ATR initial stop (tight); trail locks at +K_TP×ATR once profit
+    exceeds the take-profit level.
+
+    feature_engineering_standard: NOW ACTIVE (v19 identifier forces full retrain).
+    Adds day-of-week + hour-of-day (temporal context) and raw OHLCV features.
 
     ENV VARs for grid search:
-      FREQAI_K_MULT        float  default 2.0  — barrier multiplier + stoploss scale
+      FREQAI_K_TP          float  default 2.0  — take-profit barrier (and trail lock level)
+      FREQAI_K_SL          float  default 1.0  — stop-loss barrier (and initial stop)
       FREQAI_ML_THRESHOLD  float  default 0.60 — entry probability threshold
     """
     INTERFACE_VERSION = 3
@@ -90,10 +98,11 @@ class FinBuddyFreqAI(IStrategy):
     can_short = True
     startup_candle_count = 400
 
-    # v18: ENV VAR configurable — read once at class load time.
-    # Grid search passes FREQAI_K_MULT / FREQAI_ML_THRESHOLD via `docker exec -e`.
-    # Defaults match v17 live config so the running bot is unaffected.
-    K_MULT       = float(os.getenv("FREQAI_K_MULT",       "2.0"))
+    # v19: Split K_MULT into separate K_TP (take-profit) and K_SL (stop-loss).
+    # Asymmetric R:R: K_TP > K_SL → PF >> 1 at same WR.
+    # Grid search passes FREQAI_K_TP / FREQAI_K_SL / FREQAI_ML_THRESHOLD via docker env.
+    K_TP         = float(os.getenv("FREQAI_K_TP",         "2.0"))
+    K_SL         = float(os.getenv("FREQAI_K_SL",         "1.0"))
     ML_THRESHOLD = float(os.getenv("FREQAI_ML_THRESHOLD", "0.60"))
 
     # v11.1 — BTC daily MA200 macro-regime gate.
@@ -125,17 +134,15 @@ class FinBuddyFreqAI(IStrategy):
         **kwargs,
     ) -> Optional[float]:
         """
-        v18 ATR-adaptive stoploss — symmetric barriers (k_tp=k_sl=K_MULT).
-        Initial: K_MULT×ATR below entry (matches k_sl=K_MULT in set_freqai_targets).
-        Trailing: once profit > K_MULT×ATR, lock at +K_MULT×ATR above entry.
-        Symmetric R:R = 1:1; any WR > 50% is genuine alpha (no base-rate bias).
-        Returns None on missing data (no reset of existing stop).
+        v19 ATR-adaptive stoploss — asymmetric barriers (K_SL initial, K_TP trail lock).
 
-        v18 fix: trail activates only when profit EXCEEDS the lock level (K_MULT×ATR),
-        not at 1×ATR. Activation below the lock caused stoploss_from_open to return a
-        POSITIVE value (desired stop above current price) which FreqTrade interpreted as
-        "use hard stoploss". Also fixed: checks now use `< 0` (valid stop) not `> 0`
-        (invalid/above-price stop) — the old `> 0` guard discarded every valid stop.
+        Initial stop:  K_SL×ATR below entry (tight — cuts losers fast, matches labeling SL).
+        Trail lock:    once profit > K_TP×ATR, lock in at +K_TP×ATR above entry.
+
+        Asymmetric R:R = K_TP : K_SL (default 2:1). At 62% WR → theoretical PF = 3.26.
+        Tighter initial stop also reduces funding fee drag on losing trades (they exit sooner).
+
+        Returns None on missing data (no reset of existing stop).
         """
         dataframe, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
         if dataframe is None or dataframe.empty:
@@ -148,13 +155,15 @@ class FinBuddyFreqAI(IStrategy):
 
         atr_pct = atr / current_rate
         atr_pct = max(0.003, min(atr_pct, 0.025))
-        lock_pct = self.K_MULT * atr_pct
 
-        # Trail: once profit exceeds the lock level, trail the stop at the lock level.
-        # current_profit > lock_pct guarantees stoploss_from_open returns negative (valid).
-        if current_profit > lock_pct:
+        sl_pct = self.K_SL * atr_pct   # initial stop distance (tight)
+        tp_pct = self.K_TP * atr_pct   # trail lock level (wider = let winners run)
+
+        # Trail: once profit exceeds the TP level, lock stop at +K_TP×ATR above entry.
+        # current_profit > tp_pct guarantees stoploss_from_open returns negative (valid).
+        if current_profit > tp_pct:
             trail_pct = stoploss_from_open(
-                lock_pct,
+                tp_pct,
                 current_profit,
                 is_short=trade.is_short,
                 leverage=trade.leverage,
@@ -163,9 +172,9 @@ class FinBuddyFreqAI(IStrategy):
                 return trail_pct
             return None
 
-        # Initial: K_MULT×ATR below entry. Returns negative for all normal profit levels.
+        # Initial: K_SL×ATR below entry. Returns negative for all normal profit levels.
         initial_stop = stoploss_from_open(
-            -lock_pct,
+            -sl_pct,
             current_profit,
             is_short=trade.is_short,
             leverage=trade.leverage,
@@ -377,66 +386,67 @@ class FinBuddyFreqAI(IStrategy):
         )
         return dataframe
 
-    # NOTE: This function was intentionally left misnamed as `feature_engineering_std`
-    # (instead of `feature_engineering_standard`) so it is NEVER called by FreqTrade.
-    # Reason: enabling it adds %-prefixed features (temporal + raw-price) that the live
-    # models were NOT trained on → causes feature-count mismatch → prediction crash.
-    # To enable: bump FreqAI identifier (forces full retrain) AND rename to
-    # `feature_engineering_standard`. Scheduled for v19 identifier bump.
-    def feature_engineering_std(
+    def feature_engineering_standard(
         self, dataframe: DataFrame, metadata: dict, **kwargs
     ) -> DataFrame:
-        """DEAD CODE — do not rename until new identifier forces full retrain."""
+        """
+        v19 standard features — temporal context + raw OHLCV.
+        Activated in v19 alongside the new identifier (finbuddy_v19_asym_*) which
+        forces a full retrain. The v18 identifier's models were trained WITHOUT these
+        features; this function MUST NOT be enabled on any v17/v18 identifier.
+
+        Adds (%-prefixed so FreqAI includes them in the feature set):
+          %-day_of_week  — 0=Mon…6=Sun (weekly seasonality)
+          %-hour_of_day  — 0–23 (intraday session effects)
+          %-raw_close    — unscaled close price (absolute level context)
+          %-raw_volume   — unscaled volume
+          %-raw_open     — unscaled open
+        """
         dataframe["%-day_of_week"] = pd.to_datetime(dataframe["date"]).dt.dayofweek
         dataframe["%-hour_of_day"] = pd.to_datetime(dataframe["date"]).dt.hour
-        dataframe["%-raw_close"] = dataframe["close"]
-        dataframe["%-raw_volume"] = dataframe["volume"]
-        dataframe["%-raw_open"] = dataframe["open"]
+        dataframe["%-raw_close"]   = dataframe["close"]
+        dataframe["%-raw_volume"]  = dataframe["volume"]
+        dataframe["%-raw_open"]    = dataframe["open"]
         return dataframe
 
     # ------------------------------------------------------------------ #
-    # v17 — Triple-barrier labeling (symmetric k_tp=k_sl=2.0, 2-class)  #
+    # v19 — Triple-barrier labeling (asymmetric k_tp > k_sl, 2-class)  #
     # ------------------------------------------------------------------ #
 
     def set_freqai_targets(
         self, dataframe: DataFrame, metadata: dict, **kwargs
     ) -> DataFrame:
         """
-        Triple-barrier labeling (López de Prado, AFML ch.3) — v17.
+        Triple-barrier labeling (López de Prado, AFML ch.3) — v19.
 
         For each candle t (using 1h data):
           - atr_pct = ATR_14[t] / close[t], clamped to [0.003, 0.025]
-          - TP at close[t] * (1 + k_tp * atr_pct)   → label "L"
-          - SL at close[t] * (1 - k_sl * atr_pct)   → label "S"
-          - Neither hit within label_period candles  → dropped (label=None)
+          - TP at close[t] * (1 + K_TP * atr_pct)   → label "L"
+          - SL at close[t] * (1 - K_SL * atr_pct)   → label "S"
+          - Neither hit within label_period candles   → dropped (label=None)
 
-        v17 params:
-          k_tp = 2.0   (take-profit 2×ATR above entry)
-          k_sl = 2.0   (stop-loss 2×ATR below entry — symmetric, P(L)=50% base rate)
-          label_period_candles = 6  (6 hours on 1h TF)
+        v19 params (default):
+          K_TP = 2.0   (take-profit 2×ATR above entry)
+          K_SL = 1.0   (stop-loss 1×ATR below entry — ASYMMETRIC)
+
+        Asymmetric R:R benefits:
+          - At 62% WR: theoretical PF = (0.62×2.0)/(0.38×1.0) = 3.26
+          - Break-even WR drops from 52.5% → 33% (massive margin vs fee drag)
+          - Tighter SL (1×ATR) resolves more labels within label_period → fewer NaN drops
+            → larger, denser training set
+          - Winning labels ("L") require price to run 2×ATR → stronger directional signal
 
         FreqAI classifier emits one proba column per class:
           "L" → P(TP hit first), "S" → P(SL hit first).
 
         NOTE: last label_period rows → NaN (FreqAI drops automatically).
-
-        v16 — HOLD class removed (2-class model: L / S only).
-        Root cause of KeyError: with label_period_candles=6, TP/SL barriers are
-        nearly always hit within 6 candles in volatile crypto. HOLD samples are
-        so rare that LightGBM trains a 2-class model, but FreqAI data_drawer
-        expects 3 columns ("H","L","S") and crashes with KeyError('H').
-
-        v16.1 — time-barrier samples are DROPPED (label=None), not forced to "S".
-        Earlier draft mapped time-barrier → "S" as a "conservative tie-break",
-        but that bakes a systematic short bias into training: sideways-market
-        candles get labeled as bearish. The clean fix is to train only on
-        RESOLVED candles (TP hit → L, SL hit → S) and let FreqAI drop the
-        unresolved ones automatically (None labels are dropped before fit).
+        2-class model only — HOLD class removed in v16.1 (causes KeyError on rare HOLD samples).
+        Time-barrier unresolved candles → None (dropped), not mapped to "S" (avoids short bias).
         """
         self.freqai.class_names = ["L", "S"]
 
-        k_tp = self.K_MULT
-        k_sl = self.K_MULT  # v18: ENV VAR configurable — aligned with custom_stoploss lock level
+        k_tp = self.K_TP   # v19: asymmetric — wider take-profit
+        k_sl = self.K_SL   # v19: asymmetric — tighter stop-loss
         label_period = self.freqai_info["feature_parameters"]["label_period_candles"]
 
         close = dataframe["close"].values
@@ -576,7 +586,7 @@ class FinBuddyFreqAI(IStrategy):
         self, dataframe: DataFrame, metadata: dict
     ) -> DataFrame:
         """
-        v18 entry rules — 2-class LightGBM (L/S), ML_THRESHOLD (default 0.60).
+        v19 entry rules — 2-class LightGBM (L/S), ML_THRESHOLD (default 0.60).
 
         Long:  proba_L > ML_THRESHOLD + TA filter + regime not CRASH/BEAR
         Short: proba_S > ML_THRESHOLD + TA filter + regime not BULL/EUPHORIA
@@ -633,7 +643,7 @@ class FinBuddyFreqAI(IStrategy):
         dataframe.loc[
             ml_signal_long_final & ta_filter & volatility_filter & trend_filter_1h,
             "enter_tag"
-        ] = "freqai_lgbm_v18_long"
+        ] = "freqai_lgbm_v19_long"
 
         # Short — model-gated (v17: removed hardcoded btc_4h_below_ema50 deadlock).
         ml_signal_short = (
@@ -662,7 +672,7 @@ class FinBuddyFreqAI(IStrategy):
         dataframe.loc[
             ml_signal_short & ta_filter_short & volatility_filter & trend_filter_1h_short & safety_short,
             "enter_tag"
-        ] = "freqai_lgbm_v18_short"
+        ] = "freqai_lgbm_v19_short"
 
         # v17 — full trend-following regime kill-switches.
         # CRASH+BEAR: downtrends — no new longs (shorts only).

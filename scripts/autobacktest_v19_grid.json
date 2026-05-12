@@ -1,0 +1,40 @@
+{
+  "_comment": "v19 campaign grid — asymmetric barriers (K_TP > K_SL). Root-cause fix for v18 0/24 FAIL: symmetric 1:1 R:R had fee drag (~$196/yr) exactly cancelling gross edge. K_TP=2.0×ATR / K_SL=1.0×ATR → theoretical PF=3.26 at 62% WR. 18 combos × 2 windows = 36 runs.",
+  "base_config": "scripts/backtest_config.json",
+  "results_csv": "_autobacktest_v19_results.csv",
+  "backtest_results_path": "freqtrade/user_data/backtest_results",
+  "label_period_candles": 6,
+  "acceptance_criteria": {
+    "win_rate": 50.0,
+    "sharpe": 0.5,
+    "max_drawdown": 20.0,
+    "profit_factor": 1.2
+  },
+  "windows": {
+    "bull": "20240101-20250101",
+    "bear": "20250101-20260401"
+  },
+  "pairs_download": [
+    "BTC/USDT:USDT",
+    "ETH/USDT:USDT",
+    "SOL/USDT:USDT",
+    "XRP/USDT:USDT",
+    "DOGE/USDT:USDT"
+  ],
+  "grid": {
+    "k_tp": [1.5, 2.0, 2.5],
+    "k_sl": [0.8, 1.0],
+    "ml_threshold": [0.60, 0.65, 0.70]
+  },
+  "_grid_rationale": {
+    "k_tp": "1.5×ATR → modest 1.5:1 R:R (PF=2.45 at 62% WR). 2.0×ATR → 2:1 R:R (PF=3.26, theoretical optimum). 2.5×ATR → 2.5:1 R:R (PF=4.07, but TP harder to reach within label_period=6).",
+    "k_sl": "0.8×ATR → very tight stop (more SL hits, but each loss is smaller). 1.0×ATR → baseline tight stop. Both are tighter than v18's k_sl=2.0×ATR which let losers run for 14h avg.",
+    "ml_threshold": "0.60 = R8 winner (best PF at label_period=6). 0.65 = tighter precision, fewer trades. 0.70 = high-confidence only — tests whether quality beats quantity after R:R fix.",
+    "label_period_candles": "Fixed at 6 (R8 grid winner — dominates over lp=12/24 at 1h TF). K_SL=0.8-1.0×ATR resolves more labels within 6h than v18's k_sl=2.0×ATR did."
+  },
+  "_v18_root_cause": {
+    "problem": "Symmetric barriers k_tp=k_sl=K_MULT. At 62% WR and 1:1 R:R: gross edge exactly cancelled by ~$196/yr fee drag at 1700 trades/yr. PF range 0.83–0.996 across all 24 runs.",
+    "secondary": "Losers held avg 14h44m vs winners 7h10m — funding fees accumulate on drifting losing positions before SL fires at wide 2×ATR distance.",
+    "fix": "Asymmetric K_TP > K_SL: (a) cuts losers faster (smaller K_SL), (b) each win worth K_TP/K_SL × each loss, (c) break-even WR = 1/(1+K_TP/K_SL) = 33% at 2:1 R:R."
+  }
+}
