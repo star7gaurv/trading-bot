@@ -63,3 +63,4 @@
 | 2026-05-12 10:02:12 | ARB/USDT:USDT | LONG | 9h00m | -2.10% | -3.98 | exit_signal | NEUTRAL | freqai_lgbm_v18_long |
 | 2026-05-12 11:00:32 | DOGE/USDT:USDT | SHORT | 1h00m | +0.46% | +0.87 | exit_signal | NEUTRAL | freqai_lgbm_v19_short |
 | 2026-05-12 11:00:32 | DOT/USDT:USDT | SHORT | 1h00m | +0.70% | +1.32 | exit_signal | NEUTRAL | freqai_lgbm_v19_short |
+| 2026-05-12 14:00:29 | ETH/USDT:USDT | SHORT | 2h00m | +0.67% | +1.26 | exit_signal | NEUTRAL | freqai_lgbm_v19_short |
