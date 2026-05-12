@@ -58,3 +58,6 @@
 | 2026-05-11 16:05:16 | XRP/USDT:USDT | LONG | 19h04m | +2.08% | +3.90 | exit_signal | NEUTRAL | freqai_lgbm_v18_long |
 | 2026-05-11 19:00:38 | TAO/USDT:USDT | LONG | 19h58m | +1.86% | +3.48 | exit_signal | NEUTRAL | freqai_lgbm_v18_long |
 | 2026-05-11 20:05:25 | BTC/USDT:USDT | LONG | 19h04m | +0.60% | +0.98 | exit_signal | NEUTRAL | freqai_lgbm_v18_long |
+| 2026-05-12 10:00:19 | ETH/USDT:USDT | LONG | 17h55m | -1.75% | -3.31 | exit_signal | NEUTRAL | freqai_lgbm_v18_long |
+| 2026-05-12 10:00:19 | AVAX/USDT:USDT | LONG | 13h54m | -3.06% | -5.63 | exit_signal | NEUTRAL | freqai_lgbm_v18_long |
+| 2026-05-12 10:02:12 | ARB/USDT:USDT | LONG | 9h00m | -2.10% | -3.98 | exit_signal | NEUTRAL | freqai_lgbm_v18_long |
