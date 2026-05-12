@@ -4,8 +4,8 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status:** 🟡 v18 code + LLMModel v5 · 25 pairs · v18 campaign 0/24 FAIL · LLM over-filter fixed · v19 asymmetric barriers next  
-**Last Updated:** 2026-05-12 (Claude Code — LLM v5 auto-confirm fix, full system audit, dead docs removed)
+**Status:** 🟡 v19 code live · LLMModel v5 · 25 pairs · v19 campaign ready to run (36 combos) · asymmetric barriers K_TP=2.0/K_SL=1.0 · identifier `finbuddy_v19_asym_1778575138`  
+**Last Updated:** 2026-05-12 (Claude Code — v19 asymmetric barriers, feature_engineering_standard active, campaign runner built)
 
 ---
 
@@ -101,6 +101,25 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 **Fix — v19**: Asymmetric barriers `K_TP=2.0×ATR, K_SL=1.0×ATR`. At 62% WR → theoretical PF=3.26.
 
+### v19 Plan — Asymmetric Barriers (2026-05-12)
+
+**Grid**: K_TP∈{1.5,2.0,2.5} × K_SL∈{0.8,1.0} × ml_threshold∈{0.60,0.65,0.70} = **18 combos × 2 windows = 36 runs**
+
+| Combo | Theoretical PF at 62% WR | Break-even WR |
+|---|---|---|
+| K_TP=1.5 / K_SL=1.0 | 2.45 | 40% |
+| K_TP=2.0 / K_SL=1.0 | 3.26 | 33% |
+| K_TP=2.5 / K_SL=1.0 | 4.07 | 29% |
+| K_TP=1.5 / K_SL=0.8 | 3.06 | 35% |
+| K_TP=2.0 / K_SL=0.8 | 4.08 | 29% |
+| K_TP=2.5 / K_SL=0.8 | 5.10 | 24% |
+
+**label_period_candles = 6 (fixed)** — R8 grid winner. Tighter K_SL resolves more labels within 6h.
+
+**New in v19**: `feature_engineering_standard` active — adds day_of_week, hour_of_day, raw OHLCV.  
+**Identifier**: `finbuddy_v19_asym_1778575138` — all 25 pairs retraining on next candle.  
+**Run**: `python scripts/autobacktest_v19.py` (~6h on Oracle Free Tier, 36 runs)
+
 ---
 
 ## 🚀 Current State (2026-05-12)
@@ -111,11 +130,12 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 | **Strategy** | ✅ FinBuddyFreqAI v18 code |
 | **FreqAI identifier** | `finbuddy_v17_sym_1778353539` (v17 models, v18 code) |
 | **FreqAI Model** | ✅ FinBuddyLLMModel **v5** — auto-confirm fix (proba ≥ 0.90 bypasses LLM) |
-| **Live P&L** | +$11 USDT (+2.07%), PF=1.39, WR=60.8% (54 closed trades) |
+| **Live P&L** | +$11 USDT (+2.07%), PF=1.39, WR=60.8% (54 closed trades, as of 2026-05-12) |
 | **N8N Pipeline** | 🔴 Permanently disabled |
 | **All Crons** | ✅ Live (Phase 2–5, watchdog, postmortem, daily summary, WF notify) |
-| **Walk-forward** | ⏸️ Paused — wait for v19 |
-| **Phase 10 go-live** | ⬜ BLOCKED |
+| **Walk-forward** | ⏸️ Paused — run after v19 campaign shows PF > 1.2 in bull window |
+| **v19 Campaign** | ⬜ READY — `python scripts/autobacktest_v19.py` (36 runs, ~6h) |
+| **Phase 10 go-live** | ⬜ BLOCKED — needs walk-forward PASS |
 
 ---
 

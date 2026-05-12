@@ -11,65 +11,55 @@
 
 | Item | Value |
 |---|---|
-| Live strategy | `FinBuddyFreqAI.py` **v18 code** |
-| Live FreqAI identifier | `finbuddy_v17_sym_1778353539` |
-| FreqAI model | `FinBuddyLLMModel` **v5** (LightGBM + LLM screen, auto-confirm fix) |
+| Live strategy | `FinBuddyFreqAI.py` **v19 code** |
+| Live FreqAI identifier | `finbuddy_v19_asym_1778575138` |
+| FreqAI model | `FinBuddyLLMModel` **v5** (LightGBM + LLM screen, auto-confirm ≥0.90) |
 | Pairs | 25, 1h TF, futures isolated |
 | Regime | NEUTRAL (since 2026-05-04) |
-| Walk-forward | ⏸️ Paused — wait for v19 |
+| Live P&L | +$11 USDT, PF=1.39, WR=60.8% (54 closed trades) |
+| Bot status | ✅ Running — retraining all 25 pairs on new v19 identifier |
 
 ---
 
-## 🔧 What Was Fixed This Session (2026-05-12)
+## 🔧 What Was Built This Session (2026-05-12)
 
-### Fix 1 — LLM over-filtering (commit `1010c2f`)
+### v19 — Asymmetric Barriers (commit `ed02369`)
 
-**Problem:** `FinBuddyLLMModel` was blocking 91% of all signals — including 90%+ confidence ML predictions. Root cause: `CONFIDENCE_THRESHOLD=0.05` sent every signal above 55% probability to the LLM. In NEUTRAL market, LLM returned REJECT/HOLD almost always.
+**Root cause fixed**: v18 0/24 FAIL was structural. Symmetric 1:1 R:R + 1,700 trades/yr fee drag (~$196/yr) exactly cancelled gross edge (best PF=0.996). No grid parameter could fix it.
 
-**Fix (v5):**
-- `AUTO_CONFIRM_THRESHOLD=0.40` — proba ≥ 0.90 bypasses LLM entirely (auto-confirms)
-- `COOLDOWN_SECONDS` reduced 3600 → 1800 (30-min sticky veto)
-- Pass rate immediately improved: 8.8% → 54.5%
+**Changes:**
+1. `K_MULT` split → `FREQAI_K_TP` (default 2.0) + `FREQAI_K_SL` (default 1.0)
+2. `custom_stoploss`: initial stop at K_SL×ATR (tight, cuts losers fast); trail locks at K_TP×ATR once profit > K_TP×ATR
+3. `set_freqai_targets`: asymmetric TP/SL barriers in labeling — more labels resolve within lp=6 (tighter SL=1×ATR hits sooner)
+4. `feature_engineering_std` → `feature_engineering_standard` (NOW ACTIVE) — adds day_of_week, hour_of_day, raw OHLCV
+5. Enter tags: `freqai_lgbm_v19_long` / `freqai_lgbm_v19_short`
+6. `config.json` identifier bumped → forced full retrain on restart
 
-### Fix 2 — `feature_engineering_std` dead code documented
-
-**Problem:** Function was misnamed (`_std` instead of `_standard`) — FreqTrade never called it. It also referenced `_get_tradingview_signal()` which doesn't exist.
-
-**Decision:** Left as dead code (`feature_engineering_std`) with a clear comment explaining why it MUST NOT be renamed until v19 identifier bump (activating it now would add 5 new `%-` features and cause feature-count mismatch crash on all existing models).
-
-**When to activate:** In v19 strategy update, along with the new identifier that forces full retrain.
-
----
-
-## ❌ v18 Campaign — Completed, 0/24 PASS
-
-**Root cause — fee drag on symmetric 1:1 R:R:**
-- 1,700 trades/yr × $144 avg stake × 0.08% round-trip ≈ $196/yr fee drag
-- Symmetric barriers K_TP=K_SL=K_MULT → gross edge exactly cancelled by fees
-- Losers held 2× longer than winners → extra funding fee drag
-
-Grid was inert: k_mult, label_period, ml_threshold cannot fix structural R:R.
+**Theoretical PF at 62% WR:**
+- K_TP=2.0 / K_SL=1.0 → PF = **3.26** (vs PF≈1 with symmetric)
+- Break-even WR drops from 52.5% → **33%** (massive margin above fee drag)
 
 ---
 
-## 🔬 Next: v19 — Asymmetric Barriers
+## 🔬 Next: Run v19 Campaign
 
-**The fix**: Split `K_MULT` into `K_TP` and `K_SL`:
-
-```python
-K_TP = float(os.getenv("FREQAI_K_TP", "2.0"))  # take-profit: 2×ATR
-K_SL = float(os.getenv("FREQAI_K_SL", "1.0"))  # stop-loss:   1×ATR
+**Command:**
+```bash
+cd /home/ubuntu/var/www/html/trade
+python scripts/autobacktest_v19.py
 ```
 
-At 62% WR → theoretical PF = (0.62×2.0)/(0.38×1.0) = **3.26**
+**Grid**: K_TP∈{1.5,2.0,2.5} × K_SL∈{0.8,1.0} × ml_threshold∈{0.60,0.65,0.70} = **36 runs**  
+**Duration**: ~6h on Oracle Free Tier (36 isolated docker-compose runs)  
+**Results**: `_autobacktest_v19_results.csv` + Telegram notifications every 6 runs  
 
-**v19 grid**: K_TP∈{1.5,2.0,2.5} × K_SL∈{0.8,1.0} × ml_threshold∈{0.60,0.65,0.70} = 18 combos × 2 windows = **36 runs**
+**Run bull window first to get early signal:**
+```bash
+python scripts/autobacktest_v19.py --window bull
+```
 
-**Code changes needed for v19:**
-1. Strategy: add `K_TP`/`K_SL` ENV VARs, update `set_freqai_targets(k_tp, k_sl)`, update `custom_stoploss` trail/initial logic
-2. Strategy: rename `feature_engineering_std` → `feature_engineering_standard` (NOW safe because new identifier forces full retrain)
-3. Campaign runner: rename/fork `autobacktest_v18.py` → `autobacktest_v19.py`, update grid JSON
-4. Bump FreqAI identifier (e.g. `finbuddy_v19_asym_<timestamp>`)
+**If bull passes:** run bear window, then walk-forward, then Phase 10.  
+**If bull fails:** check CSV for best combo — identify which parameter is still wrong.
 
 ---
 
@@ -77,13 +67,14 @@ At 62% WR → theoretical PF = (0.62×2.0)/(0.38×1.0) = **3.26**
 
 | File | Purpose |
 |---|---|
-| `freqtrade/user_data/strategies/FinBuddyFreqAI.py` | Active strategy — v18 code |
+| `freqtrade/user_data/strategies/FinBuddyFreqAI.py` | Active strategy — **v19 code** |
 | `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` | LLM model v5 — auto-confirm fix |
-| `freqtrade/user_data/config.json` | Live bot config |
+| `freqtrade/user_data/config.json` | Live bot config — identifier `finbuddy_v19_asym_1778575138` |
 | `freqtrade/user_data/backtest_config.json` | Backtest-only config |
-| `scripts/autobacktest_v18.py` | Campaign runner — fork for v19 |
-| `scripts/autobacktest_v18_grid.json` | Grid definition — update for v19 |
-| `_autobacktest_v18_results.csv` | v18 results (all 24 FAIL) |
+| `scripts/autobacktest_v19.py` | **v19 campaign runner** |
+| `scripts/autobacktest_v19_grid.json` | **v19 grid definition** |
+| `scripts/autobacktest_v18.py` | v18 runner (reference only — do not re-run) |
+| `_autobacktest_v18_results.csv` | v18 results (all 24 FAIL — archived) |
 
 ---
 
@@ -92,17 +83,26 @@ At 62% WR → theoretical PF = (0.62×2.0)/(0.38×1.0) = **3.26**
 1. **Always `docker-compose run --rm --no-deps`** — never `docker exec` (live container triggers datasieve state conflicts)
 2. **`--prepend` flag** when filling historical data backwards
 3. **Config path inside container**: `/freqtrade/user_data/backtest_config.json`
-4. **After campaign: always `--reparse`** to regenerate CSV with fixed parser
-5. **PF field**: use `s.get("profit_factor")` directly — `profit_sum`/`loss_sum` don't exist in FreqTrade 2026
+4. **After campaign: `--reparse`** to regenerate CSV with fixed parser
+5. **PF field**: use `s.get("profit_factor")` directly — FreqTrade 2026 reports it directly
+6. **feature_engineering_standard** is now ACTIVE — any new identifier will train with the 5 extra features. Do NOT revert to `_std` without bumping identifier again.
 
 ---
 
 ## 🔴 Do NOT
 
-- Run more v18 backtests — grid is exhausted and the structural R:R is wrong
-- Restart walk-forward until v19 shows PF>1.2 in bull window
-- Rename `feature_engineering_std` → `feature_engineering_standard` without bumping identifier
+- Run v18 backtests — grid exhausted, structural R:R was wrong
+- Restart walk-forward until v19 bull window shows PF > 1.2
+- Remove `feature_engineering_standard` without bumping identifier (feature-count crash)
 - Modify `finbuddy_memory/` contents manually — owned by cron scripts
+
+---
+
+## 📊 v18 Results (archived — do not re-run)
+
+24 runs, 0 PASS. WR 61–64% ✅ and DD 1.57–4.60% ✅ across all combos.  
+Sharpe −0.12 to −4.88 ❌ and PF 0.83–0.996 ❌ across all combos.  
+Root: fee drag + symmetric 1:1 R:R. Grid (k_mult / label_period / ml_threshold) was inert.
 
 ---
 
