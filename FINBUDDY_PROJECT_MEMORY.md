@@ -4,8 +4,8 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status:** 🟡 v18 code on v17 models · 25 pairs · v18 campaign 0/24 FAIL · v19 asymmetric barriers next  
-**Last Updated:** 2026-05-11 (Claude Code — v18 campaign complete, fee-drag root cause diagnosed, v19 plan set)
+**Status:** 🟡 v18 code + LLMModel v5 · 25 pairs · v18 campaign 0/24 FAIL · LLM over-filter fixed · v19 asymmetric barriers next  
+**Last Updated:** 2026-05-12 (Claude Code — LLM v5 auto-confirm fix, full system audit, dead docs removed)
 
 ---
 
@@ -103,17 +103,18 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 ---
 
-## 🚀 Current State (2026-05-11)
+## 🚀 Current State (2026-05-12)
 
 | Component | Status |
 |---|---|
 | **FreqTrade** | ✅ Running, dry-run, futures isolated |
-| **Strategy** | ✅ FinBuddyFreqAI v18 code (custom_stoploss NOW ACTIVE — was dead bug in v17) |
+| **Strategy** | ✅ FinBuddyFreqAI v18 code |
 | **FreqAI identifier** | `finbuddy_v17_sym_1778353539` (v17 models, v18 code) |
-| **FreqAI Model** | ✅ FinBuddyLLMModel (LightGBM + Grok-3-mini LLM screen) |
+| **FreqAI Model** | ✅ FinBuddyLLMModel **v5** — auto-confirm fix (proba ≥ 0.90 bypasses LLM) |
+| **Live P&L** | +$11 USDT (+2.07%), PF=1.39, WR=60.8% (54 closed trades) |
 | **N8N Pipeline** | 🔴 Permanently disabled |
 | **All Crons** | ✅ Live (Phase 2–5, watchdog, postmortem, daily summary, WF notify) |
-| **Walk-forward** | ⏸️ Paused — pointless until v19 fixes R:R |
+| **Walk-forward** | ⏸️ Paused — wait for v19 |
 | **Phase 10 go-live** | ⬜ BLOCKED |
 
 ---

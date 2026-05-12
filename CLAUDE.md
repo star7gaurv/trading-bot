@@ -169,26 +169,33 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ## Current Strategy
 
-### ✅ Active: `FinBuddyFreqAI.py` v17 — Futures Long/Short (2026-05-09)
+### ✅ Active: `FinBuddyFreqAI.py` v18 — Futures Long/Short
 - Binance Futures USDT-M (perpetual, isolated margin), **1h TF**, 25 pairs, `can_short=True`
-- FreqAI LightGBM **2-class model** (`["L","S"]`) — symmetric barriers k_tp=k_sl=2.0, P(L)=50%
+- FreqAI LightGBM **2-class model** (`["L","S"]`) — symmetric barriers k_tp=k_sl=2.0
 - FreqAI identifier: `finbuddy_v17_sym_1778353539` — 25 pairs, all trained
-- `custom_stoploss()`: 2.0×ATR initial (matches k_sl), trail locks at +2.0×ATR, `trailing_stop=False`
-- **Regime-aware exits** (v17): CRASH/BEAR → exit longs at 0.55, BULL/EUPHORIA → exit shorts at 0.55, NEUTRAL → symmetric 0.65
-- **HMM kill-switches** (v17): CRASH/BEAR → no longs, BULL/EUPHORIA → no shorts (full trend-following)
-- **Correlation cluster cap** (v16.2): max 2 trades from MEGA_CAP cluster (BTC/ETH/SOL/etc) or L2 cluster (ARB/OP/etc) — enforced via `confirm_trade_entry()`
-- **Funding-rate long guard** (v16.2): blocks new longs if BTC perpetual funding >0.05%/8h
-- Enter tags: `freqai_lgbm_v17_long` / `freqai_lgbm_v17_short`
+- `custom_stoploss()`: 2×ATR initial stop, trail locks at +2×ATR from entry, `trailing_stop=False`
+- **Regime-aware exits**: CRASH/BEAR → exit longs at 0.55, BULL/EUPHORIA → exit shorts at 0.55, NEUTRAL → 0.65
+- **HMM kill-switches**: CRASH/BEAR → no longs, BULL/EUPHORIA → no shorts
+- **Correlation cluster cap**: max 2 trades per MEGA_CAP (BTC/ETH/SOL) or L2 (ARB/OP) cluster
+- **Funding-rate long guard**: blocks new longs if BTC funding >0.05%/8h
+- Enter tags: `freqai_lgbm_v18_long` / `freqai_lgbm_v18_short`
 - `BTC_MA200_GATE` env var defaults to `"0"` — opt-in only
+- ⚠️ `feature_engineering_std` is intentionally dead (wrong name) — activate in v19 with new identifier
+
+### ✅ Active: `FinBuddyLLMModel.py` v5
+- LightGBM + NVIDIA/OpenRouter LLM confirmation layer
+- **v5 fix (2026-05-12)**: Auto-confirms signals with proba ≥ 0.90 (was blocking 91% of signals)
+- `AUTO_CONFIRM_THRESHOLD=0.40` — bypass LLM for very high-confidence predictions
+- `COOLDOWN_SECONDS=1800` — 30-min per-pair veto window (was 60 min)
+- Falls through to raw LightGBM if all LLM providers fail
 
 ### ❌ Retired: `AiGuardrailStrategy.py`
 - Superseded by `FinBuddyFreqAI.py`. Do not reference or restart.
 
-### ✅ Active: `FinBuddyLLMModel.py` (Task 1.2)
-- Custom FreqAI model wrapping LightGBM with central LLM confirmation layer (`llm_client.py`)
-- `config.json` line 161: `"freqaimodel": "FinBuddyLLMModel"` — IS wired in and active
-- High-confidence signals (proba deviation > threshold) get LLM confirmation via NVIDIA/OpenRouter
-- Falls through to raw LightGBM if all LLM providers fail (safe degradation)
+### ⏭️ Next: v19 — Asymmetric Barriers
+- Split K_MULT → K_TP=2.0×ATR / K_SL=1.0×ATR
+- Theoretical PF = 3.26 at 62% WR — fixes fee-drag failure of v18
+- See `CLAUDE_HANDOFF.md` for implementation plan
 
 ---
 
@@ -329,117 +336,15 @@ Fully specced in `docs/signal-contract.md`. Key fields:
 
 ## Session History Summary
 
-### March 31 – April 4, 2026
-- Removed Dify completely (9 containers, freed ~6GB disk)
-- Fixed FreqTrade: API credentials, wrong strategy, f-string syntax, SQLite reset
-- Got first dry-run trade: BTC/USDT @ 67,206.72 USDT
-- Dropped OpenRouter → Groq direct API
-- N8N v4 pipeline confirmed live with Groq Llama 3.3 70B
+> Full session history lives in `FINBUDDY_PROJECT_MEMORY.md`. Only the most recent session is kept here.
 
-### April 21–22, 2026
-- Wrote ADR-001, signal contract, strategy registry, N8N workflow split plan
-- Set up FinBuddy Obsidian memory vault
-
-### April 27, 2026
-- Phase 0 live audit by Claude Code — confirmed v4 pipeline active, two Telegram bots live
-- Created full 7-phase task roadmap in `tasks/`
-- Created `CLAUDE.md` as master project context
-
-### April 30, 2026 (Claude Code)
-- `FinBuddyFreqAI.py` v6 deployed and running — `AiGuardrailStrategy.py` **retired**
-- LightGBM training per pair confirmed live
-- **N8N pipeline fully disabled** — FreqAI is now sole signal source
-- Round 3 backtest: 144 combos, all FAIL, best Sharpe -0.401
-- Phase 0: **5/5 complete**
-
-### May 1, 2026 (Perplexity)
-- Decided AI model stack: **Grok-3-Mini (xAI)** as signal confirmation in Task 1.2
-- Added 5 Core Engineering Principles
-- Updated `FINBUDDY_PROJECT_MEMORY.md` as master hub
-- `COLLABORATION_CONTRACT.md` updated with role boundaries
-
-### May 2, 2026 — 1:30 AM (Claude Code)
-- Round 3 full analysis committed: 192 total combos across all rounds, all fail
-- Root cause confirmed: bear market period (BTC -47.55%), not strategy logic
-- ML signal quality confirmed: 79-81% WR on signal-driven exits ✅
-- Graveyard.md updated, results CSV committed
-
-### May 2, 2026 — 2:49 PM (Perplexity)
-- Full memory sync across all 4 core MD files
-- Stale references cleaned across all docs
-
-### May 2, 2026 — Late session (Claude Code)
-- 5 rounds of futures backtests run end-to-end (R1 → R5)
-- Strategy iterated v6 → v7 → v8 → v9 → v10
-- **R5 v10 is the breakthrough**: first positive Sharpe, first profitable bull, first PF > 1
-- v10 mechanism: `custom_stoploss()` rewritten per Freqtrade docs, both stops anchored to entry price via `stoploss_from_open()` — flipped the trailing cohort from -0.60% avg / 15.8% WR to +0.04% avg / 51.2% WR
-- Macro short-gate fix in v9 cut bull shorts from 81 → 26
-- Docker user/permissions: ubuntu added to `opc` group; `freqtrade/user_data` group-owned + `g+w` so both ubuntu and the container's ftuser (uid 1000 = opc) can write
-- `XAI_API_KEY` moved out of `docker-compose.yml` into `freqtrade/.env` (gitignored)
-- FreqAI model artifacts now properly gitignored
-
-### May 2, 2026 — 3:31 PM (Perplexity)
-- **🚨 STRATEGIC PIVOT: Futures-first architecture decided**
-- Spot backtesting retired — futures (USDT-M Perp) is now primary market
-- Full vision expanded: all crypto market types as modular plugins (perp, funding rate, grid, arb, spot, DCA)
-- Revised 10-phase roadmap committed
-- `FINBUDDY_PROJECT_MEMORY.md`, `CLAUDE.md`, `CLAUDE_HANDOFF.md` all updated
-
-### May 3–5, 2026 (Claude Code)
-- Phase 8 (futures setup) + Phase 9 (risk engine) completed
-- `FinBuddyLLMModel.py` (Task 1.2) deployed — xAI Grok-3-Mini signal confirmation layer wired into FreqAI
-- `FinBuddyFreqAI.py` v15 deployed — 1h TF, label_period=6, 90-combo grid run (R8)
-- **R8 winners**: ml_threshold=0.60, ml_exit=0.60, label_period=6, atr_threshold=0.002
-- Bull window (2024-01-01→2025-01-01) ALL PASS: Sharpe +1.49, WR 57.7%, DD 2.5%, PF >1.2
-- Bear window (2025-01-01→2026-04-01) partial: WR 58.7% ✅, DD 7.0% ✅, Sharpe -0.114 ❌, PF 0.979 ❌
-- RiskEngine wired: regime-aware stake sizing in `custom_stake_amount()`, DD gate active
-- Watchdog (`scripts/watchdog.py`) created — cron every 30m, Telegram on container down/training stale/heartbeat lost
-- Trade postmortem (`scripts/trade_postmortem.py`) created — cron every 15m, closed trades → `finbuddy_memory/trades/closed.md`
-- Walk-forward validator (`scripts/walk_forward.py`) created — OOS rolling-fold, gates Phase 10
-- Fresh FreqAI identifier `finbuddy_v15_clean_1778268802` deployed — all 25 pairs trained
-- Walk-forward: `docker-compose` bug (was `docker compose`) fixed; timerange bug (test-only → train+test) fixed; data download pre-step added
-
-### May 8, 2026 — 7-Day No-Trade Crisis (Claude Code)
-- **Crisis discovered**: Bot running, training ticking, but ZERO trades for 7 days straight
-- **Root cause 1**: Old identifier `finbuddy_lgbm_v15` had partial state (4 pairs) — 21 new pairs never trained. Fix: new identifier `finbuddy_v15_clean_1778268802` → all 25 pairs retrained.
-- **Root cause 2**: `datasieve.pipeline WARNING - Could not find step di` — confirmed cosmetic, NOT blocking
-- **Root cause 3**: Macro filter deadlock — BTC at $80k between MA200 ($83k) and 4h EMA50 ($79k). Long required `btc_macro_bull==1` (FALSE), short required hardcoded `btc_4h_below_ema50==1` (FALSE). Zero trades possible. Fix: defaulted `BTC_MA200_GATE=0` (opt-in), removed hardcoded short filter.
-- Commit `d127347`: "fix: unstick v15 — disable BTC MA200 gate, remove hard btc_4h_below_ema50 short filter, fresh FreqAI identifier"
-- v16 Tier 1 build: regime-aware asymmetric exits, HMM kill-switches, v17 short filter finally removed
-- `scripts/daily_summary.py` created — daily 8 AM Telegram digest (regime, open trades L/S split, P&L, stats)
-- `daily_summary.py` added to crontab at `0 8 * * *`
-
-### May 9, 2026 (Claude Code)
-- **v16.1 clean 2-class model**: time-barrier candles dropped entirely (label=None not mapped to "S"). Fixed KeyError: 'H' crash affecting 20+ pairs. New identifier `finbuddy_v16_clean_1778316280`. All 25 pairs trained in 40s.
-- **v16.2 additions**: `confirm_trade_entry()` with (1) BTC funding-rate long guard (blocks if funding >0.05%/8h) + (2) correlation cluster cap (max 2 trades per MEGA_CAP or L2 cluster). Cache at `/freqtrade/user_data/data/external/funding_rate_cache.json`.
-- Enter tags updated: `freqai_lgbm_v11_long/short` → `freqai_lgbm_v16_long/short`
-- **Watchdog fix 1**: Training false alert from Docker buffer eviction by 6770 KeyError H errors. Added file-log fallback (`use_file_fallback=True`) scanning `freqtrade.log` + rotated files.
-- **Watchdog fix 2**: Heartbeat false alert from Docker daemon slowdown during `docker-compose run`. Raised timeout 15s→30s, enabled file fallback for heartbeat check too.
-- **Walk-forward**: Data downloaded (all 25 pairs, 2024-01-01→2026-04-01, futures). 21 folds running. Results in `walkforward_results/FinBuddyFreqAI_2024-01-01_2026-04-01_20260509T091607/`.
-- **First clean trades**: Trades #30–32 fired — first valid v16.1/v16.2 signals. (Trades 1–25 = legacy v11 spot, 26–29 = biased HOLD bug, 30+ = clean v16.)
-- Dead cron entries removed: `@reboot openclaw`, `@reboot uvicorn webhook_receiver`
-- All project context files synced to v16.2 state
-
-### May 9, 2026 — Afternoon (Claude Code) — Anti-staleness + automation hardening + WF integrity
-
-**Anti-staleness system (3 layers):**
-- `scripts/sync_context.py` (cron 4h) — reads live data and rewrites `<!-- AUTO-SYNC -->` block in FINBUDDY_PROJECT_MEMORY.md, appends state-changes to `finbuddy_memory/session_events.md`, auto-commits.
-- `.git/hooks/pre-commit` — soft warning when strategy/config/scripts change without doc update.
-- `<!-- AUTO-SYNC -->` markers in FINBUDDY_PROJECT_MEMORY.md so live-state table is machine-maintained.
-
-**Four pure-Python automations (zero token cost):**
-- `scripts/walkforward_notify.py` (cron 30m) — Telegrams PASS/FAIL when a walk-forward run completes (presence of `summary.json`).
-- `scripts/trade_postmortem.py` — added `check_trade_bias()`: alerts when last 10 trades are ≥85% one-sided (catches model-bias failure mode early; 6h cooldown).
-- `scripts/watchdog.py` — added disk-usage check (warn 80%, critical 90%). Oracle free tier has no native warning.
-- `scripts/walkforward_monthly.sh` (cron 1st of month, 03:00) + `scripts/download_data_daily.sh` (cron 04:30) — auto-runs walk-forward on a 27-month window monthly using fresh data; flock prevents overlap.
-
-**Walk-forward bugs fixed (commits `752a046`, `5e1eaf9`):**
-- Parser bug 1: read `max_drawdown_account` (correct field), not `max_drawdown` (didn't exist) → DD always 0%.
-- Parser bug 2: aggregated metrics over the full 7-month timerange instead of the 1-month test window → fold 5 reported 2,079 trades instead of ~71. Fixed by parsing the per-trade list and filtering by `close_date ∈ [test_start, test_end)`.
-- Sharpe now computed from daily-aggregated PnL (252-day annualisation), not bogus full-window number.
-- Added `--reparse <run_id>` flag to re-aggregate completed runs without re-running 2h backtests.
-- **Methodology bug — lookahead bias**: WF was loading the live bot's cached `finbuddy_v16_clean_*` models (trained on data through May 2026) and using them to predict on backtest dates from May 2024 forward. Fixed by passing `FREQTRADE__FREQAI__IDENTIFIER=wf_<ts>_f<NN>` per fold via env var on `docker-compose run`, forcing fresh in-window training.
-- **Implication**: every walk-forward run before today's commits is invalid. Next monthly run will use the fixed code automatically.
+### May 12, 2026 (Claude Code) — LLM over-filtering fix + full system audit
+- **Full audit**: all 25 pairs confirmed trained; regime/external data pipeline confirmed working
+- **Root cause of "fluctuation"**: LLM was blocking 91% of signals (8.8% pass rate) including 90%+ confidence ML predictions. Diagnosed from log analysis: 77 CONFIRM / 174 HOLD / 623 REJECT.
+- **Fix — FinBuddyLLMModel v5**: `AUTO_CONFIRM_THRESHOLD=0.40` bypasses LLM for proba ≥ 0.90. Pass rate immediately improved to 54.5%. Cooldown reduced 3600→1800s.
+- **Dead code documented**: `feature_engineering_std` (wrong name, never called). Left dead intentionally — activating adds new features that crash existing models. Will activate in v19 with new identifier.
+- **Housekeeping**: Removed 9 abandoned/dead .md files (session logs, N8N docs, empty placeholders, phase-6 TradingView).
+- **v18 campaign result**: 0/24 PASS. Root cause: symmetric 1:1 R:R + fee drag. v19 asymmetric barriers is the fix.
 
 ---
 
@@ -451,7 +356,6 @@ Fully specced in `docs/signal-contract.md`. Key fields:
 - [[finbuddy_memory/CONTEXT]] ← live context injected into every AI prompt
 - [[tasks/phase-1-freqai-brain]] ← current phase task file
 - [[finbuddy_memory/strategies/graveyard]] ← retired strategies + backtest failures
-- [[finbuddy_memory/signals/log]] ← signal history
 - [[finbuddy_memory/regimes/current]] ← live regime
 
 ### May 9, 2026 — Evening (Claude Code) — v17 symmetric barriers + central LLM client
