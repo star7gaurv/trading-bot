@@ -68,3 +68,6 @@
 | 2026-05-12 17:22:03 | DOGE/USDT:USDT | SHORT | 2h09m | +0.33% | +0.63 | exit_signal | NEUTRAL | freqai_lgbm_v19_short |
 | 2026-05-13 09:48:55 | ETH/USDT:USDT | SHORT | 16h48m | -2.59% | -4.86 | force_exit | NEUTRAL | freqai_lgbm_v19_short |
 | 2026-05-13 09:50:21 | ZEC/USDT:USDT | SHORT | 16h28m | -1.87% | -3.54 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v19_short |
+| 2026-05-13 10:30:44 | BTC/USDT:USDT | SHORT | 13h05m | -0.48% | -0.77 | force_exit | NEUTRAL | freqai_lgbm_v19_short |
+| 2026-05-13 10:30:56 | BCH/USDT:USDT | SHORT | 2h28m | -0.22% | -0.41 | force_exit | NEUTRAL | freqai_lgbm_v19_short |
+| 2026-05-13 10:41:56 | OP/USDT:USDT | SHORT | 0h42m | +1.87% | +3.45 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v19_short |
