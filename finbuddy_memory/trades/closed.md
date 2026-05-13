@@ -72,3 +72,4 @@
 | 2026-05-13 10:30:56 | BCH/USDT:USDT | SHORT | 2h28m | -0.22% | -0.41 | force_exit | NEUTRAL | freqai_lgbm_v19_short |
 | 2026-05-13 10:41:56 | OP/USDT:USDT | SHORT | 0h42m | +1.87% | +3.45 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v19_short |
 | 2026-05-13 11:07:37 | TON/USDT:USDT | SHORT | 0h36m | -0.01% | -0.02 | exit_signal | NEUTRAL | freqai_lgbm_v19_short |
+| 2026-05-13 12:42:56 | ONDO/USDT:USDT | SHORT | 2h11m | +3.80% | +7.00 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v19_short |
