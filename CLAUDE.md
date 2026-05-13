@@ -345,6 +345,13 @@ Fully specced in `docs/signal-contract.md`. Key fields:
 - **Dead code documented**: `feature_engineering_std` (wrong name, never called). Left dead intentionally — activating adds new features that crash existing models. Will activate in v19 with new identifier.
 - **Housekeeping**: Removed 9 abandoned/dead .md files (session logs, N8N docs, empty placeholders, phase-6 TradingView).
 - **v18 campaign result**: 0/24 PASS. Root cause: symmetric 1:1 R:R + fee drag. v19 asymmetric barriers is the fix.
+- **v19 built**: K_MULT split → K_TP/K_SL env vars, `feature_engineering_standard` activated, identifier bumped, campaign runner `scripts/autobacktest_v19.py` built (36 runs, K_TP∈{1.5,2.0,2.5} × K_SL∈{0.8,1.0} × ml_threshold∈{0.60,0.65,0.70}).
+
+### May 13, 2026 (Claude Code) — Critical stoploss bug found + fixed; v19 bull campaign launched
+- **Bug found**: `custom_stoploss` returned `None` for ALL trades (both longs and shorts) since v17. `stoploss_from_open()` ALWAYS returns `>= 0` (documented). The `< 0` guards were therefore always False → always `None` → hard -8% config stoploss fired for every loss. No ATR-based stop has ever worked. Evidence: NEAR short ran 7.4h to exactly -8.14%.
+- **Fix (commit `21796ea`)**: Changed both guards from `< 0` to `> 0`. Verified in container: long initial, short initial, long trail, short trail all return non-zero positive → accepted. Degenerate `= 0` case correctly discarded.
+- **Impact on backtests**: v17/v18 ran without ATR stops. Real PF with working stops would be better than recorded. v19 campaign is the first with functioning ATR protection.
+- **v19 bull campaign launched**: 18 runs, `python3 scripts/autobacktest_v19.py --window bull`, running as background process. Log: `/tmp/v19_bull.log`.
 
 ---
 

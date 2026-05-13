@@ -4,8 +4,8 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status:** 🟡 v19 code live · LLMModel v5 · 25 pairs · v19 campaign ready to run (36 combos) · asymmetric barriers K_TP=2.0/K_SL=1.0 · identifier `finbuddy_v19_asym_1778575138`  
-**Last Updated:** 2026-05-12 (Claude Code — v19 asymmetric barriers, feature_engineering_standard active, campaign runner built)
+**Status:** 🟡 v19 code live · LLMModel v5 · 25 pairs · v19 bull campaign RUNNING (18 runs) · stoploss bug fixed 2026-05-13  
+**Last Updated:** 2026-05-13 (Claude Code — critical stoploss bug fixed, v19 bull campaign launched)
 
 ---
 
@@ -122,20 +122,32 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 ---
 
-## 🚀 Current State (2026-05-12)
+## 🚀 Current State (2026-05-13)
 
 | Component | Status |
 |---|---|
 | **FreqTrade** | ✅ Running, dry-run, futures isolated |
-| **Strategy** | ✅ FinBuddyFreqAI v18 code |
-| **FreqAI identifier** | `finbuddy_v17_sym_1778353539` (v17 models, v18 code) |
+| **Strategy** | ✅ FinBuddyFreqAI **v19 code** — stoploss bug fixed (commit `21796ea`) |
+| **FreqAI identifier** | `finbuddy_v19_asym_1778575138` — all 25 pairs trained |
 | **FreqAI Model** | ✅ FinBuddyLLMModel **v5** — auto-confirm fix (proba ≥ 0.90 bypasses LLM) |
-| **Live P&L** | +$11 USDT (+2.07%), PF=1.39, WR=60.8% (54 closed trades, as of 2026-05-12) |
+| **Live P&L** | ~+$4 USDT (4 open shorts now protected with ATR stops) |
 | **N8N Pipeline** | 🔴 Permanently disabled |
 | **All Crons** | ✅ Live (Phase 2–5, watchdog, postmortem, daily summary, WF notify) |
 | **Walk-forward** | ⏸️ Paused — run after v19 campaign shows PF > 1.2 in bull window |
-| **v19 Campaign** | ⬜ READY — `python scripts/autobacktest_v19.py` (36 runs, ~6h) |
+| **v19 Campaign** | 🔄 RUNNING — bull window, 18 runs (~3h). `tail -f /tmp/v19_bull.log` |
 | **Phase 10 go-live** | ⬜ BLOCKED — needs walk-forward PASS |
+
+## 🐛 Critical Bug Fixed (2026-05-13) — commit `21796ea`
+
+**Bug**: `custom_stoploss` returned `None` for ALL trades (longs and shorts) since v17.
+
+**Root cause**: `stoploss_from_open()` ALWAYS returns `>= 0` (per docs). Guards were `< 0` — always rejected the value — always returned `None` — hard `-8%` config stoploss fired for every loss. No ATR protection ever worked since v17.
+
+**Evidence**: NEAR short #64 ran 7.4h to exactly −8.14%. All open shorts showed `sl=0.0000`.
+
+**Fix**: Changed both `< 0` guards to `> 0`. The `= 0` case (stop already breached) is correctly discarded.
+
+**Implication**: v17/v18 backtest PF results were worse than they would have been with working ATR stops. v19 campaign will be the first with ATR protection actually functioning.
 
 ---
 
