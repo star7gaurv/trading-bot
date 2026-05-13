@@ -292,6 +292,50 @@
       "proposed_by": "reasoning_agent",
       "reviewed_at": "2026-05-12",
       "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "volatility_breakout_momentum_20260513",
+      "hypothesis": "When 1h realized volatility spikes above its 20\u2011period moving average and the price breaks above the prior 4\u2011hour high, the breakout tends to continue for the next 3\u20116 bars, offering a short\u2011term directional edge.",
+      "timeframe": "1h",
+      "indicators": [
+        "RealizedVolatility_20",
+        "HighestHigh_4h",
+        "ATR_14"
+      ],
+      "entry_long": "price > HighestHigh_4h AND RealizedVolatility_20 > 1.5 * SMA(RealizedVolatility_20,20)",
+      "entry_short": "price < LowestLow_4h AND RealizedVolatility_20 > 1.5 * SMA(RealizedVolatility_20,20)",
+      "exit_rule": "trail_stop = entry_price - 1.5 * ATR_14 for longs, +1.5 * ATR_14 for shorts OR time_exit = 6 bars",
+      "regime_filter": [
+        "Regime=NEUTRAL",
+        "BTC_Dominance between 55% and 65%"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-13",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-13",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "btc_dominance_momentum_spread_20260513",
+      "hypothesis": "A rising BTC dominance combined with a positive 1h BTC\u2011USDT momentum (MACD histogram > 0) and a widening BTC\u2011ETH price spread predicts outperformance of BTC\u2011USDT futures relative to alt\u2011coin futures.",
+      "timeframe": "1h",
+      "indicators": [
+        "BTC_Dominance",
+        "MACD_BTC_12_26_9",
+        "Spread_BTC_ETH"
+      ],
+      "entry_long": "BTC_Dominance > 58% AND MACD_histogram_BTC > 0 AND Spread_BTC_ETH increasing",
+      "entry_short": "BTC_Dominance < 55% AND MACD_histogram_BTC < 0 AND Spread_BTC_ETH decreasing",
+      "exit_rule": "close position when MACD_histogram_BTC crosses zero or after 8 bars, whichever comes first",
+      "regime_filter": [
+        "Regime=NEUTRAL",
+        "FearGreed between 35 and 55"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-13",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-13",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
     }
   ]
 }
