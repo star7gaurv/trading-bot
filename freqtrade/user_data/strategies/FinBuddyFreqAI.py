@@ -120,7 +120,7 @@ class FinBuddyFreqAI(IStrategy):
         return informative
 
     # ------------------------------------------------------------------ #
-    # ATR-adaptive custom stoploss (v17 — symmetric 2.0×ATR barriers)   #
+    # ATR-adaptive custom stoploss (v19 — asymmetric K_TP/K_SL barriers) #
     # ------------------------------------------------------------------ #
 
     def custom_stoploss(
@@ -159,8 +159,10 @@ class FinBuddyFreqAI(IStrategy):
         sl_pct = self.K_SL * atr_pct   # initial stop distance (tight)
         tp_pct = self.K_TP * atr_pct   # trail lock level (wider = let winners run)
 
-        # Trail: once profit exceeds the TP level, lock stop at +K_TP×ATR above entry.
-        # current_profit > tp_pct guarantees stoploss_from_open returns negative (valid).
+        # Trail: once profit exceeds the TP level, lock stop at K_TP×ATR from entry.
+        # stoploss_from_open ALWAYS returns >= 0 (both longs and shorts).
+        # Returns 0 only when stop would breach current price — discard those.
+        # Return the positive value directly; FreqTrade handles direction internally.
         if current_profit > tp_pct:
             trail_pct = stoploss_from_open(
                 tp_pct,
@@ -168,18 +170,20 @@ class FinBuddyFreqAI(IStrategy):
                 is_short=trade.is_short,
                 leverage=trade.leverage,
             )
-            if trail_pct is not None and trail_pct < 0:
+            if trail_pct is not None and trail_pct > 0:
                 return trail_pct
             return None
 
-        # Initial: K_SL×ATR below entry. Returns negative for all normal profit levels.
+        # Initial: K_SL×ATR from entry. Use negative open_relative_stop to set
+        # stop BELOW entry for longs / ABOVE entry for shorts.
+        # stoploss_from_open ALWAYS returns >= 0; > 0 guard discards degenerate cases.
         initial_stop = stoploss_from_open(
             -sl_pct,
             current_profit,
             is_short=trade.is_short,
             leverage=trade.leverage,
         )
-        if initial_stop is not None and initial_stop < 0:
+        if initial_stop is not None and initial_stop > 0:
             return initial_stop
         return None
 
