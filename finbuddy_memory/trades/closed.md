@@ -78,3 +78,4 @@
 | 2026-05-13 14:01:34 | LTC/USDT:USDT | SHORT | 1h18m | +1.11% | +2.06 | exit_signal | NEUTRAL | freqai_lgbm_v19_short |
 | 2026-05-13 14:01:31 | XRP/USDT:USDT | SHORT | 1h14m | +0.61% | +1.15 | exit_signal | NEUTRAL | freqai_lgbm_v19_short |
 | 2026-05-13 14:01:34 | ARB/USDT:USDT | SHORT | 1h10m | +2.17% | +4.05 | exit_signal | NEUTRAL | freqai_lgbm_v19_short |
+| 2026-05-13 14:28:54 | LINK/USDT:USDT | SHORT | 0h27m | -1.20% | -2.27 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v19_short |
