@@ -1,7 +1,7 @@
 # 🤝 FinBuddy — Handoff Note for Claude Code
 
 **Written by:** Claude Code  
-**Date:** 2026-05-12  
+**Date:** 2026-05-13  
 **For:** Claude Code (next session)  
 **Branch:** `master`
 
@@ -15,13 +15,27 @@
 | Live FreqAI identifier | `finbuddy_v19_asym_1778575138` |
 | FreqAI model | `FinBuddyLLMModel` **v5** (LightGBM + LLM screen, auto-confirm ≥0.90) |
 | Pairs | 25, 1h TF, futures isolated |
-| Regime | NEUTRAL (since 2026-05-04) |
-| Live P&L | +$11 USDT, PF=1.39, WR=60.8% (54 closed trades) |
-| Bot status | ✅ Running — retraining all 25 pairs on new v19 identifier |
+| Regime | NEUTRAL |
+| Live P&L | ~+$4 USDT (4 open shorts — now protected with ATR stops) |
+| Bot status | ✅ Running — stoploss bug fixed, ATR stops active for first time |
 
 ---
 
-## 🔧 What Was Built This Session (2026-05-12)
+## 🚨 CRITICAL BUG FIXED THIS SESSION (2026-05-13) — commit `21796ea`
+
+**Bug**: `custom_stoploss` has been returning `None` for ALL trades (long and short) since v17.
+
+**Root cause**: `stoploss_from_open()` ALWAYS returns `>= 0`. The guards were `< 0` → always False → always `None` → hard `-0.08` config stoploss fired for every loss.
+
+**Evidence**: NEAR short #64 ran 7.4h to exactly -8.14% (hard stop + slippage). All 4 open shorts showed `sl=0.0000` before fix.
+
+**Fix**: Changed both `< 0` guards to `> 0` (the `= 0` case means stop already breached — correctly discarded).
+
+**Implication for previous backtests**: v17/v18 also ran without ATR stops. Real PF with working stops would have been better. v19 campaign will be the first with ATR protection actually working.
+
+---
+
+## 🔧 What Was Built This Session (2026-05-12–13)
 
 ### v19 — Asymmetric Barriers (commit `ed02369`)
 
