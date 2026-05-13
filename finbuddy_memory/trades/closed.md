@@ -73,3 +73,5 @@
 | 2026-05-13 10:41:56 | OP/USDT:USDT | SHORT | 0h42m | +1.87% | +3.45 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v19_short |
 | 2026-05-13 11:07:37 | TON/USDT:USDT | SHORT | 0h36m | -0.01% | -0.02 | exit_signal | NEUTRAL | freqai_lgbm_v19_short |
 | 2026-05-13 12:42:56 | ONDO/USDT:USDT | SHORT | 2h11m | +3.80% | +7.00 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v19_short |
+| 2026-05-13 12:51:11 | BTC/USDT:USDT | SHORT | 1h43m | +0.49% | +0.80 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v19_short |
+| 2026-05-13 12:46:31 | SOL/USDT:USDT | SHORT | 0h38m | +1.43% | +2.64 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v19_short |
