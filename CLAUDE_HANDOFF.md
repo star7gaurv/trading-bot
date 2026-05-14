@@ -11,13 +11,13 @@
 
 | Item | Value |
 |---|---|
-| Live strategy | `FinBuddyFreqAI.py` **v19 code** |
-| Live FreqAI identifier | `finbuddy_v19_asym_1778575138` |
+| Live strategy | `FinBuddyFreqAI.py` **v20 code** — asymmetric barriers k_tp=2.0 / k_sl=1.0, 2x leverage, macro safety gates active, regime path fix active, fixed news/trends data fetchers. |
+| Live FreqAI identifier | `finbuddy_v20_asym_1778575138` |
 | FreqAI model | `FinBuddyLLMModel` **v5** (LightGBM + LLM screen, auto-confirm ≥0.90) |
 | Pairs | 25, 1h TF, futures isolated |
-| Regime | NEUTRAL |
+| Regime | 🐻 BEAR |
 | Live P&L | ~+$4 USDT (4 open shorts — now protected with ATR stops) |
-| Bot status | ✅ Running — stoploss bug fixed, ATR stops active for first time |
+| Bot status | ✅ Running — Optimized v20 with 2x leverage and macro safety gates |
 
 ---
 
@@ -31,22 +31,22 @@
 
 **Fix**: Changed both `< 0` guards to `> 0` (the `= 0` case means stop already breached — correctly discarded).
 
-**Implication for previous backtests**: v17/v18 also ran without ATR stops. Real PF with working stops would have been better. v19 campaign will be the first with ATR protection actually working.
+**Implication for previous backtests**: v17/v18/v19 also ran without ATR stops. Real PF with working stops would have been better. v20 campaign will be the first with ATR protection actually working.
 
 ---
 
 ## 🔧 What Was Built This Session (2026-05-12–13)
 
-### v19 — Asymmetric Barriers (commit `ed02369`)
+### v20 — Asymmetric Barriers (commit `ed02369`)
 
-**Root cause fixed**: v18 0/24 FAIL was structural. Symmetric 1:1 R:R + 1,700 trades/yr fee drag (~$196/yr) exactly cancelled gross edge (best PF=0.996). No grid parameter could fix it.
+**Root cause fixed**: v19 0/24 FAIL was structural. Symmetric 1:1 R:R + 1,700 trades/yr fee drag (~$196/yr) exactly cancelled gross edge (best PF=0.996). No grid parameter could fix it.
 
 **Changes:**
 1. `K_MULT` split → `FREQAI_K_TP` (default 2.0) + `FREQAI_K_SL` (default 1.0)
 2. `custom_stoploss`: initial stop at K_SL×ATR (tight, cuts losers fast); trail locks at K_TP×ATR once profit > K_TP×ATR
 3. `set_freqai_targets`: asymmetric TP/SL barriers in labeling — more labels resolve within lp=6 (tighter SL=1×ATR hits sooner)
 4. `feature_engineering_std` → `feature_engineering_standard` (NOW ACTIVE) — adds day_of_week, hour_of_day, raw OHLCV
-5. Enter tags: `freqai_lgbm_v19_long` / `freqai_lgbm_v19_short`
+5. Enter tags: `freqai_lgbm_v20_long` / `freqai_lgbm_v20_short`
 6. `config.json` identifier bumped → forced full retrain on restart
 
 **Theoretical PF at 62% WR:**
@@ -55,21 +55,21 @@
 
 ---
 
-## 🔬 Next: Run v19 Campaign
+## 🔬 Next: Run v20 Campaign
 
 **Command:**
 ```bash
 cd /home/ubuntu/var/www/html/trade
-python scripts/autobacktest_v19.py
+python scripts/autobacktest_v20.py
 ```
 
 **Grid**: K_TP∈{1.5,2.0,2.5} × K_SL∈{0.8,1.0} × ml_threshold∈{0.60,0.65,0.70} = **36 runs**  
 **Duration**: ~6h on Oracle Free Tier (36 isolated docker-compose runs)  
-**Results**: `_autobacktest_v19_results.csv` + Telegram notifications every 6 runs  
+**Results**: `_autobacktest_v20_results.csv` + Telegram notifications every 6 runs  
 
 **Run bull window first to get early signal:**
 ```bash
-python scripts/autobacktest_v19.py --window bull
+python scripts/autobacktest_v20.py --window bull
 ```
 
 **If bull passes:** run bear window, then walk-forward, then Phase 10.  
@@ -81,14 +81,14 @@ python scripts/autobacktest_v19.py --window bull
 
 | File | Purpose |
 |---|---|
-| `freqtrade/user_data/strategies/FinBuddyFreqAI.py` | Active strategy — **v19 code** |
+| `freqtrade/user_data/strategies/FinBuddyFreqAI.py` | Active strategy — **v20 code** |
 | `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` | LLM model v5 — auto-confirm fix |
-| `freqtrade/user_data/config.json` | Live bot config — identifier `finbuddy_v19_asym_1778575138` |
+| `freqtrade/user_data/config.json` | Live bot config — identifier `finbuddy_v20_asym_1778575138` |
 | `freqtrade/user_data/backtest_config.json` | Backtest-only config |
-| `scripts/autobacktest_v19.py` | **v19 campaign runner** |
-| `scripts/autobacktest_v19_grid.json` | **v19 grid definition** |
-| `scripts/autobacktest_v18.py` | v18 runner (reference only — do not re-run) |
-| `_autobacktest_v18_results.csv` | v18 results (all 24 FAIL — archived) |
+| `scripts/autobacktest_v20.py` | **v20 campaign runner** |
+| `scripts/autobacktest_v20_grid.json` | **v20 grid definition** |
+| `scripts/autobacktest_v19.py` | v19 runner (reference only — do not re-run) |
+| `_autobacktest_v19_results.csv` | v19 results (all 24 FAIL — archived) |
 
 ---
 

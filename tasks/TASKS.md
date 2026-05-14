@@ -12,7 +12,7 @@
 | Phase | File | Status | Description |
 |---|---|---|---|
 | 0 | [phase-0-foundation.md](phase-0-foundation.md) | ✅ **5/5 Complete** (2026-04-27) | Fix loose ends, clean up, wire everything together |
-| 1 | [phase-1-freqai-brain.md](phase-1-freqai-brain.md) | 🔄 **In Progress** — v17 live, walk-forward #5 running | FreqAI brain — long + short, v17 (symmetric barriers, FinBuddyLLMModel active) |
+| 1 | [phase-1-freqai-brain.md](phase-1-freqai-brain.md) | 🔄 **In Progress** — v20 live | FreqAI brain — long + short, v20 (2x leverage, macro safety gates active) |
 | 2 | [phase-2-data-enrichment.md](phase-2-data-enrichment.md) | ✅ **Verified** (2026-05-03) — cron clean, combined_context.json updating | External data fetchers — Fear & Greed, CoinGecko, CryptoPanic, DefiLlama, Google Trends |
 | 3 | [phase-3-hmm-regime.md](phase-3-hmm-regime.md) | ✅ **Verified** (2026-05-03) — regime NEUTRAL, cron clean | 5-regime HMM engine wired into strategy + memory |
 | 4 | [phase-4-obsidian-memory.md](phase-4-obsidian-memory.md) | ✅ **Verified** (2026-05-03) — auto-commits every 15m | Obsidian vault auto-write + git auto-commit |
@@ -27,7 +27,7 @@
 
 ## 🚨 Current Focus (as of 2026-05-09)
 
-**Strategy: v17 live** — symmetric barriers k_tp=k_sl=2.0, regime kill-switches (CRASH/BEAR→no longs, BULL/EUPHORIA→no shorts), FinBuddyLLMModel active (LightGBM + LLM confirmation layer, 7 providers).
+**Strategy: v20 live** — asymmetric barriers k_tp=2.0 / k_sl=1.0, 2x leverage, macro safety gates active, regime path fix active, fixed news/trends data fetchers.
 
 **Immediate next steps:**
 1. ⏳ Walk-forward #5 (T190609) running — started 2026-05-09 19:06 UTC. First clean v17 OOS run. Check: `tail -f ~/.finbuddy/logs/walk_forward.log`. walkforward_notify.py will Telegram result.
