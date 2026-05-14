@@ -27,3 +27,6 @@
 - **2026-05-13 20:00 UTC** — Regime changed: NEUTRAL → BEAR
 - **2026-05-14 16:00 UTC** — Regime changed: BEAR → NEUTRAL
 - **2026-05-14 16:00 UTC** — 🎯 Trade milestone reached: 100 closed trades
+- **2026-05-14 18:40 UTC** — Strategy logic updated: v21 Intelligent Evolution deployed (Dynamic RS scoring vs BTC, dynamic ML thresholds, leverage-aware stoploss fixed to -0.04).
+- **2026-05-14 18:40 UTC** — Regime logic updated: Removed dumb static BEAR block on longs. Longs now permitted in any macro if Relative Strength is positive.
+- **2026-05-14 19:15 UTC** — Antigravity Consciousness injected: `.agents/rules/conscious-brain.md` and `.agents/workflows/self-evolution.md` deployed to workspace to enforce self-evolving memory loops.
