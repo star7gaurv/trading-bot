@@ -75,7 +75,8 @@ These apply to ALL code, scripts, and automation in this repo:
 2. **AI for progress, not routine:** Use AI (Perplexity, Claude, Grok) for design, debugging, monitoring, and improvements — not for tasks that a simple script or cron job can handle.
 3. **DRY & reusable design:** Project code must follow "Do Not Repeat Yourself". Shared logic lives in reusable helpers/modules — never duplicate code across strategies, scripts, or phases.
 4. **Documentation as memory:** Any non-trivial behavior (strategy logic, cron setup, API integration, experiments) must be documented so we never forget what's already implemented.
-5. **Never hardcode secrets:** API keys, passwords, and tokens must always come from environment variables, never from committed files.
+5. **Memory Maintenance (Crucial):** Agents MUST review project memory (`CLAUDE.md` and `FINBUDDY_PROJECT_MEMORY.md`) at the start of every session, identify stale information (versions, status, results), and update it immediately. This minimizes token usage and ensures a single source of truth.
+6. **Never hardcode secrets:** API keys, passwords, and tokens must always come from environment variables, never from committed files.
 
 ---
 
@@ -114,12 +115,12 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 ## What Is Live and Working Right Now (verified 2026-05-09 by Claude Code)
 
 ### FreqTrade
-- Running **`FinBuddyFreqAI.py` (v17)** in dry-run mode on **Binance Futures USDT-M** — long+short
-- FreqAI identifier: `finbuddy_v17_sym_1778353539` — 25 pairs, all trained, symmetric barriers
-- 1000 USDT virtual wallet, max 4 open trades, 200 USDT stake × regime multiplier
+- Running **`FinBuddyFreqAI.py` (v20)** in dry-run mode on **Binance Futures USDT-M** — long+short
+- FreqAI identifier: `finbuddy_v19_asym_1778575138` (2x leverage, 8 max trades, macro safety gates active)
+- 1000 USDT virtual wallet, max 8 open trades, 2x leverage enabled
 - API: `http://localhost:8080/api/v1` — user: `bot`, pass: `REDACTED-FREQTRADE__API_SERVER__PASSWORD`
 - Whitelist: **25 pairs**, **1h timeframe**
-- First clean trades: #30 BTC short, #31 TON short, #32 DASH short (2026-05-09 10:00 UTC)
+- Status: Optimized on 2026-05-14 (fixed regime path, news fetcher, and Google Trends 429)
 
 ### N8N
 - 🔴 **Permanently disabled** — FreqAI is sole signal source
@@ -169,18 +170,15 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ## Current Strategy
 
-### ✅ Active: `FinBuddyFreqAI.py` v18 — Futures Long/Short
+### ✅ Active: `FinBuddyFreqAI.py` v20 — Futures Long/Short + Macro Safety
 - Binance Futures USDT-M (perpetual, isolated margin), **1h TF**, 25 pairs, `can_short=True`
-- FreqAI LightGBM **2-class model** (`["L","S"]`) — symmetric barriers k_tp=k_sl=2.0
-- FreqAI identifier: `finbuddy_v17_sym_1778353539` — 25 pairs, all trained
-- `custom_stoploss()`: 2×ATR initial stop, trail locks at +2×ATR from entry, `trailing_stop=False`
-- **Regime-aware exits**: CRASH/BEAR → exit longs at 0.55, BULL/EUPHORIA → exit shorts at 0.55, NEUTRAL → 0.65
-- **HMM kill-switches**: CRASH/BEAR → no longs, BULL/EUPHORIA → no shorts
-- **Correlation cluster cap**: max 2 trades per MEGA_CAP (BTC/ETH/SOL) or L2 (ARB/OP) cluster
-- **Funding-rate long guard**: blocks new longs if BTC funding >0.05%/8h
-- Enter tags: `freqai_lgbm_v18_long` / `freqai_lgbm_v18_short`
-- `BTC_MA200_GATE` env var defaults to `"0"` — opt-in only
-- ⚠️ `feature_engineering_std` is intentionally dead (wrong name) — activate in v19 with new identifier
+- **2x Leverage**: Implemented via `leverage()` callback for balanced profit/risk.
+- **Max Open Trades**: Increased to 8 for better diversification across clusters.
+- **Regime Fix**: Strategy now correctly resolves `/freqtrade/finbuddy_memory/regimes/current.json`.
+- **Macro Guard**: `confirm_trade_entry` blocks longs in Extreme Fear (<20) and shorts in Extreme Greed (>80).
+- FreqAI identifier: `finbuddy_v19_asym_1778575138` — Asymmetric barriers (K_TP=2.0, K_SL=1.0)
+- `custom_stoploss()`: ATR-based stops fixed (commit `21796ea`)
+- **External Data**: Fixed News Fetcher (Catalogs 48/49) and Google Trends (backoff/retry logic active).
 
 ### ✅ Active: `FinBuddyLLMModel.py` v5
 - LightGBM + NVIDIA/OpenRouter LLM confirmation layer

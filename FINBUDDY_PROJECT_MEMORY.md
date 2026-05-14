@@ -4,8 +4,8 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status:** 🟡 v19 code live · LLMModel v5 · 25 pairs · v19 bull campaign RUNNING (18 runs) · stoploss bug fixed 2026-05-13  
-**Last Updated:** 2026-05-13 (Claude Code — critical stoploss bug fixed, v19 bull campaign launched)
+**Status:** 🟢 v20 code live · 2x Leverage · 8 Max Trades · Fixed Macro Data Fetchers · 25 pairs · Stoploss bug fixed  
+**Last Updated:** 2026-05-14 (Claude Code — Phase 1-3 optimizations: v20 strategy, 2x leverage, macro safety gates, fixed regime path, fixed news/trends fetchers)
 
 ---
 
@@ -28,14 +28,14 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 | Component | Status | Notes |
 |---|---|---|
-| **FreqTrade** | ✅ Running, dry-run | Strategy v16.2, Binance USDT-M, isolated margin, port 8080 |
-| **FreqAI identifier** | `finbuddy_v19_asym_1778575138` | Active model key |
+| **FreqTrade** | ✅ Running, dry-run | Strategy v20, Binance USDT-M, isolated margin, port 8080 |
+| **FreqAI identifier** | `finbuddy_v19_asym_1778575138` | 2x leverage, 8 max trades active |
 | **Whitelist** | 25 pairs | Binance USDT-M perpetuals |
 | **Regime** | 🐻 BEAR | From HMM (updates every 4h) |
 | **Open trades** | 4 (0L / 4S) | Live positions |
 | **Closed trades** | 90 | All-time P&L: 23.62 USDT |
 | **Last training** | unknown | Age of most recent 'Done training' log event |
-| **Walk-forward** | ❌ FAIL — WR 47.0%, Sharpe -5.12, DD 21.8%, PF 0.73 (8535 trades, run `FinBuddyFreqAI_2024-01-01_2026-04-01_20260509T190609`) | OOS validator — gates Phase 10 |
+| **Walk-forward** | ❌ FAIL — WR 47.0%, Sharpe -5.12, DD 21.8%, PF 0.73 (run `FinBuddyFreqAI_2024-01-01_2026-04-01_20260509T190609`) | OOS validator — gates Phase 10 |
 
 <!-- AUTO-SYNC-END -->
 
@@ -125,15 +125,15 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 ## 🚀 Current State (2026-05-13)
 
 | Component | Status |
-|---|---|
+|---|---|---|
 | **FreqTrade** | ✅ Running, dry-run, futures isolated |
-| **Strategy** | ✅ FinBuddyFreqAI **v19 code** — stoploss bug fixed (commit `21796ea`) |
+| **Strategy** | ✅ FinBuddyFreqAI **v20 code** — 2x leverage, macro safety gates, regime path fix |
 | **FreqAI identifier** | `finbuddy_v19_asym_1778575138` — all 25 pairs trained |
 | **FreqAI Model** | ✅ FinBuddyLLMModel **v5** — auto-confirm fix (proba ≥ 0.90 bypasses LLM) |
 | **Live P&L** | ~+$4 USDT (4 open shorts now protected with ATR stops) |
 | **N8N Pipeline** | 🔴 Permanently disabled |
 | **All Crons** | ✅ Live (Phase 2–5, watchdog, postmortem, daily summary, WF notify) |
-| **Walk-forward** | ⏸️ Paused — run after v19 campaign shows PF > 1.2 in bull window |
+| **External Data** | ✅ FIXED — fetch_cryptopanic (cats 48/49), fetch_google_trends (429 retry) |
 | **v19 Campaign** | 🔄 RUNNING — bull window, 18 runs (~3h). `tail -f /tmp/v19_bull.log` |
 | **Phase 10 go-live** | ⬜ BLOCKED — needs walk-forward PASS |
 
@@ -166,7 +166,8 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 2. **AI for progress, not routine:** Use AI for design, debugging, monitoring, improvements.
 3. **DRY & reusable design:** Shared logic in helpers/modules — no duplication across strategies.
 4. **Documentation as memory:** All non-trivial behavior must be documented.
-5. **Never hardcode secrets:** API keys always from environment variables, never committed files.
+5. **Memory Maintenance (Crucial):** Agents MUST review project memory (`CLAUDE.md` and `FINBUDDY_PROJECT_MEMORY.md`) at the start of every session, identify stale information (versions, status, results), and update it immediately. This minimizes token usage and ensures a single source of truth.
+6. **Never hardcode secrets:** API keys always from environment variables, never committed files.
 
 ---
 
