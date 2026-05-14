@@ -45,7 +45,7 @@ REPO = Path("/home/ubuntu/var/www/html/trade")
 STRATEGY_FILE = REPO / "freqtrade/user_data/strategies/FinBuddyFreqAI.py"
 CONFIG_FILE = REPO / "freqtrade/user_data/config.json"
 REGIME_JSON = REPO / "finbuddy_memory/regimes/current.json"
-MEMORY_FILE = REPO / "FINBUDDY_PROJECT_MEMORY.md"
+MEMORY_FILE = REPO / "finbuddy_memory" / "FINBUDDY_PROJECT_MEMORY.md"
 EVENTS_FILE = REPO / "finbuddy_memory/session_events.md"
 WF_RESULTS_DIR = REPO / "walkforward_results"
 LOG_FILE = REPO / "freqtrade/user_data/logs/freqtrade.log"
@@ -326,7 +326,7 @@ def git_commit(dry_run_mode: bool) -> None:
     try:
         subprocess.run(
             ["git", "add",
-             "FINBUDDY_PROJECT_MEMORY.md",
+             "finbuddy_memory/FINBUDDY_PROJECT_MEMORY.md",
              "finbuddy_memory/session_events.md"],
             cwd=REPO, check=False
         )

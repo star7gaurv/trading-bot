@@ -2,7 +2,7 @@
 
 > This file is the single source of truth for any Claude instance working in this repo.
 > Read this fully before touching any file, writing any code, or making any suggestion.
-> For current phase status and roadmap → always check [[FINBUDDY_PROJECT_MEMORY]] first.
+> For current phase status and roadmap → always check [[finbuddy_memory/FINBUDDY_PROJECT_MEMORY]] first.
 
 ---
 
@@ -75,7 +75,7 @@ These apply to ALL code, scripts, and automation in this repo:
 2. **AI for progress, not routine:** Use AI (Perplexity, Claude, Grok) for design, debugging, monitoring, and improvements — not for tasks that a simple script or cron job can handle.
 3. **DRY & reusable design:** Project code must follow "Do Not Repeat Yourself". Shared logic lives in reusable helpers/modules — never duplicate code across strategies, scripts, or phases.
 4. **Documentation as memory:** Any non-trivial behavior (strategy logic, cron setup, API integration, experiments) must be documented so we never forget what's already implemented.
-5. **Memory Maintenance (Crucial):** Agents MUST review project memory (`CLAUDE.md` and `FINBUDDY_PROJECT_MEMORY.md`) at the start of every session, identify stale information (versions, status, results), and update it immediately. This minimizes token usage and ensures a single source of truth.
+5. **Memory Maintenance (Crucial):** Agents MUST review project memory (`CLAUDE.md` and `finbuddy_memory/FINBUDDY_PROJECT_MEMORY.md`) at the start of every session, identify stale information (versions, status, results), and update it immediately. This minimizes token usage and ensures a single source of truth.
 6. **Never hardcode secrets:** API keys, passwords, and tokens must always come from environment variables, never from committed files.
 
 ---
@@ -240,22 +240,22 @@ Check: `tail -f ~/.finbuddy/logs/walk_forward.log`
 
 | Phase | File | Status | Focus |
 |---|---|---|---|
-| 0 | `tasks/phase-0-foundation.md` | ✅ **Complete** (2026-04-27) | Foundation — FreqTrade, Telegram, server |
-| 1 | `tasks/phase-1-freqai-brain.md` | 🔄 **In Progress** — v17 live, walk-forward running | FreqAI brain — long + short, 2-class model |
-| 2 | `tasks/phase-2-data-enrichment.md` | ✅ **Live** — cron every 15m | External data fetchers — Fear & Greed, CoinGecko, CryptoPanic, DefiLlama, Google Trends |
-| 3 | `tasks/phase-3-hmm-regime.md` | ✅ **Live** — cron every 4h | HMM 5-regime engine wired into strategy |
-| 4 | `tasks/phase-4-obsidian-memory.md` | ✅ **Live** — cron every 15m | Obsidian vault auto-write + git auto-commit |
-| 5 | `tasks/phase-5-karpathy-loop.md` | ✅ **Live** — cron 02:00 daily | Nightly research loop — Gemini + DeepSeek R1 |
-| 6 | `tasks/phase-6-tradingview.md` | 🔴 **Abandoned** (2026-05-04) | TV alerts require paid plan — permanently dropped |
-| 7 | `tasks/phase-7-executor.md` | ✅ **Live** — cron every 5m | Python signal executor (paper mode) |
-| 8 | `tasks/phase-8-futures-setup.md` | ✅ **Complete** (2026-05-05) | Binance futures API, isolated margin |
-| 9 | `tasks/phase-9-futures-risk.md` | ✅ **Complete** (2026-05-09) | Risk engine: regime sizing + cluster cap + funding guard |
-| 10 | `tasks/phase-10-live-migration.md` | ⬜ **BLOCKED** | Needs walk-forward PASS or 6-month dry-run track record |
+| 0 | `finbuddy_memory/tasks/phase-0-foundation.md` | ✅ **Complete** (2026-04-27) | Foundation — FreqTrade, Telegram, server |
+| 1 | `finbuddy_memory/tasks/phase-1-freqai-brain.md` | 🔄 **In Progress** — v17 live, walk-forward running | FreqAI brain — long + short, 2-class model |
+| 2 | `finbuddy_memory/tasks/phase-2-data-enrichment.md` | ✅ **Live** — cron every 15m | External data fetchers — Fear & Greed, CoinGecko, CryptoPanic, DefiLlama, Google Trends |
+| 3 | `finbuddy_memory/tasks/phase-3-hmm-regime.md` | ✅ **Live** — cron every 4h | HMM 5-regime engine wired into strategy |
+| 4 | `finbuddy_memory/tasks/phase-4-obsidian-memory.md` | ✅ **Live** — cron every 15m | Obsidian vault auto-write + git auto-commit |
+| 5 | `finbuddy_memory/tasks/phase-5-karpathy-loop.md` | ✅ **Live** — cron 02:00 daily | Nightly research loop — Gemini + DeepSeek R1 |
+| 6 | `finbuddy_memory/tasks/phase-6-tradingview.md` | 🔴 **Abandoned** (2026-05-04) | TV alerts require paid plan — permanently dropped |
+| 7 | `finbuddy_memory/tasks/phase-7-executor.md` | ✅ **Live** — cron every 5m | Python signal executor (paper mode) |
+| 8 | `finbuddy_memory/tasks/phase-8-futures-setup.md` | ✅ **Complete** (2026-05-05) | Binance futures API, isolated margin |
+| 9 | `finbuddy_memory/tasks/phase-9-futures-risk.md` | ✅ **Complete** (2026-05-09) | Risk engine: regime sizing + cluster cap + funding guard |
+| 10 | `finbuddy_memory/tasks/phase-10-live-migration.md` | ⬜ **BLOCKED** | Needs walk-forward PASS or 6-month dry-run track record |
 
 ---
 
 ## Architecture Decision (ADR-001): Signal-as-a-Service
-Full doc in `docs/ADR-001-multi-tenant-architecture.md`.
+Full doc in `finbuddy_memory/docs/ADR-001-multi-tenant-architecture.md`.
 
 **Chosen Option C** — Signal-as-a-Service + thin per-user executor:
 - One central brain publishes signals (O(1) cost regardless of user count)
@@ -269,7 +269,7 @@ Full doc in `docs/ADR-001-multi-tenant-architecture.md`.
 ---
 
 ## Signal Contract
-Fully specced in `docs/signal-contract.md`. Key fields:
+Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 - `signal_id` (UUID v4) — idempotency key
 - `user_id`, `pair`, `side` (buy/sell/hold), `confidence` (0.0–1.0)
 - `regime` — CRASH/BEAR/NEUTRAL/BULL/EUPHORIA
@@ -334,7 +334,7 @@ Fully specced in `docs/signal-contract.md`. Key fields:
 
 ## Session History Summary
 
-> Full session history lives in `FINBUDDY_PROJECT_MEMORY.md`. Only the most recent session is kept here.
+> Full session history lives in `finbuddy_memory/FINBUDDY_PROJECT_MEMORY.md`. Only the most recent session is kept here.
 
 ### May 12, 2026 (Claude Code) — LLM over-filtering fix + full system audit
 - **Full audit**: all 25 pairs confirmed trained; regime/external data pipeline confirmed working
@@ -364,11 +364,11 @@ Fully specced in `docs/signal-contract.md`. Key fields:
 
 ## 🔗 Related Files (Obsidian Links)
 
-- [[FINBUDDY_PROJECT_MEMORY]] ← master hub — always read this first for current status
-- [[COLLABORATION_CONTRACT]] ← roles, automation rules, AI vs code boundaries
-- [[CLAUDE_HANDOFF]] ← current action queue for Claude Code
+- [[finbuddy_memory/FINBUDDY_PROJECT_MEMORY]] ← master hub — always read this first for current status
+- [[finbuddy_memory/COLLABORATION_CONTRACT]] ← roles, automation rules, AI vs code boundaries
+- [[finbuddy_memory/CLAUDE_HANDOFF]] ← current action queue for Claude Code
 - [[finbuddy_memory/CONTEXT]] ← live context injected into every AI prompt
-- [[tasks/phase-1-freqai-brain]] ← current phase task file
+- [[finbuddy_memory/finbuddy_memory/tasks/phase-1-freqai-brain]] ← current phase task file
 - [[finbuddy_memory/strategies/graveyard]] ← retired strategies + backtest failures
 - [[finbuddy_memory/regimes/current]] ← live regime
 
