@@ -122,19 +122,18 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 ---
 
-## 🚀 Current State (2026-05-13)
+## 🚀 Current State (2026-05-14)
 
 | Component | Status |
 |---|---|---|
 | **FreqTrade** | ✅ Running, dry-run, futures isolated |
-| **Strategy** | ✅ FinBuddyFreqAI **v20 code** — 2x leverage, macro safety gates, regime path fix |
-| **FreqAI identifier** | `finbuddy_v19_asym_1778575138` — all 25 pairs trained |
+| **Strategy** | ✅ FinBuddyFreqAI **v21 code** — Intelligent updates: Dynamic Relative Strength (RS) scoring vs BTC, dynamic ML thresholds, and leverage-aware stoploss (-0.04). Dumb blacklists and hard regime blocks removed. |
+| **FreqAI identifier** | `finbuddy_v19_asym_1778575138` — all 25 pairs trained (Execution logic updated in v21, model remains unchanged) |
 | **FreqAI Model** | ✅ FinBuddyLLMModel **v5** — auto-confirm fix (proba ≥ 0.90 bypasses LLM) |
-| **Live P&L** | ~+$4 USDT (4 open shorts now protected with ATR stops) |
+| **Live P&L** | Monitoring new v21 RS-based entries |
 | **N8N Pipeline** | 🔴 Permanently disabled |
 | **All Crons** | ✅ Live (Phase 2–5, watchdog, postmortem, daily summary, WF notify) |
 | **External Data** | ✅ FIXED — fetch_cryptopanic (cats 48/49), fetch_google_trends (429 retry) |
-| **v19 Campaign** | 🔄 RUNNING — bull window, 18 runs (~3h). `tail -f /tmp/v19_bull.log` |
 | **Phase 10 go-live** | ⬜ BLOCKED — needs walk-forward PASS |
 
 ## 🐛 Critical Bug Fixed (2026-05-13) — commit `21796ea`

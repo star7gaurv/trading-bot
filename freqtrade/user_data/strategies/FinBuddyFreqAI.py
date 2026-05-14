@@ -89,7 +89,7 @@ class FinBuddyFreqAI(IStrategy):
 
     minimal_roi = {"0": 0.99}
 
-    stoploss = -0.08
+    stoploss = -0.04
     trailing_stop = False
     use_custom_stoploss = True
 
@@ -158,12 +158,15 @@ class FinBuddyFreqAI(IStrategy):
 
         sl_pct = self.K_SL * atr_pct   # initial stop distance (tight)
         tp_pct = self.K_TP * atr_pct   # trail lock level (wider = let winners run)
+        
+        # Require 50% more profit before locking the trail to avoid noise
+        lock_threshold = tp_pct * 1.5
 
-        # Trail: once profit exceeds the TP level, lock stop at K_TP×ATR from entry.
+        # Trail: once profit exceeds the lock threshold, lock stop at K_TP×ATR from entry.
         # stoploss_from_open ALWAYS returns >= 0 (both longs and shorts).
         # Returns 0 only when stop would breach current price — discard those.
         # Return the positive value directly; FreqTrade handles direction internally.
-        if current_profit > tp_pct:
+        if current_profit > lock_threshold:
             trail_pct = stoploss_from_open(
                 tp_pct,
                 current_profit,
@@ -624,11 +627,37 @@ class FinBuddyFreqAI(IStrategy):
                 )
             else:
                 dataframe["btc_macro_bull"] = 1
+                
+            # v21 — Relative Strength vs BTC (Intelligent pair selection)
+            btc_1h = self.dp.get_pair_dataframe(
+                pair="BTC/USDT:USDT", timeframe="1h"
+            )
+            if not btc_1h.empty:
+                btc_1h = btc_1h[["date", "close"]].copy()
+                btc_1h.columns = ["date", "btc_close_1h"]
+                btc_1h["date"] = pd.to_datetime(btc_1h["date"])
+                dataframe = pd.merge_asof(
+                    dataframe.sort_values("date"),
+                    btc_1h.sort_values("date"),
+                    on="date",
+                    direction="backward",
+                )
+                
+                # Calculate RS: If pair is outperforming BTC, RS is rising.
+                dataframe["rs_raw"] = dataframe["close"] / (dataframe["btc_close_1h"] + 1e-9)
+                dataframe["rs_ema_fast"] = dataframe["rs_raw"].ewm(span=10, adjust=False).mean()
+                dataframe["rs_ema_slow"] = dataframe["rs_raw"].ewm(span=50, adjust=False).mean()
+                # Strong if fast RS > slow RS
+                dataframe["is_strong_vs_btc"] = (dataframe["rs_ema_fast"] > dataframe["rs_ema_slow"]).astype(int)
+            else:
+                dataframe["is_strong_vs_btc"] = 1  # Fallback
+                
         else:
             dataframe["ema_50_1h"] = dataframe["close"]
             dataframe["close_1h"] = dataframe["close"]
             dataframe["btc_4h_below_ema50"] = 0
             dataframe["btc_macro_bull"] = 1
+            dataframe["is_strong_vs_btc"] = 1
 
         if "btc_macro_bull" not in dataframe.columns:
             dataframe["btc_macro_bull"] = 1
@@ -666,8 +695,20 @@ class FinBuddyFreqAI(IStrategy):
         if proba_short is None:
             proba_short = pd.Series(0.0, index=dataframe.index)
 
-        # v18: ENV VAR configurable threshold (default 0.60 = R8 grid winner)
-        ml_threshold_long = (proba_long > self.ML_THRESHOLD)
+        # v21: Dynamic thresholds based on RS and local trend
+        base_thresh = self.ML_THRESHOLD
+        is_uptrend = dataframe["close"] > dataframe["ema_50"]
+        is_downtrend = dataframe["close"] < dataframe["ema_50"]
+        
+        # Long threshold: base if uptrend and strong vs btc, harder (+0.05) otherwise
+        thresh_long = pd.Series(base_thresh + 0.05, index=dataframe.index) 
+        thresh_long.loc[is_uptrend & (dataframe.get("is_strong_vs_btc", 1) == 1)] = base_thresh
+        ml_threshold_long = (proba_long > thresh_long)
+
+        # Short threshold: base if downtrend and weak vs btc, harder (+0.05) otherwise
+        thresh_short = pd.Series(base_thresh + 0.05, index=dataframe.index)
+        thresh_short.loc[is_downtrend & (dataframe.get("is_strong_vs_btc", 1) == 0)] = base_thresh
+        ml_threshold_short = (proba_short > thresh_short)
 
         ta_filter = (
             (dataframe["close"] > dataframe["ema_50"])
@@ -679,18 +720,9 @@ class FinBuddyFreqAI(IStrategy):
         volatility_filter = dataframe["atr_ratio"] > 0.003
         trend_filter_1h   = dataframe["close_1h"] >= dataframe["ema_50_1h"]
 
-        # v11.1 macro-bull gate — opt-in via BTC_MA200_GATE=1 env var
-        if self.use_btc_ma200_gate:
-            macro_long_gate  = (dataframe["btc_macro_bull"] == 1)
-            macro_short_gate = (dataframe["btc_macro_bull"] == 0)
-        else:
-            macro_long_gate  = pd.Series(True, index=dataframe.index)
-            macro_short_gate = pd.Series(True, index=dataframe.index)
-
         ml_signal_long_final = (
             (dataframe["do_predict"] == 1)
             & ml_threshold_long
-            & macro_long_gate
         )
 
         dataframe.loc[
@@ -700,18 +732,18 @@ class FinBuddyFreqAI(IStrategy):
         dataframe.loc[
             ml_signal_long_final & ta_filter & volatility_filter & trend_filter_1h,
             "enter_tag"
-        ] = "freqai_lgbm_v19_long"
+        ] = "freqai_lgbm_v21_long"
 
-        # Short — model-gated (v17: removed hardcoded btc_4h_below_ema50 deadlock).
+        # Short — model-gated
         ml_signal_short = (
             (dataframe["do_predict"] == 1)
-            & (proba_short > self.ML_THRESHOLD)
-            & macro_short_gate
+            & ml_threshold_short
         )
 
+        # v21: Stricter TA for short
         ta_filter_short = (
-            (dataframe["close"] < dataframe["ema_50"])
-            & (dataframe["rsi_14"] > 20)
+            (dataframe["close"] < dataframe["ema_50"] * 0.99) # Price clearly below EMA
+            & (dataframe["rsi_14"] < 50) # Momentum confirmed bearish
             & (dataframe["bb_pct"] > 0.10)
             & (dataframe["volume"] > 0)
         )
@@ -729,24 +761,10 @@ class FinBuddyFreqAI(IStrategy):
         dataframe.loc[
             ml_signal_short & ta_filter_short & volatility_filter & trend_filter_1h_short & safety_short,
             "enter_tag"
-        ] = "freqai_lgbm_v19_short"
+        ] = "freqai_lgbm_v21_short"
 
-        # v17 — full trend-following regime kill-switches.
-        # CRASH+BEAR: downtrends — no new longs (shorts only).
-        # BULL+EUPHORIA: uptrends — no new shorts (longs only).
-        # NEUTRAL: both directions allowed.
-        # This eliminates systematic losses from trading against the macro trend.
-        regime = self._get_current_regime()
-        if regime in ("CRASH", "BEAR"):
-            dataframe.loc[:, "enter_long"] = 0
-            dataframe.loc[dataframe["enter_long"] == 0, "enter_tag"] = (
-                dataframe["enter_tag"].where(dataframe["enter_short"] == 1, None)
-            )
-        elif regime in ("BULL", "EUPHORIA"):
-            dataframe.loc[:, "enter_short"] = 0
-            dataframe.loc[dataframe["enter_short"] == 0, "enter_tag"] = (
-                dataframe["enter_tag"].where(dataframe["enter_long"] == 1, None)
-            )
+        # v21: REMOVED full trend-following regime kill-switches.
+        # We now rely on dynamic thresholds and RS analysis rather than dumb hard blocks.
 
         return dataframe
 

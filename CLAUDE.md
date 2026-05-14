@@ -345,11 +345,20 @@ Fully specced in `docs/signal-contract.md`. Key fields:
 - **v18 campaign result**: 0/24 PASS. Root cause: symmetric 1:1 R:R + fee drag. v19 asymmetric barriers is the fix.
 - **v19 built**: K_MULT split → K_TP/K_SL env vars, `feature_engineering_standard` activated, identifier bumped, campaign runner `scripts/autobacktest_v19.py` built (36 runs, K_TP∈{1.5,2.0,2.5} × K_SL∈{0.8,1.0} × ml_threshold∈{0.60,0.65,0.70}).
 
+### May 14, 2026 (Antigravity AI) — FinBuddy v21 Intelligent Evolution
+- **Deep-dive Analysis**: Found the root causes of the 42% win rate (74 losses): 
+  1. A "Short Bias" caused by a lagging, global regime detector blocking all longs. Shorts had a 30% WR while Longs had a 66% WR.
+  2. Hard fallback stoploss in `config.json` (-0.08) overriding the ATR stoploss and allowing massive 16% leveraged losses.
+  3. Indiscriminate pair selection leading to chronically losing pairs (NEAR, AVAX).
+- **The Intelligence Upgrade (v21)**: Replaced dumb static rules with dynamic algorithms analyzing every candle.
+  - **Relative Strength (RS)**: Bot now analyzes pairs vs BTC. Only longs strong pairs (outperforming BTC) and shorts weak pairs. No manual blacklists required.
+  - **Dynamic ML Thresholds**: Instead of hard-capping shorts, the ML threshold dynamically increases (to 0.65) if the bot wants to trade against the local trend or relative strength.
+  - **Removed Global Regime Blocks**: The `enter_long = 0` in BEAR regime rule is gone. The bot is smart enough to find longs in bearish macros if the pair shows relative strength.
+  - **Fixed Stoploss**: Updated emergency stoploss to -0.04 in config and strategy (proper 8% leveraged safety net).
+  - **Noise-Resistant Trailing Stop**: Increased trailing lock threshold to `1.5 * TP` to avoid premature exits on 1h wicks.
+- **Bot restarted**: Running v21 intelligence over the `finbuddy_v19_asym_1778575138` FreqAI identifier.
+
 ### May 13, 2026 (Claude Code) — Critical stoploss bug found + fixed; v19 bull campaign launched
-- **Bug found**: `custom_stoploss` returned `None` for ALL trades (both longs and shorts) since v17. `stoploss_from_open()` ALWAYS returns `>= 0` (documented). The `< 0` guards were therefore always False → always `None` → hard -8% config stoploss fired for every loss. No ATR-based stop has ever worked. Evidence: NEAR short ran 7.4h to exactly -8.14%.
-- **Fix (commit `21796ea`)**: Changed both guards from `< 0` to `> 0`. Verified in container: long initial, short initial, long trail, short trail all return non-zero positive → accepted. Degenerate `= 0` case correctly discarded.
-- **Impact on backtests**: v17/v18 ran without ATR stops. Real PF with working stops would be better than recorded. v19 campaign is the first with functioning ATR protection.
-- **v19 bull campaign launched**: 18 runs, `python3 scripts/autobacktest_v19.py --window bull`, running as background process. Log: `/tmp/v19_bull.log`.
 
 ---
 

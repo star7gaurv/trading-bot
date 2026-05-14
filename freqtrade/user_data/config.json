@@ -106,7 +106,7 @@
   "internals": {
     "process_throttle_secs": 5
   },
-  "stoploss": -0.08,
+  "stoploss": -0.04,
   "webhook": {
     "enabled": false,
     "url": "https://n8n.star7gaurav.in/webhook/freqtrade-events",
