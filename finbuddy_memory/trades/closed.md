@@ -114,3 +114,4 @@
 | 2026-05-14 15:48:00 | ATOM/USDT:USDT | SHORT | 0h47m | -1.16% | -0.72 | stop_loss | NEUTRAL | freqai_lgbm_v19_short |
 | 2026-05-14 15:56:40 | ARB/USDT:USDT | SHORT | 0h56m | -1.13% | -0.70 | stop_loss | NEUTRAL | freqai_lgbm_v19_short |
 | 2026-05-14 15:51:35 | SOL/USDT:USDT | SHORT | 0h03m | -0.86% | -0.53 | stop_loss | NEUTRAL | freqai_lgbm_v19_short |
+| 2026-05-14 16:53:44 | SUI/USDT:USDT | SHORT | 0h46m | +2.95% | +2.73 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v19_short |
