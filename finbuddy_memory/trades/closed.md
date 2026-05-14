@@ -88,3 +88,7 @@
 | 2026-05-14 12:02:12 | ENA/USDT:USDT | SHORT | 0h59m | +1.16% | +0.73 | exit_signal | BEAR | freqai_lgbm_v19_short |
 | 2026-05-14 12:02:37 | BCH/USDT:USDT | SHORT | 0h39m | -0.14% | -0.09 | exit_signal | BEAR | freqai_lgbm_v19_short |
 | 2026-05-14 12:25:27 | UNI/USDT:USDT | SHORT | 0h23m | -0.92% | -0.58 | stop_loss | BEAR | freqai_lgbm_v19_short |
+| 2026-05-14 13:07:11 | TON/USDT:USDT | SHORT | 1h04m | -2.52% | -1.59 | trailing_stop_loss | BEAR | freqai_lgbm_v19_short |
+| 2026-05-14 13:06:31 | ZEC/USDT:USDT | SHORT | 0h06m | -1.52% | -0.96 | trailing_stop_loss | BEAR | freqai_lgbm_v19_short |
+| 2026-05-14 13:11:40 | SUI/USDT:USDT | SHORT | 0h11m | -1.44% | -0.91 | stop_loss | BEAR | freqai_lgbm_v19_short |
+| 2026-05-14 13:12:10 | LTC/USDT:USDT | SHORT | 0h11m | -0.60% | -0.38 | stop_loss | BEAR | freqai_lgbm_v19_short |
