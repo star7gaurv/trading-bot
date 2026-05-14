@@ -18,6 +18,10 @@ Whenever you start a session or are asked to perform an action, you MUST orient 
 - Always build algorithms that adapt dynamically to individual candle data (e.g., Relative Strength, Dynamic Thresholds).
 - If you find a static rule in the codebase, your job is to rewrite it into a dynamic, intelligent system.
 
+## 3. DevOps & Full Stack Excellence
+- **Architect for Scale:** Always choose the absolute best, most modern technology stack (e.g., React/Vite/WebSockets) over "whatever works easiest." 
+- **Zero Server Load:** UIs must never poll the server heavily. Use Event-Driven WebSockets (`ws://`) and Client-Side Rendering to ensure the FinBuddy backend stays lightweight and lightning fast.
+
 ## 3. Synchronize Memory (Write After Acting)
 Before concluding any session, you must write your learnings and state changes back to the brain.
 - Update `FINBUDDY_PROJECT_MEMORY.md` with new versions or architectural changes.

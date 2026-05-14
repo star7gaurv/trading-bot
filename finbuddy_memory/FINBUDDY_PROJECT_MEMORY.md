@@ -242,6 +242,8 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 | 8 — Futures Setup | ✅ Complete | Binance futures API, isolated margin, memory mounted |
 | 9 — Risk Engine | ✅ Complete | Regime stake sizing, cluster cap, funding guard, DD gate |
 | 10 — Live Migration | ⬜ BLOCKED | Needs walk-forward PASS or 6-month dry-run track record |
+| 11 — Self-Evolution | ✅ Live | Memory integration, RS metrics, and dynamic regime thresholds |
+| 12 — Brain Dashboard | ✅ Complete | God-Tier React SPA with WebSockets, Live Trades, and Neural Feed (trade.star7gaurav.in/new-dashboard) |
 
 ---
 
