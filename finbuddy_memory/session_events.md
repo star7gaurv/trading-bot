@@ -25,3 +25,5 @@
 - **2026-05-11 00:00 UTC** — 🎯 Trade milestone reached: 50 closed trades
 - **2026-05-12 12:00 UTC** — FreqAI identifier changed: finbuddy_v17_sym_1778353539 → finbuddy_v19_asym_1778575138
 - **2026-05-13 20:00 UTC** — Regime changed: NEUTRAL → BEAR
+- **2026-05-14 16:00 UTC** — Regime changed: BEAR → NEUTRAL
+- **2026-05-14 16:00 UTC** — 🎯 Trade milestone reached: 100 closed trades
