@@ -83,3 +83,4 @@
 | 2026-05-13 16:08:58 | ONDO/USDT:USDT | SHORT | 1h08m | +2.25% | +4.23 | exit_signal | NEUTRAL | freqai_lgbm_v19_short |
 | 2026-05-13 16:10:18 | LINK/USDT:USDT | SHORT | 0h12m | -0.18% | -0.33 | exit_signal | NEUTRAL | freqai_lgbm_v19_short |
 | 2026-05-13 16:31:18 | DOGE/USDT:USDT | SHORT | 0h22m | -1.26% | -2.38 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v19_short |
+| 2026-05-14 05:46:05 | XRP/USDT:USDT | SHORT | 12h45m | -0.71% | -1.35 | trailing_stop_loss | BEAR | freqai_lgbm_v19_short |
