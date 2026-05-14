@@ -336,6 +336,49 @@
       "proposed_by": "reasoning_agent",
       "reviewed_at": "2026-05-13",
       "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "btc_short_dominance_20260514",
+      "hypothesis": "In a high BTC dominance and bear regime, BTC-USDT short signals will outperform long signals due to increased downside momentum and regime alignment.",
+      "timeframe": "1h",
+      "indicators": [
+        "BTC_Dominance",
+        "FearGreedIndex",
+        "RegimeBEAR_Prob"
+      ],
+      "entry_long": "Model long probability > 0.7 and Fear & Greed < 35 and BTC dominance > 58%",
+      "entry_short": "Model short probability > 0.75 and Fear & Greed < 35 and RegimeBEAR_Prob > 0.75",
+      "exit_rule": "Regime switch or breakeven stop-loss trigger",
+      "regime_filter": [
+        "BEAR"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-14",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-14",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "altcoin_short_outperformance_20260514",
+      "hypothesis": "Altcoin shorts (SOL, AVAX, DOT, LINK, MATIC) will outperform BTC shorts in the current high-conviction bear regime due to higher volatility and declining sentiment.",
+      "timeframe": "1h",
+      "indicators": [
+        "BTC_Dominance",
+        "FearGreedIndex",
+        "Volume",
+        "Volatility"
+      ],
+      "entry_long": "Regime-based long signal with confidence > 0.75 and FearGreed < 35",
+      "entry_short": "Regime-based short signal with confidence > 0.75 and FearGreed < 35",
+      "exit_rule": "Regime switch or breakeven stop-loss trigger",
+      "regime_filter": [
+        "BEAR"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-14",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-14",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
     }
   ]
 }
