@@ -110,3 +110,7 @@
 | 2026-05-14 14:45:43 | ADA/USDT:USDT | SHORT | 0h23m | -0.75% | -0.47 | stop_loss | BEAR | freqai_lgbm_v19_short |
 | 2026-05-14 14:51:13 | LINK/USDT:USDT | SHORT | 0h05m | -0.95% | -0.59 | stop_loss | BEAR | freqai_lgbm_v19_short |
 | 2026-05-14 14:58:28 | ATOM/USDT:USDT | SHORT | 0h12m | -1.62% | -1.00 | stop_loss | BEAR | freqai_lgbm_v19_short |
+| 2026-05-14 15:50:45 | NEAR/USDT:USDT | SHORT | 0h59m | -1.45% | -0.90 | stop_loss | NEUTRAL | freqai_lgbm_v19_short |
+| 2026-05-14 15:48:00 | ATOM/USDT:USDT | SHORT | 0h47m | -1.16% | -0.72 | stop_loss | NEUTRAL | freqai_lgbm_v19_short |
+| 2026-05-14 15:56:40 | ARB/USDT:USDT | SHORT | 0h56m | -1.13% | -0.70 | stop_loss | NEUTRAL | freqai_lgbm_v19_short |
+| 2026-05-14 15:51:35 | SOL/USDT:USDT | SHORT | 0h03m | -0.86% | -0.53 | stop_loss | NEUTRAL | freqai_lgbm_v19_short |
