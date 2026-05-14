@@ -92,3 +92,4 @@
 | 2026-05-14 13:06:31 | ZEC/USDT:USDT | SHORT | 0h06m | -1.52% | -0.96 | trailing_stop_loss | BEAR | freqai_lgbm_v19_short |
 | 2026-05-14 13:11:40 | SUI/USDT:USDT | SHORT | 0h11m | -1.44% | -0.91 | stop_loss | BEAR | freqai_lgbm_v19_short |
 | 2026-05-14 13:12:10 | LTC/USDT:USDT | SHORT | 0h11m | -0.60% | -0.38 | stop_loss | BEAR | freqai_lgbm_v19_short |
+| 2026-05-14 13:16:20 | BCH/USDT:USDT | SHORT | 0h09m | -0.48% | -0.30 | stop_loss | BEAR | freqai_lgbm_v19_short |
