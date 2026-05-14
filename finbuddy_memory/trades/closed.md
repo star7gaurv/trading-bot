@@ -117,3 +117,4 @@
 | 2026-05-14 16:53:44 | SUI/USDT:USDT | SHORT | 0h46m | +2.95% | +2.73 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v19_short |
 | 2026-05-14 17:45:30 | OP/USDT:USDT | SHORT | 0h44m | +1.83% | +1.69 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v19_short |
 | 2026-05-14 18:12:32 | ARB/USDT:USDT | SHORT | 0h11m | -1.43% | -1.33 | stop_loss | NEUTRAL | freqai_lgbm_v19_short |
+| 2026-05-14 18:33:12 | OP/USDT:USDT | SHORT | 0h20m | -1.17% | -1.09 | stop_loss | NEUTRAL | freqai_lgbm_v19_short |
