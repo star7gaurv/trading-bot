@@ -85,3 +85,5 @@
 | 2026-05-13 16:31:18 | DOGE/USDT:USDT | SHORT | 0h22m | -1.26% | -2.38 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v19_short |
 | 2026-05-14 05:46:05 | XRP/USDT:USDT | SHORT | 12h45m | -0.71% | -1.35 | trailing_stop_loss | BEAR | freqai_lgbm_v19_short |
 | 2026-05-14 11:15:12 | ZEC/USDT:USDT | SHORT | 18h04m | +3.02% | +5.71 | trailing_stop_loss | BEAR | freqai_lgbm_v19_short |
+| 2026-05-14 12:02:12 | ENA/USDT:USDT | SHORT | 0h59m | +1.16% | +0.73 | exit_signal | BEAR | freqai_lgbm_v19_short |
+| 2026-05-14 12:02:37 | BCH/USDT:USDT | SHORT | 0h39m | -0.14% | -0.09 | exit_signal | BEAR | freqai_lgbm_v19_short |
