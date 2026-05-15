@@ -41,3 +41,9 @@
 *   **Action**: Deployed `FinBuddyFreqAI` v22, adding Multi-Timeframe (MTF) 4H trend alignment to block contradictory trades.
 *   **Bug Addressed**: Fixed "All-Shorts" bias in a Neutral regime by banning 1H shorts when 4H is macro bullish.
 *   **Next Steps**: Awaiting the `v21/v22` grid search to run mathematically validate the R:R ratios using the new MTF Sniper Logic.
+
+### 2026-05-15: Phase 13 Conscious Brain Pivot
+*   **Action**: Pivoted architecture to Omni-Timeframe v23 following the catastrophic failure of the v21 backtest campaign (`WR 21%`).
+*   **Architecture**: Shifted base timeframe to 5m. FreqAI now natively ingests 15m/1h/4h timeframes to learn macro/micro correlations without rigid gates.
+*   **Vetoes**: Injected 24-hour Order Block (Liquidity Pool) awareness. Volatility Hook added to instantly exit on 500% volume spikes against position within 10 minutes.
+*   **MLOps Pipeline**: Built `scripts/karpathy/run_loop.py` (installed via 2:00 AM cron) to automatically evaluate backtest CSVs and promote "God-Tier" parameter combinations to the live `docker-compose.yml`.

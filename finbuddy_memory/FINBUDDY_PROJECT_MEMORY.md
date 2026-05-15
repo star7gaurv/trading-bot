@@ -116,20 +116,13 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 **label_period_candles = 6 (fixed)** — R8 grid winner. Tighter K_SL resolves more labels within 6h.
 
-**New in v19**: `feature_engineering_standard` active — adds day_of_week, hour_of_day, raw OHLCV.  
-**Identifier**: `finbuddy_v19_asym_1778575138` — all 25 pairs retraining on next candle.  
-
 ### The v23 Pivot — Omni-Timeframe & MLOps (Phase 13)
 
-**Why v21/v22 Failed:** The v21 campaign attempted to solve a low Win Rate by slapping a "dumb" 4H macro trend gate over a 1H ML model. The backtest campaign ran on 2026-05-15 and completely catastrophically failed (`0/18 PASS`, `WR 21%`). The 1H model was generating signals that conflicted massively with the static 4H gate. 
+The v21 backtest campaign completely failed (`0/18 PASS`, `WR 21%`) because the 1H ML signals conflicted massively with the static 4H macro gate. We cannot restrict the AI with static rules; the AI must *learn* the rules.
 
-**How we fixed it (The Omni-Timeframe Shift):** We cannot restrict the AI with static rules; the AI must *learn* the rules. We shifted the entire architecture to **Phase 13: The Conscious Brain**:
-1. **5-Minute Base:** The bot now evaluates the market every 5 minutes (`timeframe="5m"`).
-2. **Peripheral Vision:** FreqAI now natively ingests the `15m`, `1h`, and `4h` timeframes simultaneously (`include_timeframes`). The AI learns the correlations between macro trends and micro pullbacks itself.
-3. **Liquidity Vetoes:** We added 24-hour Order Block detection (Liquidity Pools). The bot strictly vetoes shorts at the bottom (Support) and longs at the top (Resistance).
-4. **Volatility Shield:** A tick-volatility hook exits a trade immediately if volume spikes >500% against the position in the first 10 minutes, bypassing the slow ATR stoploss.
+We shifted the entire architecture to **Phase 13: The Conscious Brain**, deploying a 5-minute base, native 15m/1h/4h peripheral vision, Order Block liquidity vetoes, and a True Self-Evolution MLOps pipeline.
 
-**What the MLOps Loop does:** We built a true Self-Evolution pipeline (`scripts/karpathy/run_loop.py`). Installed via cron (running at 2:00 AM nightly), this script reads the results of the `v23` autobacktest. If it finds a "God-Tier" parameter set (`WR > 60%`, `Sharpe > 1.0`), it automatically edits the live `docker-compose.yml` to inject the winning TP/SL multipliers and restarts the bot. FinBuddy now evolves autonomously.
+👉 **Read the full architectural breakdown:** [[research/phase-13-v23-omni-timeframe-architecture.md]]
 
 ---
 
