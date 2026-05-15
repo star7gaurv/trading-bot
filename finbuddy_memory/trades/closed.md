@@ -134,3 +134,4 @@
 | 2026-05-15 14:00:24 | UNI/USDT:USDT | SHORT | 0h10m | +3.05% | +2.84 | exit_signal | NEUTRAL | freqai_lgbm_v22_short |
 | 2026-05-15 16:33:03 | UNI/USDT:USDT | SHORT | 0h32m | -1.52% | -0.99 | stop_loss | BEAR | freqai_lgbm_v22_short |
 | 2026-05-15 17:06:25 | SOL/USDT:USDT | SHORT | 0h06m | -0.99% | -0.66 | stop_loss | BEAR | freqai_lgbm_v22_short |
+| 2026-05-15 17:39:44 | BTC/USDT:USDT | SHORT | 0h38m | -0.63% | -0.25 | trailing_stop_loss | BEAR | freqai_lgbm_v22_short |
