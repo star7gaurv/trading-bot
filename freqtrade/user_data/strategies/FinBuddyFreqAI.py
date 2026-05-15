@@ -57,7 +57,7 @@ except Exception as _shim_err:
 
 class FinBuddyFreqAI(IStrategy):
     """
-    FinBuddy FreqAI Strategy v19 — 1h TF, Futures Long/Short, Asymmetric Barriers (2026-05-12)
+    FinBuddy FreqAI Strategy v22 — 1h TF, Futures Long/Short, MTF Sniper Logic (2026-05-15)
 
     2-class LightGBM classifier (L/S). Triple-barrier labeling with ASYMMETRIC barriers:
       K_TP (take-profit) > K_SL (stop-loss)  →  R:R > 1, PF >> 1 at same WR.
@@ -651,13 +651,35 @@ class FinBuddyFreqAI(IStrategy):
                 dataframe["is_strong_vs_btc"] = (dataframe["rs_ema_fast"] > dataframe["rs_ema_slow"]).astype(int)
             else:
                 dataframe["is_strong_vs_btc"] = 1  # Fallback
-                
+
+            # v22 — MTF Sniper: pair's own 4H trend gate
+            # Longs only when 4H bullish; shorts only when 4H bearish.
+            pair_4h = self.dp.get_pair_dataframe(
+                pair=metadata["pair"], timeframe="4h"
+            )
+            if not pair_4h.empty:
+                pair_4h["ema_50_4h"] = ta.EMA(pair_4h, timeperiod=50)
+                pair_4h["pair_4h_bullish"] = (
+                    pair_4h["close"] > pair_4h["ema_50_4h"]
+                ).astype(int)
+                pair_4h = pair_4h[["date", "pair_4h_bullish"]].copy()
+                pair_4h["date"] = pd.to_datetime(pair_4h["date"])
+                dataframe = pd.merge_asof(
+                    dataframe.sort_values("date"),
+                    pair_4h.sort_values("date"),
+                    on="date",
+                    direction="backward",
+                )
+            else:
+                dataframe["pair_4h_bullish"] = 1  # fallback: don't block
+
         else:
             dataframe["ema_50_1h"] = dataframe["close"]
             dataframe["close_1h"] = dataframe["close"]
             dataframe["btc_4h_below_ema50"] = 0
             dataframe["btc_macro_bull"] = 1
             dataframe["is_strong_vs_btc"] = 1
+            dataframe["pair_4h_bullish"] = 1
 
         if "btc_macro_bull" not in dataframe.columns:
             dataframe["btc_macro_bull"] = 1
@@ -725,14 +747,17 @@ class FinBuddyFreqAI(IStrategy):
             & ml_threshold_long
         )
 
+        # v22 MTF Sniper: only take longs when pair's 4H trend is bullish
+        mtf_long_ok = dataframe.get("pair_4h_bullish", pd.Series(1, index=dataframe.index)) == 1
+
         dataframe.loc[
-            ml_signal_long_final & ta_filter & volatility_filter & trend_filter_1h,
+            ml_signal_long_final & ta_filter & volatility_filter & trend_filter_1h & mtf_long_ok,
             "enter_long"
         ] = 1
         dataframe.loc[
-            ml_signal_long_final & ta_filter & volatility_filter & trend_filter_1h,
+            ml_signal_long_final & ta_filter & volatility_filter & trend_filter_1h & mtf_long_ok,
             "enter_tag"
-        ] = "freqai_lgbm_v21_long"
+        ] = "freqai_lgbm_v22_long"
 
         # Short — model-gated
         ml_signal_short = (
@@ -754,16 +779,19 @@ class FinBuddyFreqAI(IStrategy):
 
         safety_short = dataframe["rsi_14"] > 15
 
+        # v22 MTF Sniper: only take shorts when pair's 4H trend is bearish
+        mtf_short_ok = dataframe.get("pair_4h_bullish", pd.Series(1, index=dataframe.index)) == 0
+
         dataframe.loc[
-            ml_signal_short & ta_filter_short & volatility_filter & trend_filter_1h_short & safety_short,
+            ml_signal_short & ta_filter_short & volatility_filter & trend_filter_1h_short & safety_short & mtf_short_ok,
             "enter_short"
         ] = 1
         dataframe.loc[
-            ml_signal_short & ta_filter_short & volatility_filter & trend_filter_1h_short & safety_short,
+            ml_signal_short & ta_filter_short & volatility_filter & trend_filter_1h_short & safety_short & mtf_short_ok,
             "enter_tag"
-        ] = "freqai_lgbm_v21_short"
+        ] = "freqai_lgbm_v22_short"
 
-        # v21: REMOVED full trend-following regime kill-switches.
+        # v22: MTF Sniper logic replaces v21 dynamic threshold approach.
         # We now rely on dynamic thresholds and RS analysis rather than dumb hard blocks.
 
         return dataframe
