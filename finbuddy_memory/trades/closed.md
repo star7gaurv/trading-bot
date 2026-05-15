@@ -118,3 +118,5 @@
 | 2026-05-14 17:45:30 | OP/USDT:USDT | SHORT | 0h44m | +1.83% | +1.69 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v19_short |
 | 2026-05-14 18:12:32 | ARB/USDT:USDT | SHORT | 0h11m | -1.43% | -1.33 | stop_loss | NEUTRAL | freqai_lgbm_v19_short |
 | 2026-05-14 18:33:12 | OP/USDT:USDT | SHORT | 0h20m | -1.17% | -1.09 | stop_loss | NEUTRAL | freqai_lgbm_v19_short |
+| 2026-05-15 00:34:13 | APT/USDT:USDT | SHORT | 6h05m | +2.38% | +2.20 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v19_short |
+| 2026-05-15 00:39:03 | ONDO/USDT:USDT | SHORT | 0h38m | -1.88% | -1.74 | stop_loss | NEUTRAL | freqai_lgbm_v21_short |
