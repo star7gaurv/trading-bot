@@ -118,7 +118,18 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 **New in v19**: `feature_engineering_standard` active — adds day_of_week, hour_of_day, raw OHLCV.  
 **Identifier**: `finbuddy_v19_asym_1778575138` — all 25 pairs retraining on next candle.  
-**Run**: `python scripts/autobacktest_v19.py` (~6h on Oracle Free Tier, 36 runs)
+
+### The v23 Pivot — Omni-Timeframe & MLOps (Phase 13)
+
+**Why v21/v22 Failed:** The v21 campaign attempted to solve a low Win Rate by slapping a "dumb" 4H macro trend gate over a 1H ML model. The backtest campaign ran on 2026-05-15 and completely catastrophically failed (`0/18 PASS`, `WR 21%`). The 1H model was generating signals that conflicted massively with the static 4H gate. 
+
+**How we fixed it (The Omni-Timeframe Shift):** We cannot restrict the AI with static rules; the AI must *learn* the rules. We shifted the entire architecture to **Phase 13: The Conscious Brain**:
+1. **5-Minute Base:** The bot now evaluates the market every 5 minutes (`timeframe="5m"`).
+2. **Peripheral Vision:** FreqAI now natively ingests the `15m`, `1h`, and `4h` timeframes simultaneously (`include_timeframes`). The AI learns the correlations between macro trends and micro pullbacks itself.
+3. **Liquidity Vetoes:** We added 24-hour Order Block detection (Liquidity Pools). The bot strictly vetoes shorts at the bottom (Support) and longs at the top (Resistance).
+4. **Volatility Shield:** A tick-volatility hook exits a trade immediately if volume spikes >500% against the position in the first 10 minutes, bypassing the slow ATR stoploss.
+
+**What the MLOps Loop does:** We built a true Self-Evolution pipeline (`scripts/karpathy/run_loop.py`). Installed via cron (running at 2:00 AM nightly), this script reads the results of the `v23` autobacktest. If it finds a "God-Tier" parameter set (`WR > 60%`, `Sharpe > 1.0`), it automatically edits the live `docker-compose.yml` to inject the winning TP/SL multipliers and restarts the bot. FinBuddy now evolves autonomously.
 
 ---
 
@@ -127,11 +138,11 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 | Component | Status |
 |---|---|---|
 | **FreqTrade** | ✅ Running, dry-run, futures isolated |
-| **Strategy** | ✅ FinBuddyFreqAI **v22 code** — MTF Sniper Logic (4H trend alignment) active on top of v21 Dynamic RS. |
-| **FreqAI identifier** | `finbuddy_v19_asym_1778575138` — 1h training active. Entry filters handled externally by v22 strategy. |
+| **Strategy** | ✅ FinBuddyFreqAI **v23 code** — Phase 13 Omni-Timeframe (5m base), Order Block Vetoes, and Volatility hook. |
+| **FreqAI identifier** | `finbuddy_v19_asym_1778575138` — 1h live (Awaiting v23 backtest to finish before deploying new 5m model). |
 | **FreqAI Model** | ✅ FinBuddyLLMModel **v5** — auto-confirm fix (proba ≥ 0.90 bypasses LLM) |
-| **Live P&L** | Monitoring v22 entries (waiting for 8 legacy v21 shorts to close out naturally) |
-| **Backtest Campaign** | ⏳ Pending: `v21/v22` autobacktest (36 combos) needs to be run to mathematically validate the new ATR stoploss/take-profit grid |
+| **Live P&L** | Monitoring existing trades while v23 computes |
+| **Backtest Campaign** | ⏳ Running: `v23` Omni-timeframe autobacktest. MLOps loop waiting to automatically deploy God-Tier combos |
 | **All Crons** | ✅ Live (Phase 2–5, watchdog, postmortem, daily summary, WF notify) |
 | **Phase 10 go-live** | ⬜ BLOCKED — needs walk-forward PASS |
 
