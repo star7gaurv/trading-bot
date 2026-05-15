@@ -132,3 +132,4 @@
 | 2026-05-15 14:10:34 | ARB/USDT:USDT | SHORT | 3h14m | +7.98% | +7.47 | exit_signal | NEUTRAL | freqai_lgbm_v22_short |
 | 2026-05-15 14:00:23 | TON/USDT:USDT | SHORT | 1h59m | +9.05% | +8.46 | exit_signal | NEUTRAL | freqai_lgbm_v22_short |
 | 2026-05-15 14:00:24 | UNI/USDT:USDT | SHORT | 0h10m | +3.05% | +2.84 | exit_signal | NEUTRAL | freqai_lgbm_v22_short |
+| 2026-05-15 16:33:03 | UNI/USDT:USDT | SHORT | 0h32m | -1.52% | -0.99 | stop_loss | BEAR | freqai_lgbm_v22_short |
