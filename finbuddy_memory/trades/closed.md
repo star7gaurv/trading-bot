@@ -127,3 +127,4 @@
 | 2026-05-15 07:22:27 | ENA/USDT:USDT | SHORT | 0h21m | -1.62% | -1.52 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v21_short |
 | 2026-05-15 07:23:32 | SOL/USDT:USDT | SHORT | 0h08m | -0.89% | -0.84 | stop_loss | NEUTRAL | freqai_lgbm_v21_short |
 | 2026-05-15 08:08:23 | TON/USDT:USDT | SHORT | 0h07m | -1.89% | -1.77 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v21_short |
+| 2026-05-15 11:33:42 | TON/USDT:USDT | SHORT | 2h33m | -1.79% | -1.67 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v21_short |
