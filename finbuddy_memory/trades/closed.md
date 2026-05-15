@@ -123,3 +123,4 @@
 | 2026-05-15 03:11:12 | NEAR/USDT:USDT | SHORT | 1h10m | -1.36% | -1.25 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v21_short |
 | 2026-05-15 06:00:47 | APT/USDT:USDT | SHORT | 0h59m | +3.94% | +3.65 | exit_signal | NEUTRAL | freqai_lgbm_v21_short |
 | 2026-05-15 06:05:37 | TAO/USDT:USDT | SHORT | 0h04m | -1.27% | -1.18 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v21_short |
+| 2026-05-15 07:14:32 | LINK/USDT:USDT | SHORT | 0h40m | -1.07% | -1.01 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v21_short |
