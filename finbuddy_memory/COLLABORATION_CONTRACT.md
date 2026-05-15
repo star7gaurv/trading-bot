@@ -59,9 +59,21 @@ AI (Perplexity / Claude) should focus on:
 - Designing and validating improvements.
 - Interpreting results and deciding the next experiment.
 
+## 3. Strict File Architecture Rules (No Root Clutter)
+
+**ABSOLUTE DIRECTIVE:** No AI agent (Claude, Gemini, Perplexity) is allowed to create `.md` files, documentation, or task files outside of the `finbuddy_memory/` vault. The root directory must remain pristine.
+
+If you need to create a document:
+- **Phase Task Files**: Must go in `finbuddy_memory/tasks/` (e.g., `finbuddy_memory/tasks/phase-13-conscious-brain.md`).
+- **Research/Plans**: Must go in `finbuddy_memory/research/` or the designated vault folder.
+- **Session Logs**: Must append to `finbuddy_memory/session_events.md`.
+- **Master Status**: Update `finbuddy_memory/FINBUDDY_PROJECT_MEMORY.md`.
+
+*Failure to adhere to this rule breaks the Single Source of Truth architecture and will result in lost historical context during agent handoffs.*
+
 ---
 
-## 3. Task Boundaries — Who Finishes What
+## 4. Task Boundaries — Who Finishes What
 
 ### 3.1 Perplexity owns
 
