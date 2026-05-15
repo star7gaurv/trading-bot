@@ -242,7 +242,8 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 | 9 — Risk Engine | ✅ Complete | Regime stake sizing, cluster cap, funding guard, DD gate |
 | 10 — Live Migration | ⬜ BLOCKED | Needs walk-forward PASS or 6-month dry-run track record |
 | 11 — Self-Evolution | ✅ Live | Memory integration, RS metrics, and dynamic regime thresholds |
-| 12 — Brain Dashboard | ✅ Complete | God-Tier React SPA with WebSockets, Live Trades, and Neural Feed (trade.star7gaurav.in/new-dashboard) |
+| 12 — Brain Dashboard | ✅ Complete | God-Tier React SPA with WebSockets, Live Trades, and Neural Feed |
+| 13 — Conscious Brain | ⬜ PENDING | Omni-Timeframe (5M Base), Liquidity Awareness, Dynamic SL, MLOps Loop |
 
 ---
 
