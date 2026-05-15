@@ -136,3 +136,4 @@
 | 2026-05-15 17:06:25 | SOL/USDT:USDT | SHORT | 0h06m | -0.99% | -0.66 | stop_loss | BEAR | freqai_lgbm_v22_short |
 | 2026-05-15 17:39:44 | BTC/USDT:USDT | SHORT | 0h38m | -0.63% | -0.25 | trailing_stop_loss | BEAR | freqai_lgbm_v22_short |
 | 2026-05-15 17:53:34 | DASH/USDT:USDT | SHORT | 0h52m | -1.59% | -1.05 | stop_loss | BEAR | freqai_lgbm_v22_short |
+| 2026-05-15 18:04:28 | OP/USDT:USDT | SHORT | 1h03m | -1.25% | -0.83 | trailing_stop_loss | BEAR | freqai_lgbm_v22_short |
