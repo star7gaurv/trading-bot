@@ -379,6 +379,50 @@
       "proposed_by": "reasoning_agent",
       "reviewed_at": "2026-05-14",
       "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "btc_trend_pull_neutral_20260515",
+      "hypothesis": "A sustained >0.5% hourly rise in BTC price triggers a short-term bullish bias in the model's BTC-USD futures forecast within a neutral regime.",
+      "timeframe": "1h",
+      "indicators": [
+        "close",
+        "returns",
+        "volatility",
+        "funding_rate"
+      ],
+      "entry_long": "Model long signal probability > 60% following a 0.5%+ BTC price increase within the last 3 hours in a neutral regime",
+      "entry_short": "Model short signal probability > 60% following a -0.5%+ BTC price decrease within the last 3 hours in a neutral regime",
+      "exit_rule": "Position closed when either: 1) opposite signal appears, 2) 3-hour time limit reached, or 3) 0.8% drawdown reached",
+      "regime_filter": [
+        "neutral"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-15",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-15",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "alt_funding_divergence_20260515",
+      "hypothesis": "When top alt-perpetuals (ETH, SOL, AVAX) show positive funding >0.03% while BTC funding stays neutral, model increases long exposure on those alts.",
+      "timeframe": "1h",
+      "indicators": [
+        "funding_rate",
+        "funding_rate_spread",
+        "btc_funding_rate",
+        "volatility"
+      ],
+      "entry_long": "Funding rate spread > 0.03% for ETH/SOL/AVAX while BTC funding rate remains between -0.01% and +0.02%",
+      "entry_short": "Not applicable - directional long strategy",
+      "exit_rule": "Position closed when funding spread reverts to < 0.01% or 0.8% drawdown reached",
+      "regime_filter": [
+        "neutral"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-15",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-15",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
     }
   ]
 }
