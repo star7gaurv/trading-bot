@@ -36,3 +36,8 @@
 *   **Architecture**: Zero-load Event-driven WebSockets via Python Streamer (Port 8501).
 *   **Features**: Custom SVG Fear & Greed Gauge, Live Freqtrade Execution Cards, and Instant Historical Neural Boot scraping.
 *   **DevOps**: Secured via Nginx proxy to bypass Oracle Cloud firewall ports.
+
+### 2026-05-15: Phase 12.2 MTF Sniper Deployed
+*   **Action**: Deployed `FinBuddyFreqAI` v22, adding Multi-Timeframe (MTF) 4H trend alignment to block contradictory trades.
+*   **Bug Addressed**: Fixed "All-Shorts" bias in a Neutral regime by banning 1H shorts when 4H is macro bullish.
+*   **Next Steps**: Awaiting the `v21/v22` grid search to run mathematically validate the R:R ratios using the new MTF Sniper Logic.

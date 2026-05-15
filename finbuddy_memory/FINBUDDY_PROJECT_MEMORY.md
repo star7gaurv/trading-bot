@@ -122,18 +122,17 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 ---
 
-## 🚀 Current State (2026-05-14)
+## 🚀 Current State (2026-05-15)
 
 | Component | Status |
 |---|---|---|
 | **FreqTrade** | ✅ Running, dry-run, futures isolated |
-| **Strategy** | ✅ FinBuddyFreqAI **v21 code** — Intelligent updates: Dynamic Relative Strength (RS) scoring vs BTC, dynamic ML thresholds, and leverage-aware stoploss (-0.04). Dumb blacklists and hard regime blocks removed. |
-| **FreqAI identifier** | `finbuddy_v19_asym_1778575138` — all 25 pairs trained (Execution logic updated in v21, model remains unchanged) |
+| **Strategy** | ✅ FinBuddyFreqAI **v22 code** — MTF Sniper Logic (4H trend alignment) active on top of v21 Dynamic RS. |
+| **FreqAI identifier** | `finbuddy_v19_asym_1778575138` — 1h training active. Entry filters handled externally by v22 strategy. |
 | **FreqAI Model** | ✅ FinBuddyLLMModel **v5** — auto-confirm fix (proba ≥ 0.90 bypasses LLM) |
-| **Live P&L** | Monitoring new v21 RS-based entries |
-| **N8N Pipeline** | 🔴 Permanently disabled |
+| **Live P&L** | Monitoring v22 entries (waiting for 8 legacy v21 shorts to close out naturally) |
+| **Backtest Campaign** | ⏳ Pending: `v21/v22` autobacktest (36 combos) needs to be run to mathematically validate the new ATR stoploss/take-profit grid |
 | **All Crons** | ✅ Live (Phase 2–5, watchdog, postmortem, daily summary, WF notify) |
-| **External Data** | ✅ FIXED — fetch_cryptopanic (cats 48/49), fetch_google_trends (429 retry) |
 | **Phase 10 go-live** | ⬜ BLOCKED — needs walk-forward PASS |
 
 ## 🐛 Critical Bug Fixed (2026-05-13) — commit `21796ea`
