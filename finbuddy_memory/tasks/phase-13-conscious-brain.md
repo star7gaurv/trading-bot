@@ -20,10 +20,10 @@
   - `[x]` Build tick-volatility hook: monitor volume spikes immediately post-entry.
   - `[x]` If volume spikes > 500% against the trade within 10 minutes, trigger an emergency market exit before the `K_SL` ATR stop is hit.
 
-- `[ ]` **4. True Self-Evolution Pipeline (The Brain)**
-  - `[ ]` Automate `karpathy/run_loop.py` into a nightly cron (2:00 AM).
-  - `[ ]` Script the AI to read losing trades, write a new `FinBuddyFreqAI` variant, and trigger `autobacktest_v23.py`.
-  - `[ ]` Implement auto-promotion if the new variant beats the live Sharpe ratio.
+- `[x]` **4. True Self-Evolution Pipeline (The Brain)**
+  - `[x]` Automate `karpathy/run_loop.py` into a nightly cron (2:00 AM).
+  - `[x]` Script the AI to read losing trades, write a new `FinBuddyFreqAI` variant, and trigger `autobacktest_v23.py`.
+  - `[x]` Implement auto-promotion if the new variant beats the live Sharpe ratio.
 
 ---
 *This file tracks the exact execution steps for Phase 13.*

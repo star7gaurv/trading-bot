@@ -74,12 +74,14 @@
         "identifier": "finbuddy_v18_backtest",
         "feature_parameters": {
             "include_timeframes": [
-                "1h"
+                "15m",
+                "1h",
+                "4h"
             ],
             "include_corr_pairlist": [
                 "BTC/USDT:USDT"
             ],
-            "label_period_candles": 12,
+            "label_period_candles": 72,
             "include_shifted_candles": 2,
             "indicator_periods_candles": [
                 10,
@@ -111,5 +113,5 @@
     "minimal_roi": {
         "0": 0.99
     },
-    "timeframe": "1h"
+    "timeframe": "5m"
 }

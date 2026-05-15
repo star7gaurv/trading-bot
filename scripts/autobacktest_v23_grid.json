@@ -1,0 +1,42 @@
+{
+  "_comment": "v21 campaign grid — MTF Sniper Logic (4H trend gate) + asymmetric barriers. First campaign with: (a) ATR stoploss bug fixed, (b) 4H MTF veto (no longs in 4H downtrend, no shorts in 4H uptrend), (c) RS-based dynamic thresholds from v21. 18 combos × 2 windows = 36 runs.",
+  "base_config": "freqtrade/user_data/backtest_config.json",
+  "results_csv": "_autobacktest_v21_results.csv",
+  "backtest_results_path": "freqtrade/user_data/backtest_results",
+  "label_period_candles": 72,
+  "acceptance_criteria": {
+    "win_rate": 50.0,
+    "sharpe": 0.5,
+    "max_drawdown": 20.0,
+    "profit_factor": 1.2
+  },
+  "windows": {
+    "bull": "20240101-20250101",
+    "bear": "20250101-20260401"
+  },
+  "pairs_download": [
+    "BTC/USDT:USDT",
+    "ETH/USDT:USDT",
+    "SOL/USDT:USDT",
+    "XRP/USDT:USDT",
+    "DOGE/USDT:USDT"
+  ],
+  "timeframes_download": ["5m", "15m", "1h", "4h", "1d"],
+  "grid": {
+    "k_tp": [1.5, 2.0, 2.5],
+    "k_sl": [0.8, 1.0],
+    "ml_threshold": [0.60, 0.65, 0.70]
+  },
+  "_grid_rationale": {
+    "k_tp": "1.5×ATR → 1.5:1 R:R (theoretical PF=2.45 at 62% WR). 2.0×ATR → 2:1 R:R (PF=3.26, structural optimum). 2.5×ATR → 2.5:1 R:R (PF=4.07, but TP harder to reach within 6h).",
+    "k_sl": "0.8×ATR → tightest stop (more hits, but losses are smaller). 1.0×ATR → baseline. Both are tighter than v18 k_sl=2.0 which caused funding fee bleed.",
+    "ml_threshold": "0.60 = R8 winner. 0.65 = higher precision, fewer trades. 0.70 = sniper mode — max confidence only.",
+    "label_period_candles": "Fixed at 6 (1h candles = 6h lookahead). R8 winner. K_SL=0.8-1.0×ATR resolves more labels within 6h.",
+    "mtf_filter": "4H EMA50 trend gate added in v22. No longs when pair close < pair 4H EMA50. No shorts when pair close > pair 4H EMA50. Expects fewer total trades but higher win rate on those taken."
+  },
+  "_v18_v20_root_causes": {
+    "v18": "Symmetric barriers k_tp=k_sl. Fee drag (~$196/yr at 1700 trades/yr) exactly cancelled gross edge. PF 0.83-0.996 across all 24 runs.",
+    "v19_v20": "ATR stoploss bug (wrong guard direction < 0 instead of > 0) meant hard -8% config stoploss fired for every loss since v17. ATR protection never worked. Fixed in commit 21796ea.",
+    "current": "v21 added RS-based dynamic thresholds + removed hard regime blocks. WR 40.4% live — suspected cause: shorts taken against 4H uptrend. MTF filter is the fix."
+  }
+}

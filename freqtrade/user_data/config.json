@@ -138,12 +138,14 @@
     "identifier": "finbuddy_v19_asym_1778575138",
     "feature_parameters": {
       "include_timeframes": [
-        "1h"
+        "15m",
+        "1h",
+        "4h"
       ],
       "include_corr_pairlist": [
         "BTC/USDT:USDT"
       ],
-      "label_period_candles": 6,
+      "label_period_candles": 72,
       "include_shifted_candles": 2,
       "indicator_periods_candles": [
         10,
@@ -160,7 +162,7 @@
     }
   },
   "freqaimodel": "FinBuddyLLMModel",
-  "timeframe": "1h",
+  "timeframe": "5m",
   "minimal_roi": {
     "0": 0.99
   }

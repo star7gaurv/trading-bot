@@ -1,0 +1,168 @@
+nohup: ignoring input
+2026-05-15 11:48:54,288 [INFO] 
+############################################################
+2026-05-15 11:48:54,288 [INFO]   FinBuddy v21 MTF Sniper Backtest Campaign
+2026-05-15 11:48:54,288 [INFO]   18 combos × 1 window(s) = 18 runs
+2026-05-15 11:48:54,288 [INFO]   k_tp: [1.5, 2.0, 2.5]  k_sl: [0.8, 1.0]  ml_threshold: [0.6, 0.65, 0.7]
+2026-05-15 11:48:54,288 [INFO]   label_period: 72 (fixed)
+2026-05-15 11:48:54,288 [INFO]   Timeframes: ['5m', '15m', '1h', '4h', '1d']  (4h required for MTF filter)
+2026-05-15 11:48:54,288 [INFO]   Theoretical PF range: 2.45 – 5.10
+2026-05-15 11:48:54,288 [INFO] ############################################################
+
+2026-05-15 11:48:54,922 [INFO] [download] Timerange: 20230928-20250101  (windows: 20240101–20250101)
+2026-05-15 11:48:54,922 [INFO] [download] Pairs: ['BTC/USDT:USDT', 'ETH/USDT:USDT', 'SOL/USDT:USDT', 'XRP/USDT:USDT', 'DOGE/USDT:USDT']  Timeframes: ['5m', '15m', '1h', '4h', '1d']
+2026-05-15 11:48:54,922 [INFO] [download] Command: docker-compose run --rm --no-deps freqtrade download-data --config /freqtrade/user_data/backtest_config.json --timerange 20230928-20250101 --timeframes 5m 15m 1h 4h 1d --trading-mode futures --pairs BTC/USDT:USDT ETH/USDT:USDT SOL/USDT:USDT XRP/USDT:USDT DOGE/USDT:USDT
+2026-05-15 11:49:08,933 [INFO] [download] exit=0
+freqtrade/user_data/data/binance. From 2026-05-14T12:00:00
+to 2025-01-01T00:00:00
+2026-05-15 11:49:07,141 - freqtrade.data.history.history_utils - INFO - Downloaded data for DOGE/USDT:USDT, 4h, futures with length 0.
+2026-05-15 11:49:07,155 - freqtrade.data.history.history_utils - INFO - DOGE/USDT:USDT, 1d, futures: Requested start date 2023-09-28 00:00:00 earlier than local data start date 2026-05-07 00:00:00. 
+Use `--prepend` to download data prior to 2026-05-07 00:00:00, or `--erase` to redownload all data.
+2026-05-15 11:49:07,156 - freqtrade.data.history.history_utils - INFO - Download history data for "DOGE/USDT:USDT", 1d, futures and store in /freqtrade/user_data/data/binance. From 2026-05-12T00:00:00
+to 2025-01-01T00:00:00
+2026-05-15 11:49:07,163 - freqtrade.data.history.history_utils - INFO - Downloaded data for DOGE/USDT:USDT, 1d, futures with length 0.
+2026-05-15 11:49:07,182 - freqtrade.data.history.history_utils - INFO - Download history data for "DOGE/USDT:USDT", 1h, mark and store in /freqtrade/user_data/data/binance. From 2026-05-15T06:00:00 to
+2025-01-01T00:00:00
+2026-05-15 11:49:07,190 - freqtrade.data.history.history_utils - INFO - Downloaded data for DOGE/USDT:USDT, 1h, mark with length 0.
+2026-05-15 11:49:07,384 - freqtrade.data.history.history_utils - INFO - Download history data for "DOGE/USDT:USDT", 1h, funding_rate and store in /freqtrade/user_data/data/binance. From 
+2026-05-14T08:00:00 to 2025-01-01T00:00:00
+2026-05-15 11:49:07,392 - freqtrade.data.history.history_utils - INFO - Downloaded data for DOGE/USDT:USDT, 1h, funding_rate with length 0.
+Timeframe                  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 7/7 100% • 0:00:00 • 0:00:00
+Downloading DOGE/USDT:USDT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5/5 100% • 0:00:06 • 0:00:00
+
+2026-05-15 11:49:08,934 [INFO] [download] Data download complete.
+2026-05-15 11:49:08,934 [INFO] 
+[1/18] window=bull  ktp=1.5  ksl=0.8  m=0.6  theory_pf=3.06
+2026-05-15 11:49:08,934 [INFO] 
+============================================================
+  k_tp=1.5  k_sl=0.8  ml_threshold=0.6  label_period=72  window=bull
+  identifier: v23_ktp1.5_ksl0.8_m0.6_1778845748
+  theoretical PF at 62% WR: 3.06
+============================================================
+2026-05-15 11:49:08,935 [INFO] [run] docker-compose run --rm --no-deps -e FREQAI_K_TP=1.5 -e FREQAI_K_SL=0.8 -e FREQAI_ML_THRESHOLD=0.6 -e FREQTRADE__DRY_RUN_WALLET=10000 freqtrade backtesting --config /freqtrade/user_data/backtest_config.json --config /freqtrade/user_data/_v21_overlay_v23_ktp1.5_ksl0.8_m0.6_1778845748.json --strategy FinBuddyFreqAI_v23 --freqaimodel LightGBMClassifier --timerange 20240101-20250101 --timeframe 5m --export trades --cache none
+2026-05-15 11:49:25,603 [INFO] [run] exit=1  elapsed=16s
+esting
+    self.model = self.train(dataframe_train, pair, dk)
+                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/freqtrade/freqtrade/freqai/base_models/BaseClassifierModel.py", line 39, in train
+    features_filtered, labels_filtered = dk.filter_features(
+                                         ~~~~~~~~~~~~~~~~~~^
+        unfiltered_df,
+        ^^^^^^^^^^^^^^
+    ...<2 lines>...
+        training_filter=True,
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/freqtrade/freqtrade/freqai/data_kitchen.py", line 261, in filter_features
+    raise OperationalException(
+    ...<5 lines>...
+    )
+freqtrade.exceptions.OperationalException: BTC/USDT:USDT: all training data dropped due to NaNs. You likely did not download enough training data prior to your backtest timerange. Hint:
+https://www.freqtrade.io/en/stable/freqai-running/#downloading-data-to-cover-the-full-backtest-period
+2026-05-15 11:49:24,034 - freqtrade.freqai.freqai_interface - INFO - Saving metadata to disk.
+2026-05-15 11:49:24,048 - freqtrade.freqai.data_kitchen - INFO - dropped 101 of 2016 prediction data points due to NaNs.
+2026-05-15 11:49:24,050 - freqtrade - ERROR - Fatal exception!
+Traceback (most recent call last):
+  File "/freqtrade/freqtrade/main.py", line 52, in main
+    return_code = args["func"](args)
+  File "/freqtrade/freqtrade/commands/optimize_commands.py", line 61, in start_backtesting
+    backtesting.start()
+    ~~~~~~~~~~~~~~~~~^^
+  File "/freqtrade/freqtrade/optimize/backtesting.py", line 1859, in start
+    min_date, max_date = self.backtest_one_strategy(strat, data, timerange)
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/freqtrade/freqtrade/optimize/backtesting.py", line 1769, in backtest_one_strategy
+    preprocessed = self.strategy.advise_all_indicators(data)
+  File "/freqtrade/freqtrade/strategy/interface.py", line 1750, in advise_all_indicators
+    res[pair] = self.advise_indicators(pair_data.copy(), {"pair": pair}).copy()
+                ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/freqtrade/freqtrade/strategy/interface.py", line 1812, in advise_indicators
+    dataframe = self.populate_indicators(dataframe, metadata)
+  File "/freqtrade/user_data/strategies/FinBuddyFreqAI_v23.py", line 568, in populate_indicators
+    dataframe = self.freqai.start(dataframe, metadata, self)
+  File "/freqtrade/freqtrade/freqai/freqai_interface.py", line 161, in start
+    dk = self.start_backtesting(dataframe, metadata, self.dk, strategy)
+  File "/freqtrade/freqtrade/freqai/freqai_interface.py", line 396, in start_backtesting
+    pred_df, do_preds = self.predict(dataframe_backtest, dk)
+                        ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/freqtrade/freqtrade/freqai/base_models/BaseClassifierModel.py", line 110, in predict
+    predictions = self.model.predict(dk.data_dictionary["prediction_features"])
+                  ^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'predict'
+
+2026-05-15 11:49:25,603 [ERROR] [run] FAILED (exit 1)
+/home/ubuntu/var/www/html/trade/scripts/autobacktest_v23.py:490: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "timestamp": datetime.utcnow().isoformat()
+2026-05-15 11:49:25,604 [INFO] 
+[2/18] window=bull  ktp=1.5  ksl=0.8  m=0.65  theory_pf=3.06
+2026-05-15 11:49:25,604 [INFO] 
+============================================================
+  k_tp=1.5  k_sl=0.8  ml_threshold=0.65  label_period=72  window=bull
+  identifier: v23_ktp1.5_ksl0.8_m0.65_1778845765
+  theoretical PF at 62% WR: 3.06
+============================================================
+2026-05-15 11:49:25,605 [INFO] [run] docker-compose run --rm --no-deps -e FREQAI_K_TP=1.5 -e FREQAI_K_SL=0.8 -e FREQAI_ML_THRESHOLD=0.65 -e FREQTRADE__DRY_RUN_WALLET=10000 freqtrade backtesting --config /freqtrade/user_data/backtest_config.json --config /freqtrade/user_data/_v21_overlay_v23_ktp1.5_ksl0.8_m0.65_1778845765.json --strategy FinBuddyFreqAI_v23 --freqaimodel LightGBMClassifier --timerange 20240101-20250101 --timeframe 5m --export trades --cache none
+2026-05-15 11:49:42,284 [INFO] [run] exit=1  elapsed=16s
+esting
+    self.model = self.train(dataframe_train, pair, dk)
+                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/freqtrade/freqtrade/freqai/base_models/BaseClassifierModel.py", line 39, in train
+    features_filtered, labels_filtered = dk.filter_features(
+                                         ~~~~~~~~~~~~~~~~~~^
+        unfiltered_df,
+        ^^^^^^^^^^^^^^
+    ...<2 lines>...
+        training_filter=True,
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/freqtrade/freqtrade/freqai/data_kitchen.py", line 261, in filter_features
+    raise OperationalException(
+    ...<5 lines>...
+    )
+freqtrade.exceptions.OperationalException: BTC/USDT:USDT: all training data dropped due to NaNs. You likely did not download enough training data prior to your backtest timerange. Hint:
+https://www.freqtrade.io/en/stable/freqai-running/#downloading-data-to-cover-the-full-backtest-period
+2026-05-15 11:49:40,672 - freqtrade.freqai.freqai_interface - INFO - Saving metadata to disk.
+2026-05-15 11:49:40,687 - freqtrade.freqai.data_kitchen - INFO - dropped 101 of 2016 prediction data points due to NaNs.
+2026-05-15 11:49:40,688 - freqtrade - ERROR - Fatal exception!
+Traceback (most recent call last):
+  File "/freqtrade/freqtrade/main.py", line 52, in main
+    return_code = args["func"](args)
+  File "/freqtrade/freqtrade/commands/optimize_commands.py", line 61, in start_backtesting
+    backtesting.start()
+    ~~~~~~~~~~~~~~~~~^^
+  File "/freqtrade/freqtrade/optimize/backtesting.py", line 1859, in start
+    min_date, max_date = self.backtest_one_strategy(strat, data, timerange)
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/freqtrade/freqtrade/optimize/backtesting.py", line 1769, in backtest_one_strategy
+    preprocessed = self.strategy.advise_all_indicators(data)
+  File "/freqtrade/freqtrade/strategy/interface.py", line 1750, in advise_all_indicators
+    res[pair] = self.advise_indicators(pair_data.copy(), {"pair": pair}).copy()
+                ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/freqtrade/freqtrade/strategy/interface.py", line 1812, in advise_indicators
+    dataframe = self.populate_indicators(dataframe, metadata)
+  File "/freqtrade/user_data/strategies/FinBuddyFreqAI_v23.py", line 568, in populate_indicators
+    dataframe = self.freqai.start(dataframe, metadata, self)
+  File "/freqtrade/freqtrade/freqai/freqai_interface.py", line 161, in start
+    dk = self.start_backtesting(dataframe, metadata, self.dk, strategy)
+  File "/freqtrade/freqtrade/freqai/freqai_interface.py", line 396, in start_backtesting
+    pred_df, do_preds = self.predict(dataframe_backtest, dk)
+                        ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/freqtrade/freqtrade/freqai/base_models/BaseClassifierModel.py", line 110, in predict
+    predictions = self.model.predict(dk.data_dictionary["prediction_features"])
+                  ^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'predict'
+
+2026-05-15 11:49:42,284 [ERROR] [run] FAILED (exit 1)
+/home/ubuntu/var/www/html/trade/scripts/autobacktest_v23.py:490: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "timestamp": datetime.utcnow().isoformat()
+2026-05-15 11:49:42,284 [INFO] 
+[3/18] window=bull  ktp=1.5  ksl=0.8  m=0.7  theory_pf=3.06
+2026-05-15 11:49:42,284 [INFO] 
+============================================================
+  k_tp=1.5  k_sl=0.8  ml_threshold=0.7  label_period=72  window=bull
+  identifier: v23_ktp1.5_ksl0.8_m0.7_1778845782
+  theoretical PF at 62% WR: 3.06
+============================================================
+2026-05-15 11:49:42,285 [INFO] [run] docker-compose run --rm --no-deps -e FREQAI_K_TP=1.5 -e FREQAI_K_SL=0.8 -e FREQAI_ML_THRESHOLD=0.7 -e FREQTRADE__DRY_RUN_WALLET=10000 freqtrade backtesting --config /freqtrade/user_data/backtest_config.json --config /freqtrade/user_data/_v21_overlay_v23_ktp1.5_ksl0.8_m0.7_1778845782.json --strategy FinBuddyFreqAI_v23 --freqaimodel LightGBMClassifier --timerange 20240101-20250101 --timeframe 5m --export trades --cache none
