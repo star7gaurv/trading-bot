@@ -143,3 +143,4 @@
 | 2026-05-16 07:01:44 | ARB/USDT:USDT | SHORT | 5h03m | +5.86% | +3.88 | exit_signal | BEAR | freqai_lgbm_v22_short |
 | 2026-05-16 07:23:04 | ATOM/USDT:USDT | SHORT | 0h21m | +1.92% | +1.32 | trailing_stop_loss | BEAR | freqai_lgbm_v22_short |
 | 2026-05-16 09:35:49 | UNI/USDT:USDT | SHORT | 0h35m | +2.12% | +1.43 | trailing_stop_loss | BEAR | freqai_lgbm_v22_short |
+| 2026-05-16 11:13:40 | ATOM/USDT:USDT | SHORT | 0h11m | -1.11% | -0.76 | stop_loss | BEAR | freqai_lgbm_v22_short |
