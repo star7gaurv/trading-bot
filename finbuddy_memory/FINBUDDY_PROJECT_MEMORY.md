@@ -4,8 +4,8 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status**: 🟠 v22 code live (1h base) · v23 NaN fixed; first backtest WR 18.3%, Sharpe -70, all shorts in bull window — strategy needs heavy rework  
-**Last Updated**: 2026-05-16 (Claude Code session — v23 data plumbing unblocked, baseline metrics captured honestly)
+**Status**: 🟠 v22 code live (1h base) · v22 WF rerun in progress · v23 upgraded with real Order Blocks; baseline testing...
+**Last Updated**: 2026-05-16 (Antigravity session — v22 WF fixed/rerun, v23 OB logic enhanced)
 
 ---
 
@@ -135,9 +135,10 @@ We shifted the entire architecture to **Phase 13: The Conscious Brain**, deployi
 | **FreqAI identifier** | `finbuddy_v19_asym_1778575138` — 1h live model (forced to 5m intervals by config). |
 | **FreqAI Model** | ✅ FinBuddyLLMModel **v5** — auto-confirm fix (proba ≥ 0.90 bypasses LLM) |
 | **Live P&L** | **+110.64 USDT** (179 trades) — Pure Short capture in current Bear regime. |
-| **Backtest Campaign** | ❌ **FAILED**: `v23` Omni-timeframe campaign halted (OperationalException: NaNs). |
+| **Backtest Campaign** | ⏳ **RUNNING**: v23 baseline (Order Block upgrade) testing bull window. |
 | **All Crons** | ✅ Live (Phase 2–5, watchdog, postmortem, daily summary, WF notify) |
-| **Phase 10 go-live** | ⬜ BLOCKED — needs v23/v24 walk-forward PASS |
+| **Walk-forward** | ⏳ **RUNNING**: v22 Rerun (21 folds, 1h base, `wf_v22_config.json`). |
+| **Phase 10 go-live** | ⬜ BLOCKED — needs v22/v23 walk-forward PASS |
 
 ## 🐛 Critical Bug Fixed (2026-05-13) — commit `21796ea`
 

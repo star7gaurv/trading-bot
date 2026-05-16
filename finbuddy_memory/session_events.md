@@ -130,3 +130,11 @@ User said "do whatever you want for v23 to fix" — ran 5 backtests on 2024-01-0
 - 6 backtest result zips in `freqtrade/user_data/backtest_results/` (timestamps 11:59 through 13:51).
 - All prediction feathers preserved under `freqtrade/user_data/models/v23_*` for future feature-importance analysis.
 - **2026-05-16 16:00 UTC** — Regime changed: BEAR → UNKNOWN
+
+### 2026-05-16: Antigravity Session — WF v22 Rerun + v23 OB Upgrade
+*   **Action**: Fixed `scripts/walk_forward.py` to delete `.last_result.json` before each fold, preventing phantom results from previous failed runs.
+*   **Action**: Created `freqtrade/user_data/wf_v22_config.json` with 1h base TF and corrected informative timeframes for v22 validation.
+*   **Action**: Enhanced `FinBuddyFreqAI_v23.py` with sophisticated **Supply & Demand (Order Block)** detection logic using impulsive move identification.
+*   **Action**: Launched v22 Walk-Forward campaign (21 folds) in background to get valid OOS baseline for Phase 10.
+*   **Action**: Launched v23 baseline backtest (2024 Bull window) to verify the impact of new Order Block detection.
+*   **MLOps**: Verified that `scripts/karpathy/run_loop.py` already contains promotion logic; waiting for "God-Tier" backtest results to trigger it.
