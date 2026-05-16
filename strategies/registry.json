@@ -423,6 +423,49 @@
       "proposed_by": "reasoning_agent",
       "reviewed_at": "2026-05-15",
       "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "btc_dominance_threshold_breakout_20260516",
+      "hypothesis": "BTC dominance falling below 57% will trigger a regime shift to 'neutral/bull', increasing altcoin outperformance.",
+      "timeframe": "1h",
+      "indicators": [
+        "BTC_D",
+        "VIX_Crypto",
+        "hourly_BTC_momentum"
+      ],
+      "entry_long": "BTC_D < 57.0",
+      "entry_short": "BTC_D > 58.5",
+      "exit_rule": "if (VIX_Crypto > 18.0) and (hourly_BTC_momentum < -0.5)",
+      "regime_filter": [
+        "BEAR",
+        "SIDEWAYS"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-16",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-16",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "altcoin_rally_long_trigger_20260516",
+      "hypothesis": "A 3-hour BTC-USD price rally >2% will generate a short-term long-bias on selected altcoin pairs.",
+      "timeframe": "1h",
+      "indicators": [
+        "BTC_3h_rally",
+        "EMA_20",
+        "pair_signal_strength"
+      ],
+      "entry_long": "(BTC_3h_rally > 2.0) and (close > EMA_20)",
+      "entry_short": "False",
+      "exit_rule": "if (pair_signal_strength < 0.6)",
+      "regime_filter": [
+        "BEAR"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-16",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-16",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
     }
   ]
 }
