@@ -4,8 +4,8 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status:** 🟢 v20 code live · 2x Leverage · 8 Max Trades · Fixed Macro Data Fetchers · 25 pairs · Stoploss bug fixed  
-**Last Updated:** 2026-05-14 (Claude Code — Phase 1-3 optimizations: v20 strategy, 2x leverage, macro safety gates, fixed regime path, fixed news/trends fetchers)
+**Status**: 🟠 v22 code live · v23 Omni-Timeframe backtest FAILED (NaN data error)  
+**Last Updated**: 2026-05-16 (Antigravity AI — Correction: v22 active, v23 blocked by backtest data ingestion issues)
 
 ---
 
@@ -131,13 +131,13 @@ We shifted the entire architecture to **Phase 13: The Conscious Brain**, deployi
 | Component | Status |
 |---|---|---|
 | **FreqTrade** | ✅ Running, dry-run, futures isolated |
-| **Strategy** | ✅ FinBuddyFreqAI **v23 code** — Phase 13 Omni-Timeframe (5m base), Order Block Vetoes, and Volatility hook. |
-| **FreqAI identifier** | `finbuddy_v19_asym_1778575138` — 1h live (Awaiting v23 backtest to finish before deploying new 5m model). |
+| **Strategy** | 🟠 **FinBuddyFreqAI v22** — MTF Sniper Logic active. (v23 Omni-Timeframe code is written but NOT active). |
+| **FreqAI identifier** | `finbuddy_v19_asym_1778575138` — 1h live model (forced to 5m intervals by config). |
 | **FreqAI Model** | ✅ FinBuddyLLMModel **v5** — auto-confirm fix (proba ≥ 0.90 bypasses LLM) |
-| **Live P&L** | Monitoring existing trades while v23 computes |
-| **Backtest Campaign** | ⏳ Running: `v23` Omni-timeframe autobacktest. MLOps loop waiting to automatically deploy God-Tier combos |
+| **Live P&L** | **+110.64 USDT** (179 trades) — Pure Short capture in current Bear regime. |
+| **Backtest Campaign** | ❌ **FAILED**: `v23` Omni-timeframe campaign halted (OperationalException: NaNs). |
 | **All Crons** | ✅ Live (Phase 2–5, watchdog, postmortem, daily summary, WF notify) |
-| **Phase 10 go-live** | ⬜ BLOCKED — needs walk-forward PASS |
+| **Phase 10 go-live** | ⬜ BLOCKED — needs v23/v24 walk-forward PASS |
 
 ## 🐛 Critical Bug Fixed (2026-05-13) — commit `21796ea`
 

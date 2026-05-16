@@ -47,4 +47,4 @@
 *   **Architecture**: Shifted base timeframe to 5m. FreqAI now natively ingests 15m/1h/4h timeframes to learn macro/micro correlations without rigid gates.
 *   **Vetoes**: Injected 24-hour Order Block (Liquidity Pool) awareness. Volatility Hook added to instantly exit on 500% volume spikes against position within 10 minutes.
 *   **MLOps Pipeline**: Built `scripts/karpathy/run_loop.py` (installed via 2:00 AM cron) to automatically evaluate backtest CSVs and promote "God-Tier" parameter combinations to the live `docker-compose.yml`.
-- **2026-05-15 16:00 UTC** — Regime changed: NEUTRAL → BEAR
+- **2026-05-16 09:55 UTC** — Antigravity Memory Correction: Verified that `v22` is the active live strategy (not `v23`). v23 Omni-Timeframe is currently blocked by a `NaN` backtest error. Updated `FINBUDDY_PROJECT_MEMORY.md` and `CLAUDE.md` to reflect the true state of the system and the failed v23 backtest campaign.
