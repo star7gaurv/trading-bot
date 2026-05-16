@@ -88,3 +88,44 @@
 2. Rerun WF with config fix
 3. Implement real Order Block detection if Phase 13 vision is to be real
 4. Implement real MLOps auto-promotion (Karpathy currently only research, no promotion logic)
+
+### 2026-05-16 (Claude Code, second pass) — v23 strategy tuning sweep
+
+User said "do whatever you want for v23 to fix" — ran 5 backtests on 2024-01-01 → 2024-04-01 (BULL, 5 pairs, 5m base unless noted) iterating on root-causes.
+
+**Result table (each row is one full backtest):**
+
+| # | Config | Trades | Longs | Shorts | WR % | Net P&L | Sharpe |
+|---|---|---|---|---|---|---|---|
+| 1 | baseline K_TP=2 K_SL=1 m=0.60 | 1159 | **0** | 1159 | 18.3 | -368 | -70 |
+| 2 | + class_weight=balanced | 1416 | 344 | 1072 | 18.1 | -418 | -80 |
+| 3 | + K_SL=2 (symmetric stops) | 1058 | 688 | 370 | **34.9** | -361 | -60 |
+| 4 | + ML_THRESHOLD=0.70 | 518 | 309 | 209 | 33.6 | -179 | -30 |
+| 5 | K_TP=3 K_SL=2 m=0.65 (asym wide) | 722 | 279 | 443 | 33.5 | -213 | -24 |
+| 6 | 15m base K_TP=2 K_SL=2 m=0.60 | 1189 | 878 | 311 | 33.6 | -503 | -66 |
+
+**What was learned (positive):**
+- **Root cause of 0 longs** (#1): asymmetric barriers (K_TP=2.0, K_SL=1.0) create asymmetric labels (~60% S, ~40% L) → LightGBM trained on this is biased toward predicting S → at threshold 0.60, proba_L only fires 24% of the time vs proba_S firing 49% → after TA + MTF filters, 0 longs survive.
+- **Fix that works**: `class_weight: "balanced"` in `freqai.model_training_parameters`. Pass-through to `LGBMClassifier`. This unlocks longs (#2: 344 longs vs 0 in #1).
+- **Second fix that works**: K_SL=2.0 (symmetric stops). Doubles WR from 18% → 35% by avoiding 5m-noise stop-outs (median stop_loss trade duration: 4 min in #1, 17 min in #3).
+- **Higher threshold helps quality** (#4): m=0.70 halves trades and halves P&L loss with same WR — picking fewer entries directly improves cost efficiency.
+
+**What was learned (negative — the structural ceiling):**
+- WR is **stuck at 33–35%** across configurations #3–#6 regardless of stop width, R:R, ML threshold, or base timeframe (5m vs 15m).
+- That is **worse than random** on directional entry (random = 50%). The model is not extracting useful directional signal at this feature/label combination.
+- At 33% WR with 1.5:1 R:R, expected value per trade is `0.33×3 - 0.67×2 = -0.34 ATR` → mathematically losing regardless of tuning.
+- The 5m timeframe being noise-dominated is supported by exit_reason data: stop_loss trades exit in median 1–4 min (1 candle); exit_signal trades (99% wins) exit in 17–25 min (3–5 candles). The model has a small edge when the trade survives the first candle, but doesn't predict which entries will survive.
+
+**Honest conclusion on v23:**
+- The Phase 13 architecture (Omni-Timeframe + Volatility Hook) is sound; the integration plumbing is now working.
+- The strategy in its current form (asymmetric barriers + standard FreqAI feature engineering) **cannot become profitable through parameter tuning alone** in a bull window. It is unprofitable in all tested configurations.
+- To make v23 profitable, real changes needed: (a) implement Order Block / liquidity-pool features (Phase 13 pillar #2, currently unimplemented), (b) time-based stop activation (no SL for first N candles to let setup develop), or (c) regression labels (predict next-N-candle return) instead of barrier classification.
+- The class_weight=balanced + K_SL=2.0 finding is a real win — committed to backtest_config.json so future runs start from this corrected baseline.
+
+**Config changes committed:**
+- `backtest_config.json`: added `class_weight: "balanced"` to `freqai.model_training_parameters`.
+- `backtest_config_15m.json`: new file for 15m-base experiments (unused for live).
+
+**Memory artifacts:**
+- 6 backtest result zips in `freqtrade/user_data/backtest_results/` (timestamps 11:59 through 13:51).
+- All prediction feathers preserved under `freqtrade/user_data/models/v23_*` for future feature-importance analysis.
