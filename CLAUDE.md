@@ -115,12 +115,12 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 ## What Is Live and Working Right Now (verified 2026-05-09 by Claude Code)
 
 ### FreqTrade
-- Running **`FinBuddyFreqAI.py` (v20)** in dry-run mode on **Binance Futures USDT-M** — long+short
+- Running **`FinBuddyFreqAI.py` (v22)** in dry-run mode on **Binance Futures USDT-M** — long+short
 - FreqAI identifier: `finbuddy_v19_asym_1778575138` (2x leverage, 8 max trades, macro safety gates active)
 - 1000 USDT virtual wallet, max 8 open trades, 2x leverage enabled
 - API: `http://localhost:8080/api/v1` — user: `bot`, pass: `REDACTED-FREQTRADE__API_SERVER__PASSWORD`
-- Whitelist: **25 pairs**, **1h timeframe**
-- Status: Optimized on 2026-05-14 (fixed regime path, news fetcher, and Google Trends 429)
+- Whitelist: **25 pairs**, **5m timeframe** (overridden by config)
+- Status: Corrected 2026-05-16 (v22 active; v23 Omni-Timeframe blocked by NaN backtest error)
 
 ### N8N
 - 🔴 **Permanently disabled** — FreqAI is sole signal source
@@ -170,15 +170,14 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ## Current Strategy
 
-### ✅ Active: `FinBuddyFreqAI.py` v20 — Futures Long/Short + Macro Safety
-- Binance Futures USDT-M (perpetual, isolated margin), **1h TF**, 25 pairs, `can_short=True`
-- **2x Leverage**: Implemented via `leverage()` callback for balanced profit/risk.
-- **Max Open Trades**: Increased to 8 for better diversification across clusters.
-- **Regime Fix**: Strategy now correctly resolves `/freqtrade/finbuddy_memory/regimes/current.json`.
-- **Macro Guard**: `confirm_trade_entry` blocks longs in Extreme Fear (<20) and shorts in Extreme Greed (>80).
+### ✅ Active: `FinBuddyFreqAI.py` v22 — Futures Long/Short + MTF Sniper
+- Binance Futures USDT-M (perpetual, isolated margin), **5m base TF** (config-driven), 25 pairs, `can_short=True`
+- **2x Leverage**: Implemented via `leverage()` callback.
+- **Max Open Trades**: 8.
+- **MTF Sniper**: uses 4h trend alignment and Relative Strength (RS) vs BTC.
 - FreqAI identifier: `finbuddy_v19_asym_1778575138` — Asymmetric barriers (K_TP=2.0, K_SL=1.0)
-- `custom_stoploss()`: ATR-based stops fixed (commit `21796ea`)
-- **External Data**: Fixed News Fetcher (Catalogs 48/49) and Google Trends (backoff/retry logic active).
+- `custom_stoploss()`: ATR-based stops fixed.
+- **Status**: Captured +10% wins on May 16 morning (BEAR regime).
 
 ### ✅ Active: `FinBuddyLLMModel.py` v5
 - LightGBM + NVIDIA/OpenRouter LLM confirmation layer
