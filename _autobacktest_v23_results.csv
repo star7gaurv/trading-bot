@@ -1,3 +1,0 @@
-run,window,k_tp,k_sl,ml_threshold,win_rate,sharpe,max_drawdown,profit_factor,trade_count,pass,wr_pass,sharpe_pass,dd_pass,pf_pass,theoretical_pf,timestamp
-1,bull,1.5,0.8,0.6,ERROR,ERROR,ERROR,ERROR,0,False,False,False,False,False,3.06,2026-05-15T11:49:25.604178
-2,bull,1.5,0.8,0.65,ERROR,ERROR,ERROR,ERROR,0,False,False,False,False,False,3.06,2026-05-15T11:49:42.284530

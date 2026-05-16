@@ -57,7 +57,8 @@ RESULTS_DIR    = REPO_ROOT / "freqtrade" / "user_data" / "backtest_results"
 OVERLAY_HOST_DIR      = REPO_ROOT / "freqtrade" / "user_data"
 OVERLAY_CONTAINER_DIR = "/freqtrade/user_data"
 COMPOSE_DIR    = REPO_ROOT / "freqtrade"
-OUTPUT_CSV     = REPO_ROOT / "_autobacktest_v23_results.csv"
+BACKTEST_DIR   = REPO_ROOT / "backtests"
+OUTPUT_CSV     = BACKTEST_DIR / "_autobacktest_v23_results.csv"
 
 # ── Telegram ───────────────────────────────────────────────────────────────
 TELEGRAM_TOKEN = "REDACTED-FREQTRADE__TELEGRAM__TOKEN"

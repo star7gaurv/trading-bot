@@ -8,7 +8,7 @@ freqtrade/user_data/notebooks/
 freqtrade/user_data/models/
 
 # --- FinBuddy Temp/Log Files ---
-_autobacktest_v23_results.csv
+backtests/
 *.log
 freqtrade/user_data/tradesv3.dryrun.sqlite
 freqtrade/user_data/_v21_overlay_*.json
