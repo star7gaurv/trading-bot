@@ -4,8 +4,8 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status**: 🟠 v22 code live · v23 Omni-Timeframe backtest FAILED (NaN data error)  
-**Last Updated**: 2026-05-16 (Antigravity AI — Correction: v22 active, v23 blocked by backtest data ingestion issues)
+**Status**: 🟠 v22 code live (1h base) · v23 NaN fixed; first backtest WR 18.3%, Sharpe -70, all shorts in bull window — strategy needs heavy rework  
+**Last Updated**: 2026-05-16 (Claude Code session — v23 data plumbing unblocked, baseline metrics captured honestly)
 
 ---
 
