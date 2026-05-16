@@ -138,3 +138,6 @@ User said "do whatever you want for v23 to fix" — ran 5 backtests on 2024-01-0
 *   **Action**: Launched v22 Walk-Forward campaign (21 folds) in background to get valid OOS baseline for Phase 10.
 *   **Action**: Launched v23 baseline backtest (2024 Bull window) to verify the impact of new Order Block detection.
 *   **MLOps**: Verified that `scripts/karpathy/run_loop.py` already contains promotion logic; waiting for "God-Tier" backtest results to trigger it.
+- **2026-05-16 20:00 UTC** — Regime changed: UNKNOWN → BEAR
+- **2026-05-16 20:00 UTC** — Walk-forward status: ⏳ Running — 15/21 folds done (FinBuddyFreqAI_2024-01-01_2026-04-01_20260516T184159)
+- **2026-05-16 20:00 UTC** — 🎯 Trade milestone reached: 200 closed trades
