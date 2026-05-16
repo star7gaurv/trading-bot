@@ -430,7 +430,7 @@ def main():
     log.info(f"{'#'*60}\n")
 
     _tg(
-        f"🎯 <b>v21 MTF Sniper Campaign Started</b>\n"
+        f"🎯 <b>v23 Omni-Timeframe Campaign Started</b>\n"
         f"{len(combos)} combos × {len(run_windows)} window(s) = {n_total} runs\n"
         f"k_tp: {k_tps}  k_sl: {k_sls}  ml_threshold: {thresholds}\n"
         f"label_period: {label_period} (fixed)\n"
@@ -565,7 +565,7 @@ def main():
             best = max(both_pass_keys, key=combined_sharpe)
             log.info(f"\n🥇 WINNER (both windows): ktp={best[0]}  ksl={best[1]}  m={best[2]}")
             _tg(
-                f"🏆 <b>v21 MTF Campaign Complete</b>\n"
+                f"🏆 <b>v23 Omni-Timeframe Campaign Complete</b>\n"
                 f"{len(passes)}/{n_total} PASS\n\n"
                 f"✅ Winner (both windows):\n"
                 f"k_tp={best[0]}  k_sl={best[1]}  ml_threshold={best[2]}\n\n"
@@ -574,7 +574,7 @@ def main():
         else:
             log.info("\n⚠️  No combo passes BOTH windows.")
             _tg(
-                f"⚠️ <b>v21 MTF Campaign Complete</b>\n"
+                f"⚠️ <b>v23 Omni-Timeframe Campaign Complete</b>\n"
                 f"{len(passes)}/{n_total} PASS\n"
                 f"No combo passes BOTH windows — check CSV for best candidates.\n"
                 f"Results: {OUTPUT_CSV.name}"
@@ -590,7 +590,7 @@ def main():
                 f"DD={r['max_drawdown']}% PF={r['profit_factor']}"
             )
         _tg(
-            f"❌ <b>v21 MTF Campaign: ALL FAIL</b>\n"
+            f"❌ <b>v23 Omni-Timeframe Campaign: ALL FAIL</b>\n"
             f"0/{n_total} PASS\n"
             f"Best Sharpe: {top3[0].get('sharpe', 'N/A') if top3 else 'N/A'}\n"
             f"Results: {OUTPUT_CSV.name}"

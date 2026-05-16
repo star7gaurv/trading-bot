@@ -582,124 +582,10 @@ class FinBuddyFreqAI_v23(IStrategy):
         dataframe["atr_14"] = ta.ATR(dataframe, timeperiod=14)
         dataframe["atr_ratio"] = dataframe["atr_14"] / dataframe["close"]
 
-        if self.dp:
-            informative_1h = self.dp.get_pair_dataframe(
-                pair=metadata["pair"], timeframe="1h"
-            )
-            if not informative_1h.empty:
-                informative_1h["ema_50_1h"] = ta.EMA(informative_1h, timeperiod=50)
-                informative_1h = informative_1h[["date", "close", "ema_50_1h"]].copy()
-                informative_1h.columns = ["date", "close_1h", "ema_50_1h"]
-                informative_1h["date"] = pd.to_datetime(informative_1h["date"])
-                dataframe = pd.merge_asof(
-                    dataframe.sort_values("date"),
-                    informative_1h.sort_values("date"),
-                    on="date",
-                    direction="backward",
-                )
-            else:
-                dataframe["ema_50_1h"] = dataframe["close"]
-                dataframe["close_1h"] = dataframe["close"]
-
-            btc_4h = self.dp.get_pair_dataframe(
-                pair="BTC/USDT:USDT", timeframe="4h"
-            )
-            if not btc_4h.empty:
-                btc_4h["ema_50_4h_btc"] = ta.EMA(btc_4h, timeperiod=50)
-                btc_4h["btc_4h_below_ema50"] = (
-                    btc_4h["close"] < btc_4h["ema_50_4h_btc"]
-                ).astype(int)
-                btc_4h = btc_4h[["date", "btc_4h_below_ema50"]].copy()
-                btc_4h["date"] = pd.to_datetime(btc_4h["date"])
-                dataframe = pd.merge_asof(
-                    dataframe.sort_values("date"),
-                    btc_4h.sort_values("date"),
-                    on="date",
-                    direction="backward",
-                )
-            else:
-                dataframe["btc_4h_below_ema50"] = 0
-
-            # v11.1 — BTC daily MA200 macro regime
-            btc_1d = self.dp.get_pair_dataframe(
-                pair="BTC/USDT:USDT", timeframe="1d"
-            )
-            if not btc_1d.empty:
-                btc_1d["btc_ma200_1d"] = ta.SMA(btc_1d, timeperiod=200)
-                btc_1d["btc_macro_bull"] = (
-                    btc_1d["close"] > btc_1d["btc_ma200_1d"]
-                ).astype(int)
-                btc_1d = btc_1d[["date", "btc_macro_bull"]].copy()
-                btc_1d["date"] = pd.to_datetime(btc_1d["date"])
-                dataframe = pd.merge_asof(
-                    dataframe.sort_values("date"),
-                    btc_1d.sort_values("date"),
-                    on="date",
-                    direction="backward",
-                )
-            else:
-                dataframe["btc_macro_bull"] = 1
-                
-            # v21 — Relative Strength vs BTC (Intelligent pair selection)
-            btc_1h = self.dp.get_pair_dataframe(
-                pair="BTC/USDT:USDT", timeframe="1h"
-            )
-            if not btc_1h.empty:
-                btc_1h = btc_1h[["date", "close"]].copy()
-                btc_1h.columns = ["date", "btc_close_1h"]
-                btc_1h["date"] = pd.to_datetime(btc_1h["date"])
-                dataframe = pd.merge_asof(
-                    dataframe.sort_values("date"),
-                    btc_1h.sort_values("date"),
-                    on="date",
-                    direction="backward",
-                )
-                
-                # Calculate RS: If pair is outperforming BTC, RS is rising.
-                dataframe["rs_raw"] = dataframe["close"] / (dataframe["btc_close_1h"] + 1e-9)
-                dataframe["rs_ema_fast"] = dataframe["rs_raw"].ewm(span=10, adjust=False).mean()
-                dataframe["rs_ema_slow"] = dataframe["rs_raw"].ewm(span=50, adjust=False).mean()
-                # Strong if fast RS > slow RS
-                dataframe["is_strong_vs_btc"] = (dataframe["rs_ema_fast"] > dataframe["rs_ema_slow"]).astype(int)
-            else:
-                dataframe["is_strong_vs_btc"] = 1  # Fallback
-
-            # v22 — MTF Sniper: pair's own 4H trend gate
-            # Longs only when 4H bullish; shorts only when 4H bearish.
-            pair_4h = self.dp.get_pair_dataframe(
-                pair=metadata["pair"], timeframe="4h"
-            )
-            if not pair_4h.empty:
-                pair_4h["ema_50_4h"] = ta.EMA(pair_4h, timeperiod=50)
-                pair_4h["pair_4h_bullish"] = (
-                    pair_4h["close"] > pair_4h["ema_50_4h"]
-                ).astype(int)
-                pair_4h = pair_4h[["date", "pair_4h_bullish"]].copy()
-                pair_4h["date"] = pd.to_datetime(pair_4h["date"])
-                dataframe = pd.merge_asof(
-                    dataframe.sort_values("date"),
-                    pair_4h.sort_values("date"),
-                    on="date",
-                    direction="backward",
-                )
-            else:
-                dataframe["pair_4h_bullish"] = 1  # fallback: don't block
-
-        else:
-            dataframe["ema_50_1h"] = dataframe["close"]
-            dataframe["close_1h"] = dataframe["close"]
-            dataframe["btc_4h_below_ema50"] = 0
-            dataframe["btc_macro_bull"] = 1
-            dataframe["is_strong_vs_btc"] = 1
-            dataframe["pair_4h_bullish"] = 1
-
         # Phase 13: Order Block / Liquidity Pool Awareness
         # Identify major historical swing highs/lows (Liquidity Pools). 288 candles = 24h on 5m TF
         dataframe["bearish_ob"] = dataframe["high"].rolling(288).max()
         dataframe["bullish_ob"] = dataframe["low"].rolling(288).min()
-
-        if "btc_macro_bull" not in dataframe.columns:
-            dataframe["btc_macro_bull"] = 1
 
         return dataframe
 
@@ -739,14 +625,12 @@ class FinBuddyFreqAI_v23(IStrategy):
         is_uptrend = dataframe["close"] > dataframe["ema_50"]
         is_downtrend = dataframe["close"] < dataframe["ema_50"]
         
-        # Long threshold: base if uptrend and strong vs btc, harder (+0.05) otherwise
-        thresh_long = pd.Series(base_thresh + 0.05, index=dataframe.index) 
-        thresh_long.loc[is_uptrend & (dataframe.get("is_strong_vs_btc", 1) == 1)] = base_thresh
+        # Long threshold: fixed base thresh (model natively learns correlations via 15m/1h/4h features)
+        thresh_long = pd.Series(base_thresh, index=dataframe.index) 
         ml_threshold_long = (proba_long > thresh_long)
 
-        # Short threshold: base if downtrend and weak vs btc, harder (+0.05) otherwise
-        thresh_short = pd.Series(base_thresh + 0.05, index=dataframe.index)
-        thresh_short.loc[is_downtrend & (dataframe.get("is_strong_vs_btc", 1) == 0)] = base_thresh
+        # Short threshold
+        thresh_short = pd.Series(base_thresh, index=dataframe.index)
         ml_threshold_short = (proba_short > thresh_short)
 
         ta_filter = (
@@ -757,25 +641,21 @@ class FinBuddyFreqAI_v23(IStrategy):
         )
 
         volatility_filter = dataframe["atr_ratio"] > 0.003
-        trend_filter_1h   = dataframe["close_1h"] >= dataframe["ema_50_1h"]
 
         ml_signal_long_final = (
             (dataframe["do_predict"] == 1)
             & ml_threshold_long
         )
 
-        # v22 MTF Sniper: only take longs when pair's 4H trend is bullish
-        mtf_long_ok = dataframe.get("pair_4h_bullish", pd.Series(1, index=dataframe.index)) == 1
-
         # Phase 13 Liquidity Veto: Block longs directly under historical Bearish OB (Resistance)
         ob_long_ok = dataframe["close"] < (dataframe["bearish_ob"] * 0.99)
 
         dataframe.loc[
-            ml_signal_long_final & ta_filter & volatility_filter & trend_filter_1h & mtf_long_ok & ob_long_ok,
+            ml_signal_long_final & ta_filter & volatility_filter & ob_long_ok,
             "enter_long"
         ] = 1
         dataframe.loc[
-            ml_signal_long_final & ta_filter & volatility_filter & trend_filter_1h & mtf_long_ok & ob_long_ok,
+            ml_signal_long_final & ta_filter & volatility_filter & ob_long_ok,
             "enter_tag"
         ] = "freqai_lgbm_v23_long"
 
@@ -793,24 +673,17 @@ class FinBuddyFreqAI_v23(IStrategy):
             & (dataframe["volume"] > 0)
         )
 
-        trend_filter_1h_short = (
-            dataframe["close_1h"] < dataframe["ema_50_1h"] * 1.02
-        )
-
         safety_short = dataframe["rsi_14"] > 15
-
-        # v22 MTF Sniper: only take shorts when pair's 4H trend is bearish
-        mtf_short_ok = dataframe.get("pair_4h_bullish", pd.Series(1, index=dataframe.index)) == 0
 
         # Phase 13 Liquidity Veto: Block shorts directly above historical Bullish OB (Support)
         ob_short_ok = dataframe["close"] > (dataframe["bullish_ob"] * 1.01)
 
         dataframe.loc[
-            ml_signal_short & ta_filter_short & volatility_filter & trend_filter_1h_short & safety_short & mtf_short_ok & ob_short_ok,
+            ml_signal_short & ta_filter_short & volatility_filter & safety_short & ob_short_ok,
             "enter_short"
         ] = 1
         dataframe.loc[
-            ml_signal_short & ta_filter_short & volatility_filter & trend_filter_1h_short & safety_short & mtf_short_ok & ob_short_ok,
+            ml_signal_short & ta_filter_short & volatility_filter & safety_short & ob_short_ok,
             "enter_tag"
         ] = "freqai_lgbm_v23_short"
 
