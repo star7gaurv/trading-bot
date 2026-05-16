@@ -146,3 +146,5 @@
 | 2026-05-16 11:13:40 | ATOM/USDT:USDT | SHORT | 0h11m | -1.11% | -0.76 | stop_loss | BEAR | freqai_lgbm_v22_short |
 | 2026-05-16 13:11:04 | LTC/USDT:USDT | SHORT | 1h10m | -0.69% | -0.47 | trailing_stop_loss | BEAR | freqai_lgbm_v22_short |
 | 2026-05-16 13:08:14 | OP/USDT:USDT | SHORT | 1h07m | -0.99% | -0.68 | trailing_stop_loss | BEAR | freqai_lgbm_v22_short |
+| 2026-05-16 14:31:36 | DOGE/USDT:USDT | SHORT | 0h21m | -1.08% | -0.74 | trailing_stop_loss | BEAR | freqai_lgbm_v22_short |
+| 2026-05-16 14:34:46 | OP/USDT:USDT | SHORT | 0h24m | -0.98% | -0.68 | stop_loss | BEAR | freqai_lgbm_v22_short |
