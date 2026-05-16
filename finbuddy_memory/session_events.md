@@ -129,3 +129,4 @@ User said "do whatever you want for v23 to fix" — ran 5 backtests on 2024-01-0
 **Memory artifacts:**
 - 6 backtest result zips in `freqtrade/user_data/backtest_results/` (timestamps 11:59 through 13:51).
 - All prediction feathers preserved under `freqtrade/user_data/models/v23_*` for future feature-importance analysis.
+- **2026-05-16 16:00 UTC** — Regime changed: BEAR → UNKNOWN
