@@ -141,3 +141,4 @@
 | 2026-05-16 07:01:39 | ZEC/USDT:USDT | SHORT | 12h59m | +9.09% | +6.00 | exit_signal | BEAR | freqai_lgbm_v22_short |
 | 2026-05-16 07:01:40 | ONDO/USDT:USDT | SHORT | 12h57m | +10.22% | +6.75 | exit_signal | BEAR | freqai_lgbm_v22_short |
 | 2026-05-16 07:01:44 | ARB/USDT:USDT | SHORT | 5h03m | +5.86% | +3.88 | exit_signal | BEAR | freqai_lgbm_v22_short |
+| 2026-05-16 07:23:04 | ATOM/USDT:USDT | SHORT | 0h21m | +1.92% | +1.32 | trailing_stop_loss | BEAR | freqai_lgbm_v22_short |
