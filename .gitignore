@@ -7,6 +7,12 @@ freqtrade/user_data/notebooks/
 .claude/
 freqtrade/user_data/models/
 
+# --- FinBuddy Temp/Log Files ---
+_autobacktest_v23_results.csv
+*.log
+freqtrade/user_data/tradesv3.dryrun.sqlite
+freqtrade/user_data/_v21_overlay_*.json
+
 # Backtest artifacts — never commit these (large binary files, machine-specific)
 freqtrade/user_data/backtest_results/*.zip
 freqtrade/user_data/backtest_results/*.meta.json
