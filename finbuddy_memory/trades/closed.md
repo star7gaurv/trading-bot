@@ -172,3 +172,5 @@
 | 2026-05-17 10:05:02 | ENA/USDT:USDT | SHORT | 0h03m | -0.90% | -0.91 | stop_loss | NEUTRAL | freqai_lgbm_v22_short |
 | 2026-05-17 12:18:26 | ENA/USDT:USDT | SHORT | 1h16m | -0.97% | -0.98 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v22_short |
 | 2026-05-17 13:03:40 | LINK/USDT:USDT | SHORT | 0h00m | -1.15% | -1.17 | stop_loss | NEUTRAL | freqai_lgbm_v22_short |
+| 2026-05-17 19:40:46 | LINK/USDT:USDT | SHORT | 4h37m | -0.80% | -0.82 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v22_short |
+| 2026-05-17 19:34:32 | ONDO/USDT:USDT | SHORT | 4h30m | -1.17% | -1.19 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v22_short |
