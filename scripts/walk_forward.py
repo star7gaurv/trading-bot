@@ -114,8 +114,7 @@ def run_backtest(strategy: str, tf: str, train_start: datetime,
     else:
         cmd += ["--config", "/freqtrade/user_data/config.json"]
 
-    if LAST_RESULT.exists():
-        LAST_RESULT.unlink()
+    LAST_RESULT.unlink(missing_ok=True)  # prevent stale prior-fold result being silently reused
 
     with log_path.open("w") as logf:
         proc = subprocess.run(cmd, cwd=COMPOSE_DIR, stdout=logf, stderr=subprocess.STDOUT, timeout=3600)

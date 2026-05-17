@@ -57,33 +57,33 @@ except Exception as _shim_err:
 
 class FinBuddyFreqAI_v23(IStrategy):
     """
-    FinBuddy FreqAI Strategy v23 — 5m Base, Omni-Timeframe, Futures Long/Short (2026-05-15)
+    FinBuddy FreqAI Strategy v23 — Conscious Brain (2026-05-17)
 
-    2-class LightGBM classifier (L/S). Triple-barrier labeling with ASYMMETRIC barriers:
-      K_TP (take-profit) > K_SL (stop-loss)  →  R:R > 1, PF >> 1 at same WR.
+    ARCHITECTURE: Regression, not classification.
+      LightGBMRegressor predicts continuous future_return (% over next LABEL_PERIOD candles).
+      No class labels → no class imbalance → no base-rate short-bias.
+      Root cause of 0-longs-in-bull-market failure eliminated.
 
-    v19 structural fix (root cause of v18 0/24 FAIL):
-      v18 used symmetric barriers (k_tp=k_sl=K_MULT). At 62% WR with 1:1 R:R and
-      ~1,700 trades/yr, fee drag (~$196/yr at 0.08% round-trip) exactly cancels gross edge
-      (best combo: gross +$195 → PF=0.996). Grid was inert — no k_mult, label_period, or
-      ml_threshold could fix a structural R:R problem.
+    ENTRY: long when predicted_return > dynamic_long_threshold
+           short when predicted_return < dynamic_short_threshold
 
-      Fix: asymmetric barriers K_TP=2.0×ATR, K_SL=1.0×ATR:
-        - Theoretical PF at 62% WR = (0.62×2.0)/(0.38×1.0) = 3.26
-        - Break-even WR drops from 52.5% → 35%
-        - Tighter SL cuts losers fast (fewer funding fee hours on losing trades)
-        - More labels resolved per candle (SL at 1×ATR hit within 6h more often)
+    SELF-AWARENESS (Layer 2): dynamic thresholds per candle.
+      - Base: LONG_THRESHOLD / SHORT_THRESHOLD env vars
+      - Regime multiplier: tighter threshold in counter-trend direction
+        (BEAR → easy short, hard long; BULL → easy long, hard short)
+      - WR feedback: if recent WR > 55%, lower threshold (trade more aggressively)
 
-    custom_stoploss: K_SL×ATR initial stop (tight); trail locks at +K_TP×ATR once profit
-    exceeds the take-profit level.
+    RISK MANAGEMENT: ATR stoploss unchanged (K_TP/K_SL still control stop/trail).
 
-    feature_engineering_standard: NOW ACTIVE (v19 identifier forces full retrain).
-    Adds day-of-week + hour-of-day (temporal context) and raw OHLCV features.
+    WIDER CONTEXT (Layer 4): external macro signals injected as FreqAI features:
+      fear_greed index, BTC dominance, news sentiment, HMM regime encoding, recent WR.
 
     ENV VARs for grid search:
-      FREQAI_K_TP          float  default 2.0  — take-profit barrier (and trail lock level)
-      FREQAI_K_SL          float  default 1.0  — stop-loss barrier (and initial stop)
-      FREQAI_ML_THRESHOLD  float  default 0.60 — entry probability threshold
+      FREQAI_LONG_THRESHOLD   float  default 1.0  — predicted return % to enter long
+      FREQAI_SHORT_THRESHOLD  float  default -1.0 — predicted return % to enter short
+      FREQAI_K_TP             float  default 2.0  — trail lock level (ATR×K_TP)
+      FREQAI_K_SL             float  default 1.0  — initial stop (ATR×K_SL)
+      FINBUDDY_RECENT_WR      float  default 0.50 — written by trade_postmortem cron
     """
     INTERFACE_VERSION = 3
 
@@ -98,12 +98,13 @@ class FinBuddyFreqAI_v23(IStrategy):
     can_short = True
     startup_candle_count = 400
 
-    # v19: Split K_MULT into separate K_TP (take-profit) and K_SL (stop-loss).
-    # Asymmetric R:R: K_TP > K_SL → PF >> 1 at same WR.
-    # Grid search passes FREQAI_K_TP / FREQAI_K_SL / FREQAI_ML_THRESHOLD via docker env.
-    K_TP         = float(os.getenv("FREQAI_K_TP",         "2.0"))
-    K_SL         = float(os.getenv("FREQAI_K_SL",         "1.0"))
-    ML_THRESHOLD = float(os.getenv("FREQAI_ML_THRESHOLD", "0.60"))
+    # Regression entry thresholds (grid search via docker env).
+    LONG_THRESHOLD  = float(os.getenv("FREQAI_LONG_THRESHOLD",  "1.0"))   # predicted % return to enter long
+    SHORT_THRESHOLD = float(os.getenv("FREQAI_SHORT_THRESHOLD", "-1.0"))  # predicted % return to enter short (negative)
+
+    # ATR-based stoploss parameters (unchanged — risk management independent of entry model).
+    K_TP = float(os.getenv("FREQAI_K_TP", "2.0"))
+    K_SL = float(os.getenv("FREQAI_K_SL", "1.0"))
 
     # v11.1 — BTC daily MA200 macro-regime gate.
     # Long  entries require  BTC_1d_close > BTC_1d_MA200 (macro bull).
@@ -458,104 +459,117 @@ class FinBuddyFreqAI_v23(IStrategy):
         )
         return dataframe
 
+    # Numeric mapping for HMM regime → FreqAI feature
+    _REGIME_NUMERIC = {"CRASH": -2, "BEAR": -1, "NEUTRAL": 0, "BULL": 1, "EUPHORIA": 2}
+
     def feature_engineering_standard(
         self, dataframe: DataFrame, metadata: dict, **kwargs
     ) -> DataFrame:
         """
-        v19 standard features — temporal context + raw OHLCV.
-        Activated in v19 alongside the new identifier (finbuddy_v19_asym_*) which
-        forces a full retrain. The v18 identifier's models were trained WITHOUT these
-        features; this function MUST NOT be enabled on any v17/v18 identifier.
+        v23 standard features — temporal context + raw OHLCV + external macro signals.
 
-        Adds (%-prefixed so FreqAI includes them in the feature set):
-          %-day_of_week  — 0=Mon…6=Sun (weekly seasonality)
-          %-hour_of_day  — 0–23 (intraday session effects)
-          %-raw_close    — unscaled close price (absolute level context)
-          %-raw_volume   — unscaled volume
-          %-raw_open     — unscaled open
+        Temporal (v19): day_of_week, hour_of_day, raw_close/volume/open
+
+        Layer 4 (v23) — wider context from existing cron pipelines:
+          %-fear_greed       — Fear & Greed index 0-100 (Phase 2 cron, every 15m)
+          %-btc_dominance    — BTC market dominance % (Phase 2 cron)
+          %-news_sentiment   — 0=bearish…1=bullish (Phase 2 cron)
+          %-regime_numeric   — HMM regime encoding: CRASH=-2…EUPHORIA=+2 (Phase 3, every 4h)
+          %-recent_wr        — rolling 50-trade WR, written to env by trade_postmortem cron
+
+        All external reads have safe fallbacks — if a file is missing or env var absent,
+        the feature defaults to a neutral value so the bot never crashes on missing data.
         """
+        # Temporal
         dataframe["%-day_of_week"] = pd.to_datetime(dataframe["date"]).dt.dayofweek
         dataframe["%-hour_of_day"] = pd.to_datetime(dataframe["date"]).dt.hour
         dataframe["%-raw_close"]   = dataframe["close"]
         dataframe["%-raw_volume"]  = dataframe["volume"]
         dataframe["%-raw_open"]    = dataframe["open"]
+
+        # External macro context (Phase 2 combined_context.json)
+        ctx = self._get_combined_context()
+        dataframe["%-fear_greed"]     = float(ctx.get("fear_greed", 50))
+        dataframe["%-btc_dominance"]  = float(ctx.get("btc_dominance", 50))
+        dataframe["%-news_sentiment"] = float(ctx.get("news_sentiment_ratio", 0.5))
+
+        # HMM regime encoding (Phase 3 current.json)
+        regime = self._get_current_regime()
+        dataframe["%-regime_numeric"] = float(self._REGIME_NUMERIC.get(regime, 0))
+
+        # Live WR feedback (written by trade_postmortem.py to freqtrade/.env)
+        dataframe["%-recent_wr"] = float(os.getenv("FINBUDDY_RECENT_WR", "0.50"))
+
         return dataframe
 
     # ------------------------------------------------------------------ #
-    # v19 — Triple-barrier labeling (asymmetric k_tp > k_sl, 2-class)  #
+    # v23 — Regression target: predicted future % return                #
     # ------------------------------------------------------------------ #
 
     def set_freqai_targets(
         self, dataframe: DataFrame, metadata: dict, **kwargs
     ) -> DataFrame:
         """
-        Triple-barrier labeling (López de Prado, AFML ch.3) — v19.
+        Regression target: future_return = (close[t+horizon] / close[t] - 1) × 100
 
-        For each candle t (using 1h data):
-          - atr_pct = ATR_14[t] / close[t], clamped to [0.003, 0.025]
-          - TP at close[t] * (1 + K_TP * atr_pct)   → label "L"
-          - SL at close[t] * (1 - K_SL * atr_pct)   → label "S"
-          - Neither hit within label_period candles   → dropped (label=None)
+        Why regression instead of triple-barrier classification:
+          Classification with K_TP=2.0/K_SL=1.0 produces P(SL_first) = 2/(2+1) = 67% "S" labels.
+          LightGBM biases toward the majority class → near-zero long predictions in bull markets.
+          Even with class_weight=balanced, the WR ceiling was 35% (unprofitable at any R:R).
 
-        v19 params (default):
-          K_TP = 2.0   (take-profit 2×ATR above entry)
-          K_SL = 1.0   (stop-loss 1×ATR below entry — ASYMMETRIC)
+          Regression has no classes → no imbalance. The model predicts a continuous % return.
+          Entry only when predicted magnitude exceeds dynamic thresholds.
+          Positive predicted_return → favorable for longs.
+          Negative predicted_return → favorable for shorts.
 
-        Asymmetric R:R benefits:
-          - At 62% WR: theoretical PF = (0.62×2.0)/(0.38×1.0) = 3.26
-          - Break-even WR drops from 52.5% → 33% (massive margin vs fee drag)
-          - Tighter SL (1×ATR) resolves more labels within label_period → fewer NaN drops
-            → larger, denser training set
-          - Winning labels ("L") require price to run 2×ATR → stronger directional signal
-
-        FreqAI classifier emits one proba column per class:
-          "L" → P(TP hit first), "S" → P(SL hit first).
-
-        NOTE: last label_period rows → NaN (FreqAI drops automatically).
-        2-class model only — HOLD class removed in v16.1 (causes KeyError on rare HOLD samples).
-        Time-barrier unresolved candles → None (dropped), not mapped to "S" (avoids short bias).
+        FreqAI column: "& -future_return" — the regressor predicts this value.
+        Last label_period_candles rows are NaN (future not yet available — FreqAI drops them).
         """
-        self.freqai.class_names = ["L", "S"]
+        horizon = self.freqai_info["feature_parameters"]["label_period_candles"]
+        dataframe["&-future_return"] = (
+            dataframe["close"].shift(-horizon) / dataframe["close"] - 1.0
+        ) * 100
+        return dataframe
 
-        k_tp = self.K_TP   # v19: asymmetric — wider take-profit
-        k_sl = self.K_SL   # v19: asymmetric — tighter stop-loss
-        label_period = self.freqai_info["feature_parameters"]["label_period_candles"]
+    # ------------------------------------------------------------------ #
+    # Layer 2: Regime-aware dynamic entry thresholds                    #
+    # ------------------------------------------------------------------ #
 
-        close = dataframe["close"].values
-        high = dataframe["high"].values
-        low = dataframe["low"].values
-        atr_raw = ta.ATR(dataframe, timeperiod=14).values
+    # Regime multipliers: (long_mult, short_mult).
+    # Higher multiplier = harder to enter in that direction.
+    _REGIME_THRESHOLD_MULTS = {
+        "CRASH":    (2.0, 0.5),   # very hard to long, very easy to short
+        "BEAR":     (1.3, 0.7),
+        "NEUTRAL":  (1.0, 1.0),
+        "BULL":     (0.7, 1.3),
+        "EUPHORIA": (0.5, 2.0),   # very easy to long, very hard to short
+    }
 
-        n = len(close)
-        # 0 = unresolved (time barrier). Set to ±1 only when TP/SL actually hits.
-        labels = np.zeros(n, dtype=np.float32)
+    def _compute_dynamic_thresholds(self, dataframe: DataFrame) -> DataFrame:
+        """
+        Per-candle entry thresholds that adapt to regime and recent performance.
 
-        for t in range(n - label_period):
-            c0 = close[t]
-            atr_pct = (atr_raw[t] / c0) if c0 > 0 else 0.005
-            atr_pct = max(0.003, min(atr_pct, 0.025))
+        Logic:
+          1. Base = LONG_THRESHOLD / abs(SHORT_THRESHOLD) env vars (grid-searchable).
+          2. Regime multiplier scales base in each direction (see _REGIME_THRESHOLD_MULTS).
+          3. WR feedback: if FINBUDDY_RECENT_WR > 0.55, lower threshold proportionally
+             so the brain trades more aggressively when its model is hot.
+             Floor at 50% reduction (wr_adj >= 0.5) to prevent collapse.
 
-            tp_price = c0 * (1.0 + k_tp * atr_pct)
-            sl_price = c0 * (1.0 - k_sl * atr_pct)
+        Fallback: if regime file is missing, multipliers default to 1.0 (neutral).
+                  if FINBUDDY_RECENT_WR is missing, defaults to 0.50 (no feedback).
+        """
+        regime = self._get_current_regime()
+        long_mult, short_mult = self._REGIME_THRESHOLD_MULTS.get(regime, (1.0, 1.0))
 
-            for i in range(t + 1, t + label_period + 1):
-                if high[i] >= tp_price:
-                    labels[t] = 1
-                    break
-                if low[i] <= sl_price:
-                    labels[t] = -1
-                    break
-            # else: labels[t] stays 0 (unresolved → drop in encoding step)
+        recent_wr = float(os.getenv("FINBUDDY_RECENT_WR", "0.50"))
+        wr_adj = max(0.5, 1.0 - max(0.0, (recent_wr - 0.55) * 2.0))
 
-        # 2-class encoding. Time-barrier (0) → None so FreqAI drops them.
-        # Training signal is restricted to RESOLVED candles only — no
-        # sideways-as-bearish pollution.
-        labels_obj = np.full(n, None, dtype=object)
-        labels_obj[labels == 1.0] = "L"
-        labels_obj[labels == -1.0] = "S"
-        # Tail of length label_period → None (cannot peek into future)
-        labels_obj[n - label_period:] = None
-        dataframe["&-s_label"] = pd.Series(labels_obj, index=dataframe.index, dtype=object)
+        base_long  = self.LONG_THRESHOLD
+        base_short = abs(self.SHORT_THRESHOLD)
+
+        dataframe["dynamic_long_threshold"]  = base_long  * long_mult  * wr_adj
+        dataframe["dynamic_short_threshold"] = -(base_short * short_mult * wr_adj)
         return dataframe
 
     # ------------------------------------------------------------------ #
@@ -583,39 +597,32 @@ class FinBuddyFreqAI_v23(IStrategy):
         dataframe["atr_ratio"] = dataframe["atr_14"] / dataframe["close"]
 
         # Phase 13: Order Block / Liquidity Pool Awareness
-        # We look for "Supply" and "Demand" zones.
-        # Bullish OB: Last down candle before a strong move up (3 consecutive up candles or a big engulfing)
-        # Bearish OB: Last up candle before a strong move down.
-        
-        # 1. Identify "Impulsive" moves
+        # Supply / Demand zones via impulsive-move detection.
+        # Bullish OB: last down-candle before a strong up-impulse (demand zone).
+        # Bearish OB: last up-candle before a strong down-impulse (supply zone).
         dataframe['body_size'] = (dataframe['close'] - dataframe['open']).abs()
-        dataframe['is_up'] = dataframe['close'] > dataframe['open']
-        dataframe['is_down'] = dataframe['close'] < dataframe['open']
-        
-        # 2. Bullish OB Logic: Current is UP, previous was DOWN, and current move is > 2x average body
+        dataframe['is_up']     = dataframe['close'] > dataframe['open']
+        dataframe['is_down']   = dataframe['close'] < dataframe['open']
         avg_body = dataframe['body_size'].rolling(50).mean()
-        is_impulsive_up = (dataframe['is_up']) & (dataframe['body_size'] > avg_body * 1.5)
-        
-        # Last down candle before impulsive up
+        is_impulsive_up   = dataframe['is_up']   & (dataframe['body_size'] > avg_body * 1.5)
+        is_impulsive_down = dataframe['is_down'] & (dataframe['body_size'] > avg_body * 1.5)
+
         dataframe['potential_bullish_ob'] = np.where(
             is_impulsive_up & dataframe['is_down'].shift(1),
             dataframe['low'].shift(1),
             np.nan
         )
-        # Forward fill the last detected zone to use as a level
         dataframe['bullish_ob'] = dataframe['potential_bullish_ob'].ffill()
 
-        # 3. Bearish OB Logic: Current is DOWN, previous was UP, and current move is > 1.5x average body
-        is_impulsive_down = (dataframe['is_down']) & (dataframe['body_size'] > avg_body * 1.5)
-        
-        # Last up candle before impulsive down
         dataframe['potential_bearish_ob'] = np.where(
             is_impulsive_down & dataframe['is_up'].shift(1),
             dataframe['high'].shift(1),
             np.nan
         )
-        # Forward fill the last detected zone
         dataframe['bearish_ob'] = dataframe['potential_bearish_ob'].ffill()
+
+        # Layer 2: dynamic thresholds (regime-aware + WR feedback)
+        dataframe = self._compute_dynamic_thresholds(dataframe)
 
         return dataframe
 
@@ -627,98 +634,64 @@ class FinBuddyFreqAI_v23(IStrategy):
         self, dataframe: DataFrame, metadata: dict
     ) -> DataFrame:
         """
-        v19 entry rules — 2-class LightGBM (L/S), ML_THRESHOLD (default 0.60).
+        v23 Regression entry — predicted future return vs dynamic thresholds.
 
-        Long:  proba_L > ML_THRESHOLD + TA filter + regime not CRASH/BEAR
-        Short: proba_S > ML_THRESHOLD + TA filter + regime not BULL/EUPHORIA
+        Long:  predicted_return > dynamic_long_threshold  (positive return expected)
+        Short: predicted_return < dynamic_short_threshold (negative return expected)
+
+        dynamic thresholds adapt per-candle to regime + recent WR (see _compute_dynamic_thresholds).
+        TA filters and OB veto remain as quality gates on top of the ML signal.
         """
-        # v17 — two-class proba columns: "L" / "S".
-        # Defensive fallbacks kept for legacy feather files.
-        proba_long = (
-            dataframe.get("L",
-            dataframe.get("1.0",
-            dataframe.get("1", None)))
+        predicted_return = dataframe.get(
+            "&-future_return",
+            pd.Series(0.0, index=dataframe.index)
         )
-        proba_short = (
-            dataframe.get("S",
-            dataframe.get("-1.0",
-            dataframe.get("-1", None)))
-        )
-        # v16: HOLD class removed — pure 2-class model (L/S). No proba_hold needed.
-        if proba_long is None:
-            proba_long  = pd.Series(0.0, index=dataframe.index)
-        if proba_short is None:
-            proba_short = pd.Series(0.0, index=dataframe.index)
 
-        # v21: Dynamic thresholds based on RS and local trend
-        base_thresh = self.ML_THRESHOLD
-        is_uptrend = dataframe["close"] > dataframe["ema_50"]
-        is_downtrend = dataframe["close"] < dataframe["ema_50"]
-        
-        # Long threshold: fixed base thresh (model natively learns correlations via 15m/1h/4h features)
-        thresh_long = pd.Series(base_thresh, index=dataframe.index) 
-        ml_threshold_long = (proba_long > thresh_long)
+        long_thresh  = dataframe["dynamic_long_threshold"]
+        short_thresh = dataframe["dynamic_short_threshold"]
 
-        # Short threshold
-        thresh_short = pd.Series(base_thresh, index=dataframe.index)
-        ml_threshold_short = (proba_short > thresh_short)
+        volatility_ok = dataframe["atr_ratio"] > 0.003
 
-        ta_filter = (
+        # Long: price above EMA-50 (uptrend context), not overbought, not at BB top
+        ta_long = (
             (dataframe["close"] > dataframe["ema_50"])
             & (dataframe["rsi_14"] < 68)
             & (dataframe["bb_pct"] < 0.90)
             & (dataframe["volume"] > 0)
         )
-
-        volatility_filter = dataframe["atr_ratio"] > 0.003
-
-        ml_signal_long_final = (
-            (dataframe["do_predict"] == 1)
-            & ml_threshold_long
-        )
-
-        # Phase 13 Liquidity Veto: Block longs directly under historical Bearish OB (Resistance)
+        # Phase 13 Liquidity Veto: block longs directly under 24h resistance (Bearish OB)
         ob_long_ok = dataframe["close"] < (dataframe["bearish_ob"] * 0.99)
 
-        dataframe.loc[
-            ml_signal_long_final & ta_filter & volatility_filter & ob_long_ok,
-            "enter_long"
-        ] = 1
-        dataframe.loc[
-            ml_signal_long_final & ta_filter & volatility_filter & ob_long_ok,
-            "enter_tag"
-        ] = "freqai_lgbm_v23_long"
-
-        # Short — model-gated
-        ml_signal_short = (
+        enter_long = (
             (dataframe["do_predict"] == 1)
-            & ml_threshold_short
+            & (predicted_return > long_thresh)
+            & ta_long
+            & volatility_ok
+            & ob_long_ok
         )
+        dataframe.loc[enter_long, "enter_long"] = 1
+        dataframe.loc[enter_long, "enter_tag"]  = "freqai_regression_v23_long"
 
-        # v21: Stricter TA for short
-        ta_filter_short = (
-            (dataframe["close"] < dataframe["ema_50"] * 0.99) # Price clearly below EMA
-            & (dataframe["rsi_14"] < 50) # Momentum confirmed bearish
+        # Short: price below EMA-50 (downtrend), bearish RSI momentum, not oversold
+        ta_short = (
+            (dataframe["close"] < dataframe["ema_50"] * 0.99)
+            & (dataframe["rsi_14"] < 50)
+            & (dataframe["rsi_14"] > 15)   # safety: not in extreme oversold
             & (dataframe["bb_pct"] > 0.10)
             & (dataframe["volume"] > 0)
         )
-
-        safety_short = dataframe["rsi_14"] > 15
-
-        # Phase 13 Liquidity Veto: Block shorts directly above historical Bullish OB (Support)
+        # Phase 13 Liquidity Veto: block shorts directly above 24h support (Bullish OB)
         ob_short_ok = dataframe["close"] > (dataframe["bullish_ob"] * 1.01)
 
-        dataframe.loc[
-            ml_signal_short & ta_filter_short & volatility_filter & safety_short & ob_short_ok,
-            "enter_short"
-        ] = 1
-        dataframe.loc[
-            ml_signal_short & ta_filter_short & volatility_filter & safety_short & ob_short_ok,
-            "enter_tag"
-        ] = "freqai_lgbm_v23_short"
-
-        # v22: MTF Sniper logic replaces v21 dynamic threshold approach.
-        # We now rely on dynamic thresholds and RS analysis rather than dumb hard blocks.
+        enter_short = (
+            (dataframe["do_predict"] == 1)
+            & (predicted_return < short_thresh)
+            & ta_short
+            & volatility_ok
+            & ob_short_ok
+        )
+        dataframe.loc[enter_short, "enter_short"] = 1
+        dataframe.loc[enter_short, "enter_tag"]   = "freqai_regression_v23_short"
 
         return dataframe
 
@@ -726,44 +699,28 @@ class FinBuddyFreqAI_v23(IStrategy):
         self, dataframe: DataFrame, metadata: dict
     ) -> DataFrame:
         """
-        v17 — regime-aware asymmetric exit thresholds.
+        v23 Regression exit — predicted return has flipped direction.
 
-        In CRASH/BEAR: exit longs fast (proba_short > 0.55) — limit damage.
-                      Hold shorts longer (proba_long > 0.65) — let winners run.
-        In BULL/EUPHORIA: hold longs longer (proba_short > 0.65).
-                         Exit shorts fast (proba_long > 0.55).
-        In NEUTRAL: symmetric 0.65 thresholds.
+        Exit long:  model now predicts negative return (< -half_short_thresh)
+                    OR RSI/BB technical exhaustion
+        Exit short: model now predicts positive return (> half_long_thresh)
+                    OR RSI/BB technical exhaustion
 
-        TA exits unchanged (RSI/BB extremes).
+        Using half the entry threshold as the exit trigger avoids whipsaw —
+        a small reversal in prediction doesn't immediately close the trade.
         """
-        proba_long = (
-            dataframe.get("L",
-            dataframe.get("1.0",
-            dataframe.get("1", None)))
-        )
-        proba_short = (
-            dataframe.get("S",
-            dataframe.get("-1.0",
-            dataframe.get("-1", None)))
+        predicted_return = dataframe.get(
+            "&-future_return",
+            pd.Series(0.0, index=dataframe.index)
         )
 
-        if proba_long is None:
-            proba_long  = pd.Series(0.0, index=dataframe.index)
-        if proba_short is None:
-            proba_short = pd.Series(0.0, index=dataframe.index)
-
-        # v17: regime-aware exit thresholds
-        regime = self._get_current_regime()
-        if regime in ("CRASH", "BEAR"):
-            long_exit_thr, short_exit_thr = 0.55, 0.65   # bail longs fast, hold shorts
-        elif regime in ("BULL", "EUPHORIA"):
-            long_exit_thr, short_exit_thr = 0.65, 0.55   # hold longs, bail shorts fast
-        else:
-            long_exit_thr, short_exit_thr = 0.65, 0.65   # NEUTRAL — symmetric
+        # Regime-aware exit flip thresholds (half the entry threshold)
+        long_thresh  = dataframe["dynamic_long_threshold"]
+        short_thresh = dataframe["dynamic_short_threshold"]
 
         ml_exit_long = (
             (dataframe["do_predict"] == 1)
-            & (proba_short > long_exit_thr)
+            & (predicted_return < (short_thresh * 0.5))   # prediction flipped negative
         )
         ta_exit_long = (
             (dataframe["rsi_14"] > 75)
@@ -773,7 +730,7 @@ class FinBuddyFreqAI_v23(IStrategy):
 
         ml_exit_short = (
             (dataframe["do_predict"] == 1)
-            & (proba_long > short_exit_thr)
+            & (predicted_return > (long_thresh * 0.5))    # prediction flipped positive
         )
         ta_exit_short = (
             (dataframe["rsi_14"] < 25)

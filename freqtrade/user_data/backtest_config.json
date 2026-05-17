@@ -71,7 +71,7 @@
         "train_period_days": 90,
         "backtest_period_days": 7,
         "live_retrain_hours": 4,
-        "identifier": "finbuddy_v18_backtest",
+        "identifier": "finbuddy_v22_wf_baseline_1779015982",
         "feature_parameters": {
             "include_timeframes": [
                 "15m",
@@ -94,11 +94,10 @@
         },
         "model_training_parameters": {
             "n_estimators": 100,
-            "learning_rate": 0.05,
-            "class_weight": "balanced"
+            "learning_rate": 0.05
         }
     },
-    "freqaimodel": "LightGBMClassifier",
+    "freqaimodel": "LightGBMRegressor",
     "entry_pricing": {
         "price_side": "same",
         "ask_last_balance": 0.0,
