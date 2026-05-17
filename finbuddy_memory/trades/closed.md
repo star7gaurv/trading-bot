@@ -151,3 +151,6 @@
 | 2026-05-16 15:10:16 | SUI/USDT:USDT | SHORT | 0h09m | -1.26% | -0.86 | stop_loss | BEAR | freqai_lgbm_v22_short |
 | 2026-05-16 16:04:47 | ENA/USDT:USDT | SHORT | 0h54m | -1.45% | -0.99 | trailing_stop_loss | BEAR | freqai_lgbm_v22_short |
 | 2026-05-16 16:05:42 | OP/USDT:USDT | SHORT | 0h05m | -1.12% | -0.77 | stop_loss | BEAR | freqai_lgbm_v22_short |
+| 2026-05-17 01:11:14 | DOGE/USDT:USDT | SHORT | 9h06m | +1.55% | +1.06 | trailing_stop_loss | BEAR | freqai_lgbm_v22_short |
+| 2026-05-17 01:05:09 | BTC/USDT:USDT | SHORT | 8h59m | +0.65% | +0.25 | trailing_stop_loss | BEAR | freqai_lgbm_v22_short |
+| 2026-05-17 01:02:44 | APT/USDT:USDT | SHORT | 8h57m | +4.44% | +3.02 | exit_signal | BEAR | freqai_lgbm_v22_short |
