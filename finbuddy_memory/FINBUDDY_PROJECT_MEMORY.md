@@ -21,6 +21,8 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 
 ---
 
+keep in mind no matter what we have to make it self aware, self evolving, conscious brain. and when say self aware it means dynamically can changes parameters to adjust tuning itself. so that. it can run on long, short both by detecting trend time. as we have made plan already. and it must have wide range it stored so that it can have broader perspective , reference and data to analyze.
+
 <!-- AUTO-SYNC-START -->
 > 🤖 *Auto-synced by `scripts/sync_context.py` at 2026-05-17 08:00 UTC*
 
