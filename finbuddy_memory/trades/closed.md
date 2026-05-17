@@ -163,3 +163,5 @@
 | 2026-05-17 03:34:35 | UNI/USDT:USDT | SHORT | 0h29m | -0.77% | -0.52 | stop_loss | BEAR | freqai_lgbm_v22_short |
 | 2026-05-17 03:51:45 | NEAR/USDT:USDT | SHORT | 0h19m | -0.88% | -0.60 | stop_loss | BEAR | freqai_lgbm_v22_short |
 | 2026-05-17 04:06:55 | ONDO/USDT:USDT | SHORT | 0h01m | -0.95% | -0.65 | stop_loss | BEAR | freqai_lgbm_v22_short |
+| 2026-05-17 05:09:36 | AVAX/USDT:USDT | SHORT | 0h42m | -0.75% | -0.49 | stop_loss | BEAR | freqai_lgbm_v22_short |
+| 2026-05-17 05:14:53 | ONDO/USDT:USDT | SHORT | 0h13m | -2.38% | -1.63 | stop_loss | BEAR | freqai_lgbm_v22_short |
