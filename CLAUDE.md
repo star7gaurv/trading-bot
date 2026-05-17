@@ -335,7 +335,31 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 
 > Full session history lives in `finbuddy_memory/FINBUDDY_PROJECT_MEMORY.md`. Only the most recent session is kept here.
 
-### May 17, 2026 (Claude Code) — v23 Conscious Brain: regression architecture deployed
+### May 17, 2026 PM (Claude Code) — Strategy fixes + vision realignment
+
+**Gaurav's feedback**: I was doing bot tuning (manually tweaking thresholds, asking "Path A/B/C?")
+instead of building the brain (autonomous, self-evolving, hypothesis-generating). Per vision,
+FinBuddy must form hypotheses, test them, promote winners — without human intervention.
+
+**Corrected plan (approved)**:
+1. Fix existing strategy FIRST (Task #1-4)
+2. Build hypothesis engine SECOND (Task #5) with approval gate
+3. Hypothesis aggressiveness: balanced (safe param tweaks AND aggressive model/feature swaps)
+
+**Strategy fixes (commit 864a711)** — 3 structural root causes from 11 smoke tests:
+- **Fix #1 Historical regime injection**: `_get_current_regime()` always read live current.json
+  → dynamic thresholds inert in backtest. Built `scripts/build_historical_regime.py` (5935
+  candles per BTC 4h since 2023-09). Strategy now reads `regimes/historical_regime.parquet`
+  and applies regime multipliers PER CANDLE.
+- **Fix #2 Historical macro features**: `%-fear_greed`/`%-btc_dominance` were constant
+  per backtest → VarianceThreshold dropped them. Built `scripts/build_historical_macro.py`
+  (3025 daily F&G from alternative.me since 2018 + btc_strength = BTC 7d ret − ETH 7d ret).
+- **Fix #3 Entry stability filter**: `FREQAI_STABILITY_N` env (default 2). Entry requires N
+  consecutive candles past threshold (filters single-candle noise spikes).
+
+Validation: smoke tests on bull + bear windows running. Pending: hypothesis engine after validation.
+
+### May 17, 2026 AM (Claude Code) — v23 Conscious Brain: regression architecture deployed
 
 **Core architectural pivot**: Replaced LightGBMClassifier with LightGBMRegressor in v23.
 Root cause: classification with K_TP=2.0/K_SL=1.0 produces 67% S-labels → LightGBM biased

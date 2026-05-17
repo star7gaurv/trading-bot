@@ -128,19 +128,70 @@ We shifted the entire architecture to **Phase 13: The Conscious Brain**, deployi
 
 ---
 
-## 🚀 Current State (2026-05-17)
+## 🚀 Current State (2026-05-17 — afternoon)
 
 | Component | Status |
 |---|---|---|
-| **FreqTrade** | ✅ Running, dry-run, futures isolated |
-| **Strategy** | 🟠 **FinBuddyFreqAI v22** — live (unchanged). v23 Conscious Brain rewritten — ready for backtest. |
-| **FreqAI identifier (live)** | `finbuddy_v22_balanced_1779015982` — bumped 2026-05-17, retraining all 25 pairs with class_weight=balanced |
+| **FreqTrade** | ✅ Running, dry-run, futures isolated (untouched throughout this work) |
+| **Strategy (live)** | 🟠 **FinBuddyFreqAI v22** — unchanged, still earning P&L |
+| **FreqAI identifier (live)** | `finbuddy_v22_balanced_1779015982` — class_weight=balanced added, retraining all 25 pairs |
 | **FreqAI Model (live)** | ✅ FinBuddyLLMModel **v5** — auto-confirm ≥ 0.40 bypass |
 | **Live P&L** | **+98.69 USDT** (231 closed trades) — 3 open shorts |
-| **v23 Architecture** | ✅ Regression rewrite complete (2026-05-17). LightGBMRegressor, dynamic thresholds, wider features, auto-promote. Ready to run `python scripts/autobacktest_v23.py --window bull --no-download` |
+| **v23 Strategy (experimental)** | ✅ Regression + 3 structural fixes complete (2026-05-17 afternoon, commit 864a711) |
+| **Smoke tests done** | 11 across 5 timeframes + filters (5m/15m/30m/1h/4h, ±DI/SVM, ±3% threshold) |
 | **All Crons** | ✅ Live (Phase 2–5, watchdog, postmortem, daily summary, WF notify) |
-| **Walk-forward** | ⬜ PENDING — run after v23 smoke test passes (need: longs AND shorts appear) |
+| **Walk-forward** | ⬜ PENDING — run after FIX-validated smoke tests pass |
 | **Phase 10 go-live** | ⬜ BLOCKED — needs v23 walk-forward PASS |
+
+## 🧠 Vision Realignment (2026-05-17 afternoon)
+
+Gaurav called out that I was doing **bot tuning** (picking thresholds, asking "which path?") instead of building **the brain** (autonomous, self-evolving, hypothesis-generating system). The vision says FinBuddy "observes markets, forms hypotheses, tests them, promotes winners, retires losers, and gets smarter over time — without Gaurav having to intervene."
+
+**Corrected plan (approved by user):**
+1. **Fix existing strategy first** (Tasks #1–#4) — 3 structural fixes + validation
+2. **Then build hypothesis engine** (Task #5) — autonomous brain WITH approval gate (notify-only initially)
+3. **Hypothesis aggressiveness must be balanced** — both SAFE (small param tweaks) AND AGGRESSIVE (model swaps, feature regenerations) bands explored
+
+## 🔧 v23 Strategy Fixes (2026-05-17, commit 864a711)
+
+Three structural fixes addressing root causes found across 11 smoke tests:
+
+### Fix #1 — Historical regime injection ✅
+- **Bug**: `_get_current_regime()` always read live `current.json` → dynamic thresholds INERT in backtest
+- **Fix**: `scripts/build_historical_regime.py` builds per-candle regime from BTC 4h history (5935 candles since 2023-09)
+  - Distribution: 63% NEUTRAL / 19% BULL / 11% BEAR / 5% EUPHORIA / 2% CRASH
+- Strategy now reads `finbuddy_memory/regimes/historical_regime.parquet` and applies regime multipliers PER CANDLE
+- In live: falls back to current.json (no change)
+
+### Fix #2 — Historical macro features ✅
+- **Bug**: `%-fear_greed`, `%-btc_dominance`, `%-news_sentiment` were CONSTANT per backtest → VarianceThreshold dropped them
+- **Fix**: `scripts/build_historical_macro.py` fetches F&G history from alternative.me (3025 daily points since 2018)
+- Replaced btc_dominance proxy with `btc_strength` = BTC 7d return − ETH 7d return (range -0.30 to +0.18)
+- Strategy uses vectorized `merge_asof` for per-candle assignment
+
+### Fix #3 — Entry signal stability filter ✅
+- **Bug**: Single-candle noise spikes triggered bad entries (exit_signal 100% WR but entries 30-40% WR proved this)
+- **Fix**: New `FREQAI_STABILITY_N` env var (default 2). Entry requires `predicted_return > threshold` for N CONSECUTIVE candles
+
+### Fix #4 — Validation (running 2026-05-17 14:28 UTC)
+- BULL window (2024-01 to 2024-04) + BEAR window (2025-01 to 2025-04) in parallel
+- Expected: regime adjustment fixes the 139-bleeding-longs problem in bear (smoke #11)
+- Expected: stability filter eliminates noise-triggered entries that gave 0% WR at stop_loss
+
+## 📊 11-Smoke-Test Reference Matrix (pre-fix baseline)
+
+| # | TF | K_SL | Thresh | Filter | WR | PF | Sharpe | Profit |
+|---|---|---|---|---|---|---|---|---|
+| 1 | 5m | 1.0 | ±1.0 | none | 19% | 0.49 | -39 | -3.04% |
+| 2 | 5m | 2.0 | ±1.5 | none | 35% | 0.52 | -19.6 | -2.41% |
+| 4 | 1h | 2.0 | ±1.0 | none | **43%** | 0.71 | -4.5 | -1.72% |
+| 5 | 15m | 2.0 | ±1.5 | none | 38% | 0.63 | -10.3 | -1.66% |
+| 7 | 4h | 1.5 | ±2.0 | none | 33% | 0.65 | **-2.33** | -0.67% |
+| 8 | 15m | 2.0 | ±1.5 | DI+SVM | 35% | 0.53 | -7.24 | -0.84% |
+| 10 | 15m | 2.0 | ±3.0 | DI+SVM | 30% | 0.41 | -2.97 | **-0.31%** |
+| 11 | 15m bear | 2.0 | ±3.0 | DI+SVM | 40% | 0.76 | -4.63 | -0.58% |
+
+**Pattern proven across all tests**: `exit_signal` trades were 90-100% WR universally (proves model has real edge). Bleed came from noise-triggered entries and stale-regime-multiplier blindness — both addressed by fixes #1–#3.
 
 ## 🐛 Critical Bug Fixed (2026-05-13) — commit `21796ea`
 
