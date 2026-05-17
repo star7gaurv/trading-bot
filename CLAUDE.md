@@ -335,6 +335,31 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 
 > Full session history lives in `finbuddy_memory/FINBUDDY_PROJECT_MEMORY.md`. Only the most recent session is kept here.
 
+### May 17, 2026 (Claude Code) — v23 Conscious Brain: regression architecture deployed
+
+**Core architectural pivot**: Replaced LightGBMClassifier with LightGBMRegressor in v23.
+Root cause: classification with K_TP=2.0/K_SL=1.0 produces 67% S-labels → LightGBM biased
+to predict Short → 0 longs in bull market. Even `class_weight=balanced` only got WR to 35%.
+Regression eliminates classes → no imbalance.
+
+**Changes merged to master (88590b7)**:
+- `FinBuddyFreqAI_v23.py`: regression target `&-future_return`, dynamic thresholds method,
+  external macro features (fear_greed, btc_dominance, news, regime_numeric, recent_wr).
+  Supply/Demand OB detection kept from concurrent master work.
+- `backtest_config.json`: freqaimodel=LightGBMRegressor (was LightGBMClassifier)
+- `config.json`: class_weight=balanced added + identifier bumped to `finbuddy_v22_balanced_1779015982`
+- `walk_forward.py`: phantom-result bug FIXED (unlink before each fold) + `--config` flag
+- `scripts/auto_promote.py` (NEW): notify-only MLOps promotion engine
+- `scripts/trade_postmortem.py`: writes FINBUDDY_RECENT_WR to .env every 15min (feedback loop)
+
+**Smoke test results (3-month bull window)**:
+- #1 (5m, K_SL=1.0, ±1.0%): **454L / 173S** ← class bias eliminated! WR 19%, PF 0.49
+- #2 (5m, K_SL=2.0, ±1.5%): 226L / 91S, WR 35%, PF 0.52 — hit 5m structural ceiling
+- #3 (1h, K_SL=1.0, ±1.5%): RUNNING — testing if 1h breaks the noise ceiling
+
+**Verdict**: Regression conclusively fixes class bias. 5m has ~35% WR ceiling. Next: validate
+1h base where v15 R8 winner historically hit 57.7% WR. Live v22 still running, untouched.
+
 ### May 12, 2026 (Claude Code) — LLM over-filtering fix + full system audit
 - **Full audit**: all 25 pairs confirmed trained; regime/external data pipeline confirmed working
 - **Root cause of "fluctuation"**: LLM was blocking 91% of signals (8.8% pass rate) including 90%+ confidence ML predictions. Diagnosed from log analysis: 77 CONFIRM / 174 HOLD / 623 REJECT.
