@@ -126,19 +126,19 @@ We shifted the entire architecture to **Phase 13: The Conscious Brain**, deployi
 
 ---
 
-## 🚀 Current State (2026-05-15)
+## 🚀 Current State (2026-05-17)
 
 | Component | Status |
 |---|---|---|
 | **FreqTrade** | ✅ Running, dry-run, futures isolated |
-| **Strategy** | 🟠 **FinBuddyFreqAI v22** — MTF Sniper Logic active. (v23 Omni-Timeframe code is written but NOT active). |
-| **FreqAI identifier** | `finbuddy_v19_asym_1778575138` — 1h live model (forced to 5m intervals by config). |
-| **FreqAI Model** | ✅ FinBuddyLLMModel **v5** — auto-confirm fix (proba ≥ 0.90 bypasses LLM) |
-| **Live P&L** | **+110.64 USDT** (179 trades) — Pure Short capture in current Bear regime. |
-| **Backtest Campaign** | ⏳ **RUNNING**: v23 baseline (Order Block upgrade) testing bull window. |
+| **Strategy** | 🟠 **FinBuddyFreqAI v22** — live (unchanged). v23 Conscious Brain rewritten — ready for backtest. |
+| **FreqAI identifier (live)** | `finbuddy_v22_balanced_1779015982` — bumped 2026-05-17, retraining all 25 pairs with class_weight=balanced |
+| **FreqAI Model (live)** | ✅ FinBuddyLLMModel **v5** — auto-confirm ≥ 0.40 bypass |
+| **Live P&L** | **+98.69 USDT** (231 closed trades) — 3 open shorts |
+| **v23 Architecture** | ✅ Regression rewrite complete (2026-05-17). LightGBMRegressor, dynamic thresholds, wider features, auto-promote. Ready to run `python scripts/autobacktest_v23.py --window bull --no-download` |
 | **All Crons** | ✅ Live (Phase 2–5, watchdog, postmortem, daily summary, WF notify) |
-| **Walk-forward** | ⏳ **RUNNING**: v22 Rerun (21 folds, 1h base, `wf_v22_config.json`). |
-| **Phase 10 go-live** | ⬜ BLOCKED — needs v22/v23 walk-forward PASS |
+| **Walk-forward** | ⬜ PENDING — run after v23 smoke test passes (need: longs AND shorts appear) |
+| **Phase 10 go-live** | ⬜ BLOCKED — needs v23 walk-forward PASS |
 
 ## 🐛 Critical Bug Fixed (2026-05-13) — commit `21796ea`
 
