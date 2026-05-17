@@ -1,31 +1,26 @@
 #!/usr/bin/env python3
 """
-autobacktest_v21.py — FinBuddy v21 MTF Sniper Campaign Grid Runner
+autobacktest_v23.py — FinBuddy v23 Regression Campaign Grid Runner
 ====================================================================
-Runs an 18-combo × 2-window backtest grid for the MTF Sniper logic:
-  - k_tp          (take-profit barrier: 1.5 / 2.0 / 2.5 × ATR)
-  - k_sl          (stop-loss barrier:   0.8 / 1.0 × ATR)
-  - ml_threshold  (entry probability floor: 0.60 / 0.65 / 0.70)
+Runs a 48-combo × 2-window backtest grid for the Regression Conscious Brain:
+  - long_threshold   (predicted % return to enter long: 0.5 / 1.0 / 1.5 / 2.0)
+  - short_threshold  (predicted % return to enter short: same grid, negated)
+  - label_period_candles (prediction horizon: 24 / 48 / 72 candles)
 
-MTF Sniper (v22 strategy logic, campaign named v21 per plan):
-  - Longs ONLY when pair's 4H close > 4H EMA50 (4H bullish trend)
-  - Shorts ONLY when pair's 4H close < 4H EMA50 (4H bearish trend)
-  This prevents fighting the macro 4H trend, eliminating the "all-shorts
-  in ranging market" bias observed in live v21 at 40.4% WR.
-
-Also includes:
-  - ATR stoploss bug fix (commit 21796ea): first campaign with working ATR stops
-  - RS-based dynamic ML thresholds from v21
-  - Asymmetric barriers (K_TP > K_SL) from v19/v20
+Architecture:
+  LightGBMRegressor predicts continuous future_return (%).
+  No class labels → no class imbalance → no base-rate short-bias.
+  Dynamic thresholds adapt to regime + WR feedback in the live strategy.
+  Grid searches the BASE threshold values (regime/WR multipliers apply on top).
 
 Usage:
   cd /home/ubuntu/var/www/html/trade
-  python scripts/autobacktest_v21.py [--dry-run] [--window bull|bear|both] [--no-download]
+  python scripts/autobacktest_v23.py [--dry-run] [--window bull|bear|both] [--no-download]
 
-  # Re-read existing ZIPs and regenerate CSV (use after campaign completes):
-  python scripts/autobacktest_v21.py --reparse
+  # Re-read existing ZIPs and regenerate CSV:
+  python scripts/autobacktest_v23.py --reparse
 
-Results are written to _autobacktest_v21_results.csv and Telegram-notified.
+Results are written to _autobacktest_v23_results.csv and Telegram-notified.
 """
 
 import argparse
@@ -75,10 +70,7 @@ def _tg(msg: str) -> None:
 
 # ── Config overlay writer ──────────────────────────────────────────────────
 def _write_overlay(label_period: int, identifier: str) -> tuple:
-    """
-    Minimal config overlay — sets label_period_candles + unique identifier.
-    Forces fresh model training per combo (no cross-contamination).
-    """
+    """Minimal overlay — sets label_period_candles + unique identifier per combo."""
     overlay = {
         "freqai": {
             "identifier": identifier,
@@ -87,7 +79,7 @@ def _write_overlay(label_period: int, identifier: str) -> tuple:
             }
         }
     }
-    filename  = f"_v21_overlay_{identifier}.json"
+    filename  = f"_v23_overlay_{identifier}.json"
     host_path = str(OVERLAY_HOST_DIR / filename)
     cont_path = f"{OVERLAY_CONTAINER_DIR}/{filename}"
     with open(host_path, "w") as f:
@@ -96,51 +88,38 @@ def _write_overlay(label_period: int, identifier: str) -> tuple:
 
 # ── Data download ──────────────────────────────────────────────────────────
 def download_data(pairs: list, timeframes: list, windows: dict, dry_run: bool = False) -> bool:
-    """
-    Download historical data for all required timeframes (1h + 4h for MTF).
-    Extends start date back 95 days as FreqAI train_period_days buffer.
-    """
+    """Download historical data for all required timeframes (5m + 15m + 1h + 4h + 1d)."""
     from datetime import datetime as dt, timedelta
 
-    all_timeranges = set(windows.values())
-    starts = [w.split("-")[0] for w in all_timeranges]
-    ends   = [w.split("-")[1] for w in all_timeranges]
+    starts = [w.split("-")[0] for w in windows.values()]
+    ends   = [w.split("-")[1] for w in windows.values()]
     latest = max(ends)
 
     earliest_dt    = dt.strptime(min(starts), "%Y%m%d")
     download_start = (earliest_dt - timedelta(days=95)).strftime("%Y%m%d")
     timerange      = f"{download_start}-{latest}"
 
-    log.info(f"[download] Timerange: {timerange}  (windows: {min(starts)}–{latest})")
-    log.info(f"[download] Pairs: {pairs}  Timeframes: {timeframes}")
+    log.info(f"[download] Timerange: {timerange}  Pairs: {pairs}  TFs: {timeframes}")
 
     cmd = [
         "docker-compose", "run", "--rm", "--no-deps",
-        "freqtrade",
-        "download-data",
+        "freqtrade", "download-data",
         "--config", BASE_CONFIG,
         "--timerange", timerange,
         "--timeframes",
-    ] + timeframes + [
-        "--trading-mode", "futures",
-        "--pairs",
-    ] + pairs
+    ] + timeframes + ["--trading-mode", "futures", "--pairs"] + pairs
 
-    log.info(f"[download] Command: {' '.join(cmd)}")
     if dry_run:
-        log.info("[download] DRY RUN — skipping actual download")
+        log.info("[download] DRY RUN — skipping")
         return True
 
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800,
-                            cwd=str(COMPOSE_DIR))
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800, cwd=str(COMPOSE_DIR))
     out = (result.stdout + result.stderr)[-2000:]
     log.info(f"[download] exit={result.returncode}\n{out}")
 
     if result.returncode != 0:
         log.error(f"[download] FAILED — exit {result.returncode}")
         return False
-
-    log.info("[download] Data download complete.")
     return True
 
 # ── Result parser ──────────────────────────────────────────────────────────
@@ -153,14 +132,12 @@ def _parse_result_zip(zip_path: Path) -> dict | None:
         with zipfile.ZipFile(zip_path) as zf:
             json_names = [n for n in zf.namelist() if n.endswith(".json")]
             if not json_names:
-                log.error(f"[parse] No JSON in {zip_path}")
                 return None
             with zf.open(json_names[0]) as jf:
                 data = json.load(jf)
 
         strategy_data = data.get("strategy", {})
         if not strategy_data:
-            log.error("[parse] No 'strategy' key in backtest JSON")
             return None
 
         strat_key = next(iter(strategy_data))
@@ -168,10 +145,9 @@ def _parse_result_zip(zip_path: Path) -> dict | None:
 
         total_trades = s.get("total_trades", 0)
         if total_trades == 0:
-            return {
-                "win_rate": 0.0, "sharpe": 0.0, "max_drawdown": 100.0,
-                "profit_factor": 0.0, "trade_count": 0
-            }
+            return {"win_rate": 0.0, "sharpe": 0.0, "max_drawdown": 100.0,
+                    "profit_factor": 0.0, "trade_count": 0,
+                    "long_count": 0, "short_count": 0}
 
         raw_wr = s.get("winrate", None)
         if raw_wr is not None:
@@ -180,10 +156,15 @@ def _parse_result_zip(zip_path: Path) -> dict | None:
             wins = s.get("wins", 0)
             win_rate = round((wins / total_trades * 100), 2) if total_trades > 0 else 0.0
 
-        sharpe       = s.get("sharpe", s.get("sharpe_ratio", 0.0)) or 0.0
-        dd_account   = s.get("max_drawdown_account", 0.0) or 0.0
-        max_dd       = round(dd_account * 100, 2)
+        sharpe        = s.get("sharpe", s.get("sharpe_ratio", 0.0)) or 0.0
+        dd_account    = s.get("max_drawdown_account", 0.0) or 0.0
+        max_dd        = round(dd_account * 100, 2)
         profit_factor = round(float(s.get("profit_factor", 0.0) or 0.0), 3)
+
+        # Count long vs short trades (key sanity check for regression — should have both)
+        enter_reason  = s.get("enter_reason_summary", {})
+        long_count  = sum(v.get("count", 0) for k, v in enter_reason.items() if "long" in k)
+        short_count = sum(v.get("count", 0) for k, v in enter_reason.items() if "short" in k)
 
         return {
             "win_rate":      round(win_rate, 2),
@@ -191,8 +172,9 @@ def _parse_result_zip(zip_path: Path) -> dict | None:
             "max_drawdown":  max_dd,
             "profit_factor": profit_factor,
             "trade_count":   total_trades,
+            "long_count":    long_count,
+            "short_count":   short_count,
         }
-
     except Exception as e:
         log.error(f"[parse] Exception parsing {zip_path}: {e}")
         return None
@@ -207,25 +189,23 @@ def _grade(metrics: dict, criteria: dict) -> bool:
 
 # ── Single backtest run ────────────────────────────────────────────────────
 def run_one(
-    k_tp: float,
-    k_sl: float,
-    ml_threshold: float,
+    long_threshold: float,
+    short_threshold: float,
     label_period: int,
     window: str,
     timerange: str,
     dry_run: bool = False,
 ) -> dict | None:
     ts = int(time.time())
-    identifier = f"v23_ktp{k_tp}_ksl{k_sl}_m{ml_threshold}_{ts}"
+    identifier = f"v23_reg_lt{long_threshold}_st{short_threshold}_lp{label_period}_{ts}"
 
     overlay_host, overlay_container = _write_overlay(label_period, identifier)
 
     log.info(
         f"\n{'='*60}\n"
-        f"  k_tp={k_tp}  k_sl={k_sl}  ml_threshold={ml_threshold}  "
-        f"label_period={label_period}  window={window}\n"
-        f"  identifier: {identifier}\n"
-        f"  theoretical PF at 62% WR: {(0.62*k_tp)/(0.38*k_sl):.2f}\n"
+        f"  long_threshold={long_threshold}%  short_threshold=-{short_threshold}%\n"
+        f"  label_period={label_period} candles ({label_period*5//60}h on 5m base)\n"
+        f"  window={window}  identifier: {identifier}\n"
         f"{'='*60}"
     )
 
@@ -233,16 +213,15 @@ def run_one(
 
     cmd = [
         "docker-compose", "run", "--rm", "--no-deps",
-        "-e", f"FREQAI_K_TP={k_tp}",
-        "-e", f"FREQAI_K_SL={k_sl}",
-        "-e", f"FREQAI_ML_THRESHOLD={ml_threshold}",
+        "-e", f"FREQAI_LONG_THRESHOLD={long_threshold}",
+        "-e", f"FREQAI_SHORT_THRESHOLD=-{short_threshold}",
         "-e", "FREQTRADE__DRY_RUN_WALLET=10000",
         "freqtrade",
         "backtesting",
         "--config", BASE_CONFIG,
         "--config", overlay_container,
         "--strategy", "FinBuddyFreqAI_v23",
-        "--freqaimodel", "LightGBMClassifier",
+        "--freqaimodel", "LightGBMRegressor",
         "--timerange", timerange,
         "--timeframe", "5m",
         "--export", "trades",
@@ -252,13 +231,13 @@ def run_one(
     log.info(f"[run] {' '.join(cmd)}")
 
     if dry_run:
-        log.info("[run] DRY RUN — skipping execution")
+        log.info("[run] DRY RUN — skipping")
         return {"win_rate": 0.0, "sharpe": 0.0, "max_drawdown": 0.0,
-                "profit_factor": 0.0, "trade_count": 0, "_dry_run": True}
+                "profit_factor": 0.0, "trade_count": 0,
+                "long_count": 0, "short_count": 0, "_dry_run": True}
 
     t_start = time.time()
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800,
-                            cwd=str(COMPOSE_DIR))
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800, cwd=str(COMPOSE_DIR))
     elapsed = int(time.time() - t_start)
 
     out = (result.stdout + result.stderr)[-3000:]
@@ -275,17 +254,14 @@ def run_one(
         return None
 
     zip_path = new_zips[-1]
-    log.info(f"[run] Result: {zip_path.name}")
-
-    metrics = _parse_result_zip(zip_path)
+    metrics  = _parse_result_zip(zip_path)
     if metrics is None:
-        log.error("[run] Parse failed")
         return None
 
     log.info(
         f"[result] WR={metrics['win_rate']}%  Sharpe={metrics['sharpe']}  "
         f"DD={metrics['max_drawdown']}%  PF={metrics['profit_factor']}  "
-        f"Trades={metrics['trade_count']}"
+        f"Trades={metrics['trade_count']} (L={metrics['long_count']}/S={metrics['short_count']})"
     )
 
     try:
@@ -297,17 +273,16 @@ def run_one(
 
 # ── Reparse ────────────────────────────────────────────────────────────────
 def reparse_all(grid_cfg: dict) -> None:
-    criteria = grid_cfg["acceptance_criteria"]
-
+    criteria   = grid_cfg["acceptance_criteria"]
     fieldnames = [
-        "run", "window", "k_tp", "k_sl", "ml_threshold",
+        "run", "window", "long_threshold", "short_threshold", "label_period",
         "win_rate", "sharpe", "max_drawdown", "profit_factor",
-        "trade_count", "pass", "wr_pass", "sharpe_pass", "dd_pass", "pf_pass",
-        "theoretical_pf", "timestamp"
+        "trade_count", "long_count", "short_count",
+        "pass", "wr_pass", "sharpe_pass", "dd_pass", "pf_pass", "timestamp"
     ]
 
     zips = sorted(RESULTS_DIR.glob("backtest-result-*.zip"), key=lambda p: p.stat().st_mtime)
-    v21_zips = []
+    v23_zips = []
     for z in zips:
         try:
             with zipfile.ZipFile(z) as zf:
@@ -316,25 +291,25 @@ def reparse_all(grid_cfg: dict) -> None:
                     d = json.load(jf)
             sk = next(iter(d.get("strategy", {})))
             ident = d["strategy"][sk].get("freqai_identifier", "")
-            if not ident.startswith("v23_"):
+            if not ident.startswith("v23_reg_"):
                 continue
         except Exception:
             continue
-        v21_zips.append((z, d))
+        v23_zips.append((z, d))
 
-    log.info(f"[reparse] Found {len(v21_zips)} v21 ZIPs")
+    log.info(f"[reparse] Found {len(v23_zips)} v23 regression ZIPs")
     rows = []
-    for z, d in v21_zips:
+    for z, d in v23_zips:
         sk    = next(iter(d["strategy"]))
         s     = d["strategy"][sk]
         ident = s.get("freqai_identifier", "")
-        m = re.match(r"v23_ktp([\d.]+)_ksl([\d.]+)_m([\d.]+)_(\d+)", ident)
+        m = re.match(r"v23_reg_lt([\d.]+)_st([\d.]+)_lp(\d+)_(\d+)", ident)
         if not m:
             log.warning(f"[reparse] Could not parse identifier: {ident}")
             continue
-        k_tp         = float(m.group(1))
-        k_sl         = float(m.group(2))
-        ml_threshold = float(m.group(3))
+        long_threshold  = float(m.group(1))
+        short_threshold = float(m.group(2))
+        label_period    = int(m.group(3))
 
         metrics = _parse_result_zip(z)
         if metrics is None:
@@ -347,51 +322,44 @@ def reparse_all(grid_cfg: dict) -> None:
         rows.append({
             "run":            len(rows) + 1,
             "window":         window_name,
-            "k_tp":           k_tp,
-            "k_sl":           k_sl,
-            "ml_threshold":   ml_threshold,
+            "long_threshold": long_threshold,
+            "short_threshold":short_threshold,
+            "label_period":   label_period,
             "win_rate":       metrics["win_rate"],
             "sharpe":         metrics["sharpe"],
             "max_drawdown":   metrics["max_drawdown"],
             "profit_factor":  metrics["profit_factor"],
             "trade_count":    metrics["trade_count"],
+            "long_count":     metrics.get("long_count", 0),
+            "short_count":    metrics.get("short_count", 0),
             "pass":           passed,
             "wr_pass":        metrics["win_rate"]      >= criteria["win_rate"],
             "sharpe_pass":    metrics["sharpe"]        >= criteria["sharpe"],
             "dd_pass":        metrics["max_drawdown"]  <= criteria["max_drawdown"],
             "pf_pass":        metrics["profit_factor"] >= criteria["profit_factor"],
-            "theoretical_pf": round((0.62 * k_tp) / (0.38 * k_sl), 2),
             "timestamp":      datetime.utcnow().isoformat(),
         })
 
-    rows.sort(key=lambda r: (r["window"], r["k_tp"], r["k_sl"], r["ml_threshold"]))
+    rows.sort(key=lambda r: (r["window"], r["long_threshold"], r["short_threshold"], r["label_period"]))
     for i, r in enumerate(rows):
         r["run"] = i + 1
 
+    BACKTEST_DIR.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT_CSV, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
 
     passes = [r for r in rows if r["pass"]]
-    log.info(f"[reparse] {len(passes)}/{len(rows)} PASS — CSV rewritten: {OUTPUT_CSV}")
-    for r in rows:
-        status = "✅" if r["pass"] else "❌"
-        log.info(
-            f"  {status} [{r['window']}] ktp={r['k_tp']} ksl={r['k_sl']} "
-            f"m={r['ml_threshold']} → WR={r['win_rate']}% Sh={r['sharpe']} "
-            f"DD={r['max_drawdown']}% PF={r['profit_factor']} (theory={r['theoretical_pf']})"
-        )
-
+    log.info(f"[reparse] {len(passes)}/{len(rows)} PASS — CSV: {OUTPUT_CSV}")
 
 # ── Main ───────────────────────────────────────────────────────────────────
 def main():
-    parser = argparse.ArgumentParser(description="FinBuddy v21 MTF Sniper backtest campaign")
-    parser.add_argument("--dry-run",     action="store_true", help="Print commands without running")
+    parser = argparse.ArgumentParser(description="FinBuddy v23 Regression backtest campaign")
+    parser.add_argument("--dry-run",     action="store_true")
     parser.add_argument("--window",      choices=["bull", "bear", "both"], default="both")
-    parser.add_argument("--no-download", action="store_true", help="Skip data download step")
-    parser.add_argument("--reparse",     action="store_true",
-                        help="Re-read all v21 ZIPs and regenerate CSV")
+    parser.add_argument("--no-download", action="store_true")
+    parser.add_argument("--reparse",     action="store_true")
     args = parser.parse_args()
 
     with open(GRID_JSON) as f:
@@ -401,14 +369,13 @@ def main():
         reparse_all(grid_cfg)
         return
 
-    criteria      = grid_cfg["acceptance_criteria"]
-    windows       = grid_cfg["windows"]
-    pairs         = grid_cfg["pairs_download"]
-    timeframes    = grid_cfg.get("timeframes_download", ["1h", "4h"])
-    k_tps         = grid_cfg["grid"]["k_tp"]
-    k_sls         = grid_cfg["grid"]["k_sl"]
-    thresholds    = grid_cfg["grid"]["ml_threshold"]
-    label_period  = grid_cfg["label_period_candles"]
+    criteria        = grid_cfg["acceptance_criteria"]
+    windows         = grid_cfg["windows"]
+    pairs           = grid_cfg["pairs_download"]
+    timeframes      = grid_cfg.get("timeframes_download", ["5m", "15m", "1h", "4h", "1d"])
+    long_thresholds = grid_cfg["grid"]["long_threshold"]
+    short_thresholds= grid_cfg["grid"]["short_threshold"]
+    label_periods   = grid_cfg["grid"]["label_period_candles"]
 
     if args.window == "bull":
         run_windows = {"bull": windows["bull"]}
@@ -417,35 +384,32 @@ def main():
     else:
         run_windows = windows
 
-    combos  = list(product(k_tps, k_sls, thresholds))
+    combos  = list(product(long_thresholds, short_thresholds, label_periods))
     n_total = len(combos) * len(run_windows)
 
     log.info(f"\n{'#'*60}")
-    log.info(f"  FinBuddy v21 MTF Sniper Backtest Campaign")
+    log.info(f"  FinBuddy v23 Regression Backtest Campaign")
     log.info(f"  {len(combos)} combos × {len(run_windows)} window(s) = {n_total} runs")
-    log.info(f"  k_tp: {k_tps}  k_sl: {k_sls}  ml_threshold: {thresholds}")
-    log.info(f"  label_period: {label_period} (fixed)")
-    log.info(f"  Timeframes: {timeframes}  (4h required for MTF filter)")
-    log.info(f"  Theoretical PF range: {(0.62*min(k_tps))/(0.38*max(k_sls)):.2f}"
-             f" – {(0.62*max(k_tps))/(0.38*min(k_sls)):.2f}")
+    log.info(f"  long_threshold:  {long_thresholds}%")
+    log.info(f"  short_threshold: {short_thresholds}%")
+    log.info(f"  label_periods:   {label_periods} candles")
+    log.info(f"  Model: LightGBMRegressor (no class imbalance)")
     log.info(f"{'#'*60}\n")
 
     _tg(
-        f"🎯 <b>v23 Omni-Timeframe Campaign Started</b>\n"
+        f"🧠 <b>v23 Regression Campaign Started</b>\n"
         f"{len(combos)} combos × {len(run_windows)} window(s) = {n_total} runs\n"
-        f"k_tp: {k_tps}  k_sl: {k_sls}  ml_threshold: {thresholds}\n"
-        f"label_period: {label_period} (fixed)\n"
-        f"MTF: 4H EMA50 trend gate active (no trades against macro)\n"
-        f"ATR stoploss: FIXED (first campaign with working stops)\n"
-        f"Theoretical PF range: {(0.62*min(k_tps))/(0.38*max(k_sls)):.2f}"
-        f"–{(0.62*max(k_tps))/(0.38*min(k_sls)):.2f}"
+        f"long_threshold: {long_thresholds}%\n"
+        f"short_threshold: {short_thresholds}%\n"
+        f"label_periods: {label_periods} candles\n"
+        f"Model: LightGBMRegressor (no class bias)"
     )
 
     if not args.no_download:
         ok = download_data(pairs, timeframes, run_windows, dry_run=args.dry_run)
         if not ok:
             log.error("Data download failed — aborting campaign")
-            _tg("❌ v21 MTF campaign aborted: data download failed")
+            _tg("❌ v23 campaign aborted: data download failed")
             sys.exit(1)
 
     all_results = []
@@ -453,26 +417,25 @@ def main():
     run_idx     = 0
 
     fieldnames = [
-        "run", "window", "k_tp", "k_sl", "ml_threshold",
+        "run", "window", "long_threshold", "short_threshold", "label_period",
         "win_rate", "sharpe", "max_drawdown", "profit_factor",
-        "trade_count", "pass", "wr_pass", "sharpe_pass", "dd_pass", "pf_pass",
-        "theoretical_pf", "timestamp"
+        "trade_count", "long_count", "short_count",
+        "pass", "wr_pass", "sharpe_pass", "dd_pass", "pf_pass", "timestamp"
     ]
 
+    BACKTEST_DIR.mkdir(parents=True, exist_ok=True)
+
     for window_name, timerange in run_windows.items():
-        for k_tp, k_sl, ml_threshold in combos:
+        for long_thresh, short_thresh, label_period in combos:
             run_idx += 1
-            theory_pf = round((0.62 * k_tp) / (0.38 * k_sl), 2)
             log.info(
                 f"\n[{run_idx}/{n_total}] window={window_name}  "
-                f"ktp={k_tp}  ksl={k_sl}  m={ml_threshold}  "
-                f"theory_pf={theory_pf}"
+                f"lt={long_thresh}%  st=-{short_thresh}%  lp={label_period}"
             )
 
             metrics = run_one(
-                k_tp=k_tp,
-                k_sl=k_sl,
-                ml_threshold=ml_threshold,
+                long_threshold=long_thresh,
+                short_threshold=short_thresh,
                 label_period=label_period,
                 window=window_name,
                 timerange=timerange,
@@ -482,12 +445,13 @@ def main():
             if metrics is None:
                 row = {
                     "run": run_idx, "window": window_name,
-                    "k_tp": k_tp, "k_sl": k_sl, "ml_threshold": ml_threshold,
+                    "long_threshold": long_thresh, "short_threshold": short_thresh,
+                    "label_period": label_period,
                     "win_rate": "ERROR", "sharpe": "ERROR", "max_drawdown": "ERROR",
                     "profit_factor": "ERROR", "trade_count": 0,
+                    "long_count": 0, "short_count": 0,
                     "pass": False, "wr_pass": False, "sharpe_pass": False,
                     "dd_pass": False, "pf_pass": False,
-                    "theoretical_pf": theory_pf,
                     "timestamp": datetime.utcnow().isoformat()
                 }
             else:
@@ -495,20 +459,21 @@ def main():
                 row = {
                     "run":            run_idx,
                     "window":         window_name,
-                    "k_tp":           k_tp,
-                    "k_sl":           k_sl,
-                    "ml_threshold":   ml_threshold,
+                    "long_threshold": long_thresh,
+                    "short_threshold":short_thresh,
+                    "label_period":   label_period,
                     "win_rate":       metrics["win_rate"],
                     "sharpe":         metrics["sharpe"],
                     "max_drawdown":   metrics["max_drawdown"],
                     "profit_factor":  metrics["profit_factor"],
                     "trade_count":    metrics["trade_count"],
+                    "long_count":     metrics.get("long_count", 0),
+                    "short_count":    metrics.get("short_count", 0),
                     "pass":           passed,
                     "wr_pass":        metrics["win_rate"]      >= criteria["win_rate"],
                     "sharpe_pass":    metrics["sharpe"]        >= criteria["sharpe"],
                     "dd_pass":        metrics["max_drawdown"]  <= criteria["max_drawdown"],
                     "pf_pass":        metrics["profit_factor"] >= criteria["profit_factor"],
-                    "theoretical_pf": theory_pf,
                     "timestamp":      datetime.utcnow().isoformat(),
                 }
                 if passed:
@@ -516,7 +481,7 @@ def main():
 
             all_results.append(row)
 
-            # Write CSV incrementally (partial results survive a crash)
+            # Write CSV incrementally
             mode = "w" if run_idx == 1 else "a"
             with open(OUTPUT_CSV, mode, newline="") as f:
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -526,12 +491,14 @@ def main():
 
             # Progress Telegram every 6 runs
             if run_idx % 6 == 0 or run_idx == n_total:
+                lc = row.get("long_count", "?")
+                sc = row.get("short_count", "?")
                 status = "✅" if row.get("pass") else "❌"
                 _tg(
-                    f"{status} [{run_idx}/{n_total}] ktp={k_tp} ksl={k_sl} m={ml_threshold} "
-                    f"{window_name} (theory_pf={theory_pf})\n"
+                    f"{status} [{run_idx}/{n_total}] lt={long_thresh}% st=-{short_thresh}% lp={label_period} [{window_name}]\n"
                     f"WR={row.get('win_rate')}% Sh={row.get('sharpe')} "
-                    f"DD={row.get('max_drawdown')}% PF={row.get('profit_factor')}"
+                    f"DD={row.get('max_drawdown')}% PF={row.get('profit_factor')}\n"
+                    f"Trades: {row.get('trade_count')} (L={lc} / S={sc})"
                 )
 
     # ── Final summary ──────────────────────────────────────────────────────
@@ -543,41 +510,42 @@ def main():
         log.info("\n🏆 PASSING COMBOS:")
         for r in passes:
             log.info(
-                f"  [{r['window']}] ktp={r['k_tp']} ksl={r['k_sl']} m={r['ml_threshold']} "
-                f"→ WR={r['win_rate']}% Sh={r['sharpe']} DD={r['max_drawdown']}% "
-                f"PF={r['profit_factor']} (theory={r['theoretical_pf']})"
+                f"  [{r['window']}] lt={r['long_threshold']}% st={r['short_threshold']}% "
+                f"lp={r['label_period']} → WR={r['win_rate']}% Sh={r['sharpe']} "
+                f"DD={r['max_drawdown']}% PF={r['profit_factor']} "
+                f"(L={r.get('long_count',0)}/S={r.get('short_count',0)})"
             )
 
         bull_passes = [r for r in passes if r["window"] == "bull"]
         bear_passes = [r for r in passes if r["window"] == "bear"]
         both_pass_keys = set(
-            (r["k_tp"], r["k_sl"], r["ml_threshold"]) for r in bull_passes
+            (r["long_threshold"], r["short_threshold"], r["label_period"]) for r in bull_passes
         ) & set(
-            (r["k_tp"], r["k_sl"], r["ml_threshold"]) for r in bear_passes
+            (r["long_threshold"], r["short_threshold"], r["label_period"]) for r in bear_passes
         )
 
         if both_pass_keys:
-            log.info(f"\n✅ {len(both_pass_keys)} combo(s) pass BOTH windows: {both_pass_keys}")
+            log.info(f"\n✅ {len(both_pass_keys)} combo(s) pass BOTH windows")
             def combined_sharpe(key):
-                k_tp, k_sl, m = key
-                br = next((r for r in bull_passes if r["k_tp"]==k_tp and r["k_sl"]==k_sl and r["ml_threshold"]==m), None)
-                rr = next((r for r in bear_passes if r["k_tp"]==k_tp and r["k_sl"]==k_sl and r["ml_threshold"]==m), None)
+                lt, st, lp = key
+                br = next((r for r in bull_passes if r["long_threshold"]==lt and r["short_threshold"]==st and r["label_period"]==lp), None)
+                rr = next((r for r in bear_passes if r["long_threshold"]==lt and r["short_threshold"]==st and r["label_period"]==lp), None)
                 return (br["sharpe"] if br else -999) + (rr["sharpe"] if rr else -999)
             best = max(both_pass_keys, key=combined_sharpe)
-            log.info(f"\n🥇 WINNER (both windows): ktp={best[0]}  ksl={best[1]}  m={best[2]}")
+            log.info(f"\n🥇 WINNER (both windows): lt={best[0]}%  st=-{best[1]}%  lp={best[2]}")
             _tg(
-                f"🏆 <b>v23 Omni-Timeframe Campaign Complete</b>\n"
+                f"🏆 <b>v23 Regression Campaign Complete</b>\n"
                 f"{len(passes)}/{n_total} PASS\n\n"
                 f"✅ Winner (both windows):\n"
-                f"k_tp={best[0]}  k_sl={best[1]}  ml_threshold={best[2]}\n\n"
+                f"long_threshold={best[0]}%  short_threshold=-{best[1]}%  label_period={best[2]}\n\n"
                 f"Results: {OUTPUT_CSV.name}"
             )
         else:
             log.info("\n⚠️  No combo passes BOTH windows.")
             _tg(
-                f"⚠️ <b>v23 Omni-Timeframe Campaign Complete</b>\n"
+                f"⚠️ <b>v23 Regression Campaign Complete</b>\n"
                 f"{len(passes)}/{n_total} PASS\n"
-                f"No combo passes BOTH windows — check CSV for best candidates.\n"
+                f"No combo passes BOTH windows — check CSV.\n"
                 f"Results: {OUTPUT_CSV.name}"
             )
     else:
@@ -586,12 +554,13 @@ def main():
         top3  = sorted(valid, key=lambda r: r.get("sharpe", -999), reverse=True)[:3]
         for r in top3:
             log.info(
-                f"  Best: ktp={r['k_tp']} ksl={r['k_sl']} m={r['ml_threshold']} "
+                f"  Best: lt={r['long_threshold']}% st={r['short_threshold']}% lp={r['label_period']} "
                 f"[{r['window']}] → WR={r['win_rate']}% Sh={r['sharpe']} "
-                f"DD={r['max_drawdown']}% PF={r['profit_factor']}"
+                f"DD={r['max_drawdown']}% PF={r['profit_factor']} "
+                f"(L={r.get('long_count',0)}/S={r.get('short_count',0)})"
             )
         _tg(
-            f"❌ <b>v23 Omni-Timeframe Campaign: ALL FAIL</b>\n"
+            f"❌ <b>v23 Regression Campaign: ALL FAIL</b>\n"
             f"0/{n_total} PASS\n"
             f"Best Sharpe: {top3[0].get('sharpe', 'N/A') if top3 else 'N/A'}\n"
             f"Results: {OUTPUT_CSV.name}"

@@ -29,6 +29,10 @@ TRADES_LOG = Path("/home/ubuntu/var/www/html/trade/finbuddy_memory/trades/closed
 REGIME_FILE = Path("/home/ubuntu/var/www/html/trade/finbuddy_memory/regimes/current.json")
 STATE_FILE = Path("/home/ubuntu/.finbuddy/state/postmortem_state.json")
 CONFIG_PATH = Path("/home/ubuntu/var/www/html/trade/freqtrade/user_data/config.json")
+ENV_PATH = Path("/home/ubuntu/var/www/html/trade/freqtrade/.env")
+
+# Rolling WR window for FINBUDDY_RECENT_WR feedback signal
+WR_FEEDBACK_WINDOW = 50
 
 # Bias-detector config: alert if last N trades (closed + open) are ≥THRESHOLD% one-sided.
 BIAS_WINDOW = 10            # last N trades to inspect
@@ -193,6 +197,47 @@ def check_trade_bias(state: dict) -> None:
         print(f"BIAS ALERT: {ratio:.0%} {direction}")
 
 
+def update_recent_wr() -> None:
+    """
+    Layer 2 self-awareness: compute rolling WR of last WR_FEEDBACK_WINDOW trades,
+    write FINBUDDY_RECENT_WR=0.XX to freqtrade/.env so the live strategy can read it
+    as an env var on next FreqAI retrain cycle.
+
+    Format: one KEY=value per line. We find and replace the FINBUDDY_RECENT_WR line
+    or append it if absent. Safe to run even when .env has other keys.
+    """
+    if not DB_PATH.exists():
+        return
+    try:
+        conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True, timeout=10)
+        rows = conn.execute(
+            """SELECT close_profit FROM trades
+               WHERE is_open = 0
+               ORDER BY id DESC LIMIT ?""",
+            (WR_FEEDBACK_WINDOW,),
+        ).fetchall()
+        conn.close()
+    except Exception as e:
+        print(f"WARN: WR fetch failed: {e}", file=sys.stderr)
+        return
+
+    if not rows:
+        return
+
+    wins = sum(1 for (p,) in rows if (p or 0) > 0)
+    wr   = round(wins / len(rows), 4)
+    key  = "FINBUDDY_RECENT_WR"
+
+    try:
+        lines = ENV_PATH.read_text().splitlines() if ENV_PATH.exists() else []
+        new_lines = [l for l in lines if not l.startswith(f"{key}=")]
+        new_lines.append(f"{key}={wr}")
+        ENV_PATH.write_text("\n".join(new_lines) + "\n")
+        print(f"OK: {key}={wr} written to .env ({len(rows)} trades, {wins} wins)")
+    except Exception as e:
+        print(f"WARN: .env write failed: {e}", file=sys.stderr)
+
+
 def format_row(row: tuple, regime: str) -> str:
     tid, pair, is_short, open_d, close_d, profit_pct, profit_abs, exit_reason, enter_tag, strategy = row
     side = "SHORT" if is_short else "LONG"
@@ -224,6 +269,9 @@ def main() -> int:
 
     # Bias check runs every cycle — uses live trades + recent closed
     check_trade_bias(state)
+
+    # Layer 2: update rolling WR feedback for dynamic threshold adaptation
+    update_recent_wr()
 
     state["last_run"] = datetime.now(timezone.utc).isoformat()
     save_state(state)

@@ -108,6 +108,7 @@ def run_backtest(strategy: str, tf: str, train_start: datetime,
         "--export", "trades",
         "--cache", "none",
     ]
+    LAST_RESULT.unlink(missing_ok=True)  # prevent stale prior-fold result being silently reused
     with log_path.open("w") as logf:
         proc = subprocess.run(cmd, cwd=COMPOSE_DIR, stdout=logf, stderr=subprocess.STDOUT, timeout=3600)
     if proc.returncode != 0:
