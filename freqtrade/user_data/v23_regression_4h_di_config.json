@@ -1,0 +1,117 @@
+{
+    "$schema": "https://schema.freqtrade.io/schema.json",
+    "_comment": "v18 backtest config \u2014 1h TF, BTC/ETH/SOL/XRP/DOGE, LightGBMClassifier (no LLM). Matches live config except stake_amount=200 fixed and no Telegram.",
+    "max_open_trades": 4,
+    "stake_currency": "USDT",
+    "stake_amount": 200,
+    "tradable_balance_ratio": 0.99,
+    "fiat_display_currency": "USD",
+    "dry_run": true,
+    "dry_run_wallet": 1000,
+    "cancel_open_orders_on_exit": false,
+    "trading_mode": "futures",
+    "margin_mode": "isolated",
+    "exchange": {
+        "name": "binance",
+        "key": "",
+        "secret": "",
+        "ccxt_config": {},
+        "ccxt_async_config": {},
+        "pair_whitelist": [
+            "BTC/USDT:USDT",
+            "ETH/USDT:USDT",
+            "SOL/USDT:USDT",
+            "XRP/USDT:USDT",
+            "DOGE/USDT:USDT"
+        ],
+        "pair_blacklist": [
+            "BNB/.*",
+            "D/USDT",
+            "CHIP/USDT",
+            "SOMI/USDT",
+            "ZBT/USDT",
+            "GIGGLE/USDT",
+            "BARD/USDT",
+            "BIO/USDT",
+            "WLFI/USDT"
+        ]
+    },
+    "pairlists": [
+        {
+            "method": "StaticPairList"
+        }
+    ],
+    "telegram": {
+        "enabled": false,
+        "token": "disabled",
+        "chat_id": "0"
+    },
+    "api_server": {
+        "enabled": false,
+        "listen_ip_address": "127.0.0.1",
+        "listen_port": 8080,
+        "verbosity": "error",
+        "enable_openapi": false,
+        "jwt_secret_key": "disabled",
+        "CORS_origins": [],
+        "username": "disabled",
+        "password": "disabled"
+    },
+    "bot_name": "finbuddy_backtest_v18",
+    "initial_state": "running",
+    "stoploss": -0.08,
+    "strategy": "FinBuddyFreqAI_v23",
+    "strategy_path": "user_data/strategies",
+    "internals": {
+        "process_throttle_secs": 5
+    },
+    "freqai": {
+        "enabled": true,
+        "purge_old_models": false,
+        "train_period_days": 90,
+        "backtest_period_days": 7,
+        "live_retrain_hours": 4,
+        "identifier": "v23_reg_4h_di_smoketest",
+        "feature_parameters": {
+            "include_timeframes": [
+                "1d"
+            ],
+            "include_corr_pairlist": [
+                "BTC/USDT:USDT"
+            ],
+            "label_period_candles": 6,
+            "include_shifted_candles": 2,
+            "indicator_periods_candles": [
+                10,
+                20,
+                50
+            ],
+            "DI_threshold": 1.0,
+            "use_SVM_to_remove_outliers": true
+        },
+        "data_split_parameters": {
+            "test_size": 0.15
+        },
+        "model_training_parameters": {
+            "n_estimators": 100,
+            "learning_rate": 0.05
+        }
+    },
+    "freqaimodel": "LightGBMRegressor",
+    "entry_pricing": {
+        "price_side": "same",
+        "ask_last_balance": 0.0,
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+    "exit_pricing": {
+        "price_side": "same",
+        "bid_last_balance": 0.0,
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+    "minimal_roi": {
+        "0": 0.99
+    },
+    "timeframe": "4h"
+}
