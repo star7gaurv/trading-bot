@@ -583,9 +583,39 @@ class FinBuddyFreqAI_v23(IStrategy):
         dataframe["atr_ratio"] = dataframe["atr_14"] / dataframe["close"]
 
         # Phase 13: Order Block / Liquidity Pool Awareness
-        # Identify major historical swing highs/lows (Liquidity Pools). 288 candles = 24h on 5m TF
-        dataframe["bearish_ob"] = dataframe["high"].rolling(288).max()
-        dataframe["bullish_ob"] = dataframe["low"].rolling(288).min()
+        # We look for "Supply" and "Demand" zones.
+        # Bullish OB: Last down candle before a strong move up (3 consecutive up candles or a big engulfing)
+        # Bearish OB: Last up candle before a strong move down.
+        
+        # 1. Identify "Impulsive" moves
+        dataframe['body_size'] = (dataframe['close'] - dataframe['open']).abs()
+        dataframe['is_up'] = dataframe['close'] > dataframe['open']
+        dataframe['is_down'] = dataframe['close'] < dataframe['open']
+        
+        # 2. Bullish OB Logic: Current is UP, previous was DOWN, and current move is > 2x average body
+        avg_body = dataframe['body_size'].rolling(50).mean()
+        is_impulsive_up = (dataframe['is_up']) & (dataframe['body_size'] > avg_body * 1.5)
+        
+        # Last down candle before impulsive up
+        dataframe['potential_bullish_ob'] = np.where(
+            is_impulsive_up & dataframe['is_down'].shift(1),
+            dataframe['low'].shift(1),
+            np.nan
+        )
+        # Forward fill the last detected zone to use as a level
+        dataframe['bullish_ob'] = dataframe['potential_bullish_ob'].ffill()
+
+        # 3. Bearish OB Logic: Current is DOWN, previous was UP, and current move is > 1.5x average body
+        is_impulsive_down = (dataframe['is_down']) & (dataframe['body_size'] > avg_body * 1.5)
+        
+        # Last up candle before impulsive down
+        dataframe['potential_bearish_ob'] = np.where(
+            is_impulsive_down & dataframe['is_up'].shift(1),
+            dataframe['high'].shift(1),
+            np.nan
+        )
+        # Forward fill the last detected zone
+        dataframe['bearish_ob'] = dataframe['potential_bearish_ob'].ffill()
 
         return dataframe
 

@@ -3,7 +3,7 @@
 > This file is the single source of truth for any Claude instance working in this repo.
 > Read this fully before touching any file, writing any code, or making any suggestion.
 > For current phase status and roadmap → always check [[finbuddy_memory/FINBUDDY_PROJECT_MEMORY]] first.
-
+keep in mind no matter what we have to make it self aware, self evolving, conscious brain. and when say self aware it means dynamically can changes parameters to adjust tuning itself. so that. it can run on long, short both by detecting trend time. as we have made plan already. and it must have wide range it stored so that it can have broader perspective , reference and data to analyze. but keep also in mind the code you do make it achieve should not be make it worse than current system.
 ---
 
 ## What FinBuddy Actually Is

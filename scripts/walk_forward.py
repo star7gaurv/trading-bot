@@ -71,7 +71,8 @@ def daterange_folds(start: str, end: str, train_m: int, test_m: int, slide_m: in
 def run_backtest(strategy: str, tf: str, train_start: datetime,
                  test_start: datetime, test_end: datetime,
                  run_dir: Path, fold: int,
-                 freqai_identifier: str | None = None) -> Path | None:
+                 freqai_identifier: str | None = None,
+                 config: str | None = None) -> Path | None:
     """Run a single backtest fold via docker-compose. Returns path to result json or None.
 
     Timerange = train_start → test_end (full window so FreqAI can train on the
@@ -108,6 +109,14 @@ def run_backtest(strategy: str, tf: str, train_start: datetime,
         "--export", "trades",
         "--cache", "none",
     ]
+    if config:
+        cmd += ["--config", f"/freqtrade/user_data/{config}"]
+    else:
+        cmd += ["--config", "/freqtrade/user_data/config.json"]
+
+    if LAST_RESULT.exists():
+        LAST_RESULT.unlink()
+
     with log_path.open("w") as logf:
         proc = subprocess.run(cmd, cwd=COMPOSE_DIR, stdout=logf, stderr=subprocess.STDOUT, timeout=3600)
     if proc.returncode != 0:
@@ -358,6 +367,7 @@ def main():
     p.add_argument("--slide-months", type=int, default=1)
     p.add_argument("--strategy", default="FinBuddyFreqAI")
     p.add_argument("--timeframe", default="1h")
+    p.add_argument("--config", help="Custom config filename inside user_data/")
     p.add_argument("--skip-download", action="store_true", help="Skip data download (use if data already downloaded)")
     p.add_argument("--reparse", metavar="RUN_DIR",
                    help="Re-aggregate an existing walkforward_results/<run_id>/ "
@@ -396,7 +406,7 @@ def main():
     ):
         fold_id = f"{fold_identifier_base}_f{fold:02d}"
         rp = run_backtest(args.strategy, args.timeframe, ts, vs, ve, run_dir, fold,
-                          freqai_identifier=fold_id)
+                          freqai_identifier=fold_id, config=args.config)
         if rp is None:
             continue
         fr = parse_fold(rp, fold, vs, ve)
