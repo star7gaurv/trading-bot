@@ -142,3 +142,4 @@ User said "do whatever you want for v23 to fix" — ran 5 backtests on 2024-01-0
 - **2026-05-16 20:00 UTC** — Walk-forward status: ⏳ Running — 15/21 folds done (FinBuddyFreqAI_2024-01-01_2026-04-01_20260516T184159)
 - **2026-05-16 20:00 UTC** — 🎯 Trade milestone reached: 200 closed trades
 - **2026-05-17 00:00 UTC** — Walk-forward status: ❌ FAIL — WR 20.7%, Sharpe -9.79, DD 2.2%, PF 0.52 (5406 trades, run `FinBuddyFreqAI_2024-01-01_2026-04-01_20260516T184159`)
+- **2026-05-17 08:00 UTC** — Regime changed: BEAR → NEUTRAL
