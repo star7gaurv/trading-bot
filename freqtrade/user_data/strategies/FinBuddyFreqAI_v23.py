@@ -102,6 +102,10 @@ class FinBuddyFreqAI_v23(IStrategy):
     LONG_THRESHOLD  = float(os.getenv("FREQAI_LONG_THRESHOLD",  "1.0"))   # predicted % return to enter long
     SHORT_THRESHOLD = float(os.getenv("FREQAI_SHORT_THRESHOLD", "-1.0"))  # predicted % return to enter short (negative)
 
+    # Entry stability filter: require N consecutive candles past threshold to fire entry.
+    # Single-candle spikes get filtered. 2-3 is a good range; raise for higher quality.
+    STABILITY_N = int(os.getenv("FREQAI_STABILITY_N", "2"))
+
     # ATR-based stoploss parameters (unchanged — risk management independent of entry model).
     K_TP = float(os.getenv("FREQAI_K_TP", "2.0"))
     K_SL = float(os.getenv("FREQAI_K_SL", "1.0"))
@@ -225,14 +229,115 @@ class FinBuddyFreqAI_v23(IStrategy):
 
     # Fixed path: /freqtrade/user_data/../finbuddy_memory/ = /freqtrade/finbuddy_memory/
     _REGIME_FILE = "/freqtrade/finbuddy_memory/regimes/current.json"
+    _HISTORICAL_REGIME_FILE = "/freqtrade/finbuddy_memory/regimes/historical_regime.parquet"
+    _HISTORICAL_MACRO_FILE  = "/freqtrade/finbuddy_memory/historical/macro_features.parquet"
     _COMBINED_CTX_FILE = "/freqtrade/user_data/data/external/combined_context.json"
 
-    def _get_current_regime(self) -> str:
+    # Class-level caches: loaded once, shared across all strategy instances.
+    _historical_regime_df = None
+    _historical_macro_df  = None
+
+    def _load_historical_regime(self):
+        """Load BTC-derived historical regime parquet once. Cached at class level."""
+        if FinBuddyFreqAI_v23._historical_regime_df is not None:
+            return FinBuddyFreqAI_v23._historical_regime_df
+        try:
+            df = pd.read_parquet(self._HISTORICAL_REGIME_FILE)
+            df["date"] = pd.to_datetime(df["date"], utc=True)
+            df = df.sort_values("date").reset_index(drop=True)
+            FinBuddyFreqAI_v23._historical_regime_df = df
+            logger.info(f"[Regime] Loaded {len(df)} historical regime candles from {df['date'].min()} to {df['date'].max()}")
+            return df
+        except Exception as e:
+            logger.warning(f"[Regime] Could not load historical regime parquet ({e}) — falling back to live regime file")
+            FinBuddyFreqAI_v23._historical_regime_df = pd.DataFrame()  # empty marker to skip retry
+            return FinBuddyFreqAI_v23._historical_regime_df
+
+    def _get_current_regime(self, as_of: pd.Timestamp | None = None) -> str:
+        """
+        Return regime at a specific timestamp (backtest) or current (live).
+
+        If `as_of` is provided AND historical regime parquet exists, look up the
+        regime that was active at that candle. Otherwise fall back to reading
+        the live current.json (live trading).
+
+        This is the fix for the backtest regime-blind bug: previously this
+        always read live state, making dynamic thresholds inert during backtests.
+        """
+        if as_of is not None:
+            hist = self._load_historical_regime()
+            if not hist.empty:
+                as_of_utc = pd.Timestamp(as_of).tz_convert("UTC") if pd.Timestamp(as_of).tz else pd.Timestamp(as_of).tz_localize("UTC")
+                # Find the most recent regime row at or before this timestamp
+                idx = hist["date"].searchsorted(as_of_utc, side="right") - 1
+                if 0 <= idx < len(hist):
+                    return hist.iloc[idx]["regime"]
+        # Fallback: live regime file
         try:
             with open(self._REGIME_FILE) as f:
                 return json.load(f).get("regime", "NEUTRAL")
         except Exception:
             return "NEUTRAL"
+
+    def _load_historical_macro(self):
+        """Load historical macro features (F&G + BTC strength). Cached at class level."""
+        if FinBuddyFreqAI_v23._historical_macro_df is not None:
+            return FinBuddyFreqAI_v23._historical_macro_df
+        try:
+            df = pd.read_parquet(self._HISTORICAL_MACRO_FILE)
+            df["date"] = pd.to_datetime(df["date"], utc=True)
+            df = df.sort_values("date").reset_index(drop=True)
+            FinBuddyFreqAI_v23._historical_macro_df = df
+            logger.info(f"[Macro] Loaded {len(df)} historical macro rows from {df['date'].min()} to {df['date'].max()}")
+            return df
+        except Exception as e:
+            logger.warning(f"[Macro] Could not load historical macro parquet ({e}) — using live combined_context")
+            FinBuddyFreqAI_v23._historical_macro_df = pd.DataFrame()
+            return FinBuddyFreqAI_v23._historical_macro_df
+
+    def _get_macro_series(self, dataframe: DataFrame) -> dict[str, pd.Series]:
+        """
+        Vectorized lookup: per-candle historical fear_greed and btc_strength.
+
+        Returns a dict with 'fear_greed' and 'btc_strength' Series aligned to dataframe.
+        Falls back to constant from live combined_context.json if historical missing.
+        """
+        hist = self._load_historical_macro()
+        if hist.empty:
+            ctx = self._get_combined_context()
+            n = len(dataframe)
+            return {
+                "fear_greed":   pd.Series([float(ctx.get("fear_greed", 50))]   * n, index=dataframe.index),
+                "btc_strength": pd.Series([0.0] * n, index=dataframe.index),
+            }
+        dates = pd.to_datetime(dataframe["date"], utc=True)
+        df_for_join = pd.DataFrame({"date": dates}).sort_values("date").reset_index()
+        merged = pd.merge_asof(df_for_join, hist, on="date", direction="backward")
+        merged = merged.sort_values("index").reset_index(drop=True)
+        return {
+            "fear_greed":   pd.Series(merged["fear_greed"].fillna(50.0).values,    index=dataframe.index),
+            "btc_strength": pd.Series(merged["btc_strength"].fillna(0.0).values,   index=dataframe.index),
+        }
+
+    def _get_regime_series(self, dataframe: DataFrame) -> pd.Series:
+        """
+        Vectorized lookup: map every candle's date to its historical regime.
+        Returns a Series of regime strings aligned with the input dataframe.
+
+        For LIVE trading where historical regime hasn't been built yet, falls
+        back to repeating the live regime across all rows.
+        """
+        hist = self._load_historical_regime()
+        if hist.empty:
+            return pd.Series([self._get_current_regime()] * len(dataframe), index=dataframe.index)
+
+        dates = pd.to_datetime(dataframe["date"], utc=True)
+        # merge_asof requires both sides sorted by the join key
+        df_for_join = pd.DataFrame({"date": dates}).sort_values("date").reset_index()
+        merged = pd.merge_asof(df_for_join, hist[["date", "regime"]], on="date", direction="backward")
+        merged = merged.sort_values("index").reset_index(drop=True)
+        result = pd.Series(merged["regime"].fillna("NEUTRAL").values, index=dataframe.index)
+        return result
 
     def _get_combined_context(self) -> dict:
         """Read the latest external macro context (Fear & Greed, news, etc.)."""
@@ -487,15 +592,20 @@ class FinBuddyFreqAI_v23(IStrategy):
         dataframe["%-raw_volume"]  = dataframe["volume"]
         dataframe["%-raw_open"]    = dataframe["open"]
 
-        # External macro context (Phase 2 combined_context.json)
+        # External macro context — PER CANDLE (Fix 2026-05-17)
+        # fear_greed from alternative.me historical, btc_strength = BTC 7d ret − ETH 7d ret
+        # Previously these were CONSTANTS per backtest and got dropped by VarianceThreshold.
+        macros = self._get_macro_series(dataframe)
+        dataframe["%-fear_greed"]    = macros["fear_greed"]
+        dataframe["%-btc_strength"]  = macros["btc_strength"]
+        # news_sentiment remains constant (no historical source) — kept for compatibility,
+        # will be dropped by VarianceThreshold in backtest but works in live.
         ctx = self._get_combined_context()
-        dataframe["%-fear_greed"]     = float(ctx.get("fear_greed", 50))
-        dataframe["%-btc_dominance"]  = float(ctx.get("btc_dominance", 50))
         dataframe["%-news_sentiment"] = float(ctx.get("news_sentiment_ratio", 0.5))
 
-        # HMM regime encoding (Phase 3 current.json)
-        regime = self._get_current_regime()
-        dataframe["%-regime_numeric"] = float(self._REGIME_NUMERIC.get(regime, 0))
+        # HMM regime encoding — per-candle historical regime (Fix 2026-05-17)
+        regime_series = self._get_regime_series(dataframe)
+        dataframe["%-regime_numeric"] = regime_series.map(lambda r: self._REGIME_NUMERIC.get(r, 0)).astype(float)
 
         # Live WR feedback (written by trade_postmortem.py to freqtrade/.env)
         dataframe["%-recent_wr"] = float(os.getenv("FINBUDDY_RECENT_WR", "0.50"))
@@ -549,18 +659,24 @@ class FinBuddyFreqAI_v23(IStrategy):
         """
         Per-candle entry thresholds that adapt to regime and recent performance.
 
-        Logic:
+        Logic (PER CANDLE — uses historical regime in backtest, live regime when running):
           1. Base = LONG_THRESHOLD / abs(SHORT_THRESHOLD) env vars (grid-searchable).
-          2. Regime multiplier scales base in each direction (see _REGIME_THRESHOLD_MULTS).
+          2. Regime multiplier scales base in each direction PER CANDLE.
+             In BEAR: long_mult=1.3 (harder longs), short_mult=0.7 (easier shorts).
+             In BULL: long_mult=0.7 (easier longs), short_mult=1.3 (harder shorts).
           3. WR feedback: if FINBUDDY_RECENT_WR > 0.55, lower threshold proportionally
              so the brain trades more aggressively when its model is hot.
              Floor at 50% reduction (wr_adj >= 0.5) to prevent collapse.
 
-        Fallback: if regime file is missing, multipliers default to 1.0 (neutral).
-                  if FINBUDDY_RECENT_WR is missing, defaults to 0.50 (no feedback).
+        Fix 2026-05-17: regime is now looked up PER CANDLE from historical_regime.parquet
+        (built by scripts/build_historical_regime.py). Previously this read the static
+        current.json which made dynamic thresholds inert during backtests.
         """
-        regime = self._get_current_regime()
-        long_mult, short_mult = self._REGIME_THRESHOLD_MULTS.get(regime, (1.0, 1.0))
+        regime_series = self._get_regime_series(dataframe)
+
+        # Map regimes → multipliers vectorized
+        long_mult_series  = regime_series.map(lambda r: self._REGIME_THRESHOLD_MULTS.get(r, (1.0, 1.0))[0])
+        short_mult_series = regime_series.map(lambda r: self._REGIME_THRESHOLD_MULTS.get(r, (1.0, 1.0))[1])
 
         recent_wr = float(os.getenv("FINBUDDY_RECENT_WR", "0.50"))
         wr_adj = max(0.5, 1.0 - max(0.0, (recent_wr - 0.55) * 2.0))
@@ -568,8 +684,9 @@ class FinBuddyFreqAI_v23(IStrategy):
         base_long  = self.LONG_THRESHOLD
         base_short = abs(self.SHORT_THRESHOLD)
 
-        dataframe["dynamic_long_threshold"]  = base_long  * long_mult  * wr_adj
-        dataframe["dynamic_short_threshold"] = -(base_short * short_mult * wr_adj)
+        dataframe["regime"] = regime_series
+        dataframe["dynamic_long_threshold"]  = base_long  * long_mult_series  * wr_adj
+        dataframe["dynamic_short_threshold"] = -(base_short * short_mult_series * wr_adj)
         return dataframe
 
     # ------------------------------------------------------------------ #
@@ -650,6 +767,15 @@ class FinBuddyFreqAI_v23(IStrategy):
         long_thresh  = dataframe["dynamic_long_threshold"]
         short_thresh = dataframe["dynamic_short_threshold"]
 
+        # Stability filter: require N consecutive candles past threshold (filters noise spikes).
+        # Long: all of last N candles' predictions were above long_threshold.
+        # Short: all of last N candles' predictions were below short_threshold.
+        n = max(1, self.STABILITY_N)
+        long_above = (predicted_return > long_thresh).astype(int)
+        short_below = (predicted_return < short_thresh).astype(int)
+        long_stable  = long_above.rolling(n, min_periods=n).sum() >= n
+        short_stable = short_below.rolling(n, min_periods=n).sum() >= n
+
         volatility_ok = dataframe["atr_ratio"] > 0.003
 
         # Long: price above EMA-50 (uptrend context), not overbought, not at BB top
@@ -664,7 +790,7 @@ class FinBuddyFreqAI_v23(IStrategy):
 
         enter_long = (
             (dataframe["do_predict"] == 1)
-            & (predicted_return > long_thresh)
+            & long_stable
             & ta_long
             & volatility_ok
             & ob_long_ok
@@ -685,7 +811,7 @@ class FinBuddyFreqAI_v23(IStrategy):
 
         enter_short = (
             (dataframe["do_predict"] == 1)
-            & (predicted_return < short_thresh)
+            & short_stable
             & ta_short
             & volatility_ok
             & ob_short_ok
