@@ -466,6 +466,49 @@
       "proposed_by": "reasoning_agent",
       "reviewed_at": "2026-05-16",
       "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "btc_strength_alt_weakness_20260517",
+      "hypothesis": "BTC will retain relative strength while altcoins underperform in high BTC dominance environment",
+      "timeframe": "1h",
+      "indicators": [
+        "BTC_PRICE",
+        "ALT_INDEX",
+        "BTC_EMA_20",
+        "ALT_EMA_20"
+      ],
+      "entry_long": "BTC price > BTC 20-hour EMA AND Altcoin index < Altcoin 20-hour EMA",
+      "entry_short": "BTC price < BTC 20-hour EMA AND Altcoin index > Altcoin 20-hour EMA",
+      "exit_rule": "Position reversal when EMA crossover occurs or regime changes",
+      "regime_filter": [
+        "BEAR"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-17",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-17",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "volatility_contraction_rally_20260517",
+      "hypothesis": "Volatility contraction precedes short-term BTC rallies in bear market conditions",
+      "timeframe": "1h",
+      "indicators": [
+        "BTC_RVOL_1H",
+        "BTC_PRICE",
+        "BTC_RETURN_48H"
+      ],
+      "entry_long": "1-hour realized volatility drops by 30% from recent average",
+      "entry_short": "Not applicable - volatility contraction signal is long-only",
+      "exit_rule": "Exit after 48 hours or when 3% price target is reached",
+      "regime_filter": [
+        "BEAR"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-17",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-17",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
     }
   ]
 }
