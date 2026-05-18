@@ -159,31 +159,29 @@ def main() -> None:
     total_trades = profit_data.get("trade_count", 0)
     total_pnl = profit_data.get("profit_closed_coin", 0.0)
 
-    # Build message
-    lines = [
-        f"📊 *FinBuddy Daily Summary* — {now_utc().strftime('%Y-%m-%d')}",
-        "",
-        f"{regime_emoji(regime)} *Regime:* `{regime}`",
-        f"🧠 *Last training:* {training_age}",
-        "",
-        f"📂 *Open trades:* {open_count}  ({longs}L / {shorts}S)",
-        f"💰 *Unrealised P&L:* {'%+.2f' % unreal_pnl} USDT",
-        "",
-        f"📅 *Yesterday:* {yday_count} closed",
-    ]
-    if yday_count:
-        wr = yday_wins / yday_count * 100
-        lines.append(f"   WR {wr:.0f}% | P&L {'%+.2f' % yday_pnl} USDT")
-    else:
-        lines.append("   No closed trades yesterday")
-    lines += [
-        "",
-        f"📈 *All-time:* {total_trades} trades | {'%+.2f' % total_pnl} USDT",
-    ]
+    # Build message via unified template
+    sys.path.insert(0, str(Path(__file__).parent / "lib"))
+    from telegram_template import send as tg_send, Subsystem, Status
 
-    msg = "\n".join(lines)
-    print(msg)
-    ok = telegram_send(token, chat_id, msg)
+    yday_line = (
+        f"{yday_count} closed · WR {(yday_wins/yday_count*100):.0f}% · {'%+.2f' % yday_pnl} USDT"
+        if yday_count else "No closed trades"
+    )
+
+    ok = tg_send(
+        subsystem=Subsystem.DIGEST,
+        status=Status.INFO,
+        title=f"{now_utc().strftime('%Y-%m-%d')} morning report",
+        fields={
+            "Regime":          f"{regime_emoji(regime)} {regime}",
+            "Last Training":   training_age,
+            "Open Trades":     f"{open_count} ({longs}L / {shorts}S) · unreal {'%+.2f' % unreal_pnl} USDT",
+            "Yesterday":       yday_line,
+            "All-Time":        f"{total_trades} trades · {'%+.2f' % total_pnl} USDT",
+        },
+        context="Daily 8am digest · no action required",
+    )
+    print(f"Daily digest sent: {ok}")
     sys.exit(0 if ok else 1)
 
 

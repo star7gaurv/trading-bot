@@ -24,7 +24,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
 from experiment_log import read_log
+from telegram_template import send as tg_send, Subsystem, Status
 
 ROOT = Path("/home/ubuntu/var/www/html/trade")
 LIVE_CONFIG = ROOT / "freqtrade" / "user_data" / "config.json"
@@ -35,21 +37,6 @@ PENDING_FILE = PROMOTIONS_DIR / "pending.json"
 MIN_AVG_PROFIT_IMPROVEMENT = 1.0   # percentage points
 MIN_TOTAL_TRADES = 30
 LIVE_BASELINE_PROFIT_PCT = -0.5    # current best-known (will be tracked over time)
-
-TELEGRAM_TOKEN = "REDACTED-FREQTRADE__TELEGRAM__TOKEN"
-TELEGRAM_CHAT  = "5622292536"
-
-
-def _tg(msg: str) -> None:
-    try:
-        import urllib.request, urllib.parse
-        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-        data = urllib.parse.urlencode({
-            "chat_id": TELEGRAM_CHAT, "text": msg, "parse_mode": "HTML"
-        }).encode()
-        urllib.request.urlopen(url, data=data, timeout=8)
-    except Exception:
-        pass
 
 
 # ── Aggregate experiments by config hash ──────────────────────────────────
@@ -139,18 +126,39 @@ def propose(candidate: dict) -> None:
     }
     PENDING_FILE.write_text(json.dumps(proposal, indent=2))
 
-    _tg(
-        f"🧠 <b>Brain Promotion Candidate</b>\n"
-        f"Config hash: <code>{candidate['config_hash']}</code>\n"
-        f"Avg profit: <b>{candidate['avg_profit']}%</b> (+{candidate['improvement']}pp vs baseline)\n"
-        f"Avg Sharpe: {candidate['avg_sharpe']} | Trades: {candidate['total_trades']}\n"
-        f"Bull windows: {len(candidate['bull_runs'])} | Bear windows: {len(candidate['bear_runs'])}\n\n"
-        f"Config preview: tf={candidate['config'].get('timeframe')} "
-        f"lt={candidate['config'].get('long_threshold')} "
-        f"st={candidate['config'].get('short_threshold')} "
-        f"ksl={candidate['config'].get('k_sl')} "
-        f"N={candidate['config'].get('stability_n')}\n\n"
-        f"To approve: <code>{proposal['approval_command']}</code>"
+    cfg  = candidate["config"]
+    arch = cfg.get("arch", "v23")
+    # Architecture-specific config preview
+    if arch == "v22":
+        config_preview = (
+            f"tf={cfg.get('timeframe')} · "
+            f"K_TP={cfg.get('k_tp')} · K_SL={cfg.get('k_sl')} · "
+            f"thr={cfg.get('ml_threshold')}"
+        )
+    else:
+        config_preview = (
+            f"tf={cfg.get('timeframe')} · "
+            f"lt={cfg.get('long_threshold')} · st={cfg.get('short_threshold')} · "
+            f"K_SL={cfg.get('k_sl')} · N={cfg.get('stability_n')}"
+        )
+
+    tg_send(
+        subsystem=Subsystem.BRAIN_PROMOTION,
+        status=Status.ACTION,
+        title=f"new winner found · arch={arch}",
+        fields={
+            "Avg Profit":   f"{candidate['avg_profit']:+.2f}% (+{candidate['improvement']:.2f}pp vs baseline)",
+            "Avg Sharpe":   f"{candidate['avg_sharpe']:+.2f}",
+            "Total Trades": f"{candidate['total_trades']}",
+            "Windows":      f"{len(candidate['bull_runs'])} bull + {len(candidate['bear_runs'])} bear",
+            "Config":       config_preview,
+            "Hash":         f"<code>{candidate['config_hash']}</code>",
+        },
+        context=f"Architecture: {arch}",
+        action=(
+            f"Review: <code>cat finbuddy_memory/promotions/pending.json</code> · "
+            f"Apply: <code>python3 scripts/brain/promote.py --apply {candidate['config_hash']}</code>"
+        ),
     )
     print(f"PROPOSAL written → {PENDING_FILE}")
 

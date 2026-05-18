@@ -61,24 +61,29 @@ def telegram_send(msg: str) -> bool:
         return False
 
 
-def format_message(run_id: str, summary: dict) -> str:
+def send_wf_message(run_id: str, summary: dict) -> bool:
+    """Send WF result via the unified template module."""
+    sys.path.insert(0, str(REPO / "scripts" / "lib"))
+    from telegram_template import send as _tg_send, Subsystem, Status
+
     agg = summary.get("aggregate", {})
     passed = summary.get("pass", False)
-    verdict_lines = summary.get("verdict", [])
-    icon = "✅ *PASS*" if passed else "❌ *FAIL*"
-    next_step = (
-        "🚀 Walk-forward GATE PASSED — Phase 10 (live migration) is now unblocked."
-        if passed else
-        "Strategy still in dry-run. Iterate on the failing metrics before next attempt."
-    )
-    return (
-        f"🧪 *Walk-Forward Complete* {icon}\n\n"
-        f"`{run_id}`\n\n"
-        f"*Folds*: {agg.get('folds', '?')}\n"
-        f"*Total trades*: {agg.get('total_trades', '?')}\n"
-        f"*Total profit*: {agg.get('total_profit_abs', 0):.2f} USDT\n\n"
-        f"*Verdict*\n" + "\n".join(verdict_lines) + "\n\n"
-        f"_{next_step}_"
+
+    return _tg_send(
+        subsystem=Subsystem.WALK_FORWARD,
+        status=Status.OK if passed else Status.FAIL,
+        title=f"run {run_id}",
+        fields={
+            "Verdict":      "PASS — Phase 10 unblocked" if passed else "FAIL — keep iterating",
+            "Folds":        f"{agg.get('folds', '?')}",
+            "Total Trades": f"{agg.get('total_trades', '?')}",
+            "Total Profit": f"{agg.get('total_profit_abs', 0):+.2f} USDT",
+            "Win Rate":     f"{agg.get('weighted_win_rate', 0)*100:.1f}%" if 'weighted_win_rate' in agg else "—",
+            "Sharpe":       f"{agg.get('weighted_sharpe', '?')}",
+            "PF":           f"{agg.get('weighted_profit_factor', '?')}",
+        },
+        context="Out-of-sample validator · gates live deployment",
+        action=("Review walkforward_results/ and discuss deployment" if passed else None),
     )
 
 
@@ -107,8 +112,7 @@ def main() -> int:
             print(f"ERR: parsing {summary_path}: {e}", file=sys.stderr)
             continue
 
-        msg = format_message(run_id, summary)
-        if telegram_send(msg):
+        if send_wf_message(run_id, summary):
             print(f"NOTIFIED: {run_id} (pass={summary.get('pass')})")
             notified.add(run_id)
             new += 1

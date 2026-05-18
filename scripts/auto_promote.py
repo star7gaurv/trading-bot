@@ -39,15 +39,9 @@ TELEGRAM_CHAT  = "5622292536"
 PROMOTION_DELTA = 0.10
 
 
-def _tg(msg: str) -> None:
-    try:
-        url  = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-        data = urllib.parse.urlencode({
-            "chat_id": TELEGRAM_CHAT, "text": msg, "parse_mode": "HTML"
-        }).encode()
-        urllib.request.urlopen(url, data=data, timeout=10)
-    except Exception as e:
-        print(f"WARN: Telegram failed: {e}", file=sys.stderr)
+# Use the unified telegram template (scripts/lib/telegram_template.py)
+sys.path.insert(0, str(Path(__file__).parent / "lib"))
+from telegram_template import send as _tg_send, Subsystem, Status
 
 
 def load_state() -> dict:
@@ -116,14 +110,22 @@ def main() -> int:
 
     state["last_evaluated_run"] = run_name
 
+    metrics_fields = {
+        "Run":      f"<code>{run_name}</code>",
+        "Sharpe":   f"{new_sharpe}",
+        "Win Rate": f"{new_wr}%",
+        "PF":       f"{new_pf}",
+        "Drawdown": f"{new_dd}%",
+        "Baseline": f"Sharpe {current_sharpe} · id={live_identifier}",
+    }
+
     if not new_verdict:
-        _tg(
-            f"📊 <b>Walk-Forward Result</b> (monthly)\n"
-            f"Run: <code>{run_name}</code>\n\n"
-            f"❌ FAIL — no promotion\n"
-            f"  Sharpe: {new_sharpe}  WR: {new_wr}%  PF: {new_pf}  DD: {new_dd}%\n\n"
-            f"Current: <code>{live_identifier}</code> (Sharpe {current_sharpe})\n"
-            f"No action taken — keeping current config."
+        _tg_send(
+            subsystem=Subsystem.WALK_FORWARD,
+            status=Status.FAIL,
+            title=f"monthly run failed — no promotion",
+            fields=metrics_fields,
+            context="Keeping current config — iterate on failing metrics first.",
         )
         save_state(state)
         return 0
@@ -131,29 +133,36 @@ def main() -> int:
     if current_sharpe is not None and new_sharpe is not None:
         improvement = float(new_sharpe) - float(current_sharpe)
         if improvement < PROMOTION_DELTA:
-            _tg(
-                f"📊 <b>Walk-Forward Result</b> (monthly)\n"
-                f"Run: <code>{run_name}</code>\n\n"
-                f"✅ PASS but improvement too small (+{improvement:.3f} < {PROMOTION_DELTA} threshold)\n"
-                f"  New Sharpe: {new_sharpe}  WR: {new_wr}%  PF: {new_pf}  DD: {new_dd}%\n"
-                f"  Current: {current_sharpe}\n\n"
-                f"No promotion — keeping current config."
+            _tg_send(
+                subsystem=Subsystem.WALK_FORWARD,
+                status=Status.WARN,
+                title=f"passed but improvement too small (+{improvement:.3f} < {PROMOTION_DELTA})",
+                fields=metrics_fields,
+                context="Keeping current config — improvement below promotion threshold.",
             )
             save_state(state)
             return 0
 
     # New run passes AND is meaningfully better — send promotion notification
-    _tg(
-        f"🚀 <b>FinBuddy Promotion Candidate!</b>\n\n"
-        f"Walk-Forward: <code>{run_name}</code>\n"
-        f"  ✅ Sharpe: {new_sharpe}  WR: {new_wr}%  PF: {new_pf}  DD: {new_dd}%\n\n"
-        f"Current: <code>{live_identifier}</code> (Sharpe {current_sharpe})\n"
-        f"Improvement: +{(float(new_sharpe or 0) - float(current_sharpe or 0)):.3f}\n\n"
-        f"<b>ACTION REQUIRED:</b>\n"
-        f"1. Review the walk-forward folds in <code>walkforward_results/{run_name}/</code>\n"
-        f"2. If satisfied, update <code>config.json</code> identifier and restart bot\n"
-        f"3. Run <code>python scripts/auto_promote.py --confirm</code> to record new Sharpe\n\n"
-        f"This is notify-only — no automatic config change was made."
+    improvement = float(new_sharpe or 0) - float(current_sharpe or 0)
+    _tg_send(
+        subsystem=Subsystem.BRAIN_PROMOTION,
+        status=Status.ACTION,
+        title=f"monthly walk-forward winner found",
+        fields={
+            "Run":         f"<code>{run_name}</code>",
+            "New Sharpe":  f"{new_sharpe} (+{improvement:.3f} vs baseline)",
+            "Win Rate":    f"{new_wr}%",
+            "PF":          f"{new_pf}",
+            "Drawdown":    f"{new_dd}%",
+            "Live ID":     f"<code>{live_identifier}</code>",
+        },
+        context="Monthly auto-promote · notify-only (no auto config change)",
+        action=(
+            f"1. Review: <code>walkforward_results/{run_name}/</code> · "
+            f"2. Update config.json + restart · "
+            f"3. <code>python scripts/auto_promote.py --confirm {new_sharpe}</code>"
+        ),
     )
 
     print(f"PROMOTION CANDIDATE: {run_name} (Sharpe {new_sharpe} vs current {current_sharpe})")
@@ -169,10 +178,16 @@ def record_promotion(new_sharpe: float) -> None:
     state["promotion_applied_at"] = datetime.now(timezone.utc).isoformat()
     save_state(state)
     live_id = get_live_identifier()
-    _tg(
-        f"✅ <b>Promotion Recorded</b>\n"
-        f"New baseline Sharpe: {new_sharpe} (was {old})\n"
-        f"Live config: <code>{live_id}</code>"
+    _tg_send(
+        subsystem=Subsystem.BRAIN_PROMOTION,
+        status=Status.OK,
+        title="promotion recorded — baseline updated",
+        fields={
+            "New Baseline Sharpe": f"{new_sharpe}",
+            "Previous Sharpe":     f"{old}",
+            "Live Config":         f"<code>{live_id}</code>",
+        },
+        context="Brain will now compare future candidates against this baseline.",
     )
     print(f"Promotion recorded: Sharpe {old} → {new_sharpe}")
 

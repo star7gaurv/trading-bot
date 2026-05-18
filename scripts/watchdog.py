@@ -66,26 +66,31 @@ def save_state(s: dict) -> None:
     STATE_FILE.write_text(json.dumps(s, indent=2, default=str))
 
 
-def telegram_send(msg: str) -> bool:
+def telegram_send(msg: str, *, is_recovery: bool = False) -> bool:
+    """Watchdog telegram sender → routes through unified template.
+
+    `msg` is parsed for the check-key from the existing call-site convention
+    (e.g. "❌ container down", "✅ container up"). We extract the check name and
+    re-format as a proper template message.
+    """
     try:
-        with CONFIG_PATH.open() as f:
-            cfg = json.load(f)
-        tg = cfg.get("telegram") or {}
-        token = tg.get("token")
-        chat_id = tg.get("chat_id")
-        if not (token and chat_id):
-            print("WARN: telegram token/chat_id missing in config.json", file=sys.stderr)
-            return False
-        url = f"https://api.telegram.org/bot{token}/sendMessage"
-        data = urllib.parse.urlencode({
-            "chat_id": chat_id,
-            "text": msg,
-            "parse_mode": "Markdown",
-            "disable_web_page_preview": "true",
-        }).encode()
-        req = urllib.request.Request(url, data=data)
-        with urllib.request.urlopen(req, timeout=10) as r:
-            return r.status == 200
+        # Import template lazily to avoid circular issues if template lib changes
+        sys.path.insert(0, "/home/ubuntu/var/www/html/trade/scripts/lib")
+        from telegram_template import send as _tg_send, Subsystem, Status as _Status
+
+        status = _Status.OK if is_recovery else _Status.FAIL
+        # Strip leading emoji + bold markers if present (legacy markdown)
+        title = msg.replace("*", "").strip()
+        if title.startswith(("❌ ", "✅ ", "🚨 ", "⚠️ ", "🟢 ", "🔴 ")):
+            title = title.split(" ", 1)[1] if " " in title else title
+        return _tg_send(
+            subsystem=Subsystem.WATCHDOG,
+            status=status,
+            title=title[:140],
+            fields=None,
+            context=("Auto-recovered" if is_recovery else "Health check failed"),
+            action=(None if is_recovery else "Check container/logs immediately"),
+        )
     except Exception as e:
         print(f"ERR: telegram send failed: {e}", file=sys.stderr)
         return False
@@ -219,7 +224,7 @@ def maybe_recover(state: dict, key: str, msg: str) -> None:
     """Send recovery msg once when previous status was fail."""
     prev = state.get(key, {}).get("status")
     if prev == "fail":
-        telegram_send(msg)
+        telegram_send(msg, is_recovery=True)
         print(f"RECOVERED [{key}]")
     state[key] = {"status": "ok", "last_alert": None}
 

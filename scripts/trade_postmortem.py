@@ -179,17 +179,23 @@ def check_trade_bias(state: dict) -> None:
         except Exception:
             pass
 
-    msg = (
-        f"⚠️ *FinBuddy Trade Bias Detected*\n\n"
-        f"Last {BIAS_WINDOW} trades: *{ratio:.0%} {direction}*\n"
-        f"({short_count} SHORT / {long_count} LONG)\n\n"
-        f"_Possible causes:_\n"
-        f"• Model genuinely sees one-sided opportunity (regime-driven)\n"
-        f"• Model bias (training data skew, label imbalance)\n"
-        f"• Macro filter is gating one side\n\n"
-        f"Check FreqAI predictions and regime, ensure both sides can fire."
+    import sys as _sys
+    from pathlib import Path as _Path
+    _sys.path.insert(0, str(_Path(__file__).parent / "lib"))
+    from telegram_template import send as _tg_send, Subsystem, Status
+
+    sent = _tg_send(
+        subsystem=Subsystem.BIAS,
+        status=Status.WARN,
+        title=f"last {BIAS_WINDOW} trades skewed {ratio:.0%} {direction}",
+        fields={
+            "Distribution": f"{short_count} SHORT · {long_count} LONG",
+            "Ratio":        f"{ratio:.0%} {direction}",
+        },
+        context="Possible: regime-driven · model bias · macro filter gating one side",
+        action=("Check FreqAI predictions + regime · ensure both sides can fire"),
     )
-    if telegram_send(msg):
+    if sent:
         state["bias_alert"] = {
             "direction": direction,
             "ts": datetime.now(timezone.utc).replace(tzinfo=None).isoformat(),

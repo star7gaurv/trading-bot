@@ -30,9 +30,11 @@ from pathlib import Path
 
 # Allow importing sibling module when invoked directly
 sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
 from experiment_log import (
     read_queue, mark_completed, mark_failed, summary_stats
 )
+from telegram_template import send as tg_send, Subsystem, Status
 
 ROOT = Path("/home/ubuntu/var/www/html/trade")
 COMPOSE_DIR = ROOT / "freqtrade"
@@ -42,20 +44,7 @@ BACKTEST_TIMEOUT_S = 1800  # 30 min hard cap
 LOCK_FILE = Path("/home/ubuntu/.finbuddy/state/brain_runner.lock")  # prevent overlapping cron runs
 
 
-# ── Telegram (best-effort) ────────────────────────────────────────────────
-TELEGRAM_TOKEN = "REDACTED-FREQTRADE__TELEGRAM__TOKEN"
-TELEGRAM_CHAT  = "5622292536"
-
-def _tg(msg: str) -> None:
-    try:
-        import urllib.request, urllib.parse
-        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-        data = urllib.parse.urlencode({
-            "chat_id": TELEGRAM_CHAT, "text": msg, "parse_mode": "HTML"
-        }).encode()
-        urllib.request.urlopen(url, data=data, timeout=8)
-    except Exception:
-        pass
+# Telegram via unified template (scripts/lib/telegram_template.py)
 
 
 # ── Result parsing ────────────────────────────────────────────────────────
@@ -282,14 +271,25 @@ def run_next(max_runs: int = 1, status_only: bool = False) -> int:
         mark_completed(h, metrics, started_at=started)
         completed += 1
 
-        # Telegram a quick result line (with architecture badge)
+        # Telegram via unified template — silent for per-experiment results
+        # (avoid spamming the user; only promotion candidates make a sound)
         arch = h.get("config", {}).get("arch", "?")
-        verdict = "🟢" if metrics.get("profit_pct", -1) > 0 else "🔴"
-        _tg(
-            f"{verdict} <b>Brain #{h['hypothesis_id']}</b> ({arch}, {h['band']}, {h['window']})\n"
-            f"WR={metrics['wr']*100:.1f}% Sh={metrics['sharpe']} PF={metrics['pf']} Profit={metrics['profit_pct']}%\n"
-            f"L/S: {metrics['long_count']}/{metrics['short_count']} | trades={metrics['trades']}\n"
-            f"<i>{h['rationale']}</i>"
+        status = Status.OK if metrics.get("profit_pct", -1) > 0 else Status.INFO
+        tg_send(
+            subsystem=Subsystem.BRAIN_EXPERIMENT,
+            status=status,
+            title=f"#{h['hypothesis_id']} · {arch} · {h['band']}",
+            fields={
+                "Window":   h["window"],
+                "Profit":   f"{metrics['profit_pct']:+.2f}%",
+                "Win Rate": f"{metrics['wr']*100:.1f}%",
+                "Sharpe":   f"{metrics['sharpe']:+.2f}",
+                "PF":       f"{metrics['pf']:.2f}",
+                "Trades":   f"{metrics['trades']} ({metrics['long_count']}L / {metrics['short_count']}S)",
+            },
+            context=h["rationale"],
+            action=None,
+            silent=True,   # auto-logged; no need to ping
         )
         print(f"[brain] DONE {h['hypothesis_id']} [{arch}] → profit={metrics['profit_pct']}% WR={metrics['wr']*100:.1f}%")
 
