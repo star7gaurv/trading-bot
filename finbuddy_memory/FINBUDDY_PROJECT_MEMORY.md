@@ -4,8 +4,8 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status**: 🟠 v22 code live (1h base) · v22 WF rerun in progress · v23 upgraded with real Order Blocks; baseline testing...
-**Last Updated**: 2026-05-16 (Antigravity session — v22 WF fixed/rerun, v23 OB logic enhanced)
+**Status**: 🟢 v22 live dry-run +$107 (regime-favorable shorts) · 🧠 brain autonomously testing v23 variants every 10min · ⛔ no positive v23 result yet (best -0.106%)
+**Last Updated**: 2026-05-18 (Claude session — brain accelerated 3×, smart-gen + daily digest shipped)
 
 ---
 

@@ -238,11 +238,84 @@ def _generate_aggressive_v22(n: int) -> list[dict]:
     return out
 
 
+def _top_k_results(k: int = 3, min_trades: int = 20) -> list[dict]:
+    """Return top-K experiments by profit_pct (filtered by min trade count)."""
+    log = [r for r in read_log()
+           if r.get("status") == "completed"
+           and r.get("metrics", {}).get("trades", 0) >= min_trades]
+    if not log:
+        return []
+    log.sort(key=lambda r: r["metrics"].get("profit_pct", -1e9), reverse=True)
+    return log[:k]
+
+
+def _generate_guided_aggressive(n: int) -> list[dict]:
+    """
+    Guided exploration — pick top-K from experiment log and generate medium
+    perturbations around each (between safe-band ±0.25 and aggressive random).
+    Focuses compute on promising regions instead of pure-random sweep.
+    """
+    top = _top_k_results(k=3)
+    if not top:
+        return []  # no signal yet — caller falls back to pure-random aggressive
+    out = []
+    attempts = 0
+    while len(out) < n and attempts < n * 8:
+        attempts += 1
+        parent = random.choice(top)
+        base = dict(parent["config"])
+        arch = base.get("arch") or ("v22" if base.get("strategy") == "FinBuddyFreqAI" else "v23")
+        choices = AGGRESSIVE_CHOICES_V22 if arch == "v22" else AGGRESSIVE_CHOICES_V23
+        # Mutate 2 random dimensions with medium step (one notch in the choice list)
+        v = dict(base)
+        for param in random.sample(list(choices.keys()), k=min(2, len(choices))):
+            opts = choices[param]
+            if v.get(param) in opts:
+                idx = opts.index(v[param])
+                step = random.choice([-1, 1])
+                v[param] = opts[max(0, min(len(opts) - 1, idx + step))]
+            else:
+                v[param] = random.choice(opts)
+        if arch == "v23":
+            v["short_threshold"] = -abs(v["short_threshold"])
+            v["arch"]        = "v23"
+            v["strategy"]    = "FinBuddyFreqAI_v23"
+            v["freqaimodel"] = "LightGBMRegressor"
+            v["config_file"] = TF_CONFIG_MAP_V23[v["timeframe"]]
+        else:
+            v["arch"]        = "v22"
+            v["strategy"]    = "FinBuddyFreqAI"
+            v["freqaimodel"] = "LightGBMClassifier"
+            v["config_file"] = TF_CONFIG_MAP_V22[v["timeframe"]]
+        if v == base:
+            continue
+        parent_metrics = parent["metrics"]
+        rationale = (
+            f"guided [{arch}]: derived from {parent['hypothesis_id'][:6]} "
+            f"(profit={parent_metrics.get('profit_pct')}% WR={parent_metrics.get('wr',0)*100:.1f}%)"
+        )
+        out.append({"band": "aggressive", "rationale": rationale, "config": v,
+                    "parent_id": parent["hypothesis_id"]})
+    return out
+
+
 def generate_aggressive_band(n: int = 12) -> list[dict]:
-    """Half v23, half v22 — both architectures explored."""
-    n_v23 = n // 2 + n % 2
-    n_v22 = n // 2
-    return _generate_aggressive_v23(n_v23) + _generate_aggressive_v22(n_v22)
+    """
+    Mix:
+      - 50% guided (perturbations around top-3 known results) — focus on promising regions
+      - 50% pure-random (across full param space) — keeps exploring
+    If no completed experiments yet, falls back to 100% pure-random.
+    """
+    n_guided = n // 2
+    n_random = n - n_guided
+    guided = _generate_guided_aggressive(n_guided)
+    # If log is empty, guided returns []; use that budget for more random
+    if not guided:
+        n_random = n
+    n_v23 = n_random // 2 + n_random % 2
+    n_v22 = n_random // 2
+    random_pool = _generate_aggressive_v23(n_v23) + _generate_aggressive_v22(n_v22)
+    return guided + random_pool
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────
@@ -322,6 +395,7 @@ def generate_and_queue(safe_n: int = 6, aggressive_n: int = 6, windows: list[str
                 rationale=v["rationale"],
                 window=win_name,
                 timerange=WINDOWS[win_name],
+                parent_id=v.get("parent_id"),
             )
             queued += 1
     return queued
