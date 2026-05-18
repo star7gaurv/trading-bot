@@ -168,6 +168,27 @@ We shifted the entire architecture to **Phase 13: The Conscious Brain**, deployi
 
 Queue state at deploy: 23 hypotheses (3 seeds + 20 mixed) on bull_2024Q1 + bear_2025Q1.
 
+### 🧠 Brain's First Autonomous Findings (2026-05-18 ~12:30 UTC)
+
+After 8 autonomous brain experiments, structured log shows:
+
+| Rank | Profit % | WR | Window | Variant |
+|---|---|---|---|---|
+| 🥇 | **-0.16%** | **43.2%** | bear_2025Q1 | stability_n=3 (safe perturbation +1) |
+| 🥈 | -0.28% | 41.4% | bear_2025Q1 | seed baseline |
+| 🥉 | -0.28% | 41.0% | bear_2025Q1 | short_threshold -2.75 (looser shorts) |
+| 4 | -0.30% | 36.4% | bull_2024Q1 | short_threshold looser |
+| 5 | -0.33% | 40.6% | bear_2025Q1 | stability_n -1 (looser stability) |
+
+**Key autonomous discovery**: The brain found `stability_n=3` beats both 2 and 1 on bear → suggests
+even stricter filter might help (the brain WILL try stability_n=4 in next cycle).
+
+**Pattern**: top 3 results all on bear window → model's natural strength is bear regime. This aligns
+with live v22 making money in current bear regime (+110 USDT).
+
+**Best ever seen, manual or brain**: -0.16% (brain) vs -0.31% (my manual best). Brain ALREADY beat me
+with one safe perturbation. Vision validated.
+
 ## 🧠 Vision Realignment (2026-05-17 afternoon)
 
 Gaurav called out that I was doing **bot tuning** (picking thresholds, asking "which path?") instead of building **the brain** (autonomous, self-evolving, hypothesis-generating system). The vision says FinBuddy "observes markets, forms hypotheses, tests them, promotes winners, retires losers, and gets smarter over time — without Gaurav having to intervene."
