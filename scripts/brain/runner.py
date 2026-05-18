@@ -90,16 +90,37 @@ def parse_zip(zip_path: Path) -> dict | None:
             }
         raw_wr = s.get("winrate") or (s.get("wins", 0) / trades)
 
-        exit_reasons = s.get("exit_reason_summary", {})
-        exit_signal = exit_reasons.get("exit_signal", {})
-        exit_signal_count = exit_signal.get("count", 0)
-        exit_signal_wins = exit_signal.get("wins", 0)
-        exit_signal_wr = (exit_signal_wins / exit_signal_count) if exit_signal_count else 0.0
-        stop_loss_count = exit_reasons.get("stop_loss", {}).get("count", 0)
+        # FreqTrade schema: *_reason_summary is a LIST of dicts, each with 'key' field.
+        # Normalize to {key: row_dict} for easy lookup.
+        def _to_dict(value) -> dict:
+            if isinstance(value, list):
+                return {row.get("key", ""): row for row in value if isinstance(row, dict)}
+            if isinstance(value, dict):
+                return value
+            return {}
 
-        enter_reasons = s.get("enter_reason_summary", {})
-        long_count  = sum(v.get("count", 0) for k, v in enter_reasons.items() if "long" in k)
-        short_count = sum(v.get("count", 0) for k, v in enter_reasons.items() if "short" in k)
+        exit_reasons = _to_dict(s.get("exit_reason_summary"))
+        exit_signal = exit_reasons.get("exit_signal", {})
+        # FreqTrade uses 'trades' (not 'count') as the count field in *_summary rows.
+        exit_signal_count = int(exit_signal.get("trades", exit_signal.get("count", 0)) or 0)
+        exit_signal_wins  = int(exit_signal.get("wins", 0) or 0)
+        exit_signal_wr    = (exit_signal_wins / exit_signal_count) if exit_signal_count else 0.0
+        stop_loss_row     = exit_reasons.get("stop_loss", {})
+        stop_loss_count   = int(stop_loss_row.get("trades", stop_loss_row.get("count", 0)) or 0)
+
+        enter_reasons = _to_dict(s.get("enter_reason_summary"))
+        long_count  = sum(int(v.get("trades", v.get("count", 0)) or 0) for k, v in enter_reasons.items() if "long" in (k or ""))
+        short_count = sum(int(v.get("trades", v.get("count", 0)) or 0) for k, v in enter_reasons.items() if "short" in (k or ""))
+
+        # Fallback: derive L/S from the trades array (always present), if summary is empty.
+        if long_count == 0 and short_count == 0:
+            trades_list = s.get("trades", [])
+            if isinstance(trades_list, list):
+                for t in trades_list:
+                    if t.get("is_short"):
+                        short_count += 1
+                    else:
+                        long_count += 1
 
         return {
             "trades":            int(trades),
