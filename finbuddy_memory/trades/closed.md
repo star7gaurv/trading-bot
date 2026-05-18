@@ -189,3 +189,4 @@
 | 2026-05-18 13:44:06 | LINK/USDT:USDT | SHORT | 0h59m | +1.71% | +1.17 | trailing_stop_loss | BEAR | freqai_lgbm_v22_short |
 | 2026-05-18 13:57:01 | ADA/USDT:USDT | SHORT | 0h12m | -0.78% | -0.53 | stop_loss | BEAR | freqai_lgbm_v22_short |
 | 2026-05-18 14:37:47 | ETH/USDT:USDT | SHORT | 0h32m | +1.50% | +1.02 | trailing_stop_loss | BEAR | freqai_lgbm_v22_short |
+| 2026-05-18 16:57:36 | DASH/USDT:USDT | SHORT | 0h53m | -2.54% | -1.74 | stop_loss | BEAR | freqai_lgbm_v22_short |
