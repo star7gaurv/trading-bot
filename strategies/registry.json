@@ -509,6 +509,48 @@
       "proposed_by": "reasoning_agent",
       "reviewed_at": "2026-05-17",
       "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "btc_ema_breakdown_volatility_20260518",
+      "hypothesis": "BTC-USDT will break below the 1-hour 20-EMA and stay below 2% for more than 6 hours, leading to downward price pressure and rising realized volatility, creating a short-bias opportunity.",
+      "timeframe": "1h",
+      "indicators": [
+        "BTC-USDT price",
+        "1h_realized_volatility",
+        "BTC_20_EMA"
+      ],
+      "entry_long": "",
+      "entry_short": "BTC-USDT closes below 20-EMA and remains <2% below for >6 hours",
+      "exit_rule": "BTC-USDT closes above 20-EMA for 3 consecutive candles",
+      "regime_filter": [
+        "NEUTRAL"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-18",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-18",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "eth_btc_relative_strength_20260518",
+      "hypothesis": "ETH-USDT relative strength will improve, outperforming BTC by more than 0.5% over a 4-hour window, signaling a potential pair trade opportunity.",
+      "timeframe": "1h",
+      "indicators": [
+        "ETH-BTC spread",
+        "ETH_4h_return",
+        "BTC_4h_return"
+      ],
+      "entry_long": "ETH outperforms BTC by >0.5% over a 4h window",
+      "entry_short": "BTC underperforms ETH by >0.5% over a 4h window",
+      "exit_rule": "ETH-BTC spread reverts to <0.1% over 4h",
+      "regime_filter": [
+        "NEUTRAL"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-18",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-18",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
     }
   ]
 }
