@@ -185,3 +185,5 @@
 | 2026-05-18 11:40:27 | TON/USDT:USDT | SHORT | 0h36m | -1.97% | -1.35 | trailing_stop_loss | BEAR | freqai_lgbm_v22_short |
 | 2026-05-18 12:10:41 | ONDO/USDT:USDT | SHORT | 0h06m | -1.37% | -0.93 | trailing_stop_loss | BEAR | freqai_lgbm_v22_short |
 | 2026-05-18 12:44:21 | ETH/USDT:USDT | SHORT | 0h20m | -0.72% | -0.49 | trailing_stop_loss | BEAR | freqai_lgbm_v22_short |
+| 2026-05-18 13:44:16 | XRP/USDT:USDT | SHORT | 1h08m | +1.64% | +1.12 | trailing_stop_loss | BEAR | freqai_lgbm_v22_short |
+| 2026-05-18 13:44:06 | LINK/USDT:USDT | SHORT | 0h59m | +1.71% | +1.17 | trailing_stop_loss | BEAR | freqai_lgbm_v22_short |
