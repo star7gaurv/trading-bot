@@ -188,6 +188,8 @@ def run_hypothesis(h: dict) -> dict | None:
                 timeout=BACKTEST_TIMEOUT_S,
             )
     except subprocess.TimeoutExpired:
+        # Kill any orphan freqtrade-run containers from this experiment
+        _kill_orphan_containers(identifier)
         return None
     elapsed = int(time.time() - t0)
 
@@ -205,6 +207,35 @@ def run_hypothesis(h: dict) -> dict | None:
 
 
 # ── Main loop ─────────────────────────────────────────────────────────────
+
+def _kill_orphan_containers(identifier: str) -> None:
+    """After a timeout/failure, kill any docker-compose run containers still running.
+
+    Matches by FREQTRADE__FREQAI__IDENTIFIER env var on the container so we only
+    kill THIS experiment's containers — never the live `freqtrade` container.
+    """
+    try:
+        # List ephemeral run containers
+        out = subprocess.run(
+            ["docker", "ps", "--filter", "name=freqtrade-freqtrade-run", "--format", "{{.Names}}"],
+            capture_output=True, text=True, timeout=10,
+        )
+        names = [n.strip() for n in out.stdout.splitlines() if n.strip()]
+        for name in names:
+            # Inspect env vars to find the identifier match
+            try:
+                env_out = subprocess.run(
+                    ["docker", "inspect", "-f", "{{range .Config.Env}}{{println .}}{{end}}", name],
+                    capture_output=True, text=True, timeout=5,
+                )
+                if identifier in env_out.stdout:
+                    subprocess.run(["docker", "stop", name], capture_output=True, timeout=15)
+                    print(f"[brain] killed orphan container {name}")
+            except Exception:
+                pass
+    except Exception as e:
+        print(f"[brain] orphan cleanup failed: {e}", file=sys.stderr)
+
 
 def _acquire_lock() -> bool:
     """Atomic file-based lock. Returns True if acquired, False if another runner is alive.

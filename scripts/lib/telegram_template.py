@@ -48,9 +48,12 @@ import urllib.request
 from enum import Enum
 from typing import Any
 
-# Telegram credentials (kept in sync with other scripts; consider moving to .env)
-TELEGRAM_TOKEN = "REDACTED-FREQTRADE__TELEGRAM__TOKEN"
-TELEGRAM_CHAT  = "5622292536"
+# Telegram credentials — env vars take precedence over hardcoded fallback.
+# To rotate the token: set TELEGRAM_TOKEN in environment (e.g. /etc/environment
+# or freqtrade/.env) and remove the hardcoded fallback once verified.
+import os as _os
+TELEGRAM_TOKEN = _os.getenv("TELEGRAM_TOKEN") or "REDACTED-FREQTRADE__TELEGRAM__TOKEN"
+TELEGRAM_CHAT  = _os.getenv("TELEGRAM_CHAT_ID") or "5622292536"
 
 
 class Subsystem(Enum):
@@ -127,27 +130,91 @@ def send(
     action: str | None = None,
     *,
     silent: bool = False,
+    buttons: list[list[dict]] | None = None,
 ) -> bool:
     """
     Build and send a formatted message. Returns True on success.
 
     Best-effort: errors are swallowed so callers don't break on Telegram outage.
-    Set silent=True to suppress notification (still shows in chat).
+
+    Args:
+        silent: suppress phone-buzz (message still shown in chat)
+        buttons: optional inline keyboard. List of rows; each row is a list of
+                 button dicts: {"text": "🟢 Apply", "callback_data": "apply:abc123"}.
+                 callback_data is opaque to Telegram but processed by our listener.
+                 Max 64 bytes per callback_data.
     """
     text = format_message(subsystem, status, title, fields, context, action)
+    payload: dict[str, Any] = {
+        "chat_id":                  TELEGRAM_CHAT,
+        "text":                     text,
+        "parse_mode":               "HTML",
+        "disable_notification":     "true" if silent else "false",
+        "disable_web_page_preview": "true",
+    }
+    if buttons:
+        payload["reply_markup"] = json.dumps({"inline_keyboard": buttons})
     try:
         url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+        data = urllib.parse.urlencode(payload).encode()
+        urllib.request.urlopen(url, data=data, timeout=10)
+        return True
+    except Exception:
+        return False
+
+
+def answer_callback(callback_query_id: str, text: str = "", show_alert: bool = False) -> bool:
+    """Acknowledge a button tap — clears the spinner on the user's button."""
+    try:
+        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/answerCallbackQuery"
         data = urllib.parse.urlencode({
-            "chat_id":             TELEGRAM_CHAT,
-            "text":                text,
-            "parse_mode":          "HTML",
-            "disable_notification": "true" if silent else "false",
-            "disable_web_page_preview": "true",
+            "callback_query_id": callback_query_id,
+            "text":              text,
+            "show_alert":        "true" if show_alert else "false",
         }).encode()
         urllib.request.urlopen(url, data=data, timeout=10)
         return True
     except Exception:
         return False
+
+
+def edit_message(message_id: int, chat_id: int | str, new_text: str,
+                 parse_mode: str = "HTML", remove_buttons: bool = True) -> bool:
+    """Edit a previously-sent message (used to update after Apply/Skip is tapped)."""
+    try:
+        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
+        payload = {
+            "chat_id":    str(chat_id),
+            "message_id": str(message_id),
+            "text":       new_text,
+            "parse_mode": parse_mode,
+            "disable_web_page_preview": "true",
+        }
+        if remove_buttons:
+            payload["reply_markup"] = json.dumps({"inline_keyboard": []})
+        data = urllib.parse.urlencode(payload).encode()
+        urllib.request.urlopen(url, data=data, timeout=10)
+        return True
+    except Exception:
+        return False
+
+
+def get_updates(offset: int = 0, timeout_s: int = 0) -> list[dict]:
+    """Poll Telegram for updates (long-polling). Returns list of update dicts."""
+    try:
+        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/getUpdates"
+        params = urllib.parse.urlencode({
+            "offset":  str(offset),
+            "timeout": str(timeout_s),
+            "allowed_updates": json.dumps(["callback_query", "message"]),
+        })
+        with urllib.request.urlopen(f"{url}?{params}", timeout=timeout_s + 15) as r:
+            data = json.loads(r.read())
+        if not data.get("ok"):
+            return []
+        return data.get("result", [])
+    except Exception:
+        return []
 
 
 def _escape(s: str) -> str:

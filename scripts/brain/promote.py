@@ -35,8 +35,34 @@ PENDING_FILE = PROMOTIONS_DIR / "pending.json"
 
 # Improvement threshold over current baseline
 MIN_AVG_PROFIT_IMPROVEMENT = 1.0   # percentage points
-MIN_TOTAL_TRADES = 30
-LIVE_BASELINE_PROFIT_PCT = -0.5    # current best-known (will be tracked over time)
+MIN_TOTAL_TRADES = 60              # raised from 30 — require at least 2 bull + 2 bear runs typically
+MIN_BULL_RUNS = 2                  # statistical significance — no single-run candidates
+MIN_BEAR_RUNS = 2
+BASELINE_FILE = ROOT / "finbuddy_memory" / "promotions" / "live_baseline.json"
+
+
+def get_live_baseline_profit_pct() -> float:
+    """
+    Dynamically tracked baseline: the profit_pct of the LAST APPLIED promotion.
+    Falls back to a conservative -0.5 if no promotions yet (assumes current live
+    is the smoke-test baseline).
+    """
+    if not BASELINE_FILE.exists():
+        return -0.5
+    try:
+        return float(json.loads(BASELINE_FILE.read_text()).get("avg_profit_pct", -0.5))
+    except Exception:
+        return -0.5
+
+
+def record_new_baseline(avg_profit_pct: float, config_hash: str) -> None:
+    """Update the baseline file after a promotion is applied."""
+    BASELINE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    BASELINE_FILE.write_text(json.dumps({
+        "avg_profit_pct": avg_profit_pct,
+        "config_hash":    config_hash,
+        "recorded_at":    datetime.now(timezone.utc).isoformat(),
+    }, indent=2))
 
 
 # ── Aggregate experiments by config hash ──────────────────────────────────
@@ -71,9 +97,11 @@ def find_candidates() -> list[dict]:
         elif "bear" in win:
             g["bear_runs"].append(r)
 
+    baseline = get_live_baseline_profit_pct()
     candidates = []
     for h, g in groups.items():
-        if not g["bull_runs"] or not g["bear_runs"]:
+        # Statistical-significance gate: require enough runs in each regime
+        if len(g["bull_runs"]) < MIN_BULL_RUNS or len(g["bear_runs"]) < MIN_BEAR_RUNS:
             continue
         bull_profits = [r["metrics"]["profit_pct"] for r in g["bull_runs"]]
         bear_profits = [r["metrics"]["profit_pct"] for r in g["bear_runs"]]
@@ -90,7 +118,7 @@ def find_candidates() -> list[dict]:
             continue
 
         avg_profit = (sum(bull_profits) + sum(bear_profits)) / (len(bull_profits) + len(bear_profits))
-        improvement = avg_profit - LIVE_BASELINE_PROFIT_PCT
+        improvement = avg_profit - baseline
         if improvement < MIN_AVG_PROFIT_IMPROVEMENT:
             continue
 
@@ -142,6 +170,17 @@ def propose(candidate: dict) -> None:
             f"K_SL={cfg.get('k_sl')} · N={cfg.get('stability_n')}"
         )
 
+    chash = candidate["config_hash"]
+    # Inline action buttons — tap directly from Telegram
+    buttons = [
+        [
+            {"text": "✅ Apply",   "callback_data": f"apply:{chash}"},
+            {"text": "⏭️ Skip",   "callback_data": f"skip:{chash}"},
+        ],
+        [
+            {"text": "📋 Details", "callback_data": f"details:{chash}"},
+        ],
+    ]
     tg_send(
         subsystem=Subsystem.BRAIN_PROMOTION,
         status=Status.ACTION,
@@ -152,13 +191,11 @@ def propose(candidate: dict) -> None:
             "Total Trades": f"{candidate['total_trades']}",
             "Windows":      f"{len(candidate['bull_runs'])} bull + {len(candidate['bear_runs'])} bear",
             "Config":       config_preview,
-            "Hash":         f"<code>{candidate['config_hash']}</code>",
+            "Hash":         f"<code>{chash}</code>",
         },
-        context=f"Architecture: {arch}",
-        action=(
-            f"Review: <code>cat finbuddy_memory/promotions/pending.json</code> · "
-            f"Apply: <code>python3 scripts/brain/promote.py --apply {candidate['config_hash']}</code>"
-        ),
+        context=f"Architecture: {arch} · tap a button below",
+        action="Apply = promote to live · Skip = ignore · Details = full config JSON",
+        buttons=buttons,
     )
     print(f"PROPOSAL written → {PENDING_FILE}")
 
