@@ -1,7 +1,9 @@
 # v12 Strategy Plan — Root-Cause Fixes (DRAFT for Review)
 
 **Created:** 2026-05-04 by Claude Code
-**Status:** ⏳ Awaiting Gaurav review before implementation
+**Status:** ⛔ SUPERSEDED (2026-05-18) — historical reference only
+
+> Strategy iterated v12 → v13 → v15 → v17 → v19 → v22 since this plan. Asymmetric barriers (the root-cause fix proposed here) shipped in v19; current live is v22. Brain (Phase 13) now owns variant exploration. See [[../strategies/graveyard]] for full lifecycle.
 **Trigger:** R4 grid (90 combos, bull window 2024-01-01 → 2025-01-01) failing.
 Empirical stats across 28 completed combos as of 25/90 rows:
 

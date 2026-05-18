@@ -7,7 +7,11 @@ SSH into the Oracle server and run:
 cd /home/ubuntu/var/www/html/trade
 git pull origin master
 ls finbuddy_memory/
-# Should show: CONTEXT.md  SERVER_SETUP.md  regimes/  research/  scripts/  signals/  strategies/
+# Should show: CLAUDE_HANDOFF.md  COLLABORATION_CONTRACT.md  CONTEXT.md
+#              FINBUDDY_PROJECT_MEMORY.md  SERVER_SETUP.md  session_events.md
+#              docs/  experiments/  historical/  regimes/  research/  scripts/
+#              strategies/  tasks/  trades/
+# (signals/ was removed when N8N pipeline was disabled 2026-04-30)
 ```
 
 ## Step 2 — Run the one-time setup script
@@ -51,5 +55,5 @@ python3 /home/ubuntu/var/www/html/trade/finbuddy_memory/scripts/memory_writer.py
 ```
 
 ---
-*Winning strategies → [[strategies/winners]]*
-*Cron logs at: `/home/ubuntu/finbuddy_memory_cron.log`*
+*Strategy history → [[strategies/graveyard]]*
+*Cron logs at: `/home/ubuntu/.finbuddy/logs/`*
