@@ -189,6 +189,25 @@ with live v22 making money in current bear regime (+110 USDT).
 **Best ever seen, manual or brain**: -0.16% (brain) vs -0.31% (my manual best). Brain ALREADY beat me
 with one safe perturbation. Vision validated.
 
+### Brain V2 — v22 architecture added (2026-05-18, commit 045864f)
+
+The brain now explores BOTH architectures in parallel:
+- **v23 Regression** (LightGBMRegressor predicting future_return %)
+- **v22 Classifier** (LightGBMClassifier — the LIVE-profitable architecture)
+
+Architecture-aware components:
+- Two seed configs: SEED_CONFIG_V22 + SEED_CONFIG_V23
+- PERTURB_V22 menu: k_tp, k_sl, ml_threshold (probability)
+- PERTURB_V23 menu: long_threshold, short_threshold, k_sl, k_tp, stability_n
+- generate_aggressive_band(): half v22, half v23 each cycle
+- runner.py routes correct env vars per arch
+- v22_backtest_config.json (5m, LightGBMClassifier, 5 pairs, balanced class_weight)
+
+Rationale: v22 is live and profitable (+110 USDT). Finding a BETTER v22 variant is
+higher-probability than chasing v23 across the profitability line. Brain explores both
+because vision says "broader perspective" — let the architectures compete in the same
+JSONL log and may the best win.
+
 ## 🧠 Vision Realignment (2026-05-17 afternoon)
 
 Gaurav called out that I was doing **bot tuning** (picking thresholds, asking "which path?") instead of building **the brain** (autonomous, self-evolving, hypothesis-generating system). The vision says FinBuddy "observes markets, forms hypotheses, tests them, promotes winners, retires losers, and gets smarter over time — without Gaurav having to intervene."
