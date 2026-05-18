@@ -23,11 +23,13 @@ from typing import Any
 from experiment_log import queue_hypothesis, read_log, best_by_metric
 
 
-# ── The 5 windows we evaluate on ───────────────────────────────────────────
+# ── Windows the brain evaluates on (3-month each, finish in <25min) ─────────
+# Mix of regimes for diversified evaluation. Each backtest must fit within the
+# runner's 30-min lock window so we keep these tight.
 WINDOWS = {
-    "bull_2024Q1": "20240101-20240401",
-    "bull_2024H1": "20240101-20240701",
-    "bear_2025Q1": "20250101-20250401",
+    "bull_2024Q1":  "20240101-20240401",   # BTC +60% — strong bull early-2024
+    "bull_2024Q2":  "20240401-20240701",   # mid-2024 chop/consolidation
+    "bear_2025Q1":  "20250101-20250401",   # BTC -28% — bear leg
 }
 
 # ── Seed config (the current best-known, pre-fix-#10 winner) ──────────────
