@@ -39,6 +39,7 @@ COMPOSE_DIR = ROOT / "freqtrade"
 USER_DATA = ROOT / "freqtrade" / "user_data"
 RESULTS_DIR = USER_DATA / "backtest_results"
 BACKTEST_TIMEOUT_S = 1800  # 30 min hard cap
+LOCK_FILE = Path("/home/ubuntu/.finbuddy/state/brain_runner.lock")  # prevent overlapping cron runs
 
 
 # ── Telegram (best-effort) ────────────────────────────────────────────────
@@ -201,10 +202,46 @@ def run_hypothesis(h: dict) -> dict | None:
 
 # ── Main loop ─────────────────────────────────────────────────────────────
 
+def _acquire_lock() -> bool:
+    """Atomic file-based lock. Returns True if acquired, False if another runner is alive.
+
+    Lock file content: PID + timestamp. If lock exists but PID is dead OR lock is older
+    than 2× BACKTEST_TIMEOUT_S, it's stale — we steal it.
+    """
+    import os
+    LOCK_FILE.parent.mkdir(parents=True, exist_ok=True)
+    if LOCK_FILE.exists():
+        try:
+            content = LOCK_FILE.read_text().strip().split(":")
+            pid, ts = int(content[0]), float(content[1])
+        except Exception:
+            pid, ts = -1, 0
+        # Stale if PID dead or older than 2× timeout
+        age = time.time() - ts
+        pid_alive = True
+        try:
+            os.kill(pid, 0)
+        except (ProcessLookupError, ValueError):
+            pid_alive = False
+        if pid_alive and age < 2 * BACKTEST_TIMEOUT_S:
+            print(f"[brain] another runner active (pid={pid}, age={int(age)}s) — skipping")
+            return False
+        print(f"[brain] stale lock (pid={pid}, age={int(age)}s) — stealing")
+    LOCK_FILE.write_text(f"{os.getpid()}:{time.time()}")
+    return True
+
+
+def _release_lock() -> None:
+    LOCK_FILE.unlink(missing_ok=True)
+
+
 def run_next(max_runs: int = 1, status_only: bool = False) -> int:
     if status_only:
         stats = summary_stats()
         print(json.dumps(stats, indent=2))
+        return 0
+
+    if not _acquire_lock():
         return 0
 
     completed = 0
@@ -240,6 +277,7 @@ def run_next(max_runs: int = 1, status_only: bool = False) -> int:
         )
         print(f"[brain] DONE {h['hypothesis_id']} → profit={metrics['profit_pct']}% WR={metrics['wr']*100:.1f}%")
 
+    _release_lock()
     return completed
 
 
