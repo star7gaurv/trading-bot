@@ -52,7 +52,11 @@ from typing import Any
 # To rotate the token: set TELEGRAM_TOKEN in environment (e.g. /etc/environment
 # or freqtrade/.env) and remove the hardcoded fallback once verified.
 import os as _os
-TELEGRAM_TOKEN = _os.getenv("TELEGRAM_TOKEN") or "REDACTED-FREQTRADE__TELEGRAM__TOKEN"
+TELEGRAM_TOKEN = (
+    _os.getenv("BRAIN_TELEGRAM_TOKEN")
+    or _os.getenv("TELEGRAM_TOKEN")
+    or "REDACTED-BRAIN_TELEGRAM_TOKEN"
+)
 TELEGRAM_CHAT  = _os.getenv("TELEGRAM_CHAT_ID") or "5622292536"
 
 
