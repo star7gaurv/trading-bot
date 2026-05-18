@@ -1,9 +1,8 @@
 # FinBuddy — Master Task Index
 
-> This is the execution roadmap for building the FinBuddy autonomous AI brain.
-> Each phase has its own file. Claude Code should read the relevant task file before starting work.
-> Tasks within each phase are ordered — do them top to bottom unless marked [PARALLEL].
-> For current status and context → always read [[FINBUDDY_PROJECT_MEMORY]] first.
+> Execution roadmap for the FinBuddy autonomous AI brain.
+> Each phase has its own file. Read `FINBUDDY_PROJECT_MEMORY.md` first for live state.
+> Tasks within each phase are ordered — top to bottom unless marked [PARALLEL].
 
 ---
 
@@ -11,69 +10,76 @@
 
 | Phase | File | Status | Description |
 |---|---|---|---|
-| 0 | [phase-0-foundation.md](phase-0-foundation.md) | ✅ **5/5 Complete** (2026-04-27) | Fix loose ends, clean up, wire everything together |
-| 1 | [phase-1-freqai-brain.md](phase-1-freqai-brain.md) | 🔄 **In Progress** — v20 live | FreqAI brain — long + short, v20 (2x leverage, macro safety gates active) |
-| 2 | [phase-2-data-enrichment.md](phase-2-data-enrichment.md) | ✅ **Verified** (2026-05-03) — cron clean, combined_context.json updating | External data fetchers — Fear & Greed, CoinGecko, CryptoPanic, DefiLlama, Google Trends |
-| 3 | [phase-3-hmm-regime.md](phase-3-hmm-regime.md) | ✅ **Verified** (2026-05-03) — regime NEUTRAL, cron clean | 5-regime HMM engine wired into strategy + memory |
-| 4 | [phase-4-obsidian-memory.md](phase-4-obsidian-memory.md) | ✅ **Verified** (2026-05-03) — auto-commits every 15m | Obsidian vault auto-write + git auto-commit |
-| 5 | [phase-5-karpathy-loop.md](phase-5-karpathy-loop.md) | ✅ **Verified** (2026-05-03) — research notes + hypotheses generated | Nightly research loop — Gemini + DeepSeek R1 |
-| 6 | [phase-6-tradingview.md](phase-6-tradingview.md) | 🔴 **Abandoned** (2026-05-04) — TradingView alerts require paid plan | Dropped — TradingView paid feature; FreqAI is sole signal source |
-| 7 | [phase-7-executor.md](phase-7-executor.md) | ✅ **Verified** (2026-05-03) — cron clean, no exceptions | Python signal executor — paper trading mode |
-| 8 | [phase-8-futures-setup.md](phase-8-futures-setup.md) | ✅ **Complete** (2026-05-05) — Binance futures API connected, finbuddy_memory mounted | Futures account setup — Binance USDT-M, leverage config, isolated margin |
-| 9 | [phase-9-futures-risk.md](phase-9-futures-risk.md) | ✅ **Complete** (2026-05-05) — RiskEngine live in custom_stake_amount + confirm_trade_entry | Futures risk engine — regime-aware sizing, cluster cap, funding-rate long guard |
-| 10 | [phase-10-live-migration.md](phase-10-live-migration.md) | ⬜ **BLOCKED** — needs walk-forward PASS or 6-month dry-run track record | Live capital migration — dry-run to real money, kill switch, go-live protocol |
+| 0 | [phase-0-foundation.md](phase-0-foundation.md) | ✅ Complete (2026-04-27) | Foundation — Docker, FreqTrade, Telegram |
+| 1 | [phase-1-freqai-brain.md](phase-1-freqai-brain.md) | 🟢 LIVE — v22 dry-run +$107 | FreqAI brain — `FinBuddyFreqAI` v22, 1h TF, 25 pairs, 2x leverage |
+| 2 | [phase-2-data-enrichment.md](phase-2-data-enrichment.md) | ✅ Live (cron) | Fear & Greed, CoinGecko, CryptoPanic, DefiLlama, Google Trends |
+| 3 | [phase-3-hmm-regime.md](phase-3-hmm-regime.md) | ✅ Live (cron 4h) | 5-regime HMM engine |
+| 4 | [phase-4-obsidian-memory.md](phase-4-obsidian-memory.md) | ✅ Live (cron 15m) | Auto-write + git auto-commit |
+| 5 | [phase-5-karpathy-loop.md](phase-5-karpathy-loop.md) | ✅ Live (cron 02:00) | Nightly research loop — Gemini + DeepSeek |
+| 6 | _phase-6 deleted_ | 🔴 Abandoned (2026-05-04) | TradingView dropped (paid plan required) |
+| 7 | [phase-7-executor.md](phase-7-executor.md) | ✅ Live (cron 5m) | Python signal executor (paper mode) |
+| 8 | [phase-8-futures-setup.md](phase-8-futures-setup.md) | ✅ Complete (2026-05-05) | Binance USDT-M, isolated margin |
+| 9 | [phase-9-futures-risk.md](phase-9-futures-risk.md) | ✅ Complete (2026-05-05) | Regime-aware sizing, cluster cap, funding guard |
+| 10 | [phase-10-live-migration.md](phase-10-live-migration.md) | ⛔ BLOCKED | Real-capital migration — waiting for brain-promoted variant OR 60-day track record |
+| 11 | [phase-11-self-evolution.md](phase-11-self-evolution.md) | ✅ Live | RS metrics + dynamic regime sizing in strategy |
+| 12 | [phase-12-brain-dashboard.md](phase-12-brain-dashboard.md) | ✅ Complete | React SPA dashboard (dashboard-ui/, dashboard/streamer.py) |
+| 13 | [phase-13-conscious-brain.md](phase-13-conscious-brain.md) | 🟢 OPERATIONAL | Autonomous hypothesis engine — 4/4 pillars built |
 
 ---
 
-## 🚨 Current Focus (as of 2026-05-09)
+## 🚨 Current Focus (2026-05-18)
 
-**Strategy: v20 live** — asymmetric barriers k_tp=2.0 / k_sl=1.0, 2x leverage, macro safety gates active, regime path fix active, fixed news/trends data fetchers.
+**Strategy live**: v22 untouched, +$107 dry-run, runs as evidence stream.
 
-**Immediate next steps:**
-1. ⏳ Walk-forward #5 (T190609) running — started 2026-05-09 19:06 UTC. First clean v17 OOS run. Check: `tail -f ~/.finbuddy/logs/walk_forward.log`. walkforward_notify.py will Telegram result.
-2. ⏳ Accumulate clean v17 trades — 36 closed, 3 open.
-3. Once walk-forward PASSES (Sharpe > 0.5, WR > 50%, DD < 20%, PF > 1.2) → begin Phase 10 go-live.
+**Active work**: Brain (Phase 13) autonomously testing variants — `*/10 * * * *` cadence, smart guided generation around top-3 known results, daily 08:00 Telegram digest. 19 experiments completed / 125 queued / 0 positive-profit yet.
+
+**Immediate gates:**
+1. ⏳ Brain finds ≥3 v23 configs `profit_pct > 0` on BOTH bull AND bear windows
+2. ⏳ Best v23 PF ≥ 1.2
+3. Once 1+2 met → Telegram promotion alert with Apply button → v23 swap
+
+**Walk-forward**: DEPRECATED as Phase 10 gate. v22 fails it catastrophically (-2,302 USDT). Replaced by per-window brain experiments + dry-run track record.
 
 **Monitoring (all cron'd):**
-- Watchdog: every 30m (file-log fallback added 2026-05-09)
-- Daily summary: 8 AM UTC (Telegram PnL digest)
-- Trade postmortem: every 15m
-- Pair performance: 8 AM UTC
+- Brain: run every 10 min, generate every 6h, scan daily 07:00, digest daily 08:00
+- Watchdog: every 30m (container/training/heartbeat alerts)
+- Trade postmortem: every 15m → `finbuddy_memory/trades/closed.md`
+- Daily summary: 08:00 (FreqTrade-native Telegram digest)
 
 ---
 
 ## Rules for Claude Code Working on These Tasks
 
-1. Read `CLAUDE.md` first — always
-2. Read `FINBUDDY_PROJECT_MEMORY.md` — always (master hub, most current status)
-3. Read the phase file before starting any task in that phase
-4. All new code goes in `freqtrade/user_data/` — never outside
-5. Never touch `finbuddy_memory/` files manually — they are auto-generated by crons
-6. Every strategy change must have a walk-forward backtest plan
-7. Keep things simple enough to debug from a mobile SSH session
-8. After completing a task, update the status in this file AND the phase file
-9. Hard cost ceiling: $3–5/month — no paid APIs unless explicitly approved
-10. Follow the 5 Core Engineering Principles in `CLAUDE.md` at all times
+1. Read `FINBUDDY_PROJECT_MEMORY.md` first — master hub
+2. Read `CLAUDE_HANDOFF.md` for current decisions + dead-things list
+3. Read the relevant phase file before changes
+4. All new code goes in `freqtrade/user_data/` or `scripts/`
+5. Auto-updated files (`finbuddy_memory/regimes/*`, `trades/*`, `research/*-nightly.md`, `CONTEXT.md`) — never edit manually
+6. Strategy changes require backtest validation (brain or manual)
+7. Mobile-debuggable — keep it simple
+8. Update phase file status + this index together
+9. Hard cost ceiling: $3–5/month
+10. Don't pile session notes into `CLAUDE.md` — use phase files or `CLAUDE_HANDOFF.md`
 
 ---
 
 ## Overall Progress
 
 ```
-Phases Complete:     3 / 11 (Phases 0, 8, 9)
-Phases In Progress:  1 / 11 (Phase 1)
-Phases Live:         5 / 11 (Phases 2, 3, 4, 5, 7)
-Phases Blocked:      1 / 11 (Phase 10 — needs WF PASS or 6-month track record)
-Phases Abandoned:    1 / 11 (Phase 6 — TradingView requires paid plan)
+Phases Complete:     5 / 13  (Phases 0, 8, 9, 11, 12)
+Phases Live (cron):  6 / 13  (Phases 2, 3, 4, 5, 7, 13)
+Phases In Progress:  1 / 13  (Phase 1 — v22 live, waiting for brain to find upgrade)
+Phases Blocked:      1 / 13  (Phase 10 — needs brain-promoted variant or track record)
+Phases Abandoned:    1 / 13  (Phase 6 — TradingView)
 ```
 
 ---
 
 ## 🔗 Related Files
-- [[CLAUDE]] ← operational context for Claude Code (read first)
-- [[FINBUDDY_PROJECT_MEMORY]] ← master hub, current project status
-- [[COLLABORATION_CONTRACT]] ← roles, automation rules, AI vs code boundaries
-- [[CLAUDE_HANDOFF]] ← current session action queue
-- [[finbuddy_memory/CONTEXT]] ← live context injected into AI prompts
-- [[finbuddy_memory/regimes/current]] ← live regime
-- [[strategies/registry]] ← strategy registry
+- [[../CLAUDE]] ← operational context (do NOT pile session notes here)
+- [[../FINBUDDY_PROJECT_MEMORY]] ← master hub
+- [[../CLAUDE_HANDOFF]] ← current session decisions + dead-things list
+- [[../COLLABORATION_CONTRACT]] ← roles, automation principles
+- [[../CONTEXT]] ← live context injected into AI prompts
+- [[../regimes/current]] ← live regime snapshot
+- [[../strategies/graveyard]] ← retired strategies + historical backtests

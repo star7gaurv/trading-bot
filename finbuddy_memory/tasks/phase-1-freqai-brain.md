@@ -1,117 +1,118 @@
 # Phase 1 — FreqAI as the Brain
 
-> FreqAI is the primary signal intelligence. Trains on rolling market data (1h TF, 25 pairs, Binance Futures USDT-M), produces ML-powered long/short signals, confirmed by LLM layer.
+> FreqAI is the primary signal intelligence. Trains on rolling market data, produces ML-powered long/short signals on Binance Futures USDT-M. Live v22 strategy serves real dry-run evidence; v23 variants explored autonomously by the brain.
 
-**Reference:** [FreqAI Architecture Guide](../finbuddy_memory/research/2026-04-27-freqai-architecture-guide.md)  
+**Reference:** [FreqAI Architecture Guide](../research/2026-04-27-freqai-architecture-guide.md)
 **Official Docs:** https://www.freqtrade.io/en/stable/freqai/
 
 ---
 
-## Status as of 2026-05-09 evening
+## Status as of 2026-05-18
 
-- Task 1.1: ✅ COMPLETE
-- Task 1.2: ✅ COMPLETE (FinBuddyLLMModel v3 active, LLM layer working)
-- Task 1.3: ⏳ RUNNING — Walk-forward #5 (T190609) started 2026-05-09 19:06 UTC
-- Task 1.4: ✅ COMPLETE
+| Sub-task | Status |
+|---|---|
+| 1.1 Build FreqAI Strategy | ✅ COMPLETE — v22 live (`FinBuddyFreqAI.py`) |
+| 1.2 LLM Confirmation Layer | ✅ COMPLETE — `FinBuddyLLMModel` v5 (auto-confirm ≥ 0.90) |
+| 1.3 Walk-Forward OOS | ❌ FAILED — see results below; **WF deprecated as gate** in favor of brain-validated dry-run path |
+| 1.4 Dry-run live | ✅ COMPLETE — +$107 USDT, 273 trades, since 2026-04-30 |
+
+**Walk-forward verdict (last run 2026-05-16):** 21 folds × 25 pairs × 2024-01-01 → 2026-04-01 produced WR 21.2% / Sharpe -9.45 / PF 0.54 / -2,302 USDT. **All four gate criteria failed.** Re-running v22 on the same code would produce identical results — v22 strategy file has not changed since.
+
+**Phase 1 forward path**: Brain (Phase 13) autonomously searches v23 + v22 variants. When a variant beats live v22 on bull + bear windows, scan fires Telegram alert with Apply button → swap is the new gate for v23 deployment. See `phase-10-live-migration.md` for live-capital criteria.
 
 ---
 
-## Task 1.1 — Build FreqAI Strategy
-**Status:** ✅ COMPLETE  
-**File:** `freqtrade/user_data/strategies/FinBuddyFreqAI.py` (v17)
+## Task 1.1 — FreqAI Strategy (v22 LIVE)
 
-**Live configuration:**
-- 1h TF, 25 pairs, Binance USDT-M perpetual, `can_short=True`
-- Triple-barrier labeling: `k_tp=k_sl=2.0` (symmetric → P(L)=50% base rate)
-- `label_period_candles=6` (6h window), `train_period_days=90`
-- `custom_stoploss()`: 2.0×ATR initial, trail locks at +2.0×ATR once profit > 1×ATR
-- `custom_exit()`: 24h time limit (24 × 1h candles)
+**File:** `freqtrade/user_data/strategies/FinBuddyFreqAI.py` — unchanged since 2026-05-15
+
+Live config:
+- **1h base TF**, **25 pairs**, Binance USDT-M perpetual, isolated margin, **2x leverage**, max 8 trades
+- Asymmetric triple-barrier labels: `k_tp=2.0`, `k_sl=1.0`, `label_period_candles=6`
+- `custom_stoploss`: 1.0×ATR initial / trail locks at 2.0×ATR once profit > 3.0×ATR
 - Regime kill-switches: CRASH/BEAR → no longs; BULL/EUPHORIA → no shorts
-- Regime-aware exits: CRASH/BEAR → exit longs at 0.55, BULL/EUPHORIA → exit shorts at 0.55, NEUTRAL → 0.65 both
-- Cluster cap: max 2 trades per MEGA_CAP (BTC/ETH/SOL/etc) or L2 (ARB/OP/etc) cluster
-- Funding-rate long guard: blocks longs if BTC perp funding >0.05%/8h
-- Enter tags: `freqai_lgbm_v17_long` / `freqai_lgbm_v17_short`
-- Identifier: `finbuddy_v17_sym_1778353539`
+- MTF Sniper gate (v22): pair 4h trend alignment required
+- Relative Strength gate: dynamic ML threshold (+0.05) when going against RS-vs-BTC
+- Cluster cap (`MEGA_CAP` / `L2`): max 2 trades per cluster
+- Funding-rate long guard: blocks longs if BTC perp funding > 0.05%/8h
+- Identifier: `finbuddy_v22_balanced_1779015982` (LightGBMClassifier, `class_weight=balanced`)
+- Enter tags: `freqai_lgbm_v22_long` / `freqai_lgbm_v22_short`
 
 ---
 
 ## Task 1.2 — FinBuddyLLMModel (LLM Confirmation Layer)
-**Status:** ✅ COMPLETE  
-**File:** `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` (v3)
 
-**Architecture:**
-```
-Market data + indicators
-      ↓
-LightGBMClassifier.fit()   — 100% native FreqAI training, unchanged
-      ↓
-LightGBMClassifier.predict() — outputs "L"/"S" class + probabilities in "L"/"S" columns
-      ↓
-LLM confirmation (fires when confidence = |prob - 0.5| > 5% AND cooldown elapsed):
-  → call_llm(context, task="signal") via central llm_client.py
-  → CONFIRM → keep signal
-  → REJECT/HOLD → zero out "L" and "S" proba to 0.5 (signal suppressed below 0.60 threshold)
-  → all LLM fail → raw LightGBM passthrough (safe degradation)
-```
+**File:** `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` v5
+
+Wraps LightGBMClassifier with an LLM confirmation gate:
+- `proba ≥ 0.90` → auto-confirm (no LLM call) — bypass added in v5 after v3 was rejecting 91% of signals
+- `proba ≥ 0.55` and cooldown elapsed → LLM CONFIRM/REJECT call
+- All LLM providers fail → raw LightGBM passthrough (safe degradation)
+- Cooldown: 30 min per pair
 
 **LLM provider chain (task="signal"):** nvidia-mistral-medium → nvidia-llama-70b → nvidia-kimi-k2 → openrouter-gpt-oss-20b → openrouter-gpt-oss-120b → openrouter-nemotron-120b
 
-**Config:** `"freqaimodel": "FinBuddyLLMModel"` in config.json (active)  
-**Keys:** `NVIDIA_API_KEY` + `OPENROUTER_API_KEY` in freqtrade/.env  
-**Cooldown:** 60 min per pair
+Keys: `NVIDIA_API_KEY` + `OPENROUTER_API_KEY` in `freqtrade/.env`.
 
 ---
 
-## Task 1.3 — Walk-Forward OOS Validation
-**Status:** ⏳ RUNNING — Walk-forward #5 (T190609)
+## Task 1.3 — Walk-Forward OOS (FAILED, deprecated as Phase 10 gate)
 
-Walk-forward #5 is the first valid v17 run (symmetric barriers, correct per-fold identifiers, no lookahead bias).
+Last full run: `FinBuddyFreqAI_2024-01-01_2026-04-01_20260516T184159`
 
-**Run:** `FinBuddyFreqAI_2024-01-01_2026-04-01_20260509T190609`  
-**Folds:** 21 (train 6mo / test 1mo / slide 1mo)  
-**Monitor:** `tail -f ~/.finbuddy/logs/walk_forward.log`  
-**Notify:** `walkforward_notify.py` Telegrams PASS/FAIL automatically when done
+| Metric | Result | Target | Status |
+|---|---|---|---|
+| Win Rate | 21.2% | > 50% | ❌ |
+| Sharpe | -9.45 | > 0.5 | ❌ |
+| Profit Factor | 0.54 | > 1.2 | ❌ |
+| Worst DD | 2.2% | < 20% | ✅ (only one passing) |
+| Total P&L | -2,302 USDT | > 0 | ❌ |
 
-**Gate criteria (all must pass):**
-- Win Rate > 50%
-- Sharpe > 0.5
-- Max Drawdown < 20%
-- Profit Factor > 1.2
-
-**Prior walk-forward history:**
-| Run | Issue | Result |
-|---|---|---|
-| T130947 (before v17) | WR=42.5% = label base rate (k_sl=1.5 bias) | FAIL — root cause identified |
-| T180455 (during v17 deploy) | Killed mid-run | N/A |
-| T190609 (v17, current) | First clean symmetric-barriers run | ⏳ Running |
+WF will NOT be re-run until the strategy code materially changes. **Replaced as gate** by the brain's per-window experiments (see Phase 13) which test on `bull_2024Q1` / `bull_2024Q2` / `bear_2025Q1` per hypothesis.
 
 ---
 
-## Task 1.4 — Switch Dry Run to FinBuddyFreqAI
-**Status:** ✅ COMPLETE  
-Bot running `FinBuddyFreqAI` with `FinBuddyLLMModel` since 2026-04-30. 36 closed trades.
+## Task 1.4 — Live Dry-Run (ACTIVE)
+
+Bot running v22 + LLMModel v5 since 2026-04-30.
+
+| Metric (as of 2026-05-18) | Value |
+|---|---|
+| Closed trades | 273 |
+| Win rate | 39.6% |
+| Profit factor | 1.51 ✅ |
+| Total P&L | +$107.49 USDT (+10.86%) |
+| Max drawdown | 3.19% ✅ |
+| Best exit reason | `exit_signal` — 60 trades / +174 USDT / 75% WR ✅ |
+| Worst exit reason | `stop_loss` — 49 trades / -70 USDT ❌ |
+
+Live profit interpretation: BEAR regime favors shorts and v22 takes shorts well. WF failure across full 2-year window shows v22 doesn't have a regime-agnostic edge. Real signal vs. regime luck won't be conclusive until the bot has lived through a regime flip (NEUTRAL → BULL transition).
 
 ---
 
-## Phase 1 Complete When
-- [x] `FinBuddyFreqAI.py` v17 deployed, trading live (Task 1.1 ✅)
-- [x] `FinBuddyLLMModel.py` v3 active, LLM confirmation working (Task 1.2 ✅)
-- [ ] Walk-forward OOS passes all 4 criteria (Task 1.3 ⏳)
-- [x] Dry run on `FinBuddyFreqAI` + `FinBuddyLLMModel` (Task 1.4 ✅)
+## Phase 1 "Complete" Definition (revised 2026-05-18)
 
-**Remaining gate:** Walk-forward #5 results → if PASS, proceed to Phase 10.
+The original gate was walk-forward PASS → Phase 10. That gate is dead (v22 fails it). New gate:
+
+- [x] FreqAI live in dry-run with positive P&L (✅ +$107)
+- [x] LLM layer working (✅ v5 with auto-confirm)
+- [ ] 60-day dry-run track record with PF > 1.2 across at least one regime flip
+- [ ] OR: brain promotes a v23 variant that passes on bull + bear simultaneously
+
+Either path unlocks Phase 10.
 
 ---
 
 ## AI Models in FreqAI
 
-| Model | Class | Role |
-|---|---|---|
-| LightGBM | `LightGBMClassifier` | Primary training model — fast, tabular, great baseline |
-| XGBoost | `XGBoostClassifier` | Available, not currently used |
-| PyTorch MLP | `PyTorchMLPRegressor` | Available for future experimentation |
+| Class | Role |
+|---|---|
+| `LightGBMClassifier` | v22 live model — primary, balanced class weights |
+| `LightGBMRegressor` | v23 variant — predicts `&-future_return` directly (eliminates class bias) |
+| `XGBoostClassifier` | Available, not currently used |
+| `PyTorchMLPRegressor` | Available for future experimentation |
 
-## LLM Signal Confirmation (via llm_client.py)
+## LLM Signal Confirmation (via `scripts/llm_client.py`)
 
 | Provider | Models | Key |
 |---|---|---|

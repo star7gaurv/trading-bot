@@ -1,8 +1,10 @@
 # FinBuddy — Collaboration & Autonomy Contract
 
-**Owner:** Gaurav (star7gaurv)  
-**Actors:** Perplexity AI (this assistant), Claude Code (Anthropic Sonnet agent), Future agents (Grok/xAI, DeepSeek, etc.)  
-**Last Updated:** 2026-05-01 ~16:45 IST
+**Owner:** Gaurav (star7gaurv)
+**Actors:** Claude Code (primary), Brain bot (autonomous via cron), future agents (Grok/xAI, DeepSeek, etc.)
+**Last Updated:** 2026-05-18 (date refresh; principles unchanged)
+
+> **2026-05-18 note**: Perplexity is no longer in active rotation. Claude Code now handles both strategy design and ops. The brain itself (Phase 13) runs autonomously and proposes promotions via Telegram — Gaurav approves with Apply button. Rest of contract still applies.
 
 ---
 

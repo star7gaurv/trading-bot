@@ -1,7 +1,11 @@
-# Phase 11: Self-Evolution (Memory Integration)
+# Phase 11: Self-Evolution (In-Strategy Memory Integration)
 
-**Status**: ✅ COMPLETE
-**Goal**: Move the bot away from static, dumb parameters and into dynamic self-evolution using Relative Strength (RS) metrics, and integrate with the FinBuddy memory vault.
+**Status**: ✅ COMPLETE (verified 2026-05-18)
+**Last verified**: 2026-05-18
+
+> **Scope note**: Phase 11 is the *in-strategy* dynamic adjustments (RS gates, regime sizing, memory reads). The *autonomous hypothesis engine* — generating and testing new strategy variants — is **Phase 13** (`phase-13-conscious-brain.md`). Don't confuse the two.
+
+**Goal**: Strategy reads live memory (regime, macro context, recent WR) and adjusts behavior per-candle/per-trade instead of hardcoded parameters.
 
 ## Sub-Tasks
 

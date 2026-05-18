@@ -1,12 +1,24 @@
 # Phase 10 — Live Capital Migration
 
 > The go-live checklist. Moving from dry-run to real money on futures.
-> This is the most consequential phase. Every item must be checked manually by Gaurav.
-> **Prerequisite:** Phase 9 complete. 30-day dry-run with positive Sharpe and no circuit breaker triggers.
+> Most consequential phase. Every item checked manually by Gaurav.
 
 ---
 
-## Phase Status: ⬜ Pending
+## Phase Status: ⛔ BLOCKED (as of 2026-05-18)
+
+**Why blocked:**
+- Walk-forward gate FAILED (v22, May 16): WR 21.2%, Sharpe -9.45, PF 0.54, -$2,302 — all 4 criteria miss
+- Live v22 dry-run is +$107 (+10.86%) but only ~3 weeks old, single regime (BEAR)
+
+**Two valid paths to unblock (either is sufficient):**
+
+| Path | Criteria | Status |
+|---|---|---|
+| **A. Track record** | 60 days live dry-run + PF > 1.2 + survived a regime flip | 🟠 ~21 days in, BEAR only so far |
+| **B. Brain-promoted variant** | Brain finds v23 variant profitable on BULL + BEAR + PF ≥ 1.2 → Telegram Apply button → swap → enters track record path | 🔴 0/3 (no positive v23 results yet, brain still searching) |
+
+WF is no longer a gate — see `phase-1-freqai-brain.md` Task 1.3.
 
 ---
 
