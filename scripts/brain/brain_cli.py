@@ -40,8 +40,9 @@ def cmd_status(_args) -> int:
     best = best_by_metric("profit_pct", min_trades=20)
     if best:
         m = best["metrics"]
+        arch = best.get("config", {}).get("arch", "?")
         print(f"\n  Best so far : profit={m['profit_pct']}% WR={m['wr']*100:.1f}% Sharpe={m['sharpe']}")
-        print(f"  Hypothesis  : {best['hypothesis_id']}  ({best['band']}, {best['window']})")
+        print(f"  Hypothesis  : {best['hypothesis_id']}  ({arch}, {best['band']}, {best['window']})")
         print(f"  Rationale   : {best['rationale']}")
     return 0
 

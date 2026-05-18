@@ -144,32 +144,47 @@ def parse_zip(zip_path: Path) -> dict | None:
 # ── Run a single hypothesis ───────────────────────────────────────────────
 
 def run_hypothesis(h: dict) -> dict | None:
-    """Execute one backtest. Returns metrics dict, or None on failure."""
+    """Execute one backtest. Routes env vars by architecture (v22 vs v23)."""
     cfg = h["config"]
     config_file = cfg.get("config_file", "v23_regression_15m_di_config.json")
     timerange   = h["timerange"]
     identifier  = f"brain_{h['hypothesis_id']}_{int(time.time())}"
+    arch        = cfg.get("arch", "v23")
 
-    cmd = [
-        "docker-compose", "run", "--rm", "--no-deps",
-        "-e", f"FREQAI_LONG_THRESHOLD={cfg.get('long_threshold', 1.5)}",
-        "-e", f"FREQAI_SHORT_THRESHOLD={cfg.get('short_threshold', -1.5)}",
-        "-e", f"FREQAI_K_SL={cfg.get('k_sl', 2.0)}",
+    # Architecture-aware env vars. Each strategy reads its own set.
+    env_args = [
+        "-e", f"FREQAI_K_SL={cfg.get('k_sl', 1.0)}",
         "-e", f"FREQAI_K_TP={cfg.get('k_tp', 2.0)}",
-        "-e", f"FREQAI_STABILITY_N={cfg.get('stability_n', 2)}",
         "-e", "FREQTRADE__DRY_RUN_WALLET=10000",
         "-e", f"FREQTRADE__FREQAI__IDENTIFIER={identifier}",
         "-e", f"FREQTRADE__FREQAI__FEATURE_PARAMETERS__LABEL_PERIOD_CANDLES={cfg.get('label_period_candles', 24)}",
-        "freqtrade",
-        "backtesting",
-        "--config", f"/freqtrade/user_data/{config_file}",
-        "--strategy", cfg.get("strategy", "FinBuddyFreqAI_v23"),
-        "--freqaimodel", cfg.get("freqaimodel", "LightGBMRegressor"),
-        "--timerange", timerange,
-        "--timeframe", cfg.get("timeframe", "15m"),
-        "--export", "trades",
-        "--cache", "none",
     ]
+    if arch == "v22":
+        env_args += [
+            "-e", f"FREQAI_ML_THRESHOLD={cfg.get('ml_threshold', 0.60)}",
+        ]
+    else:  # v23
+        env_args += [
+            "-e", f"FREQAI_LONG_THRESHOLD={cfg.get('long_threshold', 1.5)}",
+            "-e", f"FREQAI_SHORT_THRESHOLD={cfg.get('short_threshold', -1.5)}",
+            "-e", f"FREQAI_STABILITY_N={cfg.get('stability_n', 2)}",
+        ]
+
+    cmd = (
+        ["docker-compose", "run", "--rm", "--no-deps"]
+        + env_args
+        + [
+            "freqtrade",
+            "backtesting",
+            "--config", f"/freqtrade/user_data/{config_file}",
+            "--strategy", cfg.get("strategy", "FinBuddyFreqAI_v23"),
+            "--freqaimodel", cfg.get("freqaimodel", "LightGBMRegressor"),
+            "--timerange", timerange,
+            "--timeframe", cfg.get("timeframe", "15m"),
+            "--export", "trades",
+            "--cache", "none",
+        ]
+    )
 
     log_dir = ROOT / "backtests"
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -267,15 +282,16 @@ def run_next(max_runs: int = 1, status_only: bool = False) -> int:
         mark_completed(h, metrics, started_at=started)
         completed += 1
 
-        # Telegram a quick result line
+        # Telegram a quick result line (with architecture badge)
+        arch = h.get("config", {}).get("arch", "?")
         verdict = "🟢" if metrics.get("profit_pct", -1) > 0 else "🔴"
         _tg(
-            f"{verdict} <b>Brain #{h['hypothesis_id']}</b> ({h['band']}, {h['window']})\n"
+            f"{verdict} <b>Brain #{h['hypothesis_id']}</b> ({arch}, {h['band']}, {h['window']})\n"
             f"WR={metrics['wr']*100:.1f}% Sh={metrics['sharpe']} PF={metrics['pf']} Profit={metrics['profit_pct']}%\n"
             f"L/S: {metrics['long_count']}/{metrics['short_count']} | trades={metrics['trades']}\n"
             f"<i>{h['rationale']}</i>"
         )
-        print(f"[brain] DONE {h['hypothesis_id']} → profit={metrics['profit_pct']}% WR={metrics['wr']*100:.1f}%")
+        print(f"[brain] DONE {h['hypothesis_id']} [{arch}] → profit={metrics['profit_pct']}% WR={metrics['wr']*100:.1f}%")
 
     _release_lock()
     return completed

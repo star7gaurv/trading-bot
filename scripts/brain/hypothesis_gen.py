@@ -32,8 +32,14 @@ WINDOWS = {
     "bear_2025Q1":  "20250101-20250401",   # BTC -28% — bear leg
 }
 
-# ── Seed config (the current best-known, pre-fix-#10 winner) ──────────────
-SEED_CONFIG = {
+# ══════════════════════════════════════════════════════════════════════════
+# Two architectures live in the brain. Each has its own seed + param space.
+# Brain explores BOTH in parallel — vision says broader perspective wins.
+# ══════════════════════════════════════════════════════════════════════════
+
+# v23 Regression — LightGBMRegressor predicting future_return %
+SEED_CONFIG_V23 = {
+    "arch":               "v23",
     "strategy":           "FinBuddyFreqAI_v23",
     "freqaimodel":        "LightGBMRegressor",
     "config_file":        "v23_regression_15m_di_config.json",
@@ -44,64 +50,110 @@ SEED_CONFIG = {
     "k_tp":               2.0,
     "stability_n":        2,
     "label_period_candles": 24,
-    "filter_di":          True,    # DI_threshold filter
-    "filter_svm":         True,    # SVM outlier removal
+    "filter_di":          True,
+    "filter_svm":         True,
 }
 
+# v22 Classifier+LLM — currently live, +110 USDT all-time
+# Uses LightGBMClassifier (pure, no LLM layer) for clean brain backtests.
+# When promoted to live, the LIVE strategy adds the LLM layer on top.
+SEED_CONFIG_V22 = {
+    "arch":               "v22",
+    "strategy":           "FinBuddyFreqAI",
+    "freqaimodel":        "LightGBMClassifier",   # pure backtest; live wraps with LLM
+    "config_file":        "v22_backtest_config.json",
+    "timeframe":          "5m",
+    "k_tp":               2.0,
+    "k_sl":               1.0,
+    "ml_threshold":       0.60,
+    "label_period_candles": 72,
+}
 
-# ── SAFE BAND ─────────────────────────────────────────────────────────────
+# Back-compat alias
+SEED_CONFIG = SEED_CONFIG_V23
+
+
+# ── SAFE BAND (architecture-aware) ────────────────────────────────────────
+
+# Per-architecture perturbation menus. Each tuple: (param, delta, rationale).
+PERTURB_V23 = [
+    ("long_threshold",      +0.25, "tighter long entries"),
+    ("long_threshold",      -0.25, "looser long entries"),
+    ("short_threshold",     -0.25, "tighter short entries"),
+    ("short_threshold",     +0.25, "looser short entries"),
+    ("k_sl",                +0.25, "wider stop"),
+    ("k_sl",                -0.25, "tighter stop"),
+    ("k_tp",                +0.25, "more upside on trail"),
+    ("k_tp",                -0.25, "tighter trail lock"),
+    ("stability_n",         +1,    "stricter signal stability"),
+    ("stability_n",         -1,    "looser signal stability"),
+]
+
+PERTURB_V22 = [
+    ("k_tp",                +0.25, "wider take-profit"),
+    ("k_tp",                -0.25, "tighter take-profit"),
+    ("k_sl",                +0.20, "wider stop"),
+    ("k_sl",                -0.20, "tighter stop"),
+    ("ml_threshold",        +0.05, "tighter classifier threshold"),
+    ("ml_threshold",        -0.05, "looser classifier threshold"),
+]
+
+
+def _clamp(v: dict, param: str) -> dict:
+    """Clamp a perturbed param to a sane range."""
+    if "threshold" == param.split("_")[-1] and param != "ml_threshold":
+        if param == "short_threshold":
+            v[param] = max(-6.0, min(-0.25, v[param]))
+        else:
+            v[param] = max(0.25, min(6.0, v[param]))
+    elif param == "ml_threshold":
+        v[param] = max(0.45, min(0.85, v[param]))
+    elif param.startswith("k_"):
+        v[param] = max(0.5, min(4.0, v[param]))
+    return v
+
 
 def generate_safe_band(seed: dict | None = None, n: int = 8) -> list[dict]:
-    """
-    Small perturbations around the current best config.
+    """Small perturbations around the current best config — for the SAME architecture."""
+    base = dict(seed or _current_best_config() or SEED_CONFIG_V23)
+    # Older log entries don't have 'arch' — infer from strategy name
+    if "arch" not in base:
+        base["arch"] = "v22" if base.get("strategy") == "FinBuddyFreqAI" else "v23"
+    perturbations = PERTURB_V22 if base["arch"] == "v22" else PERTURB_V23
 
-    For each variant: pick ONE parameter, shift it by a small step.
-    The brain learns a local gradient quickly.
-    """
-    base = seed or _current_best_config() or SEED_CONFIG
-    perturbations = [
-        # (param, delta, rationale)
-        ("long_threshold",      +0.25, "tighter long entries"),
-        ("long_threshold",      -0.25, "looser long entries"),
-        ("short_threshold",     -0.25, "tighter short entries"),
-        ("short_threshold",     +0.25, "looser short entries"),
-        ("k_sl",                +0.25, "wider stop"),
-        ("k_sl",                -0.25, "tighter stop"),
-        ("k_tp",                +0.25, "more upside on trail"),
-        ("k_tp",                -0.25, "tighter trail lock"),
-        ("stability_n",         +1,    "stricter signal stability"),
-        ("stability_n",         -1,    "looser signal stability"),
-    ]
     random.shuffle(perturbations)
     out = []
     for (param, delta, rationale) in perturbations[:n]:
         v = dict(base)
+        if param not in v:
+            continue
         if isinstance(v[param], int):
             v[param] = max(1, int(v[param] + delta))
         else:
             v[param] = round(float(v[param]) + float(delta), 3)
-            # Clamp to sane ranges
-            if "threshold" in param:
-                if param == "short_threshold":
-                    v[param] = max(-6.0, min(-0.25, v[param]))
-                else:
-                    v[param] = max(0.25, min(6.0, v[param]))
-            elif param.startswith("k_"):
-                v[param] = max(0.5, min(4.0, v[param]))
-        # don't duplicate seed
+            v = _clamp(v, param)
         if v == base:
             continue
         out.append({
             "band": "safe",
-            "rationale": f"safe: {param} {'+' if delta>=0 else ''}{delta} ({rationale})",
+            "rationale": f"safe [{base['arch']}]: {param} {'+' if delta>=0 else ''}{delta} ({rationale})",
             "config": v,
         })
     return out
 
 
-# ── AGGRESSIVE BAND ───────────────────────────────────────────────────────
+def generate_safe_band_both(n_per_arch: int = 4) -> list[dict]:
+    """SAFE band for BOTH architectures. Seed each from its own current-best."""
+    out = []
+    for arch_seed in (SEED_CONFIG_V22, SEED_CONFIG_V23):
+        best = _current_best_config_for_arch(arch_seed["arch"]) or arch_seed
+        out += generate_safe_band(seed=best, n=n_per_arch)
+    return out
 
-AGGRESSIVE_CHOICES = {
+
+# ── AGGRESSIVE BAND (architecture-aware) ──────────────────────────────────
+
+AGGRESSIVE_CHOICES_V23 = {
     "timeframe":          ["5m", "15m", "30m", "1h", "4h"],
     "long_threshold":     [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0],
     "short_threshold":    [-0.5, -1.0, -1.5, -2.0, -2.5, -3.0, -4.0],
@@ -113,81 +165,137 @@ AGGRESSIVE_CHOICES = {
     "filter_svm":         [True, False],
 }
 
-# Map timeframe → which config file to use
-TF_CONFIG_MAP = {
-    "5m":  "backtest_config.json",          # 5m base + 15m/1h/4h informative
+AGGRESSIVE_CHOICES_V22 = {
+    "timeframe":          ["5m", "15m", "30m", "1h"],     # 4h underperforms v22-style classifier
+    "k_tp":               [1.5, 2.0, 2.5, 3.0],
+    "k_sl":               [0.8, 1.0, 1.2, 1.5, 2.0],
+    "ml_threshold":       [0.55, 0.60, 0.65, 0.70, 0.75],
+    "label_period_candles": [6, 12, 24, 48, 72],
+}
+
+# Timeframe → config file map (per architecture)
+TF_CONFIG_MAP_V23 = {
+    "5m":  "backtest_config.json",
     "15m": "v23_regression_15m_di_config.json",
     "30m": "v23_regression_30m_config.json",
     "1h":  "v23_regression_1h_config.json",
     "4h":  "v23_regression_4h_config.json",
 }
 
+TF_CONFIG_MAP_V22 = {
+    # All v22 variants share v22_backtest_config.json but override timeframe via env.
+    # FreqTrade respects --timeframe CLI arg over config's timeframe.
+    "5m":  "v22_backtest_config.json",
+    "15m": "v22_backtest_config.json",
+    "30m": "v22_backtest_config.json",
+    "1h":  "v22_backtest_config.json",
+}
 
-def generate_aggressive_band(n: int = 12) -> list[dict]:
-    """
-    Random sample from the wide combinatorial space.
 
-    We don't enumerate (too many combos = 5×7×7×5×4×4×5×2×2 = 196,000) — instead
-    we sample randomly each cycle so over time the space is explored.
-    """
-    out = []
-    seen_keys: set[tuple] = set()
+def _generate_aggressive_v23(n: int) -> list[dict]:
+    out, seen = [], set()
     attempts = 0
     while len(out) < n and attempts < n * 5:
         attempts += 1
-        v = {}
-        for k, choices in AGGRESSIVE_CHOICES.items():
-            v[k] = random.choice(choices)
-        # constrain: short_threshold must be negative
-        if v["short_threshold"] >= 0:
-            v["short_threshold"] = -abs(v["short_threshold"])
-
+        v = {k: random.choice(c) for k, c in AGGRESSIVE_CHOICES_V23.items()}
+        v["short_threshold"] = -abs(v["short_threshold"])
+        v["arch"] = "v23"
         v["strategy"]    = "FinBuddyFreqAI_v23"
         v["freqaimodel"] = "LightGBMRegressor"
-        v["config_file"] = TF_CONFIG_MAP[v["timeframe"]]
-
-        # Dedupe based on parameter tuple
+        v["config_file"] = TF_CONFIG_MAP_V23[v["timeframe"]]
         key = tuple(sorted(v.items()))
-        if key in seen_keys:
+        if key in seen:
             continue
-        seen_keys.add(key)
-
+        seen.add(key)
         rationale = (
-            f"aggr: tf={v['timeframe']} lt={v['long_threshold']:+} st={v['short_threshold']:+} "
+            f"aggr [v23]: tf={v['timeframe']} lt={v['long_threshold']:+} st={v['short_threshold']:+} "
             f"ksl={v['k_sl']} ktp={v['k_tp']} N={v['stability_n']} lp={v['label_period_candles']} "
             f"di={v['filter_di']} svm={v['filter_svm']}"
         )
-        out.append({
-            "band": "aggressive",
-            "rationale": rationale,
-            "config": v,
-        })
+        out.append({"band": "aggressive", "rationale": rationale, "config": v})
     return out
+
+
+def _generate_aggressive_v22(n: int) -> list[dict]:
+    out, seen = [], set()
+    attempts = 0
+    while len(out) < n and attempts < n * 5:
+        attempts += 1
+        v = {k: random.choice(c) for k, c in AGGRESSIVE_CHOICES_V22.items()}
+        v["arch"] = "v22"
+        v["strategy"]    = "FinBuddyFreqAI"
+        v["freqaimodel"] = "LightGBMClassifier"
+        v["config_file"] = TF_CONFIG_MAP_V22[v["timeframe"]]
+        key = tuple(sorted(v.items()))
+        if key in seen:
+            continue
+        seen.add(key)
+        rationale = (
+            f"aggr [v22]: tf={v['timeframe']} ktp={v['k_tp']} ksl={v['k_sl']} "
+            f"thr={v['ml_threshold']} lp={v['label_period_candles']}"
+        )
+        out.append({"band": "aggressive", "rationale": rationale, "config": v})
+    return out
+
+
+def generate_aggressive_band(n: int = 12) -> list[dict]:
+    """Half v23, half v22 — both architectures explored."""
+    n_v23 = n // 2 + n % 2
+    n_v22 = n // 2
+    return _generate_aggressive_v23(n_v23) + _generate_aggressive_v22(n_v22)
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────
 
-def _current_best_config() -> dict | None:
-    """The seed for safe-band perturbation is the current best-by-profit."""
-    best = best_by_metric("profit_pct", window=None, min_trades=20)
-    if best is None:
+def _current_best_config(arch: str | None = None) -> dict | None:
+    """Current best-by-profit overall (or restricted to one architecture)."""
+    from experiment_log import read_log
+    log = [r for r in read_log()
+           if r.get("status") == "completed"
+           and r.get("metrics", {}).get("trades", 0) >= 20]
+    if arch is not None:
+        log = [r for r in log if (r.get("config", {}).get("arch") == arch
+                                   or (arch == "v23" and r.get("config", {}).get("strategy") == "FinBuddyFreqAI_v23")
+                                   or (arch == "v22" and r.get("config", {}).get("strategy") == "FinBuddyFreqAI"))]
+    if not log:
         return None
-    return best["config"]
+    log.sort(key=lambda r: r["metrics"].get("profit_pct", -1e9), reverse=True)
+    return log[0]["config"]
+
+
+def _current_best_config_for_arch(arch: str) -> dict | None:
+    return _current_best_config(arch=arch)
 
 
 # ── Public API ────────────────────────────────────────────────────────────
 
 def queue_seed_if_empty() -> int:
-    """If queue and log are both empty, queue SEED_CONFIG on each window."""
+    """If queue and log are both empty, queue BOTH v23 + v22 seeds on each window."""
     from experiment_log import read_log, read_queue
     if read_log() or read_queue():
         return 0
     queued = 0
+    for seed in (SEED_CONFIG_V23, SEED_CONFIG_V22):
+        for win_name, timerange in WINDOWS.items():
+            queue_hypothesis(
+                config=seed,
+                band="seed",
+                rationale=f"seed [{seed['arch']}]: baseline",
+                window=win_name,
+                timerange=timerange,
+            )
+            queued += 1
+    return queued
+
+
+def queue_v22_seeds() -> int:
+    """One-shot helper to seed v22 hypotheses into an existing queue."""
+    queued = 0
     for win_name, timerange in WINDOWS.items():
         queue_hypothesis(
-            config=SEED_CONFIG,
+            config=SEED_CONFIG_V22,
             band="seed",
-            rationale="seed: baseline from smoke-test best-known",
+            rationale="seed [v22]: live-config baseline (5m, classifier, balanced)",
             window=win_name,
             timerange=timerange,
         )
@@ -197,11 +305,11 @@ def queue_seed_if_empty() -> int:
 
 def generate_and_queue(safe_n: int = 6, aggressive_n: int = 6, windows: list[str] | None = None) -> int:
     """
-    One brain cycle: generate safe + aggressive variants, queue them on each window.
-    Returns count of newly queued hypotheses.
+    One brain cycle: generate safe + aggressive variants for BOTH architectures,
+    queue on each window. Returns count of newly queued hypotheses.
     """
     target_windows = windows or list(WINDOWS.keys())
-    safe = generate_safe_band(n=safe_n)
+    safe = generate_safe_band_both(n_per_arch=safe_n // 2 + safe_n % 2)
     aggr = generate_aggressive_band(n=aggressive_n)
     all_variants = safe + aggr
 
@@ -223,7 +331,7 @@ if __name__ == "__main__":
     import json
     n = queue_seed_if_empty()
     if n > 0:
-        print(f"Queued seed × {n} windows")
+        print(f"Queued seed × {n} (both v22 + v23 × all windows)")
     else:
         added = generate_and_queue(safe_n=4, aggressive_n=6, windows=["bull_2024Q1", "bear_2025Q1"])
         print(f"Queued {added} new hypotheses")
