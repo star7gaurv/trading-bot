@@ -177,3 +177,4 @@
 | 2026-05-17 21:39:17 | DOT/USDT:USDT | SHORT | 1h58m | -0.71% | -0.72 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v22_short |
 | 2026-05-17 21:37:37 | ADA/USDT:USDT | SHORT | 1h49m | -0.55% | -0.56 | stop_loss | NEUTRAL | freqai_lgbm_v22_short |
 | 2026-05-17 23:56:12 | ONDO/USDT:USDT | SHORT | 0h53m | +2.61% | +2.65 | trailing_stop_loss | NEUTRAL | freqai_lgbm_v22_short |
+| 2026-05-18 06:17:04 | SUI/USDT:USDT | SHORT | 3h14m | +2.56% | +2.62 | trailing_stop_loss | BEAR | freqai_lgbm_v22_short |
