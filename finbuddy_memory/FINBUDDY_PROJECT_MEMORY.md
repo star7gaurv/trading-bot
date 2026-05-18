@@ -143,6 +143,31 @@ We shifted the entire architecture to **Phase 13: The Conscious Brain**, deployi
 | **Walk-forward** | ⬜ PENDING — run after FIX-validated smoke tests pass |
 | **Phase 10 go-live** | ⬜ BLOCKED — needs v23 walk-forward PASS |
 
+## 🤖 Autonomous Brain Deployed (2026-05-17 evening, commit 0854481)
+
+**Per the vision realignment, the autonomous hypothesis engine is now live.**
+
+| Component | File | Purpose |
+|---|---|---|
+| Experiment log | `scripts/brain/experiment_log.py` | JSONL append-only store; queryable by metric/window/band |
+| Hypothesis generator | `scripts/brain/hypothesis_gen.py` | SAFE band (small perturbations) + AGGRESSIVE band (full sample across TF/K_SL/threshold/stability/label_period/filters). BOTH bands run in parallel. |
+| Runner | `scripts/brain/runner.py` | FIFO queue worker; runs one backtest per invocation; Telegram-reports each result |
+| Promotion engine | `scripts/brain/promote.py` | Aggregates by config hash; requires bull+bear positive + improvement; APPROVAL-GATED via Telegram + manual `--apply` command |
+| CLI | `scripts/brain/brain_cli.py` | `status / seed / generate / run / scan / best` |
+
+**Cron entries (autonomous from here)**:
+- `*/30 * * * *` — run one experiment from queue
+- `0 */6 * * *` — generate new hypotheses (4× daily)
+- `0 7 * * *` — daily promotion candidate scan + Telegram alert if found
+
+**Profit Projection at $800 wallet**:
+- Floor (bare-min): $4/mo (0.5% net); below this = strategy broken
+- Conservative: $13/mo (1.6% net); $171/yr at +21%
+- Brain target: $23/mo (2.9% net); $321/yr at +40%
+- Stretch (matches v22 live today): $30+/mo
+
+Queue state at deploy: 23 hypotheses (3 seeds + 20 mixed) on bull_2024Q1 + bear_2025Q1.
+
 ## 🧠 Vision Realignment (2026-05-17 afternoon)
 
 Gaurav called out that I was doing **bot tuning** (picking thresholds, asking "which path?") instead of building **the brain** (autonomous, self-evolving, hypothesis-generating system). The vision says FinBuddy "observes markets, forms hypotheses, tests them, promotes winners, retires losers, and gets smarter over time — without Gaurav having to intervene."
