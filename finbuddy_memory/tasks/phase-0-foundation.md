@@ -1,15 +1,20 @@
 # Phase 0 — Foundation (Fix, Clean, Wire)
 
+**Status:** ✅ COMPLETE (2026-04-27)
+
+> **2026-05-18 note**: Phase 0 stands as the foundation record. Several tasks below reference N8N (since-permanently disabled). The functional equivalents are now: trade events captured by `scripts/trade_postmortem.py` (cron `*/15 * * * *` → `finbuddy_memory/trades/closed.md`). N8N webhook bits are historical.
+
 > Complete all loose ends before building anything new.
 > These are blocking tasks — later phases depend on a clean baseline.
 
 ---
 
 ## Task 0.1 — Complete Trade Event Handler
-**Status:** ✅ Done  
-**Verified:** 2026-04-26 live audit
+**Status:** ✅ Done (alternative implementation 2026-04-27+)
+**Original wiring (N8N webhook) deprecated 2026-04-30 — N8N pipeline disabled.**
+**Current implementation:** `scripts/trade_postmortem.py` polls FreqTrade API every 15 min and appends closed-trade ledger to `finbuddy_memory/trades/closed.md`. Also writes `FINBUDDY_RECENT_WR` to `.env` for the strategy feedback loop.
 
-FreqTrade `config.json` has webhook enabled pointing to `https://n8n.star7gaurav.in/webhook/freqtrade-events`. The "Freqtrade Trade Event Handler" workflow is active in N8N and confirmed receiving events (last triggered 2026-04-19). The workflow runs: FreqTrade Webhook → Respond OK.
+~~FreqTrade `config.json` has webhook enabled pointing to `https://n8n.star7gaurav.in/webhook/freqtrade-events`. The "Freqtrade Trade Event Handler" workflow is active in N8N and confirmed receiving events (last triggered 2026-04-19). The workflow runs: FreqTrade Webhook → Respond OK.~~ (deprecated)
 
 > **Note:** The workflow showed `n8n.workflow.failed` on 2026-04-26 — this is a runtime execution error inside the workflow logic, not a configuration problem. The wiring is correct. The failure should be investigated in the N8N execution log.
 

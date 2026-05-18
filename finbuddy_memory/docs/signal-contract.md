@@ -1,10 +1,10 @@
-# Jarvis Signal Contract v1
+# FinBuddy Signal Contract v1
 
 **Status:** Draft — not yet implemented
 **Last updated:** 2026-04-21
 **Owner:** Gaurav
 
-The signal contract is the public API between Jarvis's **signal generator** (the brain) and its **trade executor** (the hands). Every trading decision flows through this JSON structure. Once an executor accepts a signal, the signal's fields determine exactly what happens.
+The signal contract is the public API between FinBuddy's **signal generator** (the brain) and its **trade executor** (the hands). Every trading decision flows through this JSON structure. Once an executor accepts a signal, the signal's fields determine exactly what happens.
 
 This contract is **versioned**. Breaking changes require bumping the version and running both versions in parallel during migration. `schema_version` is a required field for forward compatibility.
 

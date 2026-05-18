@@ -1,15 +1,19 @@
 # Phase 4 — Obsidian Memory Vault (Complete Auto-Write Pipeline)
 
+**Status:** ✅ LIVE (cron `*/15 * * * *` memory_writer + auto-commit)
+
+> **2026-05-18 update**: Vault writes + auto-commits work. Tasks 4.3 and 4.4 ("Wire CONTEXT.md into N8N", "Append signals to log via N8N") are **dead** — N8N permanently disabled. AI agents (Claude Code + brain) read finbuddy_memory directly.
+
 > The finbuddy_memory/ folder is the brain's living memory — readable in Obsidian.
-> The server should auto-write all key brain states here and auto-commit to git.
+> The server auto-writes all key brain states here and auto-commits to git.
 > Gaurav pulls locally and opens in Obsidian to inspect what the brain knows.
 
 ---
 
 ## Current State
 - Vault structure created ✅
-- CONTEXT.md exists ✅
-- N8N reads CONTEXT.md ❌ (not yet wired)
+- CONTEXT.md exists + auto-synced ✅
+- ~~N8N reads CONTEXT.md~~ N8N dead — strategy + brain read CONTEXT.md / regime files directly ✅
 - Server writes to vault ❌ (writer script not complete)
 - Auto-git-commit ❌ (not set up)
 

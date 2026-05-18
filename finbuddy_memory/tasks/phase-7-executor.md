@@ -1,5 +1,9 @@
 # Phase 7 — Python Signal Executor (Multi-Tenant Shape)
 
+**Status:** ✅ LIVE (cron `*/5 * * * *` `scripts/executor/executor.py` — paper mode)
+
+> **2026-05-18 update**: Executor is live and runs in paper mode. Tasks 7.2 and 7.3 (N8N → executor signal flow) are **dead** — N8N permanently disabled. The signal source today is FreqAI inside the live FreqTrade bot; multi-tenant signal-as-a-service shape (per ADR-001) remains the future direction but not yet wired since there is no production signal stream to fan out.
+
 > The thin per-user executor that receives signals from the central brain and places trades.
 > ~300–500 lines of Python. Non-custodial — each user's API key never leaves their executor.
 > Phase 1: runs for Gaurav only. Phase 2: one config file per user, same code.

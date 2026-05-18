@@ -1,8 +1,11 @@
 # Phase 3 — HMM Five-Regime Detection Engine
 
+**Status:** ✅ LIVE (cron `0 */4 * * *`) — outputs `finbuddy_memory/regimes/current.json`
+
+> **2026-05-18 update**: HMM is live and feeding the strategy directly. The Task 3.3 N8N integration is **dead** (N8N pipeline permanently disabled). FreqAI strategy + brain hypothesis engine read `regimes/current.json` directly; backtest mode now also reads `regimes/historical_regime.parquet`.
+
 > Build the Hidden Markov Model that classifies the current market into one of five regimes.
-> This feeds into FreqAI features, N8N prompts, and the Obsidian memory vault.
-> One of the most impactful components — regime awareness changes everything about how the brain trades.
+> This feeds into FreqAI features and the Obsidian memory vault.
 
 ---
 

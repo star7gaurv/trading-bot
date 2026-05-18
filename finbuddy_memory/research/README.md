@@ -3,7 +3,8 @@ Daily research digests written by the Karpathy auto-research loop.
 Back to hub → [[../CONTEXT]]  |  Signal log → [[../signals/log]]
 
 Each file = one day, named `YYYY-MM-DD.md`, auto-created by the loop.
-N8N reads the last 3 days before generating signals.
+
+> **2026-05-18**: Original consumer was N8N (now disabled). The FreqAI strategy + brain hypothesis engine now read regime/macro/research context directly from `finbuddy_memory/`; this research log remains an audit trail of the karpathy loop's insights.
 
 ---
 

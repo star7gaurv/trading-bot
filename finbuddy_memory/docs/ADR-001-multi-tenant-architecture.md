@@ -1,4 +1,4 @@
-# ADR-001: Multi-Tenant Architecture for Jarvis SaaS
+# ADR-001: Multi-Tenant Architecture for FinBuddy SaaS
 
 **Status:** Proposed
 **Date:** 2026-04-21
@@ -8,17 +8,17 @@
 
 ## Context
 
-Jarvis is currently a single-tenant crypto trading system: one FreqTrade instance + N8N workflow orchestration, running on an Oracle Free Tier ARM64 box, trading Gaurav's own account in dry-run mode. The long-term goal is to evolve it into a multi-tenant SaaS platform for non-technical retail crypto traders who want "set it, forget it, earn money" — users who connect their own exchange account (non-custodial) and rely on Jarvis to run trades for them.
+FinBuddy is currently a single-tenant crypto trading system: one FreqTrade instance + N8N workflow orchestration, running on an Oracle Free Tier ARM64 box, trading Gaurav's own account in dry-run mode. The long-term goal is to evolve it into a multi-tenant SaaS platform for non-technical retail crypto traders who want "set it, forget it, earn money" — users who connect their own exchange account (non-custodial) and rely on FinBuddy to run trades for them.
 
-The core architectural question is: **how does a single Jarvis instance serve N users without the cost or complexity scaling linearly with N, while still delivering high-quality trading results?**
+The core architectural question is: **how does a single FinBuddy instance serve N users without the cost or complexity scaling linearly with N, while still delivering high-quality trading results?**
 
 ### Forces at play
 
 - **Hard cost ceiling.** Infra target is ~$3–5/month total across all users. Oracle Free Tier (4 OCPUs ARM, 24GB RAM) is the home base; anything that requires paid infra is a last resort.
-- **Non-custodial mandate.** Users keep their funds on their own exchange. Jarvis only gets trade-permission API keys (no withdrawal). This is both a trust and a regulatory requirement.
+- **Non-custodial mandate.** Users keep their funds on their own exchange. FinBuddy only gets trade-permission API keys (no withdrawal). This is both a trust and a regulatory requirement.
 - **Single-operator reality.** Gaurav is solo, works from mobile via Termius SSH. Operational complexity must be low enough to debug from a phone.
 - **"Don't replace, extend" principle.** Existing FreqTrade + N8N + Karpathy loop stays. The question is how to fan out execution, not whether to rewrite the brain.
-- **Quality > feature breadth.** Users don't pick strategies. Jarvis does. This means the expensive compute (HMM regime engine, Karpathy auto-research loop, AI signals) can be centralized — every user benefits from one great brain, not N mediocre ones.
+- **Quality > feature breadth.** Users don't pick strategies. FinBuddy does. This means the expensive compute (HMM regime engine, Karpathy auto-research loop, AI signals) can be centralized — every user benefits from one great brain, not N mediocre ones.
 - **Isolation matters.** One user's bad config, exhausted API rate limit, or exchange outage must not cascade to others.
 
 ### Current resource envelope (single-user baseline)
@@ -217,7 +217,7 @@ The time delta (A is faster to first user) is the only real cost of choosing C, 
 5. [ ] **Build a minimal Python executor** (~300–500 LOC) that: reads a user config, subscribes to the signal bus (start with HTTP webhook), dedupes on `signal_id`, sizes positions using 2% rule + ATR, places orders via ccxt, logs to SQLite. Run it on the Oracle box alongside FreqTrade — don't replace FreqTrade yet.
 6. [ ] **Create a strategy registry.** `strategies/registry.json` listing each strategy with an ID, description, and activation status. Signals reference strategies by ID. The Karpathy loop promotes/demotes strategies by updating this registry.
 7. [ ] **Add idempotency from day one.** Executor maintains a "seen signal IDs" set (SQLite table). Duplicate signal IDs are logged and skipped. Test by intentionally retransmitting a signal during development.
-8. [ ] **Keep FreqTrade running in parallel as the research environment.** Executor trades are the "official" Jarvis trades. FreqTrade continues to be where you prototype new strategies before adding them to the registry.
+8. [ ] **Keep FreqTrade running in parallel as the research environment.** Executor trades are the "official" FinBuddy trades. FreqTrade continues to be where you prototype new strategies before adding them to the registry.
 9. [ ] **Run the live public track record** on Gaurav's own capital using the new executor. Six months minimum before Phase 2.
 
 ### Phase 2 — Multi-tenant activation (after 6 months of track record)
@@ -245,7 +245,7 @@ These are deferred until the track record exists. Creating an ADR for each when 
 
 ## Decision Context (for future-you)
 
-This ADR is the answer to "what shape does Jarvis take when it stops being a bot for one person and becomes a product for many." The short version: **don't clone the bot per user. Separate the brain from the hands. One brain, many hands.** The brain gets smarter over time and every user inherits that improvement; the hands stay dumb, cheap, and isolated.
+This ADR is the answer to "what shape does FinBuddy take when it stops being a bot for one person and becomes a product for many." The short version: **don't clone the bot per user. Separate the brain from the hands. One brain, many hands.** The brain gets smarter over time and every user inherits that improvement; the hands stay dumb, cheap, and isolated.
 
 **On the single-user-first approach:** the whole point of Phase 1 is that you get to ship *immediately* (no SaaS complexity) but do not accumulate architectural debt you'll have to pay back later. The rule of thumb: if you catch yourself writing `my_api_key`, `my_capital`, `my_telegram_id` anywhere outside a user config file, stop. That's a Phase 1 violation and will cost weeks in Phase 2.
 
