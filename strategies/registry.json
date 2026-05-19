@@ -551,6 +551,48 @@
       "proposed_by": "reasoning_agent",
       "reviewed_at": "2026-05-18",
       "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "btc_ema_bounce_20260519",
+      "hypothesis": "BTC will bounce off the $71,200-$71,800 band and retest the 20-EMA within 12h after crossing above it with volume >1.5x 1h average and a bullish 1h candle.",
+      "timeframe": "1h",
+      "indicators": [
+        "ema_20",
+        "volume",
+        "close"
+      ],
+      "entry_long": "Price crosses above the 20-EMA with volume >1.5x 1h average and a bullish 1h candle",
+      "entry_short": "N/A",
+      "exit_rule": "Exit after 12h or when price fails to retest 20-EMA",
+      "regime_filter": [
+        "NEUTRAL"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-19",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-19",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "eth_breakout_correlation_20260519",
+      "hypothesis": "ETH will break the $2,350 resistance and sustain a 2% gain if the BTC-ETH correlation drops below 0.85.",
+      "timeframe": "1h",
+      "indicators": [
+        "close",
+        "volume",
+        "correlation"
+      ],
+      "entry_long": "If correlation < 0.85 and price > $2,350, open a long with a 1.5% target",
+      "entry_short": "N/A",
+      "exit_rule": "Exit when 1.5% target is reached or correlation rises above 0.85",
+      "regime_filter": [
+        "NEUTRAL"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-19",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-19",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
     }
   ]
 }
