@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-19T07:14:01.078501+00:00",
+  "generated_at": "2026-05-19T12:30:01.435193+00:00",
   "findings": {
     "dead_timeframes": [],
     "noisy_timeframes": [
@@ -136,55 +136,55 @@
     },
     "window_stats": {
       "bear_2025Q1": {
-        "n": 40,
-        "avg_wr": 0.379,
-        "avg_pf": 0.679
+        "n": 51,
+        "avg_wr": 0.367,
+        "avg_pf": 0.685
       },
       "bull_2024Q1": {
-        "n": 47,
-        "avg_wr": 0.32,
-        "avg_pf": 0.484
+        "n": 59,
+        "avg_wr": 0.309,
+        "avg_pf": 0.491
       },
       "bull_2024Q2": {
-        "n": 2,
-        "avg_wr": 0.307,
-        "avg_pf": 0.615
+        "n": 5,
+        "avg_wr": 0.303,
+        "avg_pf": 0.563
       }
     },
     "tf_stats": {
       "15m": {
-        "n": 46,
-        "avg_pf": 0.598,
-        "avg_wr": 0.372,
-        "avg_trades_day": 1.15
+        "n": 63,
+        "avg_pf": 0.608,
+        "avg_wr": 0.355,
+        "avg_trades_day": 2.16
       },
       "1h": {
-        "n": 14,
-        "avg_pf": 0.546,
-        "avg_wr": 0.371,
-        "avg_trades_day": 3.16
+        "n": 16,
+        "avg_pf": 0.555,
+        "avg_wr": 0.366,
+        "avg_trades_day": 3.01
       },
       "5m": {
-        "n": 15,
-        "avg_pf": 0.564,
-        "avg_wr": 0.248,
-        "avg_trades_day": 5.86
+        "n": 18,
+        "avg_pf": 0.556,
+        "avg_wr": 0.234,
+        "avg_trades_day": 6.04
       },
       "30m": {
-        "n": 6,
-        "avg_pf": 0.509,
-        "avg_wr": 0.297,
-        "avg_trades_day": 3.3
+        "n": 8,
+        "avg_pf": 0.522,
+        "avg_wr": 0.296,
+        "avg_trades_day": 3.52
       },
       "4h": {
-        "n": 8,
-        "avg_pf": 0.558,
-        "avg_wr": 0.369,
-        "avg_trades_day": 1.01
+        "n": 10,
+        "avg_pf": 0.535,
+        "avg_wr": 0.365,
+        "avg_trades_day": 1.11
       }
     }
   },
-  "pruned": 18,
+  "pruned": 6,
   "actions": [
     "Queued \u00d72 short-bias/lower-long-threshold on BULL windows",
     "Queued \u00d73 cross-window validation of best config",
