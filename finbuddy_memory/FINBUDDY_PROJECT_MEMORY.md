@@ -146,6 +146,39 @@ We shifted the entire architecture to **Phase 13: The Conscious Brain**, deployi
 
 ---
 
+## 🔧 Deep Audit + 8 Fixes (2026-05-19 PM)
+
+After the v22→v23 live migration shipped this morning (commit `f338ed5`), a full system audit found 1 critical bug + 7 smaller issues. All eight addressed in a single session.
+
+### Critical: v23 training fails on every pair after live swap
+- **Symptom:** `100 percent of training data dropped due to NaNs` → `n_samples=0` → bot trained nothing for ~90 min.
+- **Root cause #1 — stale historical parquets.** `finbuddy_memory/historical/macro_features.parquet` + `regimes/historical_regime.parquet` were built once on 2026-05-17 and never put on a cron. Live candles at 2026-05-19 fell off the `merge_asof(direction="backward")` window's safe edge.
+- **Root cause #2 — `docker-compose.yml` was not passing `FREQAI_*` env-vars into the live container.** Brain's `apply.py` writes promotion configs to `freqtrade/.env`, but nothing in compose ever mapped them through. So `docker restart freqtrade` got *zero* `FREQAI_*` vars — strategy ran on hard-coded defaults. Also meant brain promotions had no effect on live.
+- **Fixes:**
+  - Rebuilt both parquets to 2026-05-19; added 01:15/01:20 UTC daily cron.
+  - Added `environment:` block in `freqtrade/docker-compose.yml` mapping `FREQAI_K_TP/K_SL/LONG_THRESHOLD/SHORT_THRESHOLD/STABILITY_N/FEATURE_SET/ML_THRESHOLD`, `BTC_MA200_GATE`, `FINBUDDY_RECENT_WR`, `FREQTRADE__FREQAI__IDENTIFIER` (all with sane defaults).
+  - Hardened `_load_historical_macro` + `_load_historical_regime` to log coverage + WARN when parquet > 3d stale.
+  - Container recreated via `docker-compose up -d --force-recreate`; env-vars verified present.
+
+### 7 smaller fixes shipped same commit
+1. **Watchdog NaN-training rule** — `scripts/watchdog.py` now pages on "100 percent of training data dropped" within 60 min.
+2. **Daily summary scoped to current identifier** — `scripts/daily_summary.py` filters trades by promotion timestamp (parsed from identifier suffix). Lifetime kept as separate line.
+3. **Telegram listener flock** — eliminates `Conflict: terminated by other getUpdates` races.
+4. **Duplicate karpathy cron removed** — was running `karpathy/run_loop.py` twice at 02:00.
+5. **`config.json.bak-*` retention** — `promote.apply_promotion()` keeps only the 3 most recent.
+6. **Brain feature-toggle dimension** — `AGGRESSIVE_CHOICES_V23` now includes `feature_set: ["all","no_macro","no_regime","minimal"]`; propagated via `runner.py` → `FREQAI_FEATURE_SET` → strategy gates macro/regime features. Lets brain test whether external features help (117 experiments, 0 winners, every run with same features).
+7. **CLAUDE.md staleness** — Phase 1 roadmap row updated to v23 live state.
+
+### Files touched (single commit)
+- `freqtrade/docker-compose.yml` — env-var wiring (closes brain → live config loop)
+- `freqtrade/user_data/strategies/FinBuddyFreqAI_v23.py` — staleness logs, FEATURE_SET toggle
+- `scripts/watchdog.py`, `scripts/daily_summary.py`, `scripts/brain/promote.py`
+- `scripts/brain/hypothesis_gen.py`, `scripts/brain/runner.py`
+- `CLAUDE.md`
+- Crontab: +2 parquet rebuild lines, telegram flock, karpathy dedupe
+
+---
+
 ## 🚀 Current State (2026-05-17 — afternoon)
 
 | Component | Status |

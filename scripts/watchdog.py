@@ -271,6 +271,30 @@ def main() -> int:
             maybe_recover(state, "training",
                           f"✅ FinBuddy training resumed — last event {int(age.total_seconds()/60)}m ago.")
 
+    # 2b. FreqAI NaN training failure — 100% of training rows dropped
+    # This is the catastrophic feature-pipeline failure pattern seen on 2026-05-19
+    # when historical macro/regime parquets went stale → all features NaN →
+    # n_samples=0 → bot trains nothing → "No model ready" for every pair.
+    nan_train = latest_log_match(
+        "100 percent of training data dropped",
+        since_min=60,
+        use_file_fallback=True,
+        docker_since_min=90,
+    )
+    if nan_train is not None:
+        age = now_utc() - nan_train
+        if age < timedelta(minutes=60):
+            maybe_alert(state, "training_nan",
+                        f"🚨 *CRITICAL* — FreqAI dropping 100% of training rows (NaN feature pipeline). "
+                        f"Last occurrence {int(age.total_seconds()/60)}m ago. "
+                        f"Check `_get_macro_series` / `_get_regime_series` and historical parquet freshness "
+                        f"(`python3 scripts/build_historical_macro.py && python3 scripts/build_historical_regime.py`).")
+            issues.append("training_nan")
+        else:
+            maybe_recover(state, "training_nan", "✅ FreqAI training-NaN cleared (no occurrence in last hour).")
+    else:
+        maybe_recover(state, "training_nan", "✅ FreqAI feature pipeline healthy.")
+
     # 3. recent heartbeat
     # use_file_fallback=True: docker daemon can be slow when docker-compose run
     # spawns a new container (walk-forward folds), causing docker logs to time out

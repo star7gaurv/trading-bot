@@ -157,6 +157,7 @@ def run_hypothesis(h: dict) -> dict | None:
             "-e", f"FREQAI_LONG_THRESHOLD={cfg.get('long_threshold', 1.5)}",
             "-e", f"FREQAI_SHORT_THRESHOLD={cfg.get('short_threshold', -1.5)}",
             "-e", f"FREQAI_STABILITY_N={cfg.get('stability_n', 2)}",
+            "-e", f"FREQAI_FEATURE_SET={cfg.get('feature_set', 'all')}",
         ]
 
     cmd = (

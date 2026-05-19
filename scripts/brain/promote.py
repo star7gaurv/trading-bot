@@ -235,6 +235,15 @@ def apply_promotion(config_hash: str) -> int:
     shutil.copy(LIVE_CONFIG, backup)
     print(f"backup → {backup}")
 
+    # Retain only the 3 most recent backups (older are pruned).
+    old_backups = sorted(LIVE_CONFIG.parent.glob("config.json.bak-*"))
+    for f in old_backups[:-3]:
+        try:
+            f.unlink()
+            print(f"pruned old backup: {f.name}")
+        except OSError:
+            pass
+
     # 2. Edit config.json (Python json.load/dump — never sed)
     with LIVE_CONFIG.open() as f:
         live = json.load(f)

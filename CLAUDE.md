@@ -250,7 +250,7 @@ Check: `tail -f ~/.finbuddy/logs/walk_forward.log`
 | Phase | File | Status | Focus |
 |---|---|---|---|
 | 0 | `finbuddy_memory/tasks/phase-0-foundation.md` | ✅ **Complete** (2026-04-27) | Foundation — FreqTrade, Telegram, server |
-| 1 | `finbuddy_memory/tasks/phase-1-freqai-brain.md` | 🔄 **In Progress** — v17 live, walk-forward running | FreqAI brain — long + short, 2-class model |
+| 1 | `finbuddy_memory/tasks/phase-1-freqai-brain.md` | 🔄 **In Progress** — v23 live since 2026-05-19; brain explores; per-pair-per-regime gate active | FreqAI brain — long + short, LightGBMRegressor (regression, no classes) |
 | 2 | `finbuddy_memory/tasks/phase-2-data-enrichment.md` | ✅ **Live** — cron every 15m | External data fetchers — Fear & Greed, CoinGecko, CryptoPanic, DefiLlama, Google Trends |
 | 3 | `finbuddy_memory/tasks/phase-3-hmm-regime.md` | ✅ **Live** — cron every 4h | HMM 5-regime engine wired into strategy |
 | 4 | `finbuddy_memory/tasks/phase-4-obsidian-memory.md` | ✅ **Live** — cron every 15m | Obsidian vault auto-write + git auto-commit |

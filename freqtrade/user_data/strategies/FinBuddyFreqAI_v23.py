@@ -110,6 +110,14 @@ class FinBuddyFreqAI_v23(IStrategy):
     K_TP = float(os.getenv("FREQAI_K_TP", "2.0"))
     K_SL = float(os.getenv("FREQAI_K_SL", "1.0"))
 
+    # Feature-set toggle (brain Fix F, 2026-05-19).
+    # Lets the brain test which external features actually help. Values:
+    #   "all"       — include macro (fear_greed, btc_strength) + regime + recent_wr (default, live behavior unchanged)
+    #   "no_macro"  — drop fear_greed + btc_strength + news_sentiment
+    #   "no_regime" — drop regime_numeric
+    #   "minimal"   — drop all of the above (only raw OHLCV-derived indicators)
+    FEATURE_SET = os.getenv("FREQAI_FEATURE_SET", "all").lower()
+
     # v11.1 — BTC daily MA200 macro-regime gate.
     # Long  entries require  BTC_1d_close > BTC_1d_MA200 (macro bull).
     # Short entries require  BTC_1d_close < BTC_1d_MA200 (macro bear).
@@ -250,7 +258,12 @@ class FinBuddyFreqAI_v23(IStrategy):
             df["date"] = pd.to_datetime(df["date"], utc=True)
             df = df.sort_values("date").reset_index(drop=True)
             FinBuddyFreqAI_v23._historical_regime_df = df
-            logger.info(f"[Regime] Loaded {len(df)} historical regime candles from {df['date'].min()} to {df['date'].max()}")
+            max_date = df['date'].max()
+            now_utc = pd.Timestamp.now(tz="UTC")
+            gap_days = (now_utc - max_date).days
+            logger.info(f"[Regime] Loaded {len(df)} historical regime candles from {df['date'].min()} to {max_date} (gap from now: {gap_days}d)")
+            if gap_days > 3:
+                logger.warning(f"[Regime] STALE: historical_regime.parquet is {gap_days}d behind now — re-run scripts/build_historical_regime.py (will cause NaN in live feature pipeline)")
             return df
         except Exception as e:
             logger.warning(f"[Regime] Could not load historical regime parquet ({e}) — falling back to live regime file")
@@ -322,7 +335,12 @@ class FinBuddyFreqAI_v23(IStrategy):
             df["date"] = pd.to_datetime(df["date"], utc=True)
             df = df.sort_values("date").reset_index(drop=True)
             FinBuddyFreqAI_v23._historical_macro_df = df
-            logger.info(f"[Macro] Loaded {len(df)} historical macro rows from {df['date'].min()} to {df['date'].max()}")
+            max_date = df['date'].max()
+            now_utc = pd.Timestamp.now(tz="UTC")
+            gap_days = (now_utc - max_date).days
+            logger.info(f"[Macro] Loaded {len(df)} historical macro rows from {df['date'].min()} to {max_date} (gap from now: {gap_days}d)")
+            if gap_days > 3:
+                logger.warning(f"[Macro] STALE: macro_features.parquet is {gap_days}d behind now — re-run scripts/build_historical_macro.py (will cause NaN in live feature pipeline)")
             return df
         except Exception as e:
             logger.warning(f"[Macro] Could not load historical macro parquet ({e}) — using live combined_context")
@@ -626,23 +644,32 @@ class FinBuddyFreqAI_v23(IStrategy):
         dataframe["%-raw_volume"]  = dataframe["volume"]
         dataframe["%-raw_open"]    = dataframe["open"]
 
-        # External macro context — PER CANDLE (Fix 2026-05-17)
-        # fear_greed from alternative.me historical, btc_strength = BTC 7d ret − ETH 7d ret
-        # Previously these were CONSTANTS per backtest and got dropped by VarianceThreshold.
-        macros = self._get_macro_series(dataframe)
-        dataframe["%-fear_greed"]    = macros["fear_greed"]
-        dataframe["%-btc_strength"]  = macros["btc_strength"]
-        # news_sentiment remains constant (no historical source) — kept for compatibility,
-        # will be dropped by VarianceThreshold in backtest but works in live.
-        ctx = self._get_combined_context()
-        dataframe["%-news_sentiment"] = float(ctx.get("news_sentiment_ratio", 0.5))
+        # External macro/regime/wr features — gated by FEATURE_SET (brain ablation toggle, 2026-05-19).
+        # "all" (default) preserves live behavior; "no_macro" / "no_regime" / "minimal" let the brain
+        # test whether these features actually help (117 experiments / 0 winners on "all").
+        include_macro  = self.FEATURE_SET in ("all", "no_regime")
+        include_regime = self.FEATURE_SET in ("all", "no_macro")
 
-        # HMM regime encoding — per-candle historical regime (Fix 2026-05-17)
-        regime_series = self._get_regime_series(dataframe)
-        dataframe["%-regime_numeric"] = regime_series.map(lambda r: self._REGIME_NUMERIC.get(r, 0)).astype(float)
+        if include_macro:
+            # fear_greed from alternative.me historical, btc_strength = BTC 7d ret − ETH 7d ret
+            macros = self._get_macro_series(dataframe)
+            dataframe["%-fear_greed"]    = macros["fear_greed"]
+            dataframe["%-btc_strength"]  = macros["btc_strength"]
+            ctx = self._get_combined_context()
+            dataframe["%-news_sentiment"] = float(ctx.get("news_sentiment_ratio", 0.5))
+        else:
+            logger.info(f"[FeatureSet] mode={self.FEATURE_SET} — skipping fear_greed/btc_strength/news_sentiment")
 
-        # Live WR feedback (written by trade_postmortem.py to freqtrade/.env)
-        dataframe["%-recent_wr"] = float(os.getenv("FINBUDDY_RECENT_WR", "0.50"))
+        if include_regime:
+            # HMM regime encoding — per-candle historical regime (Fix 2026-05-17)
+            regime_series = self._get_regime_series(dataframe)
+            dataframe["%-regime_numeric"] = regime_series.map(lambda r: self._REGIME_NUMERIC.get(r, 0)).astype(float)
+        else:
+            logger.info(f"[FeatureSet] mode={self.FEATURE_SET} — skipping regime_numeric")
+
+        # Live WR feedback (always included — single env-var, cheap)
+        if self.FEATURE_SET != "minimal":
+            dataframe["%-recent_wr"] = float(os.getenv("FINBUDDY_RECENT_WR", "0.50"))
 
         return dataframe
 

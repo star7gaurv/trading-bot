@@ -29,6 +29,19 @@ services:
       - GROQ_API_KEY=${GROQ_API_KEY:-}
       - FREQTRADE__EXCHANGE__KEY=${FREQTRADE__EXCHANGE__KEY}
       - FREQTRADE__EXCHANGE__SECRET=${FREQTRADE__EXCHANGE__SECRET}
+      # FREQAI_* strategy knobs (brain's promote.apply_promotion writes these to .env;
+      # without explicit mapping here, restarts wouldn't propagate the new values to the
+      # strategy. Defaults match the strategy's defaults so missing vars are safe.)
+      - FREQAI_K_TP=${FREQAI_K_TP:-2.0}
+      - FREQAI_K_SL=${FREQAI_K_SL:-1.0}
+      - FREQAI_LONG_THRESHOLD=${FREQAI_LONG_THRESHOLD:-1.0}
+      - FREQAI_SHORT_THRESHOLD=${FREQAI_SHORT_THRESHOLD:--1.0}
+      - FREQAI_STABILITY_N=${FREQAI_STABILITY_N:-2}
+      - FREQAI_FEATURE_SET=${FREQAI_FEATURE_SET:-all}
+      - FREQAI_ML_THRESHOLD=${FREQAI_ML_THRESHOLD:-0.60}
+      - BTC_MA200_GATE=${BTC_MA200_GATE:-0}
+      - FINBUDDY_RECENT_WR=${FINBUDDY_RECENT_WR:-0.50}
+      - FREQTRADE__FREQAI__IDENTIFIER=${FREQTRADE__FREQAI__IDENTIFIER:-}
     volumes:
       - "./user_data:/freqtrade/user_data"
       - "/home/ubuntu/var/www/html/trade/finbuddy_memory:/freqtrade/finbuddy_memory:ro"

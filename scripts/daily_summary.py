@@ -140,12 +140,14 @@ def main() -> None:
     shorts = open_count - longs
     unreal_pnl = sum(t.get("profit_abs", 0.0) for t in open_data)
 
-    # Yesterday closed trades
+    # Yesterday closed trades — fetch wide, sort descending by close_date so the
+    # "yesterday" filter works regardless of API ordering.
     yesterday_start = (now_utc() - timedelta(days=1)).replace(
         hour=0, minute=0, second=0, microsecond=0
     ).isoformat()
-    trades_data = api_get(f"/trades?limit=200") or {}
+    trades_data = api_get(f"/trades?limit=500") or {}
     all_trades = trades_data.get("trades", []) if isinstance(trades_data, dict) else []
+    all_trades.sort(key=lambda t: t.get("close_date") or "", reverse=True)
     yesterday_closed = [
         t for t in all_trades
         if t.get("close_date") and t.get("close_date", "") >= yesterday_start
@@ -154,7 +156,36 @@ def main() -> None:
     yday_wins = sum(1 for t in yesterday_closed if t.get("profit_abs", 0) > 0)
     yday_count = len(yesterday_closed)
 
-    # Bot performance summary
+    # Performance scoped to the CURRENT FreqAI identifier (post-promotion only).
+    # We infer the cutoff from the trailing unix timestamp in the identifier name
+    # (format: finbuddy_v23_*_<ts>). Pre-promotion trades are reported separately
+    # as "Lifetime" so v22's history doesn't mask v23's real P&L.
+    cutoff_iso = None
+    try:
+        import re, json as _json
+        cfg_path = Path("/home/ubuntu/var/www/html/trade/freqtrade/user_data/config.json")
+        with cfg_path.open() as f:
+            ident = _json.load(f).get("freqai", {}).get("identifier", "")
+        m = re.search(r"_(\d{10})$", ident)
+        if m:
+            cutoff_iso = datetime.fromtimestamp(int(m.group(1)), tz=timezone.utc).isoformat()
+    except Exception:
+        pass
+
+    if cutoff_iso:
+        scoped = [t for t in all_trades if (t.get("close_date") or "") >= cutoff_iso]
+        scoped_count = len(scoped)
+        scoped_pnl = sum(t.get("profit_abs", 0.0) for t in scoped)
+        scoped_wins = sum(1 for t in scoped if t.get("profit_abs", 0) > 0)
+        scoped_line = (
+            f"{scoped_count} trades · WR {(scoped_wins/scoped_count*100):.0f}% · "
+            f"{'%+.2f' % scoped_pnl} USDT (since {cutoff_iso[:10]})"
+            if scoped_count else f"0 trades yet (since {cutoff_iso[:10]})"
+        )
+    else:
+        scoped_line = None
+
+    # Lifetime stats (kept for context — spans identifiers)
     profit_data = api_get("/profit") or {}
     total_trades = profit_data.get("trade_count", 0)
     total_pnl = profit_data.get("profit_closed_coin", 0.0)
@@ -168,17 +199,21 @@ def main() -> None:
         if yday_count else "No closed trades"
     )
 
+    fields = {
+        "Regime":          f"{regime_emoji(regime)} {regime}",
+        "Last Training":   training_age,
+        "Open Trades":     f"{open_count} ({longs}L / {shorts}S) · unreal {'%+.2f' % unreal_pnl} USDT",
+        "Yesterday":       yday_line,
+    }
+    if scoped_line:
+        fields["Current Strategy"] = scoped_line
+    fields["Lifetime"] = f"{total_trades} trades · {'%+.2f' % total_pnl} USDT"
+
     ok = tg_send(
         subsystem=Subsystem.DIGEST,
         status=Status.INFO,
         title=f"{now_utc().strftime('%Y-%m-%d')} morning report",
-        fields={
-            "Regime":          f"{regime_emoji(regime)} {regime}",
-            "Last Training":   training_age,
-            "Open Trades":     f"{open_count} ({longs}L / {shorts}S) · unreal {'%+.2f' % unreal_pnl} USDT",
-            "Yesterday":       yday_line,
-            "All-Time":        f"{total_trades} trades · {'%+.2f' % total_pnl} USDT",
-        },
+        fields=fields,
         context="Daily 8am digest · no action required",
     )
     print(f"Daily digest sent: {ok}")

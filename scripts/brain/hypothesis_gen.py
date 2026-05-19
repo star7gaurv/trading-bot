@@ -106,6 +106,7 @@ SEED_CONFIG_V23 = {
     "label_period_candles": 24,
     "filter_di":          True,
     "filter_svm":         True,
+    "feature_set":        "all",   # which external features to include (see strategy FREQAI_FEATURE_SET)
 }
 
 # v22 Classifier+LLM — currently live, +110 USDT all-time
@@ -225,6 +226,7 @@ AGGRESSIVE_CHOICES_V23 = {
     "label_period_candles": [12, 24, 48, 72, 144],
     "filter_di":          [True, False],
     "filter_svm":         [True, False],
+    "feature_set":        ["all", "no_macro", "no_regime", "minimal"],
 }
 
 AGGRESSIVE_CHOICES_V22 = {
@@ -279,7 +281,7 @@ def _generate_aggressive_v23(n: int) -> list[dict]:
         rationale = (
             f"aggr [v23]: tf={v['timeframe']} lt={v['long_threshold']:+} st={v['short_threshold']:+} "
             f"ksl={v['k_sl']} ktp={v['k_tp']} N={v['stability_n']} lp={v['label_period_candles']} "
-            f"di={v['filter_di']} svm={v['filter_svm']}"
+            f"di={v['filter_di']} svm={v['filter_svm']} feat={v.get('feature_set','all')}"
         )
         out.append({"band": "aggressive", "rationale": rationale, "config": v})
     return out
