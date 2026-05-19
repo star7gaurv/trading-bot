@@ -232,10 +232,14 @@ class FinBuddyFreqAI_v23(IStrategy):
     _HISTORICAL_REGIME_FILE = "/freqtrade/finbuddy_memory/regimes/historical_regime.parquet"
     _HISTORICAL_MACRO_FILE  = "/freqtrade/finbuddy_memory/historical/macro_features.parquet"
     _COMBINED_CTX_FILE = "/freqtrade/user_data/data/external/combined_context.json"
+    _PAIR_REGIME_FILE  = "/freqtrade/finbuddy_memory/regimes/pair_regime_stats.json"
 
     # Class-level caches: loaded once, shared across all strategy instances.
     _historical_regime_df = None
     _historical_macro_df  = None
+    # Pair-regime block cache: refreshed when JSON mtime changes (every 30 min via cron).
+    _pair_regime_blocks       = None    # dict[pair] -> set[regime]
+    _pair_regime_blocks_mtime = 0.0
 
     def _load_historical_regime(self):
         """Load BTC-derived historical regime parquet once. Cached at class level."""
@@ -278,6 +282,36 @@ class FinBuddyFreqAI_v23(IStrategy):
                 return json.load(f).get("regime", "NEUTRAL")
         except Exception:
             return "NEUTRAL"
+
+    # ------------------------------------------------------------------ #
+    # Phase 1 (2026-05-19) — Per-Pair-Per-Regime Dynamic Gate            #
+    # ------------------------------------------------------------------ #
+    # `scripts/pair_regime_performance.py` writes `pair_regime_stats.json`
+    # every 30 min based on rolling 30-day closed-trade performance.
+    # A pair-regime combo that has lost over the lookback (n>=5, WR<40%,
+    # PF<0.7) gets listed in `blocked[]`. This method loads + caches that
+    # list. Strategy zeroes out entries when (pair, current_regime) is blocked.
+    # ------------------------------------------------------------------ #
+    def _load_pair_regime_blocks(self) -> dict:
+        """Return {pair: set(blocked_regimes)}. Refreshes when JSON mtime changes."""
+        try:
+            mtime = os.path.getmtime(self._PAIR_REGIME_FILE)
+        except OSError:
+            return {}
+        if (FinBuddyFreqAI_v23._pair_regime_blocks is not None
+                and mtime <= FinBuddyFreqAI_v23._pair_regime_blocks_mtime):
+            return FinBuddyFreqAI_v23._pair_regime_blocks
+        try:
+            with open(self._PAIR_REGIME_FILE) as f:
+                data = json.load(f)
+            blocks: dict[str, set] = {}
+            for b in data.get("blocked", []):
+                blocks.setdefault(b["pair"], set()).add(b["regime"])
+            FinBuddyFreqAI_v23._pair_regime_blocks       = blocks
+            FinBuddyFreqAI_v23._pair_regime_blocks_mtime = mtime
+            return blocks
+        except Exception:
+            return FinBuddyFreqAI_v23._pair_regime_blocks or {}
 
     def _load_historical_macro(self):
         """Load historical macro features (F&G + BTC strength). Cached at class level."""
@@ -795,6 +829,22 @@ class FinBuddyFreqAI_v23(IStrategy):
             & volatility_ok
             & ob_long_ok
         )
+
+        # Phase 1 (2026-05-19) — Per-Pair-Per-Regime Dynamic Block.
+        # Zero out entries for this pair on candles whose regime matches a
+        # blocked (pair, regime) combo (rolling 30d WR<40% AND PF<0.7).
+        pair = metadata.get("pair", "")
+        blocked_regimes = self._load_pair_regime_blocks().get(pair, set())
+        if blocked_regimes:
+            is_blocked = dataframe["regime"].isin(blocked_regimes)
+            if is_blocked.any():
+                enter_long = enter_long & ~is_blocked
+                # Single info log per dataframe pass when something is gated
+                logger.info(
+                    f"[pair-regime gate] {pair}: blocked regimes={sorted(blocked_regimes)}, "
+                    f"gated {int(is_blocked.sum())} candles"
+                )
+
         dataframe.loc[enter_long, "enter_long"] = 1
         dataframe.loc[enter_long, "enter_tag"]  = "freqai_regression_v23_long"
 
@@ -816,6 +866,11 @@ class FinBuddyFreqAI_v23(IStrategy):
             & volatility_ok
             & ob_short_ok
         )
+
+        # Apply the same per-pair-per-regime block to shorts.
+        if blocked_regimes:
+            enter_short = enter_short & ~is_blocked
+
         dataframe.loc[enter_short, "enter_short"] = 1
         dataframe.loc[enter_short, "enter_tag"]   = "freqai_regression_v23_short"
 

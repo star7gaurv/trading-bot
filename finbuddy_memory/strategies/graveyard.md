@@ -40,9 +40,15 @@ All backtests and conclusions from 2025-02 to 2026-04 were run on BTC **spot** (
 
 | Strategy | Identifier | Status |
 |---|---|---|
-| `FinBuddyFreqAI` (v22) | `finbuddy_v22_balanced_1779015982` | 🟢 LIVE — dry-run +$107 USDT |
-| `FinBuddyFreqAI_v23` | brain-owned, identifier rotates per experiment | 🟢 BRAIN-OWNED — 19 backtests done, 0 positive |
+| `FinBuddyFreqAI_v23` | `finbuddy_v23_live_*` (timestamped, bumped per promotion) | 🟢 LIVE since 2026-05-19. Per-pair-per-regime gate active. Brain owns variant exploration. |
+
+## Retired 2026-05-19 — v22 + LLM gate
+
+| Strategy | File | Why Retired |
+|---|---|---|
+| `FinBuddyFreqAI` (v22) | `freqtrade/user_data/strategies/FinBuddyFreqAI.py` | Dry-run +$94.94 (+9.59% / 45d / 291 trades) was statistically a regime coincidence — last 20 trades = 3W/17L (15% WR) after BEAR→NEUTRAL flip. File stays on disk for history (same pattern as AiGuardrailStrategy). Brain flag `V22_ENABLED=False`. |
+| `FinBuddyLLMModel` (v5) | `freqtrade/user_data/freqaimodels/FinBuddyLLMModel.py` | Wrapped v22's LightGBMClassifier with LLM confirmation. v23 uses LightGBMRegressor directly — no LLM gate needed. File on disk for history. |
 
 ---
 
-*Last updated: 2026-05-18*
+*Last updated: 2026-05-19*

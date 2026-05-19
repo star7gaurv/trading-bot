@@ -201,7 +201,23 @@ def propose(candidate: dict) -> None:
 
 
 def apply_promotion(config_hash: str) -> int:
-    """Apply the pending promotion: update live config.json identifier + strategy params."""
+    """Apply the pending promotion: update live config.json + .env, bump identifier, restart bot.
+
+    Activated 2026-05-19. Was previously instructions-only; now full auto-apply.
+
+    Steps:
+      1. Verify pending matches the requested hash
+      2. Backup current config.json
+      3. Write strategy params into freqtrade/.env (env vars consumed by strategy)
+      4. Bump freqai.identifier to force fresh model training
+      5. docker-compose restart freqtrade
+      6. Telegram confirmation with rollback info
+      7. Archive pending → applied
+    """
+    import shutil
+    import subprocess
+    import time
+
     if not PENDING_FILE.exists():
         print("ERROR: no pending promotion to apply", file=sys.stderr)
         return 1
@@ -210,27 +226,92 @@ def apply_promotion(config_hash: str) -> int:
         print(f"ERROR: pending hash {pending['config_hash']} != requested {config_hash}", file=sys.stderr)
         return 1
 
-    # SAFETY: at this stage we only emit instructions. Actual config swap happens
-    # only after human-readable diff confirmation by Gaurav. v1 keeps the live
-    # bot completely untouched. Once trust is established, this method will
-    # automate the JSON edit + identifier bump + bot restart.
-    print("=" * 60)
-    print(f"PROMOTION INSTRUCTIONS for {config_hash}:")
-    print("=" * 60)
-    print("v1 manual application (will automate after first 3 successful promotions):")
-    print()
-    print(json.dumps(pending["config"], indent=2))
-    print()
-    print(f"To apply manually:")
-    print(f"  1. Update freqtrade/user_data/config.json to use these params")
-    print(f"  2. Bump freqai.identifier to a fresh value")
-    print(f"  3. docker-compose restart freqtrade")
-    print()
-    archive = PROMOTIONS_DIR / f"applied_{config_hash}_{int(datetime.now(timezone.utc).timestamp())}.json"
-    archive.write_text(json.dumps(pending, indent=2))
+    new_cfg = pending["config"]
+    ts      = int(time.time())
+    backup  = LIVE_CONFIG.with_suffix(f".json.bak-{ts}")
+    env_path = ROOT / "freqtrade" / ".env"
+
+    # 1. Backup
+    shutil.copy(LIVE_CONFIG, backup)
+    print(f"backup → {backup}")
+
+    # 2. Edit config.json (Python json.load/dump — never sed)
+    with LIVE_CONFIG.open() as f:
+        live = json.load(f)
+    new_identifier = f"finbuddy_v23_promoted_{ts}"
+    old_identifier = live.get("freqai", {}).get("identifier")
+    # Apply timeframe + label_period from promoted config
+    if "timeframe" in new_cfg:
+        live["timeframe"] = new_cfg["timeframe"]
+    if "label_period_candles" in new_cfg:
+        live.setdefault("freqai", {}).setdefault("feature_parameters", {})["label_period_candles"] = new_cfg["label_period_candles"]
+    live.setdefault("freqai", {})["identifier"] = new_identifier
+    with LIVE_CONFIG.open("w") as f:
+        json.dump(live, f, indent=4)
+    print(f"identifier: {old_identifier} → {new_identifier}")
+
+    # 3. Write strategy env vars
+    env_keys = {
+        "FREQAI_K_TP":            new_cfg.get("k_tp"),
+        "FREQAI_K_SL":            new_cfg.get("k_sl"),
+        "FREQAI_LONG_THRESHOLD":  new_cfg.get("long_threshold"),
+        "FREQAI_SHORT_THRESHOLD": new_cfg.get("short_threshold"),
+        "FREQAI_STABILITY_N":     new_cfg.get("stability_n"),
+    }
+    env_keys = {k: v for k, v in env_keys.items() if v is not None}
+    if env_keys:
+        lines = env_path.read_text().splitlines() if env_path.exists() else []
+        out_lines = [ln for ln in lines if ln.split("=", 1)[0] not in env_keys]
+        for k, v in env_keys.items():
+            out_lines.append(f"{k}={v}")
+        env_path.write_text("\n".join(out_lines) + "\n")
+        print(f".env updated: {list(env_keys.keys())}")
+
+    # 4. Restart container
+    try:
+        result = subprocess.run(
+            ["docker-compose", "restart", "freqtrade"],
+            cwd=str(ROOT / "freqtrade"),
+            capture_output=True, text=True, timeout=60,
+        )
+        restart_ok = (result.returncode == 0)
+        print(f"docker-compose restart: {'OK' if restart_ok else 'FAILED'}")
+        if not restart_ok:
+            print(result.stderr[-400:], file=sys.stderr)
+    except Exception as e:
+        restart_ok = False
+        print(f"restart error: {e}", file=sys.stderr)
+
+    # 5. Telegram confirmation
+    try:
+        tg_send(
+            subsystem=Subsystem.BRAIN_PROMOTION,
+            status=Status.OK if restart_ok else Status.WARN,
+            title=f"🚀 v23 config promoted — {config_hash}",
+            fields={
+                "Identifier":  new_identifier,
+                "K_TP/K_SL":   f"{new_cfg.get('k_tp')}/{new_cfg.get('k_sl')}",
+                "Thresholds":  f"L={new_cfg.get('long_threshold')} S={new_cfg.get('short_threshold')}",
+                "Stability":   str(new_cfg.get("stability_n", "-")),
+                "Timeframe":   new_cfg.get("timeframe", "-"),
+            },
+            context=f"backup at {backup.name}",
+            action=f"Rollback: cp {backup.name} {LIVE_CONFIG.name} && docker-compose restart freqtrade" if restart_ok else "RESTART FAILED — check docker logs freqtrade",
+            silent=False,
+        )
+    except Exception as e:
+        print(f"telegram alert failed: {e}", file=sys.stderr)
+
+    # 6. Archive
+    archive = PROMOTIONS_DIR / f"applied_{config_hash}_{ts}.json"
+    archive.write_text(json.dumps({**pending, "applied_at": ts, "backup": str(backup), "restart_ok": restart_ok}, indent=2))
     PENDING_FILE.unlink()
-    print(f"Pending → archived at {archive}")
-    return 0
+    # Append to applied.jsonl for history
+    applied_log = PROMOTIONS_DIR / "applied.jsonl"
+    with applied_log.open("a") as f:
+        f.write(json.dumps({"applied_at": ts, "config_hash": config_hash, "config": new_cfg, "identifier": new_identifier, "backup": str(backup), "restart_ok": restart_ok}) + "\n")
+    print(f"archived → {archive}")
+    return 0 if restart_ok else 2
 
 
 def main() -> int:

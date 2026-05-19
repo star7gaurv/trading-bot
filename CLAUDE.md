@@ -112,15 +112,23 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ---
 
-## What Is Live and Working Right Now (verified 2026-05-09 by Claude Code)
+## What Is Live and Working Right Now (verified 2026-05-19 by Claude Code)
 
 ### FreqTrade
-- Running **`FinBuddyFreqAI.py` (v22)** in dry-run mode on **Binance Futures USDT-M** — long+short
-- FreqAI identifier: `finbuddy_v19_asym_1778575138` (2x leverage, 8 max trades, macro safety gates active)
+- Running **`FinBuddyFreqAI_v23.py` (v23)** in dry-run mode on **Binance Futures USDT-M** — long+short
+- FreqAI identifier: `finbuddy_v23_live_*` (timestamped, bumped on each promotion)
+- FreqAI model: **LightGBMRegressor** (predicts future_return %, not classifier)
 - 1000 USDT virtual wallet, max 8 open trades, 2x leverage enabled
 - API: `http://localhost:8080/api/v1` — user: `bot`, pass: `REDACTED-FREQTRADE__API_SERVER__PASSWORD`
-- Whitelist: **25 pairs**, **5m timeframe** (overridden by config)
-- Status: Corrected 2026-05-16 (v22 active; v23 Omni-Timeframe blocked by NaN backtest error)
+- Whitelist: **25 pairs**, **15m timeframe**
+- **Per-pair-per-regime gate active** — `pair_regime_stats.json` blocks pair-regime combos with rolling 30d (n≥5, WR<40%, PF<0.7)
+- Strategy env vars (live, best-known v23 from brain): K_TP=2.0, K_SL=2.0, LONG_THRESHOLD=3.25, SHORT_THRESHOLD=-2.75, STABILITY_N=2
+
+### Profitability reality check (2026-05-19)
+- v22 cumulative dry-run +$94.94 (+9.59%) over 45 days was **regime-coincidental**, not edge
+- Last 20 v22 trades = 3W/17L (15% WR) — bot kept shorting through BEAR→NEUTRAL flip
+- v23 not yet profitable in backtests (best PF=0.98 / -0.022%) but is the only forward path
+- v22 strategy file + LLM model file kept on disk for history; no longer referenced by live config or brain
 
 ### N8N
 - 🔴 **Permanently disabled** — FreqAI is sole signal source
@@ -170,20 +178,22 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ## Current Strategy
 
-### ✅ Active: `FinBuddyFreqAI.py` v22 — Futures Long/Short + MTF Sniper
-- Binance Futures USDT-M (perpetual, isolated margin), **5m base TF** (config-driven), 25 pairs, `can_short=True`
+### ✅ Active: `FinBuddyFreqAI_v23.py` v23 — Regression + Per-Pair-Per-Regime Gate
+- Binance Futures USDT-M (perpetual, isolated margin), **15m base TF**, 25 pairs, `can_short=True`
+- **LightGBMRegressor**: predicts `&-future_return` (regression target, no classifier bias)
 - **2x Leverage**: Implemented via `leverage()` callback.
 - **Max Open Trades**: 8.
-- **MTF Sniper**: uses 4h trend alignment and Relative Strength (RS) vs BTC.
-- FreqAI identifier: `finbuddy_v19_asym_1778575138` — Asymmetric barriers (K_TP=2.0, K_SL=1.0)
-- `custom_stoploss()`: ATR-based stops fixed.
-- **Status**: Captured +10% wins on May 16 morning (BEAR regime).
+- **Dynamic thresholds**: long/short thresholds adjust per candle by regime + recent WR
+- **Per-pair-per-regime gate** (2026-05-19): blocks (pair, regime) combos with rolling 30d WR<40% AND PF<0.7
+- **Stability filter**: requires N=2 consecutive candles past threshold
+- FreqAI identifier: `finbuddy_v23_live_*` — bumped on each brain promotion
+- `custom_stoploss()`: ATR-based asymmetric (K_TP=2.0, K_SL=2.0 — currently)
+- **Status**: Live since 2026-05-19. Awaiting brain to find profitable config + auto-promote.
 
-### ✅ Active: `FinBuddyLLMModel.py` v5
-- LightGBM + NVIDIA/OpenRouter LLM confirmation layer
-- **v5 fix (2026-05-12)**: Auto-confirms signals with proba ≥ 0.90 (was blocking 91% of signals)
-- `AUTO_CONFIRM_THRESHOLD=0.40` — bypass LLM for very high-confidence predictions
-- `COOLDOWN_SECONDS=1800` — 30-min per-pair veto window (was 60 min)
+### 🗄️ Retired (on disk for history, not referenced by live config or brain)
+- `FinBuddyFreqAI.py` (v22) — superseded by v23 on 2026-05-19. v22 dry-run "profit" was regime-coincident.
+- `FinBuddyLLMModel.py` (v5) — LLM gate layer. Was wrapping v22 classifier; v23 doesn't need it.
+- (Same pattern as `AiGuardrailStrategy.py` — file remains, never re-activated.)
 - Falls through to raw LightGBM if all LLM providers fail
 
 ### ❌ Retired: `AiGuardrailStrategy.py`

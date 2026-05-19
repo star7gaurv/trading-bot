@@ -4,8 +4,26 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status**: 🟢 v22 live dry-run +$107 (regime-favorable shorts) · 🧠 brain autonomously testing v23 variants every 10min · ⛔ no positive v23 result yet (best -0.106%)
-**Last Updated**: 2026-05-18 (Claude session — brain accelerated 3×, smart-gen + daily digest shipped)
+**Status**: 🟢 v23 LIVE (swapped from v22 on 2026-05-19) · 🧠 brain autonomously testing v23-only · 🛡️ per-pair-per-regime gate active · ⛔ no positive v23 result yet (best PF=0.98 / -0.022%)
+**Last Updated**: 2026-05-19 (Claude session — v22→v23 full migration, per-pair-per-regime intelligence, analyst↔generator feedback loop, auto-apply pipeline complete)
+
+### 2026-05-19 — The "Six Fixes" session (deep audit + forward unblock)
+
+Live v22 +$94 dry-run profit was reality-checked as regime coincidence, not edge (last 20 trades 3W/17L = 15% WR after BEAR→NEUTRAL flip). Six structural fixes shipped to unblock forward progress:
+
+1. **Per-pair-per-regime dynamic gate** — `scripts/pair_regime_performance.py` writes `pair_regime_stats.json` every 30 min from rolling 30-day closed-trade history; `FinBuddyFreqAI_v23.py:populate_entry_trend()` zeroes out enter_long/short for blocked combos. Rule: `n≥5 AND WR<40% AND PF<0.7`. First run blocked OP/BEAR, LINK/NEUTRAL, UNI/BEAR. Data-driven, no hand-picked blacklist.
+2. **Data download** — 15m + 30m feathers for all 25 pairs back to 2024-01-01 (previously only 7 pairs on 15m, 0 pairs on 30m past 2024-06). Added to `download_data_daily.sh`.
+3. **v22 → v23 full migration** — config.json swapped to `FinBuddyFreqAI_v23` + `LightGBMRegressor` + 15m + identifier `finbuddy_v23_live_*`. Brain `V22_ENABLED=False` flag (code intact for history). 40 stale v22+5m queued hypotheses purged.
+4. **Analyst↔generator feedback loop closed** — `hypothesis_gen.py` reads `analyst_report.json` and skips blacklisted timeframes; also gated by actual data-coverage check on BTC feather. Stops the waste cycle where analyst pruned 5m then generator regenerated it.
+5. **Auto-apply pipeline live** — `promote.py:apply_promotion()` now actually deploys: backups config, writes `.env`, bumps identifier, restarts container, Telegram confirms with rollback. Previously printed instructions only.
+6. **brain_cleanup top-K preservation** — preserves top-10 best-profit brain model dirs indefinitely as analyzable references; only purges garbage at the 7-day age threshold.
+
+Critical decisions confirmed by user:
+- ❌ No static pair blacklists. Per-pair-per-regime gating IS the right approach (memory: `feedback_approach.md` updated).
+- ✅ v22 file stays on disk, never re-activated (same pattern as AiGuardrailStrategy).
+- ✅ N8N container untouched even though pipeline is dead.
+
+Next session priorities: (a) watch v23 first 48h trade WR vs prior 48h, (b) push brain to find first PF>1.0 v23 config via the now-clean queue, (c) wire auto-promote gate (when v23 beats baseline for N days, send Apply button).
 
 ---
 

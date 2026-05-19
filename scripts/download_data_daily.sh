@@ -22,7 +22,7 @@ cd "$COMPOSE_DIR"
 echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] === daily data refresh ===" >> "$LOG"
 
 docker-compose run --rm freqtrade download-data \
-    --timeframe 1h 4h 1d \
+    --timeframe 15m 30m 1h 4h 1d \
     --days 3 \
     --trading-mode futures >> "$LOG" 2>&1
 

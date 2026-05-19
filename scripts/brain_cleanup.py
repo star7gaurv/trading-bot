@@ -33,14 +33,57 @@ BACKTEST_RESULTS = ROOT / "freqtrade" / "user_data" / "backtest_results"
 BRAIN_LOG_DIR = ROOT / "backtests"
 
 
-def cleanup_brain_models(max_age_days: int, dry_run: bool = False) -> tuple[int, int]:
-    """Remove brain_<hash>_<ts> model dirs older than threshold. Returns (count, bytes_freed)."""
+def _top_k_protected_dirs(keep_k: int) -> set[str]:
+    """Return the set of brain_<hash>_<ts>-prefixed dir names tied to top-K
+    experiments by profit_pct. These are preserved indefinitely as analyzable
+    history (user instruction 2026-05-19: keep what's useful, delete garbage).
+    Returns set of directory names (not full paths)."""
+    log_file = ROOT / "finbuddy_memory" / "experiments" / "log.jsonl"
+    if not log_file.exists():
+        return set()
+    import json
+    completed = []
+    try:
+        for line in log_file.read_text().splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                r = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if r.get("status") == "completed" and r.get("metrics", {}).get("trades", 0) >= 20:
+                completed.append(r)
+    except Exception:
+        return set()
+    completed.sort(key=lambda r: r["metrics"].get("profit_pct", -1e9), reverse=True)
+    protected = set()
+    for r in completed[:keep_k]:
+        hid = r.get("hypothesis_id", "")
+        if hid:
+            # model dirs are named like brain_<hash>_<ts>; match by hash prefix
+            for d in MODELS_DIR.glob(f"brain_{hid}_*"):
+                protected.add(d.name)
+    return protected
+
+
+def cleanup_brain_models(max_age_days: int, keep_top_k: int, dry_run: bool = False) -> tuple[int, int]:
+    """Remove brain_<hash>_<ts> model dirs older than threshold.
+
+    Preserves top-K best-profit experiment models indefinitely (set via --keep-top-k).
+    Returns (count, bytes_freed).
+    """
     cutoff = time.time() - max_age_days * 86400
+    protected = _top_k_protected_dirs(keep_top_k)
+    if protected:
+        print(f"  preserving top-{keep_top_k} model dirs (by profit_pct): {len(protected)} dirs protected")
     count = 0
     freed = 0
     for d in MODELS_DIR.glob("brain_*"):
         if not d.is_dir():
             continue
+        if d.name in protected:
+            continue  # analyzable reference — keep
         try:
             mtime = d.stat().st_mtime
         except FileNotFoundError:
@@ -138,14 +181,15 @@ def main() -> int:
     p.add_argument("--max-age-days",     type=int, default=7,  help="brain model age threshold")
     p.add_argument("--zip-max-age-days", type=int, default=14, help="backtest zip age threshold")
     p.add_argument("--log-max-age-days", type=int, default=14, help="brain log age threshold")
+    p.add_argument("--keep-top-k",       type=int, default=10, help="preserve top-K best-profit model dirs indefinitely (analyzable history)")
     p.add_argument("--dry-run",          action="store_true",  help="print what would be deleted, don't delete")
     args = p.parse_args()
 
     before_pct = disk_usage_pct()
     print(f"== brain_cleanup ==  disk: {before_pct}%")
 
-    print(f"Brain models  (older than {args.max_age_days}d):")
-    n1, f1 = cleanup_brain_models(args.max_age_days, args.dry_run)
+    print(f"Brain models  (older than {args.max_age_days}d, keeping top-{args.keep_top_k} best):")
+    n1, f1 = cleanup_brain_models(args.max_age_days, args.keep_top_k, args.dry_run)
     print(f"  removed {n1} dirs / {f1/1024/1024:.1f}MB")
 
     print(f"Backtest zips (older than {args.zip_max_age_days}d):")
