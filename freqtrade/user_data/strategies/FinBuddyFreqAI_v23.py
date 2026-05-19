@@ -10,6 +10,7 @@ import pandas as pd
 from pathlib import Path
 from pandas import DataFrame
 from freqtrade.strategy import IStrategy, stoploss_from_open
+from freqtrade.exchange import timeframe_to_seconds
 from freqtrade.persistence import Trade
 import talib.abstract as ta
 import freqtrade.vendor.qtpylib.indicators as qtpylib
@@ -163,9 +164,8 @@ class FinBuddyFreqAI_v23(IStrategy):
             return None
 
         # --- Phase 13 Volatility Hook (Emergency Shield) ---
-        # If within the first 10 minutes (2 candles on 5m) of the trade,
-        # volume spikes massively (e.g. news event) against the position, bail out instantly.
-        candles_open = int((current_time - trade.open_date_utc).total_seconds() / 300)
+        # If within the first 2 candles of the trade, volume spikes massively against the position, bail out instantly.
+        candles_open = int((current_time - trade.open_date_utc).total_seconds() / timeframe_to_seconds(self.timeframe))
         if candles_open <= 2 and current_profit < -0.005:
             last = dataframe.iloc[-1]
             rel_vol = last.get("%-relative_volume-period", 1.0)
@@ -218,8 +218,8 @@ class FinBuddyFreqAI_v23(IStrategy):
 
     def custom_exit(self, pair: str, trade: "Trade", current_time: datetime,
                     current_rate: float, current_profit: float, **kwargs):
-        # Time-limit exit: close trade after 72 candles (6h on 5m TF)
-        candles_open = int((current_time - trade.open_date_utc).total_seconds() / 300)
+        # Time-limit exit: close trade after 72 candles (timeframe-aware)
+        candles_open = int((current_time - trade.open_date_utc).total_seconds() / timeframe_to_seconds(self.timeframe))
         if candles_open >= 72:
             return "time_limit_exit"
         return None
