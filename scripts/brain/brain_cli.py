@@ -9,10 +9,12 @@ Subcommands:
   run        — pop one (or N) hypotheses from queue, run them, log results
   scan       — find promotion candidates, send Telegram alert if any
   best       — show the current best-known config by profit
+  analyse    — self-diagnose results, prune dead queue entries, inject targeted hypotheses
 
-Cron deployment (4 entries):
+Cron deployment (5 entries):
   */30 * * * *  python /home/ubuntu/var/www/html/trade/scripts/brain/brain_cli.py run --max 1
   0    */6 * * * python /home/ubuntu/var/www/html/trade/scripts/brain/brain_cli.py generate
+  30   */6 * * * python /home/ubuntu/var/www/html/trade/scripts/brain/brain_cli.py analyse
   0    7   * * * python /home/ubuntu/var/www/html/trade/scripts/brain/brain_cli.py scan
   0    0   * * * python /home/ubuntu/var/www/html/trade/scripts/brain/brain_cli.py status
 """
@@ -27,6 +29,7 @@ from experiment_log import summary_stats, best_by_metric, read_log, read_queue
 from hypothesis_gen import queue_seed_if_empty, generate_and_queue
 from runner import run_next
 from promote import find_candidates, propose
+from analyst import analyse
 
 
 def cmd_status(_args) -> int:
@@ -75,6 +78,17 @@ def cmd_scan(_args) -> int:
     return 0
 
 
+def cmd_analyse(args) -> int:
+    report = analyse(dry_run=args.dry_run, no_llm=args.no_llm)
+    pruned  = report.get("pruned", 0)
+    actions = report.get("actions", [])
+    insight = report.get("llm_insight", "")
+    print(f"\nPruned {pruned} dead experiments. Queued {len(actions)} targeted batches.")
+    if insight:
+        print(f"\nLLM insight: {insight}")
+    return 0
+
+
 def cmd_best(_args) -> int:
     best = best_by_metric("profit_pct", min_trades=20)
     if not best:
@@ -103,6 +117,11 @@ def main() -> int:
 
     sub.add_parser("scan").set_defaults(func=cmd_scan)
     sub.add_parser("best").set_defaults(func=cmd_best)
+
+    a = sub.add_parser("analyse", help="self-diagnose experiment results, prune queue, inject targeted hypotheses")
+    a.add_argument("--dry-run", action="store_true", help="report only, no queue changes")
+    a.add_argument("--no-llm",  action="store_true", help="skip DeepSeek call")
+    a.set_defaults(func=cmd_analyse)
 
     args = parser.parse_args()
     return args.func(args)

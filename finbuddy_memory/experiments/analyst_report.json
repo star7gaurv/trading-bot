@@ -1,0 +1,197 @@
+{
+  "generated_at": "2026-05-19T07:14:01.078501+00:00",
+  "findings": {
+    "dead_timeframes": [],
+    "noisy_timeframes": [
+      "5m"
+    ],
+    "short_bias": true,
+    "fee_drag": false,
+    "near_breakeven": true,
+    "best_bear": {
+      "schema_version": 1,
+      "hypothesis_id": "a3e549178ad7",
+      "parent_id": null,
+      "band": "safe",
+      "rationale": "safe: stability_n +1 (stricter signal stability)",
+      "window": "bear_2025Q1",
+      "timerange": "20250101-20250401",
+      "config": {
+        "strategy": "FinBuddyFreqAI_v23",
+        "freqaimodel": "LightGBMRegressor",
+        "config_file": "v23_regression_15m_di_config.json",
+        "timeframe": "15m",
+        "long_threshold": 3.0,
+        "short_threshold": -3.0,
+        "k_sl": 2.0,
+        "k_tp": 2.0,
+        "stability_n": 4,
+        "label_period_candles": 24,
+        "filter_di": true,
+        "filter_svm": true
+      },
+      "status": "completed",
+      "created_at": "2026-05-18T12:00:01.640250+00:00",
+      "started_at": "2026-05-19T02:10:02.023543+00:00",
+      "completed_at": "2026-05-19T02:16:32.928052+00:00",
+      "metrics": {
+        "trades": 112,
+        "wr": 0.4554,
+        "sharpe": -0.187,
+        "pf": 0.982,
+        "profit_pct": -0.022,
+        "max_dd": 0.416,
+        "long_count": 90,
+        "short_count": 22,
+        "exit_signal_count": 14,
+        "exit_signal_wr": 1.0,
+        "stop_loss_count": 23,
+        "elapsed_s": 390
+      },
+      "error": null
+    },
+    "best_bull": {
+      "schema_version": 1,
+      "hypothesis_id": "842db834ab68",
+      "parent_id": null,
+      "band": "aggressive",
+      "rationale": "aggr: tf=4h lt=+0.5 st=-2.0 ksl=2.0 ktp=2.5 N=4 lp=12 di=True svm=True",
+      "window": "bull_2024Q1",
+      "timerange": "20240101-20240401",
+      "config": {
+        "timeframe": "4h",
+        "long_threshold": 0.5,
+        "short_threshold": -2.0,
+        "k_sl": 2.0,
+        "k_tp": 2.5,
+        "stability_n": 4,
+        "label_period_candles": 12,
+        "filter_di": true,
+        "filter_svm": true,
+        "strategy": "FinBuddyFreqAI_v23",
+        "freqaimodel": "LightGBMRegressor",
+        "config_file": "v23_regression_4h_config.json"
+      },
+      "status": "completed",
+      "created_at": "2026-05-18T08:41:15.503616+00:00",
+      "started_at": "2026-05-18T21:40:01.821206+00:00",
+      "completed_at": "2026-05-18T21:40:37.053879+00:00",
+      "metrics": {
+        "trades": 48,
+        "wr": 0.3958,
+        "sharpe": -1.877,
+        "pf": 0.759,
+        "profit_pct": -0.182,
+        "max_dd": 0.31,
+        "long_count": 48,
+        "short_count": 0,
+        "exit_signal_count": 4,
+        "exit_signal_wr": 1.0,
+        "stop_loss_count": 8,
+        "elapsed_s": 35
+      },
+      "error": null
+    },
+    "best_overall": {
+      "schema_version": 1,
+      "hypothesis_id": "a3e549178ad7",
+      "parent_id": null,
+      "band": "safe",
+      "rationale": "safe: stability_n +1 (stricter signal stability)",
+      "window": "bear_2025Q1",
+      "timerange": "20250101-20250401",
+      "config": {
+        "strategy": "FinBuddyFreqAI_v23",
+        "freqaimodel": "LightGBMRegressor",
+        "config_file": "v23_regression_15m_di_config.json",
+        "timeframe": "15m",
+        "long_threshold": 3.0,
+        "short_threshold": -3.0,
+        "k_sl": 2.0,
+        "k_tp": 2.0,
+        "stability_n": 4,
+        "label_period_candles": 24,
+        "filter_di": true,
+        "filter_svm": true
+      },
+      "status": "completed",
+      "created_at": "2026-05-18T12:00:01.640250+00:00",
+      "started_at": "2026-05-19T02:10:02.023543+00:00",
+      "completed_at": "2026-05-19T02:16:32.928052+00:00",
+      "metrics": {
+        "trades": 112,
+        "wr": 0.4554,
+        "sharpe": -0.187,
+        "pf": 0.982,
+        "profit_pct": -0.022,
+        "max_dd": 0.416,
+        "long_count": 90,
+        "short_count": 22,
+        "exit_signal_count": 14,
+        "exit_signal_wr": 1.0,
+        "stop_loss_count": 23,
+        "elapsed_s": 390
+      },
+      "error": null
+    },
+    "window_stats": {
+      "bear_2025Q1": {
+        "n": 40,
+        "avg_wr": 0.379,
+        "avg_pf": 0.679
+      },
+      "bull_2024Q1": {
+        "n": 47,
+        "avg_wr": 0.32,
+        "avg_pf": 0.484
+      },
+      "bull_2024Q2": {
+        "n": 2,
+        "avg_wr": 0.307,
+        "avg_pf": 0.615
+      }
+    },
+    "tf_stats": {
+      "15m": {
+        "n": 46,
+        "avg_pf": 0.598,
+        "avg_wr": 0.372,
+        "avg_trades_day": 1.15
+      },
+      "1h": {
+        "n": 14,
+        "avg_pf": 0.546,
+        "avg_wr": 0.371,
+        "avg_trades_day": 3.16
+      },
+      "5m": {
+        "n": 15,
+        "avg_pf": 0.564,
+        "avg_wr": 0.248,
+        "avg_trades_day": 5.86
+      },
+      "30m": {
+        "n": 6,
+        "avg_pf": 0.509,
+        "avg_wr": 0.297,
+        "avg_trades_day": 3.3
+      },
+      "4h": {
+        "n": 8,
+        "avg_pf": 0.558,
+        "avg_wr": 0.369,
+        "avg_trades_day": 1.01
+      }
+    }
+  },
+  "pruned": 18,
+  "actions": [
+    "Queued \u00d72 short-bias/lower-long-threshold on BULL windows",
+    "Queued \u00d73 cross-window validation of best config",
+    "Queued \u00d73 near-breakeven nudge: near-breakeven: lt 3.0\u21923.25 (quality filter)",
+    "Queued \u00d73 near-breakeven nudge: near-breakeven: lt 3.0\u21923.5 (quality filter)",
+    "Queued \u00d73 near-breakeven nudge: near-breakeven: st -3.0\u2192-3.25 (quality filter)",
+    "Queued \u00d73 near-breakeven nudge: near-breakeven: st -3.0\u2192-3.5 (quality filter)"
+  ],
+  "llm_insight": ""
+}
