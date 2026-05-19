@@ -140,20 +140,30 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 - **FreqTrade native bot** (token `8557119080:...`) — ✅ live, fires trade notifications + watchdog alerts + daily summary
 - Both post to Chat ID: `5622292536`
 
-### All Crons Live (verified 2026-05-09)
+### All Crons Live (verified 2026-05-19)
 ```
-0 * * * *    auto_commit.sh                    # vault git commit hourly
-*/15 * * * * fetch_all_external.py             # Phase 2 data
-0 */4 * * *  hmm_regime_detector.py            # Phase 3 HMM
-*/15 * * * * memory_writer.py && git_commit.sh # Phase 4 memory
-0 2 * * *    karpathy/run_loop.py              # Phase 5 research
-*/5 * * * *  executor/executor.py              # Phase 7 executor
-*/30 * * * * watchdog.py                       # Telegram alert: container/training/heartbeat
-*/15 * * * * trade_postmortem.py               # Closed-trade ledger → closed.md
-0 8 * * *    pair_performance.py               # Per-pair WR/PF report
-0 8 * * *    daily_summary.py                  # Telegram morning digest
-0 6 * * *    run_promotion.sh                  # Daily promotion check
+0 * * * *    auto_commit.sh                     # vault git commit hourly
+*/15 * * * * fetch_all_external.py              # Phase 2 data
+0 */4 * * *  hmm_regime_detector.py             # Phase 3 HMM
+*/15 * * * * memory_writer.py && git_commit.sh  # Phase 4 memory
+0 2 * * *    karpathy/run_loop.py               # Phase 5 research
+*/5 * * * *  executor/executor.py               # Phase 7 executor
+*/30 * * * * watchdog.py                        # Telegram alert: container/training/heartbeat
+*/15 * * * * trade_postmortem.py                # Closed-trade ledger → closed.md
+0 8 * * *    pair_performance.py                # Per-pair WR/PF report
+0 8 * * *    daily_summary.py                   # Telegram morning digest
+*/10 * * * * brain_cli.py run --max 1           # Phase 1 brain: one experiment
+0 */6 * * *  brain_cli.py generate              # brain hypothesis generation
+30 */6 * * * brain_cli.py analyse               # brain self-diagnose + prune
+0 7 * * *    brain_cli.py scan                  # brain promotion scan → pending.json + Telegram
+*/2 * * * *  telegram_listener.py               # Apply/Skip button handler (calls promote.py --apply)
+0 22 * * *   walkforward_daily.sh               # NEW 2026-05-19: daily WF (12mo trailing, ~80min)
+0 3 1 * *    walkforward_monthly.sh             # Monthly heavy WF (27mo full)
+0 4 * * *    auto_promote.py                    # NEW 2026-05-19: WF Sharpe vs baseline alert
+*/30 * * * * walkforward_notify.py              # PASS/FAIL Telegram on new WF summary
+30 4 * * *   download_data_daily.sh             # forward-increment data download
 ```
+**Removed from cron 2026-05-19:** `0 6 * * * run_promotion.sh` — legacy CSV-based, file kept on disk but unused. Brain promotion flows via `brain_cli.py scan` → Telegram Apply button.
 
 ---
 
