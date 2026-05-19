@@ -345,6 +345,25 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 
 > Full session history lives in `finbuddy_memory/FINBUDDY_PROJECT_MEMORY.md`. Only the most recent session is kept here.
 
+### May 19, 2026 PM (Claude Code) — Candle-count bug fixed + full memory audit
+
+**Bug found and fixed (commit `0ede041`):**
+Both `custom_stoploss` and `custom_exit` hardcoded `/300` (5m seconds) for candle-count but the live config runs 15m (900s). The time-limit exit was firing at 6h instead of 18h — killing trades 3× too early. The emergency vol shield covered only 10 min instead of the intended 30 min. Fixed by importing `timeframe_to_seconds(self.timeframe)` from `freqtrade.exchange` — now TF-agnostic.
+
+**Memory / docs audit (same session):**
+- `CLAUDE_HANDOFF.md` was completely stale (still said v22 live, 0 profitable brain runs, "swap not yet"). Rewrote to v23 current state with brain progress (139 runs, 2 profitable).
+- `FINBUDDY_PROJECT_MEMORY.md` Phase Roadmap still said "v17 live". Updated to v23. Crontab was from 2026-05-09 (missing 12 brain + parquet + pair-regime crons). Replaced with full verified crontab.
+- Auto-memory files `project_overview.md` + `project_phase1_status.md` were 7 days stale (v19 references). Fully rewritten to v23 state.
+
+**Brain state as of this session:**
+- 139 experiments completed, 2 profitable: `bear_2025Q1` (+0.192%, Sharpe=1.424, PF=1.214) and `bull_2024Q2` (+0.04%)
+- Best config: `lt=3.25, st=-3.0, k_sl=2.0, k_tp=2.0, stability_n=1, lp=12`
+- Promotion criteria not yet met (need ≥2 bull + ≥2 bear runs passing)
+
+**Known gap to fix next:**
+- `download_data_daily.sh` only forward-increments — will cause 4h NaN crash again when a new pair is added
+- Brain does not auto-queue cross-window validation for a config that passes one window
+
 ### May 17, 2026 PM (Claude Code) — Strategy fixes + vision realignment
 
 **Gaurav's feedback**: I was doing bot tuning (manually tweaking thresholds, asking "Path A/B/C?")

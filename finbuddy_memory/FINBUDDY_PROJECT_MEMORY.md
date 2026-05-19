@@ -179,6 +179,20 @@ After the v22→v23 live migration shipped this morning (commit `f338ed5`), a fu
 
 ---
 
+## 🐛 Candle-Count Bug Fixed (2026-05-19 PM, commit `0ede041`)
+
+**Bug:** Both `custom_stoploss` (emergency vol shield) and `custom_exit` (time-limit) divided `total_seconds` by hardcoded `300` — the seconds-per-candle for a **5m** timeframe. The live config runs **15m (900s)**. Every candle-count was 3× too large.
+
+**Impact:**
+- Emergency shield: fired after 10 min instead of 30 min (first 2 real 15m candles)
+- Time-limit exit: fired at 6h instead of 18h — killed trades 3× before their natural TP
+
+**Fix:** Imported `timeframe_to_seconds` from `freqtrade.exchange`; replaced both hardcoded `300` with `timeframe_to_seconds(self.timeframe)`. Now TF-agnostic — survives future config changes.
+
+**Root cause pattern:** Same bug class as the v17 `/ 900 → / 3600` fix (caught in CLAUDE.md). The strategy class defaults to `timeframe = "5m"` but `config.json` overrides to 15m. Any hardcoded TF-seconds value will silently break on TF change.
+
+---
+
 ## 🚀 Current State (2026-05-17 — afternoon)
 
 | Component | Status |
@@ -400,12 +414,12 @@ Three structural fixes addressing root causes found across 11 smoke tests:
 
 ---
 
-## 🆕 Phase Roadmap (Authoritative — 2026-05-09)
+## 🆕 Phase Roadmap (Authoritative — 2026-05-19)
 
 | Phase | Status | Focus |
 |---|---|---|
 | 0 — Foundation | ✅ Complete | FreqTrade, Telegram, server, N8N cleanup |
-| 1 — FreqAI Brain | 🔄 In Progress | v17 live (symmetric barriers, LLM layer active); WF #5 running — gate to Phase 10 |
+| 1 — FreqAI Brain | 🔄 In Progress | **v23 live since 2026-05-19** — LightGBMRegressor, 15m, per-pair-per-regime gate, brain autonomous; 2 profitable backtest runs found (best bear PF=1.214 / +0.192%), promotion criteria not yet met |
 | 2 — Data Enrichment | ✅ Live | 5 external fetchers + combined_context.json, cron every 15m |
 | 3 — HMM Regime | ✅ Live | 5-regime HMM + regime-aware sizing hooks, cron every 4h |
 | 4 — Obsidian Memory | ✅ Live | CONTEXT auto-write + vault git-commit, cron every 15m |
@@ -414,28 +428,41 @@ Three structural fixes addressing root causes found across 11 smoke tests:
 | 7 — Executor | ✅ Live (paper) | Python signal executor cron every 5m |
 | 8 — Futures Setup | ✅ Complete | Binance futures API, isolated margin, memory mounted |
 | 9 — Risk Engine | ✅ Complete | Regime stake sizing, cluster cap, funding guard, DD gate |
-| 10 — Live Migration | ⬜ BLOCKED | Needs walk-forward PASS or 6-month dry-run track record |
-| 11 — Self-Evolution | ✅ Live | Memory integration, RS metrics, and dynamic regime thresholds |
-| 12 — Brain Dashboard | ✅ Complete | God-Tier React SPA with WebSockets, Live Trades, and Neural Feed |
-| 13 — Conscious Brain | ✅ Complete | Omni-Timeframe (5M Base), Liquidity Awareness, Dynamic SL, MLOps Loop |
+| 10 — Live Migration | ⬜ BLOCKED | Needs brain to find passing config + walk-forward PASS |
+| 11 — Self-Evolution | ✅ Live | Dynamic regime thresholds, per-pair-per-regime gate, WR feedback loop |
+| 12 — Brain Dashboard | ✅ Complete | React SPA with WebSockets, Live Trades, Neural Feed |
+| 13 — Conscious Brain | ✅ Live | Regression arch, OB veto, autonomous hypothesis engine, auto-apply pipeline |
 
 ---
 
-## 🗓️ Live Crontab (server — verified 2026-05-09)
+## 🗓️ Live Crontab (server — verified 2026-05-19)
 
 ```
-0 * * * *    auto_commit.sh                                     # vault git commit hourly
-*/15 * * * * fetch_all_external.py                              # Phase 2 data
-0 */4 * * *  hmm_regime_detector.py                             # Phase 3 HMM
-*/15 * * * * memory_writer.py && git_commit.sh                  # Phase 4 memory
-0 2 * * *    karpathy/run_loop.py                               # Phase 5 research
-*/5 * * * *  executor/executor.py                               # Phase 7 executor
-0 8 * * *    pair_performance.py --since 7-days-ago             # monitoring
-*/30 * * * * watchdog.py                                        # bot silence detector
-*/15 * * * * trade_postmortem.py                                # closed-trade ledger
-0 6 * * *    run_promotion.sh                                   # daily promotion check
-0 8 * * *    daily_summary.py                                   # Telegram morning digest
-# REMOVED 2026-05-09: @reboot openclaw (abandoned), @reboot uvicorn webhook_receiver (TV abandoned)
+0 * * * *     auto_commit.sh                          # vault git commit hourly
+*/15 * * * *  fetch_all_external.py                   # Phase 2 external data
+0 */4 * * *   hmm_regime_detector.py                  # Phase 3 HMM every 4h
+*/15 * * * *  memory_writer.py && git_commit.sh        # Phase 4 memory
+0 2 * * *     karpathy/run_loop.py                    # Phase 5 research
+*/5 * * * *   executor_wrapper.sh                     # Phase 7 executor
+0 6 * * *     run_promotion.sh                        # daily brain promotion check
+0 8 * * *     pair_performance.py                     # per-pair WR/PF report
+*/30 * * * *  watchdog.py                             # container/training/heartbeat + NaN-training alert
+*/15 * * * *  trade_postmortem.py                     # closed-trade ledger + bias detector
+0 8 * * *     daily_summary.py                        # Telegram morning digest
+0 */4 * * *   sync_context.py                         # auto-sync FINBUDDY_PROJECT_MEMORY.md
+*/30 * * * *  walkforward_notify.py                   # notify on walk-forward complete
+0 3 1 * *     walkforward_monthly.sh                  # monthly walk-forward (21 folds)
+30 4 * * *    download_data_daily.sh                  # forward-increment market data
+*/10 * * * *  brain_cli.py run --max 1                # brain: run next pending hypothesis
+0 */6 * * *   brain_cli.py generate                   # brain: generate hypotheses
+0 7 * * *     brain_cli.py scan                       # brain: scan for promotable configs
+0 8 * * *     digest.py                               # brain: daily digest to Telegram
+*/2 * * * *   flock -n ... telegram_listener.py       # Telegram button listener (flock: no dupes)
+0 4 * * *     brain_cleanup.py                        # brain: prune old model dirs
+30 */6 * * *  brain_cli.py analyse                    # brain: analyst report
+*/30 * * * *  pair_regime_performance.py              # per-pair-per-regime gate update
+15 1 * * *    build_historical_macro.py               # rebuild macro parquet daily
+20 1 * * *    build_historical_regime.py              # rebuild regime parquet daily
 ```
 
 ---
