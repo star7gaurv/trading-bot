@@ -179,11 +179,23 @@ class FinBuddyFreqAI_v23(IStrategy):
         if atr is None or atr <= 0 or current_rate <= 0:
             return None
 
+        # Anchor the INITIAL stop to entry-time ATR so it does not ratchet
+        # inward when post-entry volatility contracts. Bug 2026-05-19:
+        # recomputing sl_pct each candle caused ~106 "trailing_stop_loss"
+        # exits at avg -0.18% in ~204 min — minor noise wicking a stop that
+        # crept toward entry as ATR fell. The trail-lock arm still uses
+        # live ATR (only widens with rising vol).
+        entry_atr_pct = trade.get_custom_data("entry_atr_pct")
+        if entry_atr_pct is None:
+            entry_atr_pct = atr / trade.open_rate
+            entry_atr_pct = max(0.003, min(entry_atr_pct, 0.025))
+            trade.set_custom_data("entry_atr_pct", float(entry_atr_pct))
+
         atr_pct = atr / current_rate
         atr_pct = max(0.003, min(atr_pct, 0.025))
 
-        sl_pct = self.K_SL * atr_pct   # initial stop distance (tight)
-        tp_pct = self.K_TP * atr_pct   # trail lock level (wider = let winners run)
+        sl_pct = self.K_SL * entry_atr_pct  # initial stop — FIXED at entry-time ATR
+        tp_pct = self.K_TP * atr_pct        # trail lock — live ATR (can widen with vol)
         
         # Require 50% more profit before locking the trail to avoid noise
         lock_threshold = tp_pct * 1.5
@@ -218,9 +230,13 @@ class FinBuddyFreqAI_v23(IStrategy):
 
     def custom_exit(self, pair: str, trade: "Trade", current_time: datetime,
                     current_rate: float, current_profit: float, **kwargs):
-        # Time-limit exit: close trade after 72 candles (timeframe-aware)
+        # Time-limit exit: close trade after 24 candles (timeframe-aware).
+        # 2× label_period_candles=12 → covers the model's prediction horizon
+        # plus one full reversal window. Was 72 (6× horizon) which let dead
+        # positions drift 18h on 15m TF — the 11 force_exit + 3 time_limit
+        # trades in the live log all averaged -0.83% at >12h open.
         candles_open = int((current_time - trade.open_date_utc).total_seconds() / timeframe_to_seconds(self.timeframe))
-        if candles_open >= 72:
+        if candles_open >= 24:
             return "time_limit_exit"
         return None
 
