@@ -196,3 +196,4 @@
 | 2026-05-19 02:21:09 | OP/USDT:USDT | SHORT | 0h16m | -1.02% | -1.04 | stop_loss | NEUTRAL | freqai_lgbm_v22_short |
 | 2026-05-19 03:16:13 | OP/USDT:USDT | SHORT | 0h12m | -1.02% | -1.04 | stop_loss | NEUTRAL | freqai_lgbm_v22_short |
 | 2026-05-19 05:43:55 | TRX/USDT:USDT | LONG | 0h28m | -0.33% | -0.33 | stop_loss | NEUTRAL | freqai_lgbm_v22_long |
+| 2026-05-19 08:36:15 | TRX/USDT:USDT | LONG | 0h32m | -0.31% | -0.31 | stop_loss | NEUTRAL | freqai_lgbm_v22_long |
