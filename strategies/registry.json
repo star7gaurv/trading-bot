@@ -593,6 +593,48 @@
       "proposed_by": "reasoning_agent",
       "reviewed_at": "2026-05-19",
       "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "btc_outperformance_alt_rotation_20260520",
+      "hypothesis": "BTC will outperform altcoins as risk-off capital seeks safety, leading to a rotation from altcoins to BTC in a fearful market environment.",
+      "timeframe": "1h",
+      "indicators": [
+        "BTC_Dominance",
+        "Fear_Greed_Index",
+        "Price_vs_SMA20"
+      ],
+      "entry_long": "BTC_Dominance > 58% AND Fear_Greed_Index < 30",
+      "entry_short": "BTC_Dominance > 58% AND Fear_Greed_Index < 30",
+      "exit_rule": "Position closed when Fear_Greed_Index > 45 OR BTC_Dominance < 57%",
+      "regime_filter": [
+        "NEUTRAL"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-20",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-20",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "altcoin_mean_reversion_fear_20260520",
+      "hypothesis": "High-beta altcoins will exhibit mean-reversion behavior within a tight price band during low-volatility, fearful market conditions.",
+      "timeframe": "1h",
+      "indicators": [
+        "VWAP_Deviation",
+        "Volatility_Percentile_30d",
+        "Price_vs_SMA20"
+      ],
+      "entry_long": "VWAP_Deviation < -0.7% AND Volatility_Percentile_30d < 0.4",
+      "entry_short": "VWAP_Deviation > 0.7% AND Volatility_Percentile_30d < 0.4",
+      "exit_rule": "Price returns to VWAP (within 0.2%) OR Price_vs_SMA20 crosses zero",
+      "regime_filter": [
+        "NEUTRAL"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-20",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-20",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
     }
   ]
 }
