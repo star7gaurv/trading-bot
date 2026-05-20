@@ -492,8 +492,11 @@ class FinBuddyFreqAI_v23(IStrategy):
         side: str,
         **kwargs,
     ) -> float:
-        REGIME_FILE = self._REGIME_FILE
-        regime = _risk_engine.get_regime(REGIME_FILE)
+        # Bug V fix (2026-05-20): use strategy's _get_current_regime() so all
+        # regime reads in one candle agree. Previously called
+        # _risk_engine.get_regime() which re-read the JSON — could disagree
+        # with populate_entry_trend's cached value on cron-boundary candles.
+        regime = self._get_current_regime()
         multiplier = _risk_engine.stake_multiplier(regime)
         current_profit_ratio = kwargs.get('current_profit_ratio', 0.0) or 0.0
         if not _risk_engine.max_drawdown_gate(abs(current_profit_ratio)):
@@ -502,6 +505,26 @@ class FinBuddyFreqAI_v23(IStrategy):
         if multiplier == 0.0:
             logger.warning(f"[RiskEngine] CRASH regime — skipping trade")
             return 0
+
+        # Bug II fix (2026-05-20): defensive secondary cluster-cap check.
+        # confirm_trade_entry has a race (two same-candle entries snapshot
+        # the same pre-write state and both pass). By the time we hit
+        # custom_stake_amount the DB is fresher — re-check and return 0 if
+        # the cluster overflowed since confirm_trade_entry passed.
+        pair = kwargs.get("pair") or (entry_tag or "")
+        cluster = self._PAIR_CLUSTER.get(pair, "ALTCOIN")
+        if cluster != "ALTCOIN":
+            cluster_open = sum(
+                1 for t in Trade.get_trades_proxy(is_open=True)
+                if self._PAIR_CLUSTER.get(t.pair, "ALTCOIN") == cluster
+            )
+            if cluster_open >= self._MAX_CLUSTER_POSITIONS:
+                logger.warning(
+                    f"[CorrLimit/secondary] Blocking {pair} stake: cluster={cluster} "
+                    f"now has {cluster_open}/{self._MAX_CLUSTER_POSITIONS} (race-cap)"
+                )
+                return 0
+
         base_stake = min(proposed_stake, max_stake)
         result = round(base_stake * multiplier, 2)
         logger.info(f"[RiskEngine] stake={result} regime={regime} mult={multiplier}")
@@ -578,8 +601,12 @@ class FinBuddyFreqAI_v23(IStrategy):
                 lev = self._LEV_LOW
                 tier = "LOW"
             else:
-                # Below 1.0 — entry shouldn't have fired; use MED defensively.
-                lev = self._LEV_MED
+                # Below 1.0 — entry passed populate_entry_trend but by the time
+                # this leverage callback fires, the per-pair median has shifted
+                # and centered_pred is no longer above threshold. Size DOWN to
+                # 1x (was MED/2x). Fixed 2026-05-20 (Bug III round-3 audit):
+                # the prior "MED defensively" gave 2x to sub-threshold trades.
+                lev = self._LEV_LOW
                 tier = "FALLBACK"
 
             final = min(lev, max_leverage)
@@ -667,37 +694,48 @@ class FinBuddyFreqAI_v23(IStrategy):
         side: str,
         **kwargs,
     ) -> bool:
-        # 1. Macro safety gate — reads combined_context.json from external fetchers.
-        # Blocks trades during extreme fear (Longs only) or catastrophic news.
+        # Gate order (cheapest + most-often-blocking first — Bug IV fix 2026-05-20):
+        #   1) cluster cap         (in-memory list scan, ~µs)
+        #   2) macro fear/greed    (file read, ~ms)
+        #   3) funding-rate guard  (HTTP/cache read, ~10–500 ms)
+        # Previously funding-rate ran before cluster cap, making wasted Binance
+        # HTTP calls every time a cluster-full pair tried to enter.
+
+        # 1. Correlation cluster cap
+        cluster = self._PAIR_CLUSTER.get(pair, "ALTCOIN")
+        if cluster != "ALTCOIN":
+            open_trades = Trade.get_trades_proxy(is_open=True)
+            cluster_open = sum(
+                1 for t in open_trades
+                if self._PAIR_CLUSTER.get(t.pair, "ALTCOIN") == cluster
+            )
+            if cluster_open >= self._MAX_CLUSTER_POSITIONS:
+                logger.info(
+                    f"[CorrLimit] Blocking {pair} entry: cluster={cluster} "
+                    f"already has {cluster_open}/{self._MAX_CLUSTER_POSITIONS} open trades."
+                )
+                return False
+
+        # 2. Macro safety gate — reads combined_context.json from external fetchers.
         ctx = self._get_combined_context()
         fear_greed = ctx.get("fear_greed", 50)
-        news_ratio = ctx.get("news_sentiment_ratio", 0.5)  # 0=bearish, 1=bullish
         market_change = ctx.get("market_cap_change_24h_pct", 0)
 
         if side == "long":
-            # Block longs in Extreme Fear (<20) OR when market cap dropped >3% in 24h
             if fear_greed < 20:
-                logger.info(
-                    f"[MacroGate] Blocking long on {pair}: Fear & Greed={fear_greed} (Extreme Fear)"
-                )
+                logger.info(f"[MacroGate] Blocking long on {pair}: Fear & Greed={fear_greed} (Extreme Fear)")
                 return False
             if market_change < -3.0:
-                logger.info(
-                    f"[MacroGate] Blocking long on {pair}: market cap 24h change={market_change:.2f}% (crash signal)"
-                )
+                logger.info(f"[MacroGate] Blocking long on {pair}: market cap 24h change={market_change:.2f}% (crash signal)")
                 return False
-
-        if side == "short":
-            # Block shorts in Extreme Greed (>80) OR strong bullish news
+        else:  # short
             if fear_greed > 80:
-                logger.info(
-                    f"[MacroGate] Blocking short on {pair}: Fear & Greed={fear_greed} (Extreme Greed)"
-                )
+                logger.info(f"[MacroGate] Blocking short on {pair}: Fear & Greed={fear_greed} (Extreme Greed)")
                 return False
 
-        # 2. Funding-rate crowding guard (symmetric since Bug C fix 2026-05-20).
-        # Block longs when longs are overcrowded (funding strongly positive) AND
-        # block shorts when shorts are overcrowded (funding strongly negative).
+        # 3. Funding-rate crowding guard (symmetric since Bug C fix 2026-05-20).
+        # Block longs when longs overcrowded (funding strongly positive) AND
+        # block shorts when shorts overcrowded (funding strongly negative).
         funding = self._get_btc_funding_rate()
         if funding is not None:
             if side == "long" and funding > self._FUNDING_CROWDED_THRESHOLD:
@@ -710,21 +748,6 @@ class FinBuddyFreqAI_v23(IStrategy):
                 logger.info(
                     f"[FundingGuard] Blocking short on {pair}: "
                     f"BTC funding={funding:.4%} < -{self._FUNDING_CROWDED_THRESHOLD:.4%} (shorts crowded)"
-                )
-                return False
-
-        # 3. Correlation cluster cap
-        cluster = self._PAIR_CLUSTER.get(pair, "ALTCOIN")
-        if cluster != "ALTCOIN":
-            open_trades = Trade.get_trades_proxy(is_open=True)
-            cluster_open = sum(
-                1 for t in open_trades
-                if self._PAIR_CLUSTER.get(t.pair, "ALTCOIN") == cluster
-            )
-            if cluster_open >= self._MAX_CLUSTER_POSITIONS:
-                logger.info(
-                    f"[CorrLimit] Blocking {pair} entry: cluster={cluster} "
-                    f"already has {cluster_open}/{self._MAX_CLUSTER_POSITIONS} open trades."
                 )
                 return False
 
