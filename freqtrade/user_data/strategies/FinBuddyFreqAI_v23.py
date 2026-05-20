@@ -94,7 +94,7 @@ class FinBuddyFreqAI_v23(IStrategy):
     trailing_stop = False
     use_custom_stoploss = True
 
-    timeframe = "5m"
+    timeframe = "15m"  # matches config.json; was "5m" (stale, overridden at load 2026-05-20)
 
     can_short = True
     startup_candle_count = 400
@@ -553,10 +553,12 @@ class FinBuddyFreqAI_v23(IStrategy):
     }
     _MAX_CLUSTER_POSITIONS = 2  # hard cap per cluster
 
-    # Funding-rate long guard (added v16.2)
-    # When BTC perpetual funding rate is very high, longs are overcrowded and
-    # expensive. Block new longs above threshold to avoid entering bubble tops.
-    _FUNDING_LONG_BLOCK_THRESHOLD = 0.0005   # 0.05% per 8h (extreme bullish)
+    # Funding-rate crowding guard. Renamed 2026-05-20 from _FUNDING_LONG_BLOCK_THRESHOLD
+    # because the gate is now applied SYMMETRICALLY: longs blocked when funding
+    # > +threshold (longs crowded); shorts blocked when funding < -threshold
+    # (shorts crowded). Previous one-sided gate contributed to long bias.
+    _FUNDING_CROWDED_THRESHOLD = 0.0005   # 0.05% per 8h (extreme crowding either side)
+    _FUNDING_LONG_BLOCK_THRESHOLD = _FUNDING_CROWDED_THRESHOLD  # backward-compat alias
     # Use container-writable path; falls back gracefully if dir missing
     _FUNDING_CACHE_FILE = Path("/freqtrade/user_data/data/external/funding_rate_cache.json")
     _FUNDING_CACHE_TTL_MIN = 15
@@ -625,13 +627,21 @@ class FinBuddyFreqAI_v23(IStrategy):
                 )
                 return False
 
-        # 2. Funding-rate long guard
-        if side == "long":
-            funding = self._get_btc_funding_rate()
-            if funding is not None and funding > self._FUNDING_LONG_BLOCK_THRESHOLD:
+        # 2. Funding-rate crowding guard (symmetric since Bug C fix 2026-05-20).
+        # Block longs when longs are overcrowded (funding strongly positive) AND
+        # block shorts when shorts are overcrowded (funding strongly negative).
+        funding = self._get_btc_funding_rate()
+        if funding is not None:
+            if side == "long" and funding > self._FUNDING_CROWDED_THRESHOLD:
                 logger.info(
                     f"[FundingGuard] Blocking long on {pair}: "
-                    f"BTC funding={funding:.4%} > {self._FUNDING_LONG_BLOCK_THRESHOLD:.4%}"
+                    f"BTC funding={funding:.4%} > +{self._FUNDING_CROWDED_THRESHOLD:.4%} (longs crowded)"
+                )
+                return False
+            if side == "short" and funding < -self._FUNDING_CROWDED_THRESHOLD:
+                logger.info(
+                    f"[FundingGuard] Blocking short on {pair}: "
+                    f"BTC funding={funding:.4%} < -{self._FUNDING_CROWDED_THRESHOLD:.4%} (shorts crowded)"
                 )
                 return False
 
@@ -756,9 +766,16 @@ class FinBuddyFreqAI_v23(IStrategy):
         else:
             logger.info(f"[FeatureSet] mode={self.FEATURE_SET} — skipping regime_numeric")
 
-        # Live WR feedback (always included — single env-var, cheap)
-        if self.FEATURE_SET != "minimal":
-            dataframe["%-recent_wr"] = float(os.getenv("FINBUDDY_RECENT_WR", "0.50"))
+        # Bug D fix (2026-05-20): %-recent_wr REMOVED.
+        # The feature read os.getenv("FINBUDDY_RECENT_WR", "0.50") which is
+        # written live every 15min by trade_postmortem.py (~0.34 right now)
+        # but defaults to 0.50 in brain backtests and walk-forward (those
+        # processes don't see the .env file). Result was classical
+        # training-serving skew: model trained on a constant 0.50 then served
+        # ~0.34 in production — feature distribution mismatch. The feature
+        # was never validated as predictive in the first place. Dropping
+        # cleanly is the right call. Brain hypothesis space loses one knob
+        # but no profitable config has ever relied on it.
 
         return dataframe
 
@@ -964,11 +981,15 @@ class FinBuddyFreqAI_v23(IStrategy):
         dataframe.loc[enter_long, "enter_long"] = 1
         dataframe.loc[enter_long, "enter_tag"]  = "freqai_regression_v23_long"
 
-        # Short: price below EMA-50 (downtrend), bearish RSI momentum, not oversold
+        # Short: price below EMA-50 (downtrend), not in deeply-oversold territory.
+        # Bug B fix (2026-05-20): RSI short gate was 15 < rsi_14 < 50 — a 35-point
+        # band that blocked shorts on ~50% of candles vs the long gate's 87-point
+        # band (rsi_14 < 68) that passed ~90%. Mid-range RSI=52 (very common)
+        # would pass longs but block shorts. Net: ~2× long bias even when the
+        # regime kill-switch tried to suppress longs. Now symmetric to long gate.
         ta_short = (
             (dataframe["close"] < dataframe["ema_50"] * 0.99)
-            & (dataframe["rsi_14"] < 50)
-            & (dataframe["rsi_14"] > 15)   # safety: not in extreme oversold
+            & (dataframe["rsi_14"] > 32)   # symmetric mirror of long's "rsi_14 < 68"
             & (dataframe["bb_pct"] > 0.10)
             & (dataframe["volume"] > 0)
         )

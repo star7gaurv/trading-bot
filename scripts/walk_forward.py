@@ -92,11 +92,30 @@ def run_backtest(strategy: str, tf: str, train_start: datetime,
     cmd = [
         "docker-compose", "run", "--rm",
         # Use a large backtest wallet so stake depletion never silences the test window.
-        # With stake_amount="unlimited" + tradable_balance_ratio=0.99 and 4 max trades,
-        # each fold starts with 10 000 USDT so even a 60 % loss still leaves ~4 000 USDT
-        # to trade through the test month without hitting the stake floor.
         "-e", "FREQTRADE__DRY_RUN_WALLET=10000",
     ]
+    # Bug A fix (2026-05-20): WF was NOT passing live env vars, so it tested
+    # the strategy class defaults (LT=1.5, ST=-1.5, K_SL=1.0, ...) instead of
+    # the live values (LT=3.25, ST=-2.75, K_SL=2.0, ...). Every WF result of
+    # the last 11 days was structurally evaluating a different strategy.
+    # Read from freqtrade/.env so WF always tests the exact live config.
+    for env_key in (
+        "FREQAI_K_SL", "FREQAI_K_TP",
+        "FREQAI_LONG_THRESHOLD", "FREQAI_SHORT_THRESHOLD",
+        "FREQAI_STABILITY_N", "FREQAI_FEATURE_SET",
+        "FINBUDDY_RECENT_WR",
+    ):
+        env_path = COMPOSE_DIR / ".env"
+        val = None
+        if env_path.exists():
+            for line in env_path.read_text().splitlines():
+                if line.startswith(f"{env_key}="):
+                    val = line.split("=", 1)[1].strip()
+                    break
+        if val is None:
+            val = os.environ.get(env_key)
+        if val is not None:
+            cmd += ["-e", f"{env_key}={val}"]
     if freqai_identifier:
         # Override config.json's freqai.identifier without editing the file
         cmd += ["-e", f"FREQTRADE__FREQAI__IDENTIFIER={freqai_identifier}"]
