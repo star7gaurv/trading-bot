@@ -112,50 +112,55 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ---
 
-## What Is Live and Working Right Now (verified 2026-05-20 by Claude Code)
+## What Is Live and Working Right Now (verified 2026-05-20 20:00 UTC by Claude Code)
 
 ### FreqTrade
 - Running **`FinBuddyFreqAI_v23.py` (v23)** in dry-run mode on **Binance Futures USDT-M** — long+short
-- FreqAI identifier: **`finbuddy_v23_funding_1779270021`** (bumped 2026-05-19 when funding-rate feature added)
-- FreqAI model: **LightGBMRegressor** (predicts future_return %, not classifier)
-- 1000 USDT virtual wallet, max 8 open trades, 2x leverage enabled
+- FreqAI identifier: **`finbuddy_v23_sym_1779274506`** (bumped 2026-05-20 in commit `b4b02b7` for symmetric-gates + DI/SVM + recent_wr removal)
+- FreqAI model: **LightGBMRegressor** (predicts `&-future_return %`, not classifier). DI=1.0 + SVM outlier removal active.
+- **1000 USDT** virtual wallet (reverted from 10000 on 2026-05-20 commit `2f01b56`), max 8 open trades
+- **Confidence-based leverage** (commit `60d4fb4`): 1x / 2x / 3x tiers based on `centered_pred / threshold` ratio (env-tunable). Fallback now LOW (1x) per round-3 audit (`5f37ab8`).
 - API: `http://localhost:8080/api/v1` — user: `bot`, pass: `REDACTED-FREQTRADE__API_SERVER__PASSWORD`
-- Whitelist: **25 pairs**, **15m timeframe**
+- Whitelist: **25 pairs**, **15m timeframe** (each pair has 5 TFs of historical data: 15m + 30m + 1h + 4h + 1d)
 - **Per-pair-per-regime gate active** — `pair_regime_stats.json` blocks pair-regime combos with rolling 30d (n≥5, WR<40%, PF<0.7)
-- Strategy env vars (live): K_TP=2.0, K_SL=2.0, LONG_THRESHOLD=3.25, SHORT_THRESHOLD=-2.75, STABILITY_N=2
+- Strategy env vars (live): K_TP=2.0, K_SL=2.0, **LONG_THRESHOLD=2.0, SHORT_THRESHOLD=-2.0, STABILITY_N=1** (loosened from 3.25/-2.75/2 on 2026-05-20 when trade volume collapsed to 3/day)
 
-### Model features (533 total after 2026-05-19 funding-rate addition)
-Standard layer 4 features now include `%-funding_rate` + `%-funding_rate_z30d` + `%-funding_rate_chg`
-(BTC perp funding from Binance Futures, 7,333 historical events back to 2019-09-10). Daily refresh cron
-01:25 UTC. Adds to existing fear_greed, btc_strength, news_sentiment, regime_numeric, recent_wr features.
+### Model features (~530 total after Bug D removed `%-recent_wr` 2026-05-20)
+Standard layer 4 features include 3 funding-rate features (`%-funding_rate`, `%-funding_rate_z30d`, `%-funding_rate_chg`) from BTC perp data, plus fear_greed, btc_strength, news_sentiment, regime_numeric. Daily refresh of historical funding parquet at 01:25 UTC. `%-recent_wr` DROPPED 2026-05-20 (training-serving skew: live read 0.34, brain/WF defaulted 0.50).
 
-### Fixes shipped this week (2026-05-19 → 2026-05-20)
-- **Stop-ratchet bug** (commit `4702549`): `custom_stoploss` was recomputing `sl_pct = K_SL × current_atr_pct`
-  every candle, ratcheting the stop inward as volatility contracted. 106/292 trades exited at avg -0.18%
-  in ~204 min — a silent drag. Now `entry_atr_pct` is cached via `trade.set_custom_data`.
-- **Time-limit exit** (commit `4702549`): 72 candles → 24 candles (= 2× label_period_candles=12).
-  Was force-closing dead positions at 18h on 15m TF; now 6h.
-- **Brain promotion gates loosened** (commit `3eafab8`): `MIN_AVG_PROFIT_IMPROVEMENT` 1.0 → 0.1pp;
-  `min(profits) > 0` → `avg(profits) > 0 AND min > MIN_PER_RUN_PROFIT_FLOOR=-0.3`. Brain `requeue` CLI
-  added. Baseline file initialised at 0.0%.
-- **Daily walk-forward** (commit `d6c883d`): `0 22 * * * walkforward_daily.sh` (12mo trailing rolling,
-  ~80min). Monthly heavy WF (27mo) kept on the 1st. `auto_promote.py` at 04:00 UTC.
-- **Funding-rate feature** (commit `b4e9d6f`): 3 new features fed to LightGBM; `build_historical_funding.py`
-  fetches Binance Futures funding history.
-- **Live bot dead 6h recovery** (commit `7c8bf52`): adding funding feature created 271→274 column schema
-  mismatch with FreqAI's root-level `historic_predictions.pkl` cache. Flushed root state + 50 stale
-  `sub-train-*` dirs; bot now training cleanly on 533 features.
-- **auto_promote.py None rendering** (commit `7c8bf52`): was reading `summary.weighted_sharpe` (root)
-  instead of `summary.aggregate.weighted_sharpe` → every Telegram message showed "Sharpe: None".
+### Fixes shipped 2026-05-19 → 2026-05-20 (13 commits, 5 rounds of audit)
 
-### Profitability reality check (2026-05-20)
-- 295 lifetime trades, +$98.01 cumulative dry-run (since v23 launch). The +$94.94 v22 era was
-  regime-coincident; v23 still proving itself but has the right architecture.
-- Brain has 234 completed experiments. Best so far: `e0e1bf338410` profit=+0.192%, WR=48.1%, Sharpe=1.42
-  on bear_2025Q1. Promotion still blocked — needs 2 bull + 2 bear runs of the SAME config.
+**Round 1 — initial unblock (2026-05-19):**
+- `4702549` Stop-ratchet bug: ATR-anchored at entry-time via `trade.set_custom_data`, time-limit 72→24 candles
+- `3eafab8` Brain promotion gates loosened: `MIN_AVG_PROFIT_IMPROVEMENT` 1.0→0.1pp; `min>0` → `avg>0 AND min>-0.3`; `brain_cli.py requeue` CLI; `live_baseline.json` created
+- `d7bd60e` Funding-rate feature added: 3 LightGBM features, 7,333 historical events backfilled
+- `7c8bf52` Live bot 6h dead recovery: flushed root `historic_predictions.pkl` after schema mismatch; auto_promote.py None rendering fixed (was reading wrong summary.json path)
+- `d6c883d` Daily walk-forward cron at 22:00 UTC + auto_promote at 04:00 UTC; legacy `run_promotion.sh` removed
+- `f9a8a2b` WF per-fold timeout 3600s → 7200s
+
+**Round 2 — structural bugs (2026-05-20):**
+- `b4b02b7` 5 bugs + 3 cleanups: WF env-var drift (passed wrong thresholds), RSI asymmetric gate (long 87pt vs short 35pt band), funding gate longs-only, recent_wr feature drift, DI/SVM not in live config; strategy timeframe stale, class_weight no-op for regressor, dry_run_wallet 1000→10000 (later reverted)
+- `a187ab9` Per-pair median offset for prediction bias: model trained on bull-heavy data predicts +1 to +8% mean per pair; subtract rolling-100 median before threshold compare
+- `60d4fb4` Confidence-based leverage tiers (1x/2x/3x by ratio of centered_pred to threshold; env-tunable)
+- `5fcf290` WF timeout 7200s → 10800s (DI+SVM scaling)
+- `2f01b56` Revert dry_run_wallet 10000 → 1000
+
+**Round 3 — config drift + races (2026-05-20):**
+- `5f37ab8` 5 bugs: brain backtest config used 5 pairs vs live's 25 + max_open_trades 4 vs 8 + stake_amount 200 vs unlimited (HUGE — brain "winners" were never tested on 20 live pairs); cluster-cap race condition (secondary check in custom_stake_amount); leverage FALLBACK 2x→1x; gate order reorder; regime read race
+- Cron `pair_performance` `%` escape bug fixed (was silently truncating for 11 days)
+- `.env` reload requires `docker-compose up -d` not just `restart` (memory note saved)
+
+### Profitability reality check (2026-05-20 evening)
+- **296 lifetime trades, +$110.78 dry-run** wallet (1110.78 / 1000 = +11.08%)
+- Brain has 265+ completed experiments. Best `e0e1bf338410` profit=+0.192% WR=48.1% Sharpe=1.42 was on bear_2025Q1 — but ONLY ever tested on 5-pair brain universe. Pre-2026-05-20 brain results marked legacy via `live_baseline.json::config_aligned_at`.
+- **No promotion has fired yet.** Brain's best 16 configs (≥2+2 sample): all have B_avg ≤ 0 OR B_sharpe ≤ 0. The deferred long-bias root cause (raw % regression target with no normalization) is the structural reason bull runs underperform; per-pair median offset is a patch, not a fix.
 - v22 strategy file + LLM model file kept on disk for history; never loaded by live config or brain.
-- Open known issues: model is **over-long in bear regimes** (avg ~60% longs in bear_2025Q1) — likely
-  training-data bias toward 2024 bull period. Mitigation deferred (target standardization or class weight).
+- **In-flight:** manual WF (PID 3095719) started 13:21 UTC testing all today's fixes; fold 1 in progress; full result ~tomorrow 07:00 UTC.
+
+### Open issues deferred to future sessions
+1. **Target z-scoring at train time** — proper fix for the long-bias the per-pair median offset only patches over. Half-day project.
+2. **Open Interest delta** as a new feature (second-best published signal after funding).
+3. **Pair expansion to ~37 pairs** — full 9-step runbook saved at `finbuddy_memory/tasks/pair_addition_runbook.md`; deferred until tonight's WF result lands so we don't conflate the bug-fix effect with universe expansion.
 
 ### N8N
 - 🔴 **Permanently disabled** — FreqAI is sole signal source

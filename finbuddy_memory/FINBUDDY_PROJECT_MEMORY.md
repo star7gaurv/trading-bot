@@ -4,8 +4,78 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status**: 🟢 v23 LIVE (identifier `finbuddy_v23_funding_1779270021`) · 🧠 brain has 234 completed experiments / best +0.192% PF=1.21 · 💎 funding-rate feature added · 🔄 daily walk-forward armed · 🚀 brain→live promotion pipeline closed end-to-end
-**Last Updated**: 2026-05-20 (Claude session — funding-rate feature added, promotion gate loosened + requeue CLI, stop-ratchet fix, live-bot pipeline-mismatch recovery)
+**Status**: 🟢 v23 LIVE (identifier `finbuddy_v23_sym_1779274506`) · 🧠 brain 265+ completed / aligned to live universe today · 💎 funding-rate + confidence-leverage live · 🔄 daily WF armed (3h/fold) · 🚀 brain→live promotion pipeline closed
+**Last Updated**: 2026-05-20 20:00 UTC (3 rounds of audit, 13 commits — see "2026-05-20 — The 13-commit day" below)
+
+### 2026-05-20 — The 13-commit day (Round 1 unblock + Round 2 structural + Round 3 config-drift)
+
+By end of day, 13 non-chore commits shipped over three audit rounds. Live bot identifier bumped twice (`finbuddy_v23_funding_*` → `finbuddy_v23_sym_*`), 8 real structural bugs fixed, 1 new feature (funding rate) + 1 new behavior (confidence-based leverage tiers), 1 quick patch (per-pair median offset for prediction bias), 1 cron escape bug that was silently breaking pair_performance for 11 days.
+
+**Round 1 — initial unblock + new feature**
+- `4702549` **Stop-ratchet bug + time-limit:** `custom_stoploss` recomputed `sl_pct = K_SL × current_atr_pct` every candle, ratcheting the stop inward when post-entry volatility contracted. 106 of 292 trades exited at avg -0.18%. Now anchored via `trade.set_custom_data("entry_atr_pct")`. Same commit cut time-limit exit from 72→24 candles (was force-closing dead positions at 18h on 15m TF).
+- `3eafab8` **Brain promotion gates loosened + `requeue` CLI:** `MIN_AVG_PROFIT_IMPROVEMENT` 1.0pp → 0.1pp; gate `min(profits)>0` → `avg(profits)>0 AND min > -0.3`; new `brain_cli.py requeue` subcommand; `live_baseline.json` created with `avg_profit_pct=0.0`.
+- `d7bd60e` **Funding-rate feature:** 3 new LightGBM features (`%-funding_rate`, `%-funding_rate_z30d`, `%-funding_rate_chg`) from Binance Futures `/fapi/v1/fundingRate`. 7,333 historical events back to 2019-09-10 written to `finbuddy_memory/historical/funding_rate.parquet`. Daily refresh cron 01:25 UTC.
+- `7c8bf52` **Live bot 6h dead recovery + auto_promote None render fix:** Funding-feature addition created 271→274 column schema mismatch with FreqAI's root-level `historic_predictions.pkl` cache. Live bot threw Pipeline-expected every candle for 6h, no training, no trades. Recovery: flushed root state + 50 stale `sub-train-*` dirs from old identifier, restarted. `reference_feature_added_recovery.md` saved. Same commit fixed auto_promote.py reading metrics from `summary.weighted_sharpe` (root) instead of `summary.aggregate.weighted_sharpe` → every Telegram message had been showing "Sharpe: None".
+- `d6c883d` **Daily walk-forward cron:** `0 22 * * * walkforward_daily.sh` (12mo rolling, ~80min initial estimate). Monthly heavy WF (27mo) kept on the 1st. `auto_promote.py` at 04:00 UTC. Legacy `run_promotion.sh` (broken CSV path) removed from cron.
+- `f9a8a2b` **WF per-fold timeout 3600s → 7200s:** WF on the 6mo-train universe was timing out at 1h; bumped to 2h.
+
+**Round 2 — structural symmetry + prediction-bias patch**
+- `b4b02b7` **5 structural bugs + 3 cleanups:**
+  - **Bug A**: walk_forward.py was NOT passing FREQAI_K_SL/K_TP/LONG_THRESHOLD/SHORT_THRESHOLD/STABILITY_N/FEATURE_SET/RECENT_WR via docker-compose. Strategy fell back to class defaults (LT=1.5, ST=-1.5, K_SL=1.0…) while live runs LT=3.25, ST=-2.75, K_SL=2.0. Every WF result of the prior 11 days was testing a different strategy.
+  - **Bug B**: RSI TA filter asymmetric — long gate `rsi_14 < 68` (87pt band, ~90% candles) vs short gate `15 < rsi_14 < 50` (35pt band, ~50% candles). RSI=52 passed longs, blocked shorts. Net ~2× long bias.
+  - **Bug C**: Funding-rate gate longs-only. Now symmetric.
+  - **Bug D**: `%-recent_wr` feature dropped — training-serving skew (live read 0.34, brain/WF defaulted to 0.50).
+  - **Bug E**: live config.json now sets DI_threshold=1.0 + use_SVM_to_remove_outliers=true (matches brain config).
+  - **F**: stale `timeframe="5m"` class attr → "15m".
+  - **G**: removed `class_weight: balanced` (no-op for LightGBMRegressor).
+  - **H**: dry_run_wallet 1000→10000 (later reverted in `2f01b56`).
+- `a187ab9` **Per-pair median offset for prediction long-bias:** Smoking gun — across 20 pairs × 100 candles, 480 long signals vs 27 short signals (17.8× imbalance). Model trained on bull-heavy 2024-25 data predicts +1 to +8% mean per pair (ZEC +8.2%, DOGE +3.9%, BTC/ETH +1.5%). Symmetric thresholds can't fix asymmetric predictions. Patch: subtract rolling-100-candle median per-pair before threshold compare. **Proper fix (target z-scoring at train time) deferred.**
+- `60d4fb4` **Confidence-based leverage tiers:** Was fixed 2× for all entries. Now 1× / 2× / 3× by ratio of `centered_pred / threshold`. Env-tunable (`FREQAI_LEV_LOW/MED/HIGH` + corresponding CONF_RATIO vars).
+- `5fcf290` **WF timeout 7200s → 10800s:** DI+SVM added by Bug E made each fold 3h not 2h. Total WF run ~18h.
+- `2f01b56` **Wallet revert 10000 → 1000:** user requested original wallet size; brain/WF keep 10000 via env override.
+
+**Round 3 — config drift + race conditions (audit found 5 more)**
+- `5f37ab8` **5 real bugs from deep audit:**
+  - **Bug I**: Brain backtest config (`v23_regression_15m_di_config.json`) drifted from live in THREE places — `max_open_trades` 4 vs 8, `stake_amount` 200 fixed vs unlimited dynamic, `pair_whitelist` **5 pairs vs 25 pairs**. The "best brain config so far" `e0e1bf338410` had only ever been tested on BTC/ETH/SOL/XRP/DOGE — 20 of the 25 live pairs were never validated. Aligned all three. The 265 prior brain entries marked legacy via `live_baseline.json::config_aligned_at`.
+  - **Bug II**: Cluster-cap race condition in `confirm_trade_entry`. Two same-candle entries both snapshot pre-write state, both pass `< MAX_CLUSTER_POSITIONS`. Fix: defensive secondary check in `custom_stake_amount` (later in flow → fresher DB state) returns stake=0 if overflowed.
+  - **Bug III**: Leverage FALLBACK was returning MED (2×). After the per-pair median offset shipped, an entry can pass `populate_entry_trend` and then leverage callback sees lower ratio. Old code gave 2× to sub-threshold conviction. Now LOW (1×).
+  - **Bug IV**: `confirm_trade_entry` gate order. Was macro → funding HTTP → cluster. Reordered to cluster → macro → funding so cluster-full pairs don't waste a Binance HTTP request.
+  - **Bug V**: `custom_stake_amount` was calling `_risk_engine.get_regime()` which re-reads the regime JSON. Could disagree with `populate_entry_trend` on cron-boundary candles. Now uses `self._get_current_regime()`.
+
+**Same-day operational fixes (not separate commits but real bugs):**
+- `pair_performance` cron was broken for 11 days — crontab `+%Y-%m-%d` with unescaped `%` was being treated as a literal newline by cron and truncating the command. Fixed by escaping as `+\%Y-\%m-\%d`. Memory note `reference_cron_percent_escape.md`.
+- `.env` value changes were not loading because `docker-compose restart` does NOT re-resolve `${VAR:-default}` substitutions — must use `docker-compose up -d` to recreate. Memory note `reference_compose_env_reload.md`.
+- Trade volume collapsed (40/day → 3/day) on 2026-05-19 due to thresholds tightened to `LT=3.25 / ST=-2.75 / N=2` — the model would have needed to predict +3.25% in 3h, almost never. User chose moderate `LT=2.0 / ST=-2.0 / N=1` → trade volume recovering.
+
+**Memory notes added today (auto-memory layer in `~/.claude/projects/.../memory/`):**
+- `reference_stop_ratchet_bug.md`
+- `feedback_live_strategy_file.md` (live strategy is v23, NOT bare-name v22)
+- `reference_brain_gates.md`
+- `project_funding_rate_feature.md`
+- `reference_feature_added_recovery.md` (root cache flush recipe)
+- `project_promotion_pipeline.md`
+- `project_walk_forward_daily.md`
+- `reference_long_bias_root_causes.md`
+- `reference_cron_percent_escape.md`
+- `reference_compose_env_reload.md`
+- `reference_prediction_bias_fix.md`
+- `reference_round3_audit.md`
+
+**Persistent runbook added in project memory:**
+- `finbuddy_memory/tasks/pair_addition_runbook.md` — 9-step recipe for safely adding pairs. Required reading before next universe expansion.
+
+**Known open issues deferred (documented for future sessions):**
+- Target z-scoring at train time (the proper fix that per-pair median patches)
+- Open Interest delta as next feature
+- Pair expansion to ~37 pairs — runbook in place, gated on tonight's WF result
+- Bull window experiments still show model long-bias even with mitigations (post-bias-patch needs ≥24h of new brain runs before re-evaluating)
+- Brain analyst occasionally queues already-pruned TFs (small cycle waste)
+
+**In-flight tonight:**
+- Manual WF (PID 3095719, started 13:21 UTC) — first run testing ALL today's fixes. ~18h ETA. Result lands ~07:00 UTC tomorrow. This is the headline test of whether the day's work moved the needle.
+- Brain `*/10 cron` continues to run experiments on the aligned 25-pair universe; post-alignment results should start displacing the legacy 265 entries within 24-48h.
+
+---
 
 ### 2026-05-20 — Unblock-the-brain session (8 fixes + 1 new feature)
 

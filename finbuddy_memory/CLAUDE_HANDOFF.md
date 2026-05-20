@@ -1,6 +1,6 @@
 # 🤝 FinBuddy — Handoff Note for Claude Code
 
-**Last updated:** 2026-05-20
+**Last updated:** 2026-05-20 20:00 UTC (end of a 13-commit, 3-audit-round day)
 **Branch:** `master`
 
 ---
@@ -9,73 +9,93 @@
 
 | Item | Value |
 |---|---|
-| Live strategy | `FinBuddyFreqAI_v23.py` (15m TF, LightGBMRegressor, regression) |
-| FreqAI identifier | `finbuddy_v23_funding_1779270021` (bumped 2026-05-19 when funding feature added) |
-| Model features | **533 total** (added 3 funding-rate features 2026-05-19) |
-| Pairs | 25, futures USDT-M isolated, 2x leverage, max 8 trades |
+| Live strategy | `FinBuddyFreqAI_v23.py` (15m TF, LightGBMRegressor) |
+| FreqAI identifier | `finbuddy_v23_sym_1779274506` |
+| Model features | ~530 (3 funding-rate features added; `%-recent_wr` removed for train-serve skew) |
+| Pairs | 25, futures USDT-M isolated, max 8 trades |
+| **Leverage** | **Confidence-based tiers 1×/2×/3×** (commit `60d4fb4`, FALLBACK fixed to LOW per `5f37ab8`) |
 | Regime | ⚪ NEUTRAL |
-| Live closed P&L | **+$98.01 USDT · 295 trades** — best-known v23 config (not verified edge) |
-| Bot status | ✅ Running, dry-run mode (training fresh on funding features) |
+| Wallet | **1000 USDT** (reverted from 10000 in `2f01b56`) — current balance ~1110 |
+| Live P&L | 296 trades, +$110.78 dry-run |
+| Bot status | ✅ Up since 2026-05-20 ~19:55 UTC after threshold reload via `docker-compose up -d` |
 | Per-pair-per-regime gate | ✅ Active |
-| docker-compose env-vars | ✅ Wired via `environment:` block |
+| DI / SVM | DI_threshold=1.0, use_SVM_to_remove_outliers=true |
+| `dry_run_wallet` | 1000 (live), 10000 (brain + WF — explicit env override per run) |
 
-**Live env vars:** K_TP=2.0, K_SL=2.0, LONG_THRESHOLD=3.25, SHORT_THRESHOLD=-2.75, STABILITY_N=2
+**Live env vars (in `freqtrade/.env`):**
+```
+FREQAI_K_TP=2.0
+FREQAI_K_SL=2.0
+FREQAI_LONG_THRESHOLD=2.0        # was 3.25 — loosened to restore trade volume
+FREQAI_SHORT_THRESHOLD=-2.0      # was -2.75
+FREQAI_STABILITY_N=1             # was 2
+FINBUDDY_RECENT_WR=0.34
+FREQAI_LEV_LOW_CONF_RATIO=1.0
+FREQAI_LEV_MED_CONF_RATIO=1.5
+FREQAI_LEV_HIGH_CONF_RATIO=2.0
+FREQAI_LEV_LOW=1.0
+FREQAI_LEV_MED=2.0
+FREQAI_LEV_HIGH=3.0
+```
 
 ---
 
-## 🐛 Bugs Fixed This Session (2026-05-19 → 2026-05-20)
+## 🐛 13 Commits Shipped 2026-05-19 → 2026-05-20
 
-1. **Stop-ratchet bug** (commit `4702549`) — `custom_stoploss` was recomputing `sl_pct` every candle using live ATR. As volatility contracted post-entry the stop ratcheted inward, killing 106 trades at avg -0.18%. Now caches `entry_atr_pct` via `trade.set_custom_data`.
-2. **Time-limit exit** (commit `4702549`) — 72 → 24 candles (= 2× label_period). Was force-closing dead positions at 18h on 15m TF; now 6h.
-3. **Brain promotion gates loosened** (commit `3eafab8`) — `MIN_AVG_PROFIT_IMPROVEMENT` 1.0 → 0.1; `min(profits) > 0` → `avg(profits) > 0 AND min > -0.3`. Brain `requeue` CLI added.
-4. **Funding-rate feature** (commit `b4e9d6f`) — 3 new features fed to LightGBM. Backfilled 7,333 historical funding events.
-5. **Live bot dead 6h recovery** (commit `7c8bf52`) — adding funding feature created schema mismatch with FreqAI's root-level pipeline cache. Recovery recipe saved.
-6. **auto_promote.py None rendering** (commit `7c8bf52`) — was reading wrong path in summary.json; now formats "—" for missing.
-7. **Daily walk-forward** (commit `d6c883d`) — `0 22 * * *` cron added. Monthly heavy kept.
-8. **Disk cleanup** — 4.7 GB reclaimed (docker images + retired-version model dirs).
+### Round 1 — initial unblock + new feature
+- `4702549` — Stop-ratchet + time-limit (cache entry_atr_pct via set_custom_data; 72→24 candles)
+- `3eafab8` — Brain gates loosened + `requeue` CLI + baseline file
+- `d7bd60e` — Funding-rate feature (3 cols, 7,333 events backfilled to 2019-09)
+- `7c8bf52` — Live bot 6h dead recovery (flushed root cache) + auto_promote None rendering fix
+- `d6c883d` — Daily WF cron (22:00 UTC) + auto_promote (04:00 UTC)
+- `f9a8a2b` — WF per-fold timeout 3600s → 7200s
+
+### Round 2 — structural symmetry + bias patch
+- `b4b02b7` — 5 bugs + 3 cleanups: WF env-var drift, asymmetric RSI gate, longs-only funding gate, recent_wr feature drift, DI/SVM not in live config; stale timeframe attr, class_weight no-op, wallet 1000→10000
+- `a187ab9` — Per-pair median offset for prediction long-bias (patch, not proper z-score)
+- `60d4fb4` — Confidence-based leverage tiers (1x/2x/3x by ratio)
+- `5fcf290` — WF timeout 7200s → 10800s (DI+SVM made each fold need 3h)
+- `2f01b56` — Revert wallet 10000 → 1000
+
+### Round 3 — config drift + races
+- `5f37ab8` — 5 bugs: brain backtest config drifted from live (5 pairs vs 25!), cluster-cap race, leverage FALLBACK 2x→1x, gate order, regime read race
+- Plus cron `%` escape fix for pair_performance (was silently broken 11 days)
+- Plus `.env` reload requires `docker-compose up -d` not `restart` (memory note)
 
 ---
 
 ## 🧠 Brain (Autonomous Hypothesis Engine) — Active
 
-**Crons:**
-
 | Cron | What |
 |---|---|
-| `*/10 * * * *` | Run 1 experiment |
+| `*/10 * * * *` | One brain experiment per fire |
 | `0 */6 * * *` | Generate 4 safe + 6 aggressive hypotheses |
 | `30 */6 * * *` | Analyse + prune dead patterns |
 | `0 7 * * *` | Daily promotion-candidate scan |
-| `0 8 * * *` | Daily digest to Telegram |
-| `0 22 * * *` | **Daily walk-forward** (12mo rolling, ~80 min) |
+| `0 8 * * *` | Daily digest, daily_summary, pair_performance |
+| `0 22 * * *` | **Daily walk-forward** (12mo rolling, ~18h with 25 pairs) |
 | `0 3 1 * *` | Monthly heavy walk-forward (27mo) |
-| `0 4 * * *` | `auto_promote.py` — Telegrams Sharpe vs baseline |
+| `0 4 * * *` | `auto_promote.py` — WF Sharpe vs baseline Telegram |
 | `25 1 * * *` | **Funding-rate parquet refresh** |
+| `15 1 * * *` | Historical macro builder |
+| `20 1 * * *` | Historical regime builder |
 
-**State (2026-05-20):**
-- 234 experiments completed, 13 queued, 14 failed
-- **Best so far:** `e0e1bf338410` — profit=+0.192%, WR=48.1%, Sharpe=1.424, PF=1.21 (bear_2025Q1)
-- 5 cross-window winners requeued via `brain_cli.py requeue` to reach 2+2 sample count
-- Loosened gate: promotion needs `avg(profits) > 0 AND min > -0.3` per side, `improvement ≥ +0.1pp`
-- Live baseline: `avg_profit_pct=0.0` (initialised this session)
-
-**Brain → live path** (fully wired, just needs a winner):
-```
-brain run → analyst → scan (daily 07:00) → pending.json + Telegram with Apply/Skip buttons
-→ tap Apply → telegram_listener calls promote.py --apply
-→ backup config.json, write .env, bump identifier, docker-compose restart
-```
+**Brain state (2026-05-20 evening):**
+- 265+ completed experiments, ~26 queued
+- 16 configs have ≥2 bull + ≥2 bear samples — but ALL have bull_avg ≤ 0 OR bull_sharpe ≤ 0 (the deferred long-bias root cause)
+- Best `e0e1bf338410` profit=+0.192% WR=48.1% Sharpe=1.42 was on bear_2025Q1 only and from the 5-pair brain era (now legacy after `5f37ab8` aligned the universe)
+- **Pre-2026-05-20 results marked legacy** via `live_baseline.json::config_aligned_at`
 
 ---
 
-## 📞 Telegram Bot Setup
+## 📞 Telegram
 
-| Bot | Token | What |
+| Bot | Token prefix | What |
 |---|---|---|
-| FreqTrade native | `8557119080:...` | Trade open/close, /status, /profit commands |
-| **Brain bot** | `8051489946:...` (BRAIN_TELEGRAM_TOKEN env) | Brain alerts, daily digest, promotion candidates with ✅Apply / ⏭️Skip / 🔍Details inline buttons |
+| FreqTrade native | `8557119080:` | Trade events |
+| Brain | `8051489946:` | Digest + promotion candidates with Apply/Skip buttons |
 
-Listener: `*/2 * * * * flock -n ... scripts/telegram_listener.py` — flock prevents duplicate instances.
+Listener: `*/2 * * * * flock -n /tmp/finbuddy_telegram_listener.lock telegram_listener.py`
 
 ---
 
@@ -83,32 +103,37 @@ Listener: `*/2 * * * * flock -n ... scripts/telegram_listener.py` — flock prev
 
 | Thing | Status |
 |---|---|
-| `FinBuddyFreqAI.py` (v22) | File on disk for history — never re-activate. **Always grep config.json "strategy" before editing.** |
-| `FinBuddyLLMModel.py` (v5) | File on disk for history — v23 doesn't use it |
-| `scripts/run_promotion.sh` | Removed from cron 2026-05-19 (legacy CSV path). File on disk. |
-| `walk_forward.py` v22 re-runs | v22 failed catastrophically (WR 21.2%). No point re-running. |
-| `N8N` Telegram pipeline | Permanently disabled |
-| `OpenClaw` / `jack.star7gaurav.in` | Abandoned proxy |
+| `FinBuddyFreqAI.py` (bare-name v22) | History only — never activate. **ALWAYS `grep '"strategy"' config.json` before editing strategy file.** |
+| `FinBuddyLLMModel.py` (v5) | v23 dropped LLM wrapper |
+| `scripts/run_promotion.sh` | Removed from cron 2026-05-19 (legacy CSV path) |
+| `walk_forward.py` v22 re-runs | v22 catastrophe; never re-run |
+| N8N pipeline | Permanently disabled |
+| OpenClaw proxy | Abandoned |
 | Phase 6 TradingView | Abandoned (paid plan required) |
-| Manual threshold tuning | Brain owns this — never hand-tune |
+| Manual threshold tuning | Brain owns this |
 
 ---
 
-## ⚠️ Open Strategic Issues (not blocking, document for next session)
+## ⚠️ Open Strategic Issues — Deferred to Future Sessions
 
-1. **Model is over-long in bear regimes** — bear_2025Q1 brain runs show avg ~60% longs. Training data is skewed toward 2024 bull → constant optimistic regression bias. Fix path: target standardization or class-weight on regression. Deferred this session.
-2. **Bull_2024Q1 30% WR catastrophe** — same root cause. Bull_2024Q1 has only 3mo of post-spot-pivot data, model under-trained there.
-3. **Brain analyst occasionally queues already-pruned TFs** — minor cycle waste. Low priority.
+1. **Target z-scoring at train time** — proper fix for prediction long-bias. The per-pair median offset in `a187ab9` is a runtime patch; properly normalize `&-future_return` in `set_freqai_targets`. ~Half-day project.
+2. **Open Interest delta** as a new feature — second-best published signal after funding rate. Build script analogous to `build_historical_funding.py`.
+3. **Pair expansion to 37 pairs** — full 9-step runbook at `finbuddy_memory/tasks/pair_addition_runbook.md`. Gated on tonight's WF result.
+4. **Brain analyst occasionally queues already-pruned TFs** — minor cycle waste, not blocking.
+5. **Cluster cap counting both directions** — confirmed intentional 2026-05-20 (direction-agnostic, conservative).
 
 ---
 
 ## ⏭️ Next Actions (in priority order)
 
-1. **Watch tonight's walk-forward** (22:00 UTC) — first run on v23 + funding feature. Expected to take ~80 min. `tail -f ~/.finbuddy/logs/walk_forward.log`.
-2. **Watch 04:00 auto_promote** for first non-"None" Telegram with real Sharpe vs baseline.
-3. **Implement Open Interest delta as the next feature** — same fetch pattern as funding rate. Second-best published signal.
-4. **Then tackle the long-bias** — target standardization on `&-future_return` (subtract rolling mean over training window).
-5. **Phase 10** — BLOCKED until walk-forward PASSES (Sharpe > 0.5, WR > 50%, DD < 20%, PF > 1.2) OR 6-month dry-run track record.
+1. **Tonight 22:00 UTC** — daily WF cron tries to fire. Currently the manual WF (PID 3095719, started 13:21 UTC) is occupying the flock — daily cron will skip. Manual run IS the test.
+2. **Tomorrow ~07:00 UTC** — manual WF completes. Check `walkforward_results/<latest>/summary.json` for aggregate Sharpe/WR/PF. Should be the FIRST WF that tested the live config (Bug A) + symmetric gates (Bug B/C) + DI/SVM (Bug E) + per-pair median offset (a187ab9). Expected: meaningful improvement vs 2026-05-09 baseline (-5.12 / 47% / 0.73).
+3. **Tomorrow 08:00 UTC** — first `pair_performance` Telegram with correct data since 2026-05-09 (cron `%` escape fixed today).
+4. **After WF lands favorably**: execute pair-expansion runbook (12 pairs across 5 new clusters → 37 total). See `tasks/pair_addition_runbook.md`.
+5. **Then**: target z-scoring fix (the proper long-bias resolution).
+6. **Eventually**: Open Interest delta feature.
+
+Phase 10 (live capital) still BLOCKED until WF passes all 4 gates OR 6-month dry-run track record. v23 has been live ~2 days; track record clock is ticking.
 
 ---
 
@@ -117,4 +142,5 @@ Listener: `*/2 * * * * flock -n ... scripts/telegram_listener.py` — flock prev
 - [[FINBUDDY_PROJECT_MEMORY]] — high-level hub
 - [[CONTEXT]] — live context injected into AI prompts
 - [[../CLAUDE]] — deep project background
+- [[tasks/pair_addition_runbook]] — 9-step pair-addition mechanical recipe (NEW 2026-05-20)
 - `scripts/brain/README.md` — brain operator cheatsheet
