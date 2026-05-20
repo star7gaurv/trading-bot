@@ -136,11 +136,12 @@ def run_backtest(strategy: str, tf: str, train_start: datetime,
     LAST_RESULT.unlink(missing_ok=True)  # prevent stale prior-fold result being silently reused
 
     with log_path.open("w") as logf:
-        # Bumped 2026-05-20: 3600s → 7200s. Each fold trains all 25 pairs from
-        # scratch on 533 features (after funding-rate addition); first-cohort
-        # training plus backtest of 1-month test window exceeded 1h on 15m TF.
-        # WF run at 06:20 UTC today hit the old 3600s ceiling on fold 1.
-        proc = subprocess.run(cmd, cwd=COMPOSE_DIR, stdout=logf, stderr=subprocess.STDOUT, timeout=7200)
+        # Bumped 2026-05-20: 3600 → 7200 → 10800s. Each fold trains 25 pairs
+        # across ~30 sliding-train cycles on 533 features. With DI=1.0 +
+        # use_SVM_to_remove_outliers=true added to live config (Bug E fix), the
+        # per-cycle cost grew enough that fold 1 needed ~3h instead of ~2h.
+        # 13:21 UTC WF run hit the 7200s ceiling at ~75% (18/25 pairs trained).
+        proc = subprocess.run(cmd, cwd=COMPOSE_DIR, stdout=logf, stderr=subprocess.STDOUT, timeout=10800)
     if proc.returncode != 0:
         print(f"  FAIL — see {log_path}")
         return None
