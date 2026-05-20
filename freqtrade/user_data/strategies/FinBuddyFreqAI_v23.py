@@ -931,15 +931,26 @@ class FinBuddyFreqAI_v23(IStrategy):
             pd.Series(0.0, index=dataframe.index)
         )
 
+        # Per-pair median offset (added 2026-05-20 to fix long-bias).
+        # The regression model was trained on bull-heavy 2024–25 data and learned
+        # to predict positive numbers (per-pair mean +1 to +8%, e.g. ZEC mean
+        # +8.2%, DOGE +3.9%, BTC/ETH +1.5%). With symmetric thresholds (+2/-2)
+        # this produced 480 long signals vs 27 short signals over 100 candles.
+        # Subtracting each pair's 100-candle rolling median centers predictions
+        # at 0 so the threshold comparison is on DEVIATION from typical, not
+        # raw value. Proper fix (target z-scoring at train time) deferred.
+        pred_median = predicted_return.rolling(100, min_periods=20).median().fillna(0.0)
+        centered_pred = predicted_return - pred_median
+
         long_thresh  = dataframe["dynamic_long_threshold"]
         short_thresh = dataframe["dynamic_short_threshold"]
 
         # Stability filter: require N consecutive candles past threshold (filters noise spikes).
-        # Long: all of last N candles' predictions were above long_threshold.
-        # Short: all of last N candles' predictions were below short_threshold.
+        # Long: all of last N candles' centered predictions were above long_threshold.
+        # Short: all of last N candles' centered predictions were below short_threshold.
         n = max(1, self.STABILITY_N)
-        long_above = (predicted_return > long_thresh).astype(int)
-        short_below = (predicted_return < short_thresh).astype(int)
+        long_above = (centered_pred > long_thresh).astype(int)
+        short_below = (centered_pred < short_thresh).astype(int)
         long_stable  = long_above.rolling(n, min_periods=n).sum() >= n
         short_stable = short_below.rolling(n, min_periods=n).sum() >= n
 
@@ -1031,6 +1042,9 @@ class FinBuddyFreqAI_v23(IStrategy):
             "&-future_return",
             pd.Series(0.0, index=dataframe.index)
         )
+        # Same per-pair median centering as populate_entry_trend (2026-05-20).
+        pred_median = predicted_return.rolling(100, min_periods=20).median().fillna(0.0)
+        centered_pred = predicted_return - pred_median
 
         # Regime-aware exit flip thresholds (half the entry threshold)
         long_thresh  = dataframe["dynamic_long_threshold"]
@@ -1038,7 +1052,7 @@ class FinBuddyFreqAI_v23(IStrategy):
 
         ml_exit_long = (
             (dataframe["do_predict"] == 1)
-            & (predicted_return < (short_thresh * 0.5))   # prediction flipped negative
+            & (centered_pred < (short_thresh * 0.5))   # prediction flipped negative
         )
         ta_exit_long = (
             (dataframe["rsi_14"] > 75)
@@ -1048,7 +1062,7 @@ class FinBuddyFreqAI_v23(IStrategy):
 
         ml_exit_short = (
             (dataframe["do_predict"] == 1)
-            & (predicted_return > (long_thresh * 0.5))    # prediction flipped positive
+            & (centered_pred > (long_thresh * 0.5))    # prediction flipped positive
         )
         ta_exit_short = (
             (dataframe["rsi_14"] < 25)
