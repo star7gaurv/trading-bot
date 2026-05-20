@@ -364,8 +364,8 @@ def main():
     p.add_argument("--train-months", type=int, default=6)
     p.add_argument("--test-months", type=int, default=1)
     p.add_argument("--slide-months", type=int, default=1)
-    p.add_argument("--strategy", default="FinBuddyFreqAI")
-    p.add_argument("--timeframe", default="1h")
+    p.add_argument("--strategy", default="FinBuddyFreqAI_v23")
+    p.add_argument("--timeframe", default="15m")
     p.add_argument("--config", help="Custom config filename inside user_data/")
     p.add_argument("--skip-download", action="store_true", help="Skip data download (use if data already downloaded)")
     p.add_argument("--reparse", metavar="RUN_DIR",
