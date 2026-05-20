@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-20T18:00:01.406372+00:00",
+  "updated": "2026-05-20T18:30:02.033136+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -10,13 +10,13 @@
   "stats": {
     "BTC/USDT": {
       "NEUTRAL": {
-        "n": 9,
-        "wins": 7,
+        "n": 8,
+        "wins": 6,
         "losses": 2,
-        "wr": 0.7778,
-        "pf": 1.223,
-        "profit_usdt": 2.2,
-        "avg_profit_pct": 0.123
+        "wr": 0.75,
+        "pf": 1.02,
+        "profit_usdt": 0.2,
+        "avg_profit_pct": 0.014
       }
     },
     "DOGE/USDT:USDT": {
