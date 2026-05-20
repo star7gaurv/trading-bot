@@ -117,7 +117,11 @@ def run_backtest(strategy: str, tf: str, train_start: datetime,
     LAST_RESULT.unlink(missing_ok=True)  # prevent stale prior-fold result being silently reused
 
     with log_path.open("w") as logf:
-        proc = subprocess.run(cmd, cwd=COMPOSE_DIR, stdout=logf, stderr=subprocess.STDOUT, timeout=3600)
+        # Bumped 2026-05-20: 3600s → 7200s. Each fold trains all 25 pairs from
+        # scratch on 533 features (after funding-rate addition); first-cohort
+        # training plus backtest of 1-month test window exceeded 1h on 15m TF.
+        # WF run at 06:20 UTC today hit the old 3600s ceiling on fold 1.
+        proc = subprocess.run(cmd, cwd=COMPOSE_DIR, stdout=logf, stderr=subprocess.STDOUT, timeout=7200)
     if proc.returncode != 0:
         print(f"  FAIL — see {log_path}")
         return None
