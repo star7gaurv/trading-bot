@@ -199,3 +199,4 @@
 | 2026-05-19 08:36:15 | TRX/USDT:USDT | LONG | 0h32m | -0.31% | -0.31 | stop_loss | NEUTRAL | freqai_lgbm_v22_long |
 | 2026-05-19 16:50:11 | ZEC/USDT:USDT | LONG | 0h34m | +1.84% | +1.87 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-19 22:24:50 | ZEC/USDT:USDT | LONG | 2h24m | -2.07% | -2.11 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-19 23:59:03 | ZEC/USDT:USDT | LONG | 1h28m | +1.56% | +1.58 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
