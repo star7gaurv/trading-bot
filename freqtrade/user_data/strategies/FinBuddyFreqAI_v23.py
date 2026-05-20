@@ -255,12 +255,14 @@ class FinBuddyFreqAI_v23(IStrategy):
     _REGIME_FILE = "/freqtrade/finbuddy_memory/regimes/current.json"
     _HISTORICAL_REGIME_FILE = "/freqtrade/finbuddy_memory/regimes/historical_regime.parquet"
     _HISTORICAL_MACRO_FILE  = "/freqtrade/finbuddy_memory/historical/macro_features.parquet"
+    _HISTORICAL_FUNDING_FILE = "/freqtrade/finbuddy_memory/historical/funding_rate.parquet"
     _COMBINED_CTX_FILE = "/freqtrade/user_data/data/external/combined_context.json"
     _PAIR_REGIME_FILE  = "/freqtrade/finbuddy_memory/regimes/pair_regime_stats.json"
 
     # Class-level caches: loaded once, shared across all strategy instances.
-    _historical_regime_df = None
-    _historical_macro_df  = None
+    _historical_regime_df  = None
+    _historical_macro_df   = None
+    _historical_funding_df = None
     # Pair-regime block cache: refreshed when JSON mtime changes (every 30 min via cron).
     _pair_regime_blocks       = None    # dict[pair] -> set[regime]
     _pair_regime_blocks_mtime = 0.0
@@ -385,6 +387,69 @@ class FinBuddyFreqAI_v23(IStrategy):
         return {
             "fear_greed":   pd.Series(merged["fear_greed"].fillna(50.0).values,    index=dataframe.index),
             "btc_strength": pd.Series(merged["btc_strength"].fillna(0.0).values,   index=dataframe.index),
+        }
+
+    def _load_historical_funding(self):
+        """Load historical BTC perp funding-rate events. Cached at class level.
+
+        Built by scripts/build_historical_funding.py — refreshed daily via cron.
+        Falls back to live funding rate (single value, repeated) if parquet missing.
+        """
+        if FinBuddyFreqAI_v23._historical_funding_df is not None:
+            return FinBuddyFreqAI_v23._historical_funding_df
+        try:
+            df = pd.read_parquet(self._HISTORICAL_FUNDING_FILE)
+            df["date"] = pd.to_datetime(df["date"], utc=True)
+            df = df.sort_values("date").reset_index(drop=True)
+            FinBuddyFreqAI_v23._historical_funding_df = df
+            max_date = df["date"].max()
+            gap_days = (pd.Timestamp.now(tz="UTC") - max_date).days
+            logger.info(
+                f"[Funding] Loaded {len(df)} historical funding events from "
+                f"{df['date'].min()} to {max_date} (gap={gap_days}d)"
+            )
+            if gap_days > 3:
+                logger.warning(
+                    f"[Funding] STALE: funding_rate.parquet is {gap_days}d behind — "
+                    f"re-run scripts/build_historical_funding.py"
+                )
+            return df
+        except Exception as e:
+            logger.warning(f"[Funding] Could not load historical parquet ({e}) — using live cache fallback")
+            FinBuddyFreqAI_v23._historical_funding_df = pd.DataFrame()
+            return FinBuddyFreqAI_v23._historical_funding_df
+
+    def _get_funding_series(self, dataframe: DataFrame) -> dict[str, pd.Series]:
+        """
+        Vectorized lookup: per-candle BTC funding_rate + z-score + change.
+
+        Funding events are every 8h; merge_asof(direction='backward') assigns each
+        candle the most recent funding event preceding it. Same pattern as macro.
+
+        Returns 3 Series aligned to dataframe.index:
+          funding_rate      — raw per-8h rate
+          funding_rate_z30d — z-score vs 30d rolling (extremeness)
+          funding_rate_chg  — change vs previous event (momentum)
+        """
+        hist = self._load_historical_funding()
+        n = len(dataframe)
+        if hist.empty:
+            # Live fallback: single current value from the existing _get_btc_funding_rate cache
+            live = self._get_btc_funding_rate()
+            live = float(live) if live is not None else 0.0
+            return {
+                "funding_rate":      pd.Series([live] * n, index=dataframe.index),
+                "funding_rate_z30d": pd.Series([0.0]  * n, index=dataframe.index),
+                "funding_rate_chg":  pd.Series([0.0]  * n, index=dataframe.index),
+            }
+        dates = pd.to_datetime(dataframe["date"], utc=True)
+        df_for_join = pd.DataFrame({"date": dates}).sort_values("date").reset_index()
+        merged = pd.merge_asof(df_for_join, hist, on="date", direction="backward")
+        merged = merged.sort_values("index").reset_index(drop=True)
+        return {
+            "funding_rate":      pd.Series(merged["funding_rate"].fillna(0.0).values,      index=dataframe.index),
+            "funding_rate_z30d": pd.Series(merged["funding_rate_z30d"].fillna(0.0).values, index=dataframe.index),
+            "funding_rate_chg":  pd.Series(merged["funding_rate_chg"].fillna(0.0).values,  index=dataframe.index),
         }
 
     def _get_regime_series(self, dataframe: DataFrame) -> pd.Series:
@@ -673,8 +738,16 @@ class FinBuddyFreqAI_v23(IStrategy):
             dataframe["%-btc_strength"]  = macros["btc_strength"]
             ctx = self._get_combined_context()
             dataframe["%-news_sentiment"] = float(ctx.get("news_sentiment_ratio", 0.5))
+
+            # BTC perp funding rate (added 2026-05-19): strongest cheap signal for
+            # 1–4h crypto perp moves. Already used as a long-block gate; now also
+            # fed to LightGBM so the model can learn funding × momentum × regime.
+            funding = self._get_funding_series(dataframe)
+            dataframe["%-funding_rate"]      = funding["funding_rate"]
+            dataframe["%-funding_rate_z30d"] = funding["funding_rate_z30d"]
+            dataframe["%-funding_rate_chg"]  = funding["funding_rate_chg"]
         else:
-            logger.info(f"[FeatureSet] mode={self.FEATURE_SET} — skipping fear_greed/btc_strength/news_sentiment")
+            logger.info(f"[FeatureSet] mode={self.FEATURE_SET} — skipping fear_greed/btc_strength/news_sentiment/funding")
 
         if include_regime:
             # HMM regime encoding — per-candle historical regime (Fix 2026-05-17)

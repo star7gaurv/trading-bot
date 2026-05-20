@@ -135,7 +135,7 @@
         "train_period_days": 90,
         "backtest_period_days": 7,
         "live_retrain_hours": 4,
-        "identifier": "finbuddy_v23_live_1779189570",
+        "identifier": "finbuddy_v23_funding_1779270021",
         "feature_parameters": {
             "include_timeframes": [
                 "1h",
