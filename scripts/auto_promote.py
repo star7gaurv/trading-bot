@@ -93,10 +93,14 @@ def main() -> int:
         print(f"Already evaluated run '{run_name}' — skipping (idempotent)")
         return 0
 
-    new_sharpe  = summary.get("weighted_sharpe", summary.get("sharpe", None))
-    new_wr      = summary.get("weighted_win_rate", summary.get("win_rate", None))
-    new_pf      = summary.get("weighted_profit_factor", summary.get("profit_factor", None))
-    new_dd      = summary.get("worst_drawdown", summary.get("max_drawdown", None))
+    # 2026-05-20: metrics actually live under summary["aggregate"], not at root.
+    # Before this fix the Telegram message rendered "Sharpe: None / WR: None%" on
+    # every failing run because every .get() missed and returned literal None.
+    agg = summary.get("aggregate", {}) or {}
+    new_sharpe  = agg.get("weighted_sharpe", agg.get("sharpe"))
+    new_wr      = agg.get("weighted_win_rate", agg.get("win_rate"))
+    new_pf      = agg.get("weighted_profit_factor", agg.get("profit_factor"))
+    new_dd      = agg.get("worst_drawdown", agg.get("max_drawdown"))
     new_verdict = summary.get("pass", False)
 
     current_sharpe    = state.get("current_sharpe")
@@ -110,13 +114,24 @@ def main() -> int:
 
     state["last_evaluated_run"] = run_name
 
+    # Format helpers — keep "—" placeholder instead of literal "None" when a
+    # field is missing (typical for 0-trade WF runs where aggregate is empty).
+    def _fmt(v, suffix="", fmt=""):
+        if v is None:
+            return "—"
+        try:
+            return (f"{float(v):{fmt}}" if fmt else f"{v}") + suffix
+        except (TypeError, ValueError):
+            return f"{v}{suffix}"
+
     metrics_fields = {
         "Run":      f"<code>{run_name}</code>",
-        "Sharpe":   f"{new_sharpe}",
-        "Win Rate": f"{new_wr}%",
-        "PF":       f"{new_pf}",
-        "Drawdown": f"{new_dd}%",
-        "Baseline": f"Sharpe {current_sharpe} · id={live_identifier}",
+        "Sharpe":   _fmt(new_sharpe, fmt=".3f"),
+        "Win Rate": _fmt((new_wr * 100) if isinstance(new_wr, (int, float)) else new_wr, suffix="%", fmt=".1f"),
+        "PF":       _fmt(new_pf, fmt=".3f"),
+        "Drawdown": _fmt((new_dd * 100) if isinstance(new_dd, (int, float)) and abs(new_dd) < 1 else new_dd, suffix="%", fmt=".2f"),
+        "Trades":   _fmt(agg.get("total_trades")),
+        "Baseline": f"Sharpe {_fmt(current_sharpe, fmt='.3f')} · id={live_identifier}",
     }
 
     if not new_verdict:
