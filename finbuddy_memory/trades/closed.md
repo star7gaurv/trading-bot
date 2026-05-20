@@ -201,3 +201,4 @@
 | 2026-05-19 22:24:50 | ZEC/USDT:USDT | LONG | 2h24m | -2.07% | -2.11 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-19 23:59:03 | ZEC/USDT:USDT | LONG | 1h28m | +1.56% | +1.58 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-20 00:34:13 | ZEC/USDT:USDT | LONG | 0h18m | +1.70% | +1.73 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-20 16:54:30 | SUI/USDT:USDT | LONG | 0h24m | +1.36% | +12.76 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
