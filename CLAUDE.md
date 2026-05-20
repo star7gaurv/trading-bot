@@ -112,23 +112,50 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ---
 
-## What Is Live and Working Right Now (verified 2026-05-19 by Claude Code)
+## What Is Live and Working Right Now (verified 2026-05-20 by Claude Code)
 
 ### FreqTrade
 - Running **`FinBuddyFreqAI_v23.py` (v23)** in dry-run mode on **Binance Futures USDT-M** — long+short
-- FreqAI identifier: `finbuddy_v23_live_*` (timestamped, bumped on each promotion)
+- FreqAI identifier: **`finbuddy_v23_funding_1779270021`** (bumped 2026-05-19 when funding-rate feature added)
 - FreqAI model: **LightGBMRegressor** (predicts future_return %, not classifier)
 - 1000 USDT virtual wallet, max 8 open trades, 2x leverage enabled
 - API: `http://localhost:8080/api/v1` — user: `bot`, pass: `REDACTED-FREQTRADE__API_SERVER__PASSWORD`
 - Whitelist: **25 pairs**, **15m timeframe**
 - **Per-pair-per-regime gate active** — `pair_regime_stats.json` blocks pair-regime combos with rolling 30d (n≥5, WR<40%, PF<0.7)
-- Strategy env vars (live, best-known v23 from brain): K_TP=2.0, K_SL=2.0, LONG_THRESHOLD=3.25, SHORT_THRESHOLD=-2.75, STABILITY_N=2
+- Strategy env vars (live): K_TP=2.0, K_SL=2.0, LONG_THRESHOLD=3.25, SHORT_THRESHOLD=-2.75, STABILITY_N=2
 
-### Profitability reality check (2026-05-19)
-- v22 cumulative dry-run +$94.94 (+9.59%) over 45 days was **regime-coincidental**, not edge
-- Last 20 v22 trades = 3W/17L (15% WR) — bot kept shorting through BEAR→NEUTRAL flip
-- v23 not yet profitable in backtests (best PF=0.98 / -0.022%) but is the only forward path
-- v22 strategy file + LLM model file kept on disk for history; no longer referenced by live config or brain
+### Model features (533 total after 2026-05-19 funding-rate addition)
+Standard layer 4 features now include `%-funding_rate` + `%-funding_rate_z30d` + `%-funding_rate_chg`
+(BTC perp funding from Binance Futures, 7,333 historical events back to 2019-09-10). Daily refresh cron
+01:25 UTC. Adds to existing fear_greed, btc_strength, news_sentiment, regime_numeric, recent_wr features.
+
+### Fixes shipped this week (2026-05-19 → 2026-05-20)
+- **Stop-ratchet bug** (commit `4702549`): `custom_stoploss` was recomputing `sl_pct = K_SL × current_atr_pct`
+  every candle, ratcheting the stop inward as volatility contracted. 106/292 trades exited at avg -0.18%
+  in ~204 min — a silent drag. Now `entry_atr_pct` is cached via `trade.set_custom_data`.
+- **Time-limit exit** (commit `4702549`): 72 candles → 24 candles (= 2× label_period_candles=12).
+  Was force-closing dead positions at 18h on 15m TF; now 6h.
+- **Brain promotion gates loosened** (commit `3eafab8`): `MIN_AVG_PROFIT_IMPROVEMENT` 1.0 → 0.1pp;
+  `min(profits) > 0` → `avg(profits) > 0 AND min > MIN_PER_RUN_PROFIT_FLOOR=-0.3`. Brain `requeue` CLI
+  added. Baseline file initialised at 0.0%.
+- **Daily walk-forward** (commit `d6c883d`): `0 22 * * * walkforward_daily.sh` (12mo trailing rolling,
+  ~80min). Monthly heavy WF (27mo) kept on the 1st. `auto_promote.py` at 04:00 UTC.
+- **Funding-rate feature** (commit `b4e9d6f`): 3 new features fed to LightGBM; `build_historical_funding.py`
+  fetches Binance Futures funding history.
+- **Live bot dead 6h recovery** (commit `7c8bf52`): adding funding feature created 271→274 column schema
+  mismatch with FreqAI's root-level `historic_predictions.pkl` cache. Flushed root state + 50 stale
+  `sub-train-*` dirs; bot now training cleanly on 533 features.
+- **auto_promote.py None rendering** (commit `7c8bf52`): was reading `summary.weighted_sharpe` (root)
+  instead of `summary.aggregate.weighted_sharpe` → every Telegram message showed "Sharpe: None".
+
+### Profitability reality check (2026-05-20)
+- 295 lifetime trades, +$98.01 cumulative dry-run (since v23 launch). The +$94.94 v22 era was
+  regime-coincident; v23 still proving itself but has the right architecture.
+- Brain has 234 completed experiments. Best so far: `e0e1bf338410` profit=+0.192%, WR=48.1%, Sharpe=1.42
+  on bear_2025Q1. Promotion still blocked — needs 2 bull + 2 bear runs of the SAME config.
+- v22 strategy file + LLM model file kept on disk for history; never loaded by live config or brain.
+- Open known issues: model is **over-long in bear regimes** (avg ~60% longs in bear_2025Q1) — likely
+  training-data bias toward 2024 bull period. Mitigation deferred (target standardization or class weight).
 
 ### N8N
 - 🔴 **Permanently disabled** — FreqAI is sole signal source
