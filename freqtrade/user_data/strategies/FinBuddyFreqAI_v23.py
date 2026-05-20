@@ -507,6 +507,19 @@ class FinBuddyFreqAI_v23(IStrategy):
         logger.info(f"[RiskEngine] stake={result} regime={regime} mult={multiplier}")
         return max(result, min_stake or 0)
 
+    # Confidence-based leverage tiers (added 2026-05-20).
+    # Read from env so they can be tuned without code changes.
+    # Each tier = (min_confidence_ratio, leverage). Confidence ratio = how far
+    # the centered_pred exceeds its threshold. ratio 1.0 = exactly at threshold,
+    # ratio 2.0 = double the threshold magnitude. Pick the highest tier whose
+    # min_ratio the trade clears.
+    _LEV_LOW_CONF_RATIO  = float(os.getenv("FREQAI_LEV_LOW_CONF_RATIO",  "1.0"))   # bare-minimum entry
+    _LEV_MED_CONF_RATIO  = float(os.getenv("FREQAI_LEV_MED_CONF_RATIO",  "1.5"))   # solid signal
+    _LEV_HIGH_CONF_RATIO = float(os.getenv("FREQAI_LEV_HIGH_CONF_RATIO", "2.0"))   # strong conviction
+    _LEV_LOW  = float(os.getenv("FREQAI_LEV_LOW",  "1.0"))   # bare entry → no leverage
+    _LEV_MED  = float(os.getenv("FREQAI_LEV_MED",  "2.0"))   # solid → 2x (old default)
+    _LEV_HIGH = float(os.getenv("FREQAI_LEV_HIGH", "3.0"))   # strong → 3x (capped by exchange max)
+
     def leverage(
         self,
         pair: str,
@@ -519,11 +532,66 @@ class FinBuddyFreqAI_v23(IStrategy):
         **kwargs,
     ) -> float:
         """
-        v20: Set 2x leverage on all futures trades.
-        Doubles profit potential while keeping estimated Max Drawdown ~6-7%
-        (vs 3% at 1x). Capped at exchange max_leverage for safety.
+        Confidence-based leverage (2026-05-20).
+
+        Reads the latest centered prediction (per-pair median offset, same as
+        populate_entry_trend) and compares its magnitude to the dynamic
+        threshold for this side. The further past threshold, the higher the
+        leverage tier. If we can't read the dataframe (rare race), default
+        to MED (2x) — the prior fixed-leverage behavior.
+
+        Tier table (defaults, env-tunable):
+          ratio  < 1.0   → reject (shouldn't happen — entry already passed)
+          1.0 ≤ ratio < 1.5  → 1x (low conviction, just past threshold)
+          1.5 ≤ ratio < 2.0  → 2x (solid signal)
+          ratio ≥ 2.0        → 3x (strong conviction)
+        Always clamped to max_leverage from exchange.
         """
-        return min(2.0, max_leverage)
+        try:
+            df, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
+            if df is None or df.empty:
+                return min(self._LEV_MED, max_leverage)
+            last = df.iloc[-1]
+            pred = float(last.get("&-future_return", 0.0))
+            # Reconstruct per-pair median over recent window (same as entry logic)
+            window = df["&-future_return"].tail(100)
+            pred_median = float(window.median()) if len(window) >= 20 else 0.0
+            centered = pred - pred_median
+
+            if side == "long":
+                thresh = float(last.get("dynamic_long_threshold", 1.0))
+                # threshold is positive; centered should be > thresh
+                ratio = centered / thresh if thresh > 0 else 0.0
+            else:  # short
+                thresh = float(last.get("dynamic_short_threshold", -1.0))
+                # threshold is negative; centered should be < thresh (both negative).
+                # ratio = how many threshold-magnitudes below 0 the prediction is.
+                ratio = centered / thresh if thresh < 0 else 0.0
+
+            if ratio >= self._LEV_HIGH_CONF_RATIO:
+                lev = self._LEV_HIGH
+                tier = "HIGH"
+            elif ratio >= self._LEV_MED_CONF_RATIO:
+                lev = self._LEV_MED
+                tier = "MED"
+            elif ratio >= self._LEV_LOW_CONF_RATIO:
+                lev = self._LEV_LOW
+                tier = "LOW"
+            else:
+                # Below 1.0 — entry shouldn't have fired; use MED defensively.
+                lev = self._LEV_MED
+                tier = "FALLBACK"
+
+            final = min(lev, max_leverage)
+            logger.info(
+                f"[Leverage] {pair} {side}: pred={pred:+.3f} median={pred_median:+.3f} "
+                f"centered={centered:+.3f} thresh={thresh:+.3f} ratio={ratio:+.2f} "
+                f"→ tier={tier} lev={final:.1f}x (cap={max_leverage:.0f}x)"
+            )
+            return final
+        except Exception as e:
+            logger.warning(f"[Leverage] {pair} fell back to MED ({self._LEV_MED}x) due to: {e}")
+            return min(self._LEV_MED, max_leverage)
 
     # ------------------------------------------------------------------ #
     # Correlation-aware position gate (added v16.2)                       #
