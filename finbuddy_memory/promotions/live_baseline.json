@@ -1,0 +1,6 @@
+{
+  "avg_profit_pct": 0.0,
+  "config_hash": "v23_live_initial",
+  "recorded_at": "2026-05-19T20:30:00Z",
+  "note": "Initialised 2026-05-19. v23 has never been profitable in backtest; 0.0 is honest. Promotion now needs avg_profit ≥ +0.1% absolute. This file is auto-updated by promote.py::record_new_baseline() after each Apply."
+}

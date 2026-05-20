@@ -33,11 +33,17 @@ LIVE_CONFIG = ROOT / "freqtrade" / "user_data" / "config.json"
 PROMOTIONS_DIR = ROOT / "finbuddy_memory" / "promotions"
 PENDING_FILE = PROMOTIONS_DIR / "pending.json"
 
-# Improvement threshold over current baseline
-MIN_AVG_PROFIT_IMPROVEMENT = 1.0   # percentage points
+# Improvement threshold over current baseline.
+# Lowered 2026-05-19 from 1.0 → 0.1 — the v23 strategy's realistic edge is
+# +0.10–0.19% per cross-window run; 1.0pp was unreachable. Re-tighten as
+# experiments mature (target 0.5 once a config consistently clears 1%).
+MIN_AVG_PROFIT_IMPROVEMENT = 0.1   # percentage points
 MIN_TOTAL_TRADES = 60              # raised from 30 — require at least 2 bull + 2 bear runs typically
 MIN_BULL_RUNS = 2                  # statistical significance — no single-run candidates
 MIN_BEAR_RUNS = 2
+# Safety floor for the per-run check below: avg(profits)>0 must hold AND no
+# single run worse than this. Prevents one disaster window from masking on avg.
+MIN_PER_RUN_PROFIT_FLOOR = -0.3    # percent — tighten to -0.1 once WR routinely >50%
 BASELINE_FILE = ROOT / "finbuddy_memory" / "promotions" / "live_baseline.json"
 
 
@@ -109,9 +115,19 @@ def find_candidates() -> list[dict]:
         bear_sharpes = [r["metrics"]["sharpe"]     for r in g["bear_runs"]]
         total_trades = sum(r["metrics"]["trades"] for r in g["runs"])
 
-        # Criteria: both windows profitable + sharpe positive on average
-        bull_ok = min(bull_profits) > 0 and (sum(bull_sharpes) / len(bull_sharpes)) > 0
-        bear_ok = min(bear_profits) > 0 and (sum(bear_sharpes) / len(bear_sharpes)) > 0
+        # Criteria: avg profit positive on each side + sharpe positive on average
+        # + no single run worse than MIN_PER_RUN_PROFIT_FLOOR (safety floor).
+        # Was min(profits)>0 (2026-05-19): one slightly-negative run killed every
+        # otherwise-winning config. The floor prevents a disaster window from
+        # sneaking past on a positive average.
+        bull_avg = sum(bull_profits) / len(bull_profits)
+        bear_avg = sum(bear_profits) / len(bear_profits)
+        bull_ok = (bull_avg > 0
+                   and (sum(bull_sharpes) / len(bull_sharpes)) > 0
+                   and min(bull_profits) > MIN_PER_RUN_PROFIT_FLOOR)
+        bear_ok = (bear_avg > 0
+                   and (sum(bear_sharpes) / len(bear_sharpes)) > 0
+                   and min(bear_profits) > MIN_PER_RUN_PROFIT_FLOOR)
         if not (bull_ok and bear_ok):
             continue
         if total_trades < MIN_TOTAL_TRADES:

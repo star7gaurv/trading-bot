@@ -25,10 +25,10 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from experiment_log import summary_stats, best_by_metric, read_log, read_queue
-from hypothesis_gen import queue_seed_if_empty, generate_and_queue
+from experiment_log import summary_stats, best_by_metric, read_log, read_queue, queue_hypothesis
+from hypothesis_gen import queue_seed_if_empty, generate_and_queue, WINDOWS
 from runner import run_next
-from promote import find_candidates, propose
+from promote import find_candidates, propose, _config_hash
 from analyst import analyse
 
 
@@ -89,6 +89,76 @@ def cmd_analyse(args) -> int:
     return 0
 
 
+def cmd_requeue(args) -> int:
+    """Force-queue runs for given config_hash(es) to reach 2 bull + 2 bear samples.
+
+    Added 2026-05-19. Lets the operator unblock single-shot cross-window winners
+    that the promotion gate refuses for lack of sample count.
+    """
+    target_n = args.target
+    hashes = args.hashes
+    log = read_log()
+    queue = read_queue()
+
+    # Build (hash → most recent completed config) lookup
+    hash_to_config: dict[str, dict] = {}
+    for r in log:
+        cfg = r.get("config")
+        if not cfg:
+            continue
+        h = _config_hash(cfg)
+        hash_to_config[h] = cfg  # last-write wins → most recent
+    # Also check queued (might be needed if a hash only exists pending)
+    for r in queue:
+        cfg = r.get("config")
+        if not cfg:
+            continue
+        h = _config_hash(cfg)
+        hash_to_config.setdefault(h, cfg)
+
+    # Count existing (hash, window) in log+queue
+    from collections import defaultdict
+    counts: dict[tuple[str, str], int] = defaultdict(int)
+    for r in log + queue:
+        cfg = r.get("config")
+        if not cfg:
+            continue
+        h = _config_hash(cfg)
+        w = r.get("window", "")
+        counts[(h, w)] += 1
+
+    print(f"== requeue (target {target_n} per window per hash) ==")
+    print(f"{'hash':14s}  " + "  ".join(f"{w:14s}" for w in WINDOWS) + "  queued_now")
+    total_queued = 0
+    for h in hashes:
+        if h not in hash_to_config:
+            print(f"  {h}  ⚠ no completed run with this hash — skipped")
+            continue
+        cfg = hash_to_config[h]
+        per_window_added = {}
+        for window_name, timerange in WINDOWS.items():
+            existing = counts[(h, window_name)]
+            need = max(0, target_n - existing)
+            for _ in range(need):
+                queue_hypothesis(
+                    config=cfg,
+                    band="safe",
+                    rationale=f"manual requeue: reach {target_n}+{target_n} sample count",
+                    window=window_name,
+                    timerange=timerange,
+                )
+            per_window_added[window_name] = (existing, need)
+            total_queued += need
+        cells = "  ".join(
+            f"{existing}→{existing + need:2d}".ljust(14)
+            for existing, need in (per_window_added[w] for w in WINDOWS)
+        )
+        added = sum(n for _, n in per_window_added.values())
+        print(f"  {h}  {cells}  +{added}")
+    print(f"-- Total queued: {total_queued} --")
+    return 0
+
+
 def cmd_best(_args) -> int:
     best = best_by_metric("profit_pct", min_trades=20)
     if not best:
@@ -117,6 +187,13 @@ def main() -> int:
 
     sub.add_parser("scan").set_defaults(func=cmd_scan)
     sub.add_parser("best").set_defaults(func=cmd_best)
+
+    rq = sub.add_parser("requeue",
+        help="force-queue runs for given config_hash(es) to reach 2 bull + 2 bear")
+    rq.add_argument("hashes", nargs="+", help="config_hash values (12-hex) from `brain best` or analysis")
+    rq.add_argument("--target", type=int, default=2,
+        help="target count per window (default 2, matches promote.py MIN_*_RUNS)")
+    rq.set_defaults(func=cmd_requeue)
 
     a = sub.add_parser("analyse", help="self-diagnose experiment results, prune queue, inject targeted hypotheses")
     a.add_argument("--dry-run", action="store_true", help="report only, no queue changes")
