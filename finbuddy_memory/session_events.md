@@ -147,3 +147,4 @@ User said "do whatever you want for v23 to fix" — ran 5 backtests on 2024-01-0
 - **2026-05-18 04:00 UTC** — Regime changed: NEUTRAL → BEAR
 - **2026-05-19 00:00 UTC** — Regime changed: BEAR → NEUTRAL
 - **2026-05-19 12:00 UTC** — FreqAI identifier changed: finbuddy_v22_balanced_1779015982 → finbuddy_v23_live_1779189570
+- **2026-05-20 00:00 UTC** — Walk-forward status: ❌ FAIL — WR 0.0%, Sharpe 0.00, DD 0.0%, PF 0.00 (0 trades, run `FinBuddyFreqAI_2025-05-01_2026-05-01_20260519T220001`)
