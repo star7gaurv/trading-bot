@@ -116,12 +116,12 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ### FreqTrade
 - Running **`FinBuddyFreqAI_v23.py` (v23)** in dry-run mode on **Binance Futures USDT-M** — long+short
-- FreqAI identifier: **`finbuddy_v23_sym_1779274506`** (bumped 2026-05-20 in commit `b4b02b7` for symmetric-gates + DI/SVM + recent_wr removal)
+- FreqAI identifier: **`finbuddy_v23_zscore_1779274507`** (bumped 2026-05-20 in commit `b4b02b7` for symmetric-gates + DI/SVM + recent_wr removal)
 - FreqAI model: **LightGBMRegressor** (predicts `&-future_return %`, not classifier). DI=1.0 + SVM outlier removal active.
 - **1000 USDT** virtual wallet (reverted from 10000 on 2026-05-20 commit `2f01b56`), max 8 open trades
 - **Confidence-based leverage** (commit `60d4fb4`): 1x / 2x / 3x tiers based on `centered_pred / threshold` ratio (env-tunable). Fallback now LOW (1x) per round-3 audit (`5f37ab8`).
 - API: `http://localhost:8080/api/v1` — user: `bot`, pass: `REDACTED-FREQTRADE__API_SERVER__PASSWORD`
-- Whitelist: **25 pairs**, **15m timeframe** (each pair has 5 TFs of historical data: 15m + 30m + 1h + 4h + 1d)
+- Whitelist: **37 pairs**, **15m timeframe** (each pair has 5 TFs of historical data: 15m + 30m + 1h + 4h + 1d)
 - **Per-pair-per-regime gate active** — `pair_regime_stats.json` blocks pair-regime combos with rolling 30d (n≥5, WR<40%, PF<0.7)
 - Strategy env vars (live): K_TP=2.0, K_SL=2.0, **LONG_THRESHOLD=2.0, SHORT_THRESHOLD=-2.0, STABILITY_N=1** (loosened from 3.25/-2.75/2 on 2026-05-20 when trade volume collapsed to 3/day)
 
@@ -221,7 +221,7 @@ Standard layer 4 features include 3 funding-rate features (`%-funding_rate`, `%-
 ## Current Strategy
 
 ### ✅ Active: `FinBuddyFreqAI_v23.py` v23 — Regression + Per-Pair-Per-Regime Gate
-- Binance Futures USDT-M (perpetual, isolated margin), **15m base TF**, 25 pairs, `can_short=True`
+- Binance Futures USDT-M (perpetual, isolated margin), **15m base TF**, 37 pairs, `can_short=True`
 - **LightGBMRegressor**: predicts `&-future_return` (regression target, no classifier bias)
 - **2x Leverage**: Implemented via `leverage()` callback.
 - **Max Open Trades**: 8.

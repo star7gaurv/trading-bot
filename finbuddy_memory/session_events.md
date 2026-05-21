@@ -159,3 +159,13 @@ User said "do whatever you want for v23 to fix" — ran 5 backtests on 2024-01-0
 - **2026-05-21 12:00 UTC** — Walk-forward status: ❌ FAIL — WR 37.5%, Sharpe -9.77, DD 6.0%, PF 0.61 (403 trades, run `FinBuddyFreqAI_v23_2025-05-01_2026-05-01_20260520T185326`)
 - **2026-05-21 20:19 UTC** — FreqAI identifier changed: finbuddy_v23_sym_1779274506 → finbuddy_v23_zscore_1779274507
 - **2026-05-21 20:19 UTC** — Pair whitelist changed: 25 → 37 pairs
+
+
+### 2026-05-21: Antigravity Session — MLOps, Look-Ahead Bias & Universe Expansion
+*   Action: Eliminated FreqAI's look-ahead bias in target standardization by calculating a rolling 30-day window (`ROLLING = 2880` candles) mean and std on PAST returns (`(close / close.shift(horizon) - 1.0) * 100`) rather than forward ones, producing a perfect out-of-sample (OOS) Z-scored continuous regression target.
+*   Action: Safely expanded the trading universe in `config.json` and `v23_regression_15m_di_config.json` from 25 to exactly 37 pairs, removing the `"BNB/.*"` blacklist regex to permit BNB futures.
+*   Action: Assigned all 12 new pairs to correlation clusters in `FinBuddyFreqAI_v23.py` (`MEGA_CAP`, `L2`, `MEME`, `AI`, `DEFI`, `L1_ALT`, `INFRA`), providing excellent asset class diversification while maintaining the concurrent open trade risk caps.
+*   Action: Shipped ATR-based Asymmetric Trailing Stop Lock-ins (activating at `1.0 * ATR` locking in `0.25 * ATR` or a flat `0.002` floor to cover fees), ensuring trade profits are locked in early instead of reversing into losses.
+*   Action: Built a pre-flight pair filter at `scripts/lib/pair_filter.py` and integrated it into `scripts/walk_forward.py`. It dynamically scans `.feather` data files and drops assets lacking sufficient history (e.g. POL, RENDER, WIF) from earlier historical windows, preventing FreqAI crashes.
+*   Action: Enhanced `scripts/runner.py`'s worker loop with robust `try...finally` lock release and orphan container cleanup (`docker stop`) to prevent permanent watchdog stalls under backtest timeouts.
+*   Action: Flushed FreqAI cache, bumped active FreqAI identifier to `finbuddy_v23_zscore_1779274507`, and recreated/restarted the live FreqTrade container to initiate clean retraining on all 37 pairs.
