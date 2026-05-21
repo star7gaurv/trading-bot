@@ -635,6 +635,47 @@
       "proposed_by": "reasoning_agent",
       "reviewed_at": "2026-05-20",
       "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "btc_dominance_alt_selloff_20260521",
+      "hypothesis": "When BTC dominance increases by \u22650.5pp while BTC price remains flat (drift < 0.2%), alt-coins will underperform BTC by \u22651% over the next 12h.",
+      "timeframe": "1h",
+      "indicators": [
+        "BTC_DOM",
+        "fear_greed",
+        "custom_dom_threshold_adjust_20260516"
+      ],
+      "entry_long": "BTC-DOM >= 0.5pp increase and price change < 0.2% in 12h",
+      "entry_short": "BTC-DOM >= 0.5pp increase and price change < 0.2% in 12h",
+      "exit_rule": "no_improvement",
+      "regime_filter": [
+        "NEUTRAL"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-21",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-21",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "volume_threshold_breakout_20260521",
+      "hypothesis": "When 1h volume exceeds 80th percentile of 30d volume distribution, price continues in direction of breakout for 3 consecutive 1h candles.",
+      "timeframe": "1h",
+      "indicators": [
+        "volume",
+        "volatility"
+      ],
+      "entry_long": "1h volume > 80th percentile triggers long on upward spikes, short on downward spikes",
+      "entry_short": "1h volume > 80th percentile triggers long on upward spikes, short on downward spikes",
+      "exit_rule": "no_improvement",
+      "regime_filter": [
+        "NEUTRAL"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-21",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-21",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
     }
   ]
 }
