@@ -515,7 +515,7 @@ Three structural fixes addressing root causes found across 11 smoke tests:
 | Phase | Status | Focus |
 |---|---|---|
 | 0 — Foundation | ✅ Complete | FreqTrade, Telegram, server, N8N cleanup |
-| 1 — FreqAI Brain | 🔄 In Progress | **v23 live since 2026-05-19** — LightGBMRegressor, 15m, per-pair-per-regime gate, brain autonomous; 2 profitable backtest runs found (best bear PF=1.214 / +0.192%), promotion criteria not yet met |
+| 1 — FreqAI Brain | 🔄 In Progress | **v23 live since 2026-05-19** — LightGBMRegressor, 15m, z-scored predictions, 37 pairs, parallel WF (3 workers). Thresholds ±0.8, startup_candle_count=2400. Trade-blocking bugs fixed 2026-05-22. Promotion criteria not yet met. |
 | 2 — Data Enrichment | ✅ Live | 5 external fetchers + combined_context.json, cron every 15m |
 | 3 — HMM Regime | ✅ Live | 5-regime HMM + regime-aware sizing hooks, cron every 4h |
 | 4 — Obsidian Memory | ✅ Live | CONTEXT auto-write + vault git-commit, cron every 15m |
@@ -547,7 +547,8 @@ Three structural fixes addressing root causes found across 11 smoke tests:
 0 8 * * *     daily_summary.py                        # Telegram morning digest
 0 */4 * * *   sync_context.py                         # auto-sync FINBUDDY_PROJECT_MEMORY.md
 */30 * * * *  walkforward_notify.py                   # notify on walk-forward complete
-0 3 1 * *     walkforward_monthly.sh                  # monthly walk-forward (21 folds)
+0 22 * * *    walkforward_daily.sh                    # daily 3mo fast regression check (3 folds, ~5.5h, parallel)
+0 3 */4 * *   walkforward_deep.sh                     # 4-day deep WF (27mo/21 folds, ~38.5h, parallel) — promotion gate
 30 4 * * *    download_data_daily.sh                  # forward-increment market data
 */10 * * * *  brain_cli.py run --max 1                # brain: run next pending hypothesis
 0 */6 * * *   brain_cli.py generate                   # brain: generate hypotheses

@@ -179,3 +179,10 @@ User said "do whatever you want for v23 to fix" — ran 5 backtests on 2024-01-0
 um_threads=2** added to both config.json and 23_regression_15m_di_config.json. With 3 parallel workers × 2 threads = 6 logical threads saturating the 4-core server optimally.
 - **walkforward_daily.sh** (commit 5b6b1cb): 3-month trailing window (3 folds, ~5.5h). Fast regression detector. Separate lock walkforward_daily.lock. Runs nightly 22:00 UTC.
 - **walkforward_deep.sh** (NEW, commit 5b6b1cb): Replaces monthly. 27-month trailing window (21 folds, ~38.5h, parallel). Deep promotion gate with full bull+bear+chop regime coverage. Separate lock walkforward_deep.lock. Cron: 
+
+### End-of-session status (2026-05-22 ~03:00 IST)
+- All 3 trade-blocking bugs fixed and live bot restarted
+- startup_candle_count: 400 → **2400** (Binance 15m cap=2494)
+- Thresholds: ±2.0 → **±0.8** (z-scored distribution)
+- Regime gate: stale pre-z-score stats **cleared** — fresh accumulation starts
+- Commits: cde90f4, 5b6b1cb, eeae872, 1786d01

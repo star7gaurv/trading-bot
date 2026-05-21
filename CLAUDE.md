@@ -537,3 +537,28 @@ Comprehensive audit and cleanup of FinBuddyFreqAI.py to match live v17 state:
 ---
 
 *This file must be updated at the end of every major session. It is the operational memory for any Claude instance opening this repo.*
+
+
+## Session 2026-05-22 — Parallel WF Engine + 3 Trade-Blocking Bug Fixes
+
+### Walk-Forward Overhaul (all committed)
+- **walk_forward.py v2** (`cde90f4`): `ProcessPoolExecutor(max_workers=3)` replaces sequential fold loop. Per-fold isolated `.last_result_fXX.json` sentinels eliminate race condition. `--max-workers` and `--lgbm-threads` CLI flags.
+- **LightGBM `num_threads=2`** in both config files. 3 workers × 2 threads = 6 logical threads on 4-core server.
+- **`walkforward_daily.sh`** (`5b6b1cb`): 3-month trailing, 3 folds, ~5.5h. Fast nightly regression detector. Lock: `walkforward_daily.lock`.
+- **`walkforward_deep.sh`** (`5b6b1cb`): Replaces monthly. 27-month trailing, 21 folds, ~38.5h. Cron: `0 3 */4 * *`. Lock: `walkforward_deep.lock`.
+- Speedup: 7-fold campaign 38.5h → 13h. Monthly 115h → 38.5h.
+
+### 3 Trade-Blocking Bugs Fixed (`eeae872`, `1786d01`)
+1. **`startup_candle_count` 400 → 2400**: z-score ROLLING=2880 needs min_periods=200; 400 caused 101/499 NaN drops per inference cycle. 3000 exceeded Binance's 2494-candle 15m limit → crashed. 2400 = safe maximum.
+2. **Thresholds 2.0 → 0.8**: z-scored predictions are N(0,1) — ±2.0 is 2σ, rarely hit. ±0.8 covers ~42% of distribution, generates real signals.
+3. **Stale pre-z-score regime gate stats cleared**: LINK had 0% WR in 5 NEUTRAL trades (old strategy), ZEC had 36% WR — both permanently blocked. Reset all pair-regime stats to neutral (n=0, wr=0.5) for fresh accumulation from z-score trades.
+
+### Active at end of session
+- Live bot: v23, 37 pairs, thresholds ±0.8, startup_candle_count=2400, RUNNING
+- Parallel WF test: `FinBuddyFreqAI_v23_2025-01-01_2025-12-01_20260521T210437` (5 folds, 3 workers, nohup on server)
+- Walk-forward: daily @ 22:00 UTC (3mo) + deep every 4 days @ 03:00 UTC (27mo)
+
+### What to watch
+- First trade entry after threshold fix (should happen within 1-2 candles of next 15m close)
+- NaN drop count should be 0 after startup_candle_count=2400 fix
+- Parallel WF 5-fold result: needs WR>50%, Sharpe>0.5, DD<20%, PF>1.2 to pass promotion gate
