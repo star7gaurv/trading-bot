@@ -204,3 +204,4 @@
 | 2026-05-20 16:54:30 | SUI/USDT:USDT | LONG | 0h24m | +1.36% | +12.76 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-20 20:45:33 | OP/USDT:USDT | LONG | 1h11m | +1.28% | +1.32 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-21 01:00:25 | ENA/USDT:USDT | LONG | 0h45m | +0.94% | +0.97 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-21 05:39:01 | DASH/USDT:USDT | LONG | 1h08m | -3.86% | -4.00 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
