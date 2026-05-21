@@ -97,7 +97,7 @@ class FinBuddyFreqAI_v23(IStrategy):
     timeframe = "15m"  # matches config.json; was "5m" (stale, overridden at load 2026-05-20)
 
     can_short = True
-    startup_candle_count = 3000  # ROLLING=2880 (30d z-score) + 100 (pred_median) + buffer
+    startup_candle_count = 2400  # max safe: Binance 15m cap=2494 (5x499). ROLLING=2880 min_periods=200 so z-score valid from candle 200+
 
     # Regression entry thresholds (grid search via docker env).
     LONG_THRESHOLD  = float(os.getenv("FREQAI_LONG_THRESHOLD",  "1.0"))   # predicted % return to enter long
