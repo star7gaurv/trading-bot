@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-21T21:30:01.906580+00:00",
+  "updated": "2026-05-21T22:00:02.804967+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -511,7 +511,38 @@
       }
     }
   },
-  "blocked": [],
-  "_blocked_cleared_at": "2026-05-22T21:37:00Z",
-  "_blocked_cleared_reason": "z-score strategy migration \u2014 all pre-z-score WR stats invalid"
+  "blocked": [
+    {
+      "pair": "OP/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=0% PF=0.00 n=10 profit=-6.88",
+      "n": 10,
+      "wr": 0.0,
+      "pf": 0.0
+    },
+    {
+      "pair": "LINK/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=0% PF=0.00 n=5 profit=-5.60",
+      "n": 5,
+      "wr": 0.0,
+      "pf": 0.0
+    },
+    {
+      "pair": "UNI/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=14% PF=0.35 n=7 profit=-2.62",
+      "n": 7,
+      "wr": 0.1429,
+      "pf": 0.353
+    },
+    {
+      "pair": "ZEC/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=36% PF=0.45 n=11 profit=-8.57",
+      "n": 11,
+      "wr": 0.3636,
+      "pf": 0.445
+    }
+  ]
 }
