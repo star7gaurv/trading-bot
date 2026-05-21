@@ -97,7 +97,7 @@ class FinBuddyFreqAI_v23(IStrategy):
     timeframe = "15m"  # matches config.json; was "5m" (stale, overridden at load 2026-05-20)
 
     can_short = True
-    startup_candle_count = 400
+    startup_candle_count = 3000  # ROLLING=2880 (30d z-score) + 100 (pred_median) + buffer
 
     # Regression entry thresholds (grid search via docker env).
     LONG_THRESHOLD  = float(os.getenv("FREQAI_LONG_THRESHOLD",  "1.0"))   # predicted % return to enter long
@@ -149,12 +149,11 @@ class FinBuddyFreqAI_v23(IStrategy):
         **kwargs,
     ) -> Optional[float]:
         """
-        v19 ATR-adaptive stoploss — asymmetric barriers (K_SL initial, K_TP trail lock).
+        v19 ATR-adaptive stoploss - asymmetric barriers (K_SL initial, K_TP trail lock).
 
-        Initial stop:  K_SL×ATR below entry (tight — cuts losers fast, matches labeling SL).
-        Trail lock:    once profit > K_TP×ATR, lock in at +K_TP×ATR above entry.
+        Initial stop:  K_SL*ATR below entry (tight - cuts losers fast, matches labeling SL).
+        Trail lock:    once profit > K_TP*ATR, lock in at +0.25 * K_TP*ATR above entry (floor 0.002).
 
-        Asymmetric R:R = K_TP : K_SL (default 2:1). At 62% WR → theoretical PF = 3.26.
         Tighter initial stop also reduces funding fee drag on losing trades (they exit sooner).
 
         Returns None on missing data (no reset of existing stop).
@@ -164,14 +163,12 @@ class FinBuddyFreqAI_v23(IStrategy):
             return None
 
         # --- Phase 13 Volatility Hook (Emergency Shield) ---
-        # If within the first 2 candles of the trade, volume spikes massively against the position, bail out instantly.
         candles_open = int((current_time - trade.open_date_utc).total_seconds() / timeframe_to_seconds(self.timeframe))
         if candles_open <= 2 and current_profit < -0.005:
             last = dataframe.iloc[-1]
             rel_vol = last.get("%-relative_volume-period", 1.0)
             if rel_vol > 5.0:  # 500% volume spike
-                # Emergency market exit
-                return current_profit - 0.0001 # Force immediate exit by returning stop just below current price
+                return current_profit - 0.0001
         # ---------------------------------------------------
 
         last = dataframe.iloc[-1]
@@ -179,12 +176,6 @@ class FinBuddyFreqAI_v23(IStrategy):
         if atr is None or atr <= 0 or current_rate <= 0:
             return None
 
-        # Anchor the INITIAL stop to entry-time ATR so it does not ratchet
-        # inward when post-entry volatility contracts. Bug 2026-05-19:
-        # recomputing sl_pct each candle caused ~106 "trailing_stop_loss"
-        # exits at avg -0.18% in ~204 min — minor noise wicking a stop that
-        # crept toward entry as ATR fell. The trail-lock arm still uses
-        # live ATR (only widens with rising vol).
         entry_atr_pct = trade.get_custom_data("entry_atr_pct")
         if entry_atr_pct is None:
             entry_atr_pct = atr / trade.open_rate
@@ -194,19 +185,17 @@ class FinBuddyFreqAI_v23(IStrategy):
         atr_pct = atr / current_rate
         atr_pct = max(0.003, min(atr_pct, 0.025))
 
-        sl_pct = self.K_SL * entry_atr_pct  # initial stop — FIXED at entry-time ATR
-        tp_pct = self.K_TP * atr_pct        # trail lock — live ATR (can widen with vol)
+        sl_pct = self.K_SL * entry_atr_pct  # initial stop - FIXED at entry-time ATR
+        tp_pct = self.K_TP * atr_pct        # trail lock - live ATR (can widen with vol)
         
-        # Require 50% more profit before locking the trail to avoid noise
-        lock_threshold = tp_pct * 1.5
+        # Trail activation threshold: once profit exceeds 1.0 * tp_pct
+        lock_threshold = tp_pct * 1.0
 
-        # Trail: once profit exceeds the lock threshold, lock stop at K_TP×ATR from entry.
-        # stoploss_from_open ALWAYS returns >= 0 (both longs and shorts).
-        # Returns 0 only when stop would breach current price — discard those.
-        # Return the positive value directly; FreqTrade handles direction internally.
+        # Trail: once profit exceeds the lock threshold, lock stop at max(0.25 * tp_pct, 0.002) from entry.
         if current_profit > lock_threshold:
+            locked_stop = max(tp_pct * 0.25, 0.002)
             trail_pct = stoploss_from_open(
-                tp_pct,
+                locked_stop,
                 current_profit,
                 is_short=trade.is_short,
                 leverage=trade.leverage,
@@ -215,9 +204,7 @@ class FinBuddyFreqAI_v23(IStrategy):
                 return trail_pct
             return None
 
-        # Initial: K_SL×ATR from entry. Use negative open_relative_stop to set
-        # stop BELOW entry for longs / ABOVE entry for shorts.
-        # stoploss_from_open ALWAYS returns >= 0; > 0 guard discards degenerate cases.
+        # Initial: K_SL*ATR from entry.
         initial_stop = stoploss_from_open(
             -sl_pct,
             current_profit,
@@ -640,11 +627,23 @@ class FinBuddyFreqAI_v23(IStrategy):
         "LINK/USDT:USDT": "MEGA_CAP",
         "ATOM/USDT:USDT": "MEGA_CAP",
         "NEAR/USDT:USDT": "MEGA_CAP",
+        "BNB/USDT:USDT":  "MEGA_CAP",
         "ARB/USDT:USDT":  "L2",
         "OP/USDT:USDT":   "L2",
         "APT/USDT:USDT":  "L2",
         "SUI/USDT:USDT":  "L2",
-        # Everything else → "ALTCOIN" (independent enough)
+        "POL/USDT:USDT":  "L2",
+        "1000SHIB/USDT:USDT": "MEME",
+        "1000PEPE/USDT:USDT": "MEME",
+        "WIF/USDT:USDT":  "MEME",
+        "FET/USDT:USDT":  "AI",
+        "RENDER/USDT:USDT": "AI",
+        "AAVE/USDT:USDT": "DEFI",
+        "LDO/USDT:USDT":  "DEFI",
+        "INJ/USDT:USDT":  "L1_ALT",
+        "HBAR/USDT:USDT": "L1_ALT",
+        "FIL/USDT:USDT":  "INFRA",
+        # Everything else -> "ALTCOIN" (independent enough)
     }
     _MAX_CLUSTER_POSITIONS = 2  # hard cap per cluster
 
@@ -878,25 +877,39 @@ class FinBuddyFreqAI_v23(IStrategy):
         self, dataframe: DataFrame, metadata: dict, **kwargs
     ) -> DataFrame:
         """
-        Regression target: future_return = (close[t+horizon] / close[t] - 1) × 100
+        Regression target: future_return = (close[t+horizon] / close[t] - 1) * 100
 
         Why regression instead of triple-barrier classification:
           Classification with K_TP=2.0/K_SL=1.0 produces P(SL_first) = 2/(2+1) = 67% "S" labels.
-          LightGBM biases toward the majority class → near-zero long predictions in bull markets.
+          LightGBM biases toward the majority class -> near-zero long predictions in bull markets.
           Even with class_weight=balanced, the WR ceiling was 35% (unprofitable at any R:R).
 
-          Regression has no classes → no imbalance. The model predicts a continuous % return.
+          Regression has no classes -> no imbalance. The model predicts a continuous % return.
           Entry only when predicted magnitude exceeds dynamic thresholds.
-          Positive predicted_return → favorable for longs.
-          Negative predicted_return → favorable for shorts.
+          Positive predicted_return -> favorable for longs.
+          Negative predicted_return -> favorable for shorts.
 
-        FreqAI column: "& -future_return" — the regressor predicts this value.
-        Last label_period_candles rows are NaN (future not yet available — FreqAI drops them).
+        FreqAI column: "&-future_return" - the regressor predicts this value.
+        Last label_period_candles rows are NaN (future not yet available - FreqAI drops them).
+
+        2026-05-22: target is now Z-SCORED over a 30-day rolling window of PAST returns
+        to completely eliminate look-ahead bias and ensure the distribution is standard-normal.
         """
         horizon = self.freqai_info["feature_parameters"]["label_period_candles"]
-        dataframe["&-future_return"] = (
+        raw_return_pct = (
             dataframe["close"].shift(-horizon) / dataframe["close"] - 1.0
         ) * 100
+
+        # Compute past return over the same horizon (uses 100% past data) to avoid look-ahead bias
+        past_return = (dataframe["close"] / dataframe["close"].shift(horizon) - 1.0) * 100
+        
+        # Calculate mean and std on past_return, which has NO look-ahead bias at all
+        ROLLING = 2880
+        mu  = past_return.rolling(ROLLING, min_periods=200).mean()
+        sig = past_return.rolling(ROLLING, min_periods=200).std().replace(0, 1e-9)
+        
+        # Standardize the raw FUTURE target using past parameters
+        dataframe["&-future_return"] = ((raw_return_pct - mu) / sig).fillna(0.0)
         return dataframe
 
     # ------------------------------------------------------------------ #

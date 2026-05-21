@@ -544,5 +544,8 @@
       "wr": 0.3636,
       "pf": 0.445
     }
-  ]
+  ],
+  "blocked_pairs": [],
+  "_cleared_reason": "z-score strategy migration 2026-05-22 \u2014 all stats pre-date z-scored predictions",
+  "_cleared_at": "2026-05-22T21:30:00Z"
 }
