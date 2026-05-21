@@ -1,26 +1,28 @@
 #!/bin/bash
-# Daily walk-forward — short rolling window (added 2026-05-19).
-# Runs every day at 22:00 UTC. Skips if a WF is already running.
-# Trailing 12 months · train=6mo · test=1mo · slide=1mo → ~7 folds, ~80–90 min.
-# Heavy 27-month run still happens monthly on the 1st (walkforward_monthly.sh).
+# Daily walk-forward — short rolling window.
+# Runs every day at 22:00 UTC. Skips if a daily WF is already running.
+# 3-month trailing window · train=6mo · test=1mo · slide=1mo → 3 folds.
+# With 3 parallel workers this completes in ~5-6h (well before next 22:00 trigger).
+# Purpose: FAST REGRESSION DETECTOR — did today's live config break OOS performance?
+# Deep 21-fold monthly validation is handled by walkforward_monthly.sh.
 
 set -e
 
-LOCK=/tmp/finbuddy_walkforward.lock
+LOCK=/tmp/finbuddy_walkforward_daily.lock   # separate from monthly lock
 LOG=/home/ubuntu/.finbuddy/logs/walk_forward.log
 SCRIPT=/home/ubuntu/var/www/html/trade/scripts/walk_forward.py
 
 mkdir -p "$(dirname "$LOG")"
 
-# Single-instance lock — shared with monthly run, prevents overlap
+# Single-instance lock — bail if a previous daily run is still going
 exec 9>"$LOCK"
 if ! flock -n 9; then
-    echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] another walk-forward already running, skipping daily" >> "$LOG"
+    echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] daily WF already running, skipping" >> "$LOG"
     exit 0
 fi
 
-# Trailing 12 months
-START=$(date -u -d '12 months ago' +'%Y-%m-01')
+# Trailing 3 months — 3 folds, fast feedback
+START=$(date -u -d '9 months ago' +'%Y-%m-01')   # 6mo train + 3mo test window
 END=$(date -u +'%Y-%m-01')
 
 echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] === Daily walk-forward starting: $START → $END ===" >> "$LOG"
@@ -33,7 +35,10 @@ python3 "$SCRIPT" \
     --slide-months 1 \
     --strategy FinBuddyFreqAI_v23 \
     --timeframe 15m \
-    --skip-download >> "$LOG" 2>&1
+    --config config.json \
+    --skip-download \
+    --max-workers 3 \
+    --lgbm-threads 2 >> "$LOG" 2>&1
 
 EXIT=$?
 echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] === Daily walk-forward done (exit=$EXIT) ===" >> "$LOG"
