@@ -169,3 +169,4 @@ User said "do whatever you want for v23 to fix" — ran 5 backtests on 2024-01-0
 *   Action: Built a pre-flight pair filter at `scripts/lib/pair_filter.py` and integrated it into `scripts/walk_forward.py`. It dynamically scans `.feather` data files and drops assets lacking sufficient history (e.g. POL, RENDER, WIF) from earlier historical windows, preventing FreqAI crashes.
 *   Action: Enhanced `scripts/runner.py`'s worker loop with robust `try...finally` lock release and orphan container cleanup (`docker stop`) to prevent permanent watchdog stalls under backtest timeouts.
 *   Action: Flushed FreqAI cache, bumped active FreqAI identifier to `finbuddy_v23_zscore_1779274507`, and recreated/restarted the live FreqTrade container to initiate clean retraining on all 37 pairs.
+- **2026-05-21 21:22 UTC** — Walk-forward status: ❌ FAIL — WR 0.0%, Sharpe 0.00, DD 0.0%, PF 0.00 (0 trades, run `FinBuddyFreqAI_v23_2025-09-01_2025-12-01_20260521T210337`)
