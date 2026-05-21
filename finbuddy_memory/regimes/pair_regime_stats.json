@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-21T21:00:01.893039+00:00",
+  "updated": "2026-05-21T21:30:01.906580+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -544,8 +544,5 @@
       "wr": 0.3636,
       "pf": 0.445
     }
-  ],
-  "blocked_pairs": [],
-  "_cleared_reason": "z-score strategy migration 2026-05-22 \u2014 all stats pre-date z-scored predictions",
-  "_cleared_at": "2026-05-22T21:30:00Z"
+  ]
 }
