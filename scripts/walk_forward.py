@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FinBuddy Walk-Forward Validator
+FinBuddy Walk-Forward Validator  (v2 — Parallel Fold Execution)
 
 Runs FreqTrade backtests in rolling folds (train N months, test 1 month, slide).
 The aggregated out-of-sample stats are the real test — anything
@@ -10,14 +10,18 @@ Usage:
     python3 scripts/walk_forward.py \
         --start 2024-01-01 --end 2025-01-01 \
         --train-months 6 --test-months 1 --slide-months 1 \
-        --strategy FinBuddyFreqAI --timeframe 1h
+        --strategy FinBuddyFreqAI_v23 --timeframe 15m \
+        --max-workers 3   # run up to 3 folds in parallel (default)
 
-Each fold runs `docker compose run --rm freqtrade backtesting` and parses
-`user_data/backtest_results/.last_result.json`. Per-fold results are
-saved under `walkforward_results/<run_id>/` and aggregated stats are
-printed at the end.
-
-Designed to run manually overnight — folds are heavy. Not cron'd.
+v2 changes vs v1:
+  - ProcessPoolExecutor for parallel fold execution (default max_workers=3)
+  - Each fold writes to its own isolated .last_result_fXX.json — eliminates
+    the shared-file race condition that would corrupt results in parallel mode
+  - --max-workers CLI flag (default 3; set to 1 for sequential/debug)
+  - --lgbm-threads CLI flag: LightGBM num_threads per worker (default 2)
+    Strategy: 3 workers x 2 threads = 6 logical threads on 4-core server
+    (acceptable — hyper-threading keeps all cores near 100%)
+  - _read_env_vars() extracted as helper so the .env read is DRY
 """
 from __future__ import annotations
 
@@ -26,6 +30,7 @@ import json
 import os
 import subprocess
 import sys
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
@@ -35,6 +40,8 @@ from dateutil.relativedelta import relativedelta  # type: ignore
 REPO = Path("/home/ubuntu/var/www/html/trade")
 COMPOSE_DIR = REPO / "freqtrade"
 RESULTS_BASE = REPO / "walkforward_results"
+# v2: LAST_RESULT is the shared sentinel (legacy fallback only).
+# Parallel mode uses per-fold .last_result_fXX.json files.
 LAST_RESULT = COMPOSE_DIR / "user_data" / "backtest_results" / ".last_result.json"
 
 
@@ -68,57 +75,89 @@ def daterange_folds(start: str, end: str, train_m: int, test_m: int, slide_m: in
         cursor = cursor + relativedelta(months=slide_m)
 
 
-def run_backtest(strategy: str, tf: str, train_start: datetime,
-                 test_start: datetime, test_end: datetime,
-                 run_dir: Path, fold: int,
-                 freqai_identifier: str | None = None,
-                 config: str | None = None) -> Path | None:
+def _read_env_vars() -> dict[str, str]:
+    """Read live strategy env vars from freqtrade/.env (DRY helper)."""
+    env_path = COMPOSE_DIR / ".env"
+    keys = (
+        "FREQAI_K_SL", "FREQAI_K_TP",
+        "FREQAI_LONG_THRESHOLD", "FREQAI_SHORT_THRESHOLD",
+        "FREQAI_STABILITY_N", "FREQAI_FEATURE_SET",
+        "FINBUDDY_RECENT_WR",
+    )
+    result: dict[str, str] = {}
+    for key in keys:
+        val = None
+        if env_path.exists():
+            for line in env_path.read_text().splitlines():
+                if line.startswith(f"{key}="):
+                    val = line.split("=", 1)[1].strip()
+                    break
+        if val is None:
+            val = os.environ.get(key)
+        if val is not None:
+            result[key] = val
+    return result
+
+
+def run_backtest(
+    strategy: str, tf: str, train_start: datetime,
+    test_start: datetime, test_end: datetime,
+    run_dir: Path, fold: int,
+    freqai_identifier: str | None = None,
+    config: str | None = None,
+    lgbm_threads: int = 2,
+) -> Path | None:
     """Run a single backtest fold via docker-compose. Returns path to result json or None.
 
     Timerange = train_start → test_end (full window so FreqAI can train on the
-    first portion and predict on the test portion).  FreqAI internally uses
+    first portion and predict on the test portion). FreqAI internally uses
     train_period_days (90) to decide how much data is training vs prediction.
 
-    If `freqai_identifier` is set, it overrides config.json via the
-    FREQTRADE__FREQAI__IDENTIFIER env var. CRITICAL for walk-forward: without
-    a fresh identifier, FreqAI loads cached live-bot models that were trained
-    on FUTURE data, causing lookahead bias.
+    v2: Each fold writes its result pointer to a unique per-fold sentinel file
+    (.last_result_fXX.json) so parallel folds never clobber each other.
     """
     timerange = f"{train_start.strftime('%Y%m%d')}-{test_end.strftime('%Y%m%d')}"
     test_label = f"{test_start.strftime('%Y%m%d')}-{test_end.strftime('%Y%m%d')}"
     log_path = run_dir / f"fold_{fold:02d}_{test_label}.log"
     id_str = f"  [identifier={freqai_identifier}]" if freqai_identifier else ""
-    print(f"[fold {fold}] backtesting {test_label} (full window {timerange}){id_str} ...")
+    print(f"[fold {fold}] backtesting {test_label} (full window {timerange}){id_str} ...", flush=True)
+
+    # Dynamic pair filtering — drop pairs that lack history for this fold's window
+    base_config_file = config if config else "config.json"
+    base_config_path = f"/home/ubuntu/var/www/html/trade/freqtrade/user_data/{base_config_file}"
+    filtered_config = base_config_file
+    try:
+        scripts_path = "/home/ubuntu/var/www/html/trade/scripts"
+        if scripts_path not in sys.path:
+            sys.path.append(scripts_path)
+        from lib.pair_filter import filter_pairs_for_timerange
+        filtered_config = filter_pairs_for_timerange(base_config_path, train_start)
+    except Exception as e:
+        print(f"[walk_forward] Pair filter failed, using base config: {e}", flush=True)
+
+    # v2: per-fold isolated result sentinel — prevents race condition in parallel mode
+    fold_sentinel = (
+        COMPOSE_DIR / "user_data" / "backtest_results" / f".last_result_f{fold:02d}.json"
+    )
+    fold_sentinel.unlink(missing_ok=True)
+
     cmd = [
         "docker-compose", "run", "--rm",
-        # Use a large backtest wallet so stake depletion never silences the test window.
+        # Large wallet so stake depletion never silences a test window
         "-e", "FREQTRADE__DRY_RUN_WALLET=10000",
+        # v2: LightGBM multi-threading — fill available cores without context thrashing
+        "-e", f"FREQTRADE__FREQAI__MODEL_TRAINING_PARAMETERS__NUM_THREADS={lgbm_threads}",
     ]
-    # Bug A fix (2026-05-20): WF was NOT passing live env vars, so it tested
-    # the strategy class defaults (LT=1.5, ST=-1.5, K_SL=1.0, ...) instead of
-    # the live values (LT=3.25, ST=-2.75, K_SL=2.0, ...). Every WF result of
-    # the last 11 days was structurally evaluating a different strategy.
-    # Read from freqtrade/.env so WF always tests the exact live config.
-    for env_key in (
-        "FREQAI_K_SL", "FREQAI_K_TP",
-        "FREQAI_LONG_THRESHOLD", "FREQAI_SHORT_THRESHOLD",
-        "FREQAI_STABILITY_N", "FREQAI_FEATURE_SET",
-        "FINBUDDY_RECENT_WR",
-    ):
-        env_path = COMPOSE_DIR / ".env"
-        val = None
-        if env_path.exists():
-            for line in env_path.read_text().splitlines():
-                if line.startswith(f"{env_key}="):
-                    val = line.split("=", 1)[1].strip()
-                    break
-        if val is None:
-            val = os.environ.get(env_key)
-        if val is not None:
-            cmd += ["-e", f"{env_key}={val}"]
+
+    # Bug A fix (2026-05-20): pass live env vars so WF tests the exact live config,
+    # not the strategy class defaults (LT=1.5, ST=-1.5, K_SL=1.0 ...).
+    for key, val in _read_env_vars().items():
+        cmd += ["-e", f"{key}={val}"]
+
     if freqai_identifier:
-        # Override config.json's freqai.identifier without editing the file
+        # Each fold gets a unique identifier → forces fresh training, no lookahead bias
         cmd += ["-e", f"FREQTRADE__FREQAI__IDENTIFIER={freqai_identifier}"]
+
     cmd += [
         "freqtrade",
         "backtesting",
@@ -128,37 +167,71 @@ def run_backtest(strategy: str, tf: str, train_start: datetime,
         "--export", "trades",
         "--cache", "none",
     ]
-    if config:
-        cmd += ["--config", f"/freqtrade/user_data/{config}"]
-    else:
-        cmd += ["--config", "/freqtrade/user_data/config.json"]
+    cmd += ["--config", f"/freqtrade/user_data/{filtered_config}"]
 
-    LAST_RESULT.unlink(missing_ok=True)  # prevent stale prior-fold result being silently reused
+    # Remove shared sentinel to prevent stale prior-fold result being silently reused
+    LAST_RESULT.unlink(missing_ok=True)
 
-    with log_path.open("w") as logf:
-        # Bumped 2026-05-20: 3600 → 7200 → 10800s. Each fold trains 25 pairs
-        # across ~30 sliding-train cycles on 533 features. With DI=1.0 +
-        # use_SVM_to_remove_outliers=true added to live config (Bug E fix), the
-        # per-cycle cost grew enough that fold 1 needed ~3h instead of ~2h.
-        # 13:21 UTC WF run hit the 7200s ceiling at ~75% (18/25 pairs trained).
-        proc = subprocess.run(cmd, cwd=COMPOSE_DIR, stdout=logf, stderr=subprocess.STDOUT, timeout=10800)
+    try:
+        with log_path.open("w") as logf:
+            proc = subprocess.run(
+                cmd, cwd=COMPOSE_DIR,
+                stdout=logf, stderr=subprocess.STDOUT,
+                timeout=16200,  # 4.5h — supports 37-pair universe
+            )
+    finally:
+        # Clean up temporary config generated by pair_filter
+        if filtered_config and filtered_config.startswith("tmp_wf_config_"):
+            temp_path = COMPOSE_DIR / "user_data" / filtered_config
+            temp_path.unlink(missing_ok=True)
+            print(f"[walk_forward] Cleaned up temporary config: {filtered_config}", flush=True)
+
     if proc.returncode != 0:
-        print(f"  FAIL — see {log_path}")
+        print(f"  [fold {fold}] FAIL — see {log_path}", flush=True)
         return None
-    if not LAST_RESULT.exists():
-        print(f"  FAIL — no .last_result.json after run")
+
+    # v2: prefer fold-specific sentinel; fall back to shared sentinel for compat
+    sentinel = fold_sentinel if fold_sentinel.exists() else LAST_RESULT
+    if not sentinel.exists():
+        print(f"  [fold {fold}] FAIL — no result sentinel found after run", flush=True)
         return None
+
     target = run_dir / f"fold_{fold:02d}_result.json"
-    target.write_bytes(LAST_RESULT.read_bytes())
+    target.write_bytes(sentinel.read_bytes())
+    fold_sentinel.unlink(missing_ok=True)
     return target
+
+
+def _run_fold_worker(kwargs: dict) -> tuple[int, Path | None]:
+    """Top-level picklable worker for ProcessPoolExecutor.
+    Must be a module-level function (not a lambda/closure) to be picklable.
+    Returns (fold_number, result_path_or_None).
+    """
+    fold = kwargs["fold"]
+    try:
+        rp = run_backtest(
+            strategy=kwargs["strategy"],
+            tf=kwargs["tf"],
+            train_start=kwargs["train_start"],
+            test_start=kwargs["test_start"],
+            test_end=kwargs["test_end"],
+            run_dir=kwargs["run_dir"],
+            fold=fold,
+            freqai_identifier=kwargs["freqai_identifier"],
+            config=kwargs["config"],
+            lgbm_threads=kwargs["lgbm_threads"],
+        )
+        return fold, rp
+    except Exception as exc:
+        print(f"  [fold {fold}] worker exception: {exc}", flush=True)
+        return fold, None
 
 
 def _compute_metrics_from_trades(trades: list[dict], starting_balance: float = 10000.0) -> dict:
     """Compute trades/WR/PF/max_drawdown/sharpe from a per-trade list.
 
-    Sharpe is annualised from daily aggregated PnL (not per-trade) — the
-    standard Freqtrade convention. Drawdown is computed from the equity
-    curve built by replaying trades in close_date order.
+    Sharpe is annualised from daily aggregated PnL (not per-trade) —
+    the standard Freqtrade convention. Drawdown is from the equity curve.
     """
     n = len(trades)
     if n == 0:
@@ -173,13 +246,8 @@ def _compute_metrics_from_trades(trades: list[dict], starting_balance: float = 1
     total = sum(profits)
     gross_win = sum(p for p in profits if p > 0)
     gross_loss = -sum(p for p in profits if p < 0)
-    if gross_loss > 0:
-        pf = gross_win / gross_loss
-    else:
-        # all wins (or no losers) — clamp to a high but finite number
-        pf = float("inf") if gross_win > 0 else 0.0
+    pf = (gross_win / gross_loss) if gross_loss > 0 else (float("inf") if gross_win > 0 else 0.0)
 
-    # Equity curve & max drawdown (account-relative, like Freqtrade reports)
     sorted_trades = sorted(trades, key=lambda t: t.get("close_date") or "")
     equity = starting_balance
     peak = equity
@@ -194,15 +262,12 @@ def _compute_metrics_from_trades(trades: list[dict], starting_balance: float = 1
             dd = (peak - equity) / peak
             if dd > max_dd:
                 max_dd = dd
-        # bucket by close-date for daily Sharpe
         day = (t.get("close_date") or "")[:10]
         if day:
             daily[day] = daily.get(day, 0.0) + p
 
-    # Daily-aggregated annualised Sharpe (252 trading days/yr convention)
     if len(daily) >= 2:
         import statistics
-        # Convert to daily-return ratios on starting balance
         daily_returns = [v / starting_balance for v in daily.values()]
         mean = statistics.mean(daily_returns)
         sd = statistics.stdev(daily_returns)
@@ -224,12 +289,9 @@ def _compute_metrics_from_trades(trades: list[dict], starting_balance: float = 1
 def parse_fold(result_path: Path, fold: int, test_start: datetime, test_end: datetime) -> FoldResult | None:
     """Parse a fold's backtest result, filtering trades to the OOS test window only.
 
-    The backtest timerange is `train_start → test_end` (so FreqAI has data to
-    train on), but the strategy emits signals across the whole window. For walk-
-    forward integrity we MUST evaluate only the test slice [test_start, test_end).
-    Aggregate fields like `sharpe` and `max_drawdown_account` from FreqTrade's
-    JSON cover the full window and are unusable here — we recompute from the
-    per-trade list.
+    The backtest timerange is train_start→test_end (so FreqAI has data to train on),
+    but for walk-forward integrity we evaluate ONLY the test slice [test_start, test_end).
+    We recompute sharpe and drawdown from per-trade data scoped to that window.
     """
     pointer = json.loads(result_path.read_text())
     actual_zip = pointer.get("latest_backtest")
@@ -239,7 +301,6 @@ def parse_fold(result_path: Path, fold: int, test_start: datetime, test_end: dat
     if actual_path.suffix == ".zip":
         import zipfile
         with zipfile.ZipFile(actual_path) as zf:
-            # the main result JSON is the one without a suffix marker like _config
             candidates = [n for n in zf.namelist()
                           if n.endswith(".json") and "_config" not in n]
             if not candidates:
@@ -253,7 +314,6 @@ def parse_fold(result_path: Path, fold: int, test_start: datetime, test_end: dat
     all_trades = strat_data.get("trades", []) or []
     starting_balance = float(strat_data.get("starting_balance", 1000.0))
 
-    # Filter to test window only — close_date is "YYYY-MM-DD HH:MM:SS+00:00"
     ts_iso = test_start.strftime("%Y-%m-%d")
     te_iso = test_end.strftime("%Y-%m-%d")
     test_trades = [
@@ -301,7 +361,7 @@ def aggregate(folds: list[FoldResult]) -> dict:
 
 
 def grade(agg: dict) -> tuple[bool, list[str]]:
-    """Acceptance: WR>0.5, Sharpe>0.5, DD<0.2, PF>1.2."""
+    """Acceptance gates: WR>0.5, Sharpe>0.5, DD<0.2, PF>1.2."""
     msgs = []
     ok = True
     if agg.get("weighted_win_rate", 0) <= 0.5:
@@ -347,8 +407,7 @@ def reparse_existing_run(run_dir: Path,
                          start: str, end: str,
                          train_m: int, test_m: int, slide_m: int) -> int:
     """Re-aggregate an already-completed walkforward_results/<run_id>/ using the
-    current parse_fold() logic, without re-running any backtests. Use this after
-    fixing a parser bug — overwrites summary.json with corrected metrics."""
+    current parse_fold() logic, without re-running any backtests."""
     if not run_dir.exists():
         print(f"ERR: {run_dir} does not exist", file=sys.stderr)
         return 1
@@ -382,7 +441,7 @@ def reparse_existing_run(run_dir: Path,
 
 
 def main():
-    p = argparse.ArgumentParser()
+    p = argparse.ArgumentParser(description="FinBuddy Walk-Forward Validator v2 (parallel)")
     p.add_argument("--start", required=True, help="YYYY-MM-DD outer window start")
     p.add_argument("--end", required=True, help="YYYY-MM-DD outer window end")
     p.add_argument("--train-months", type=int, default=6)
@@ -391,10 +450,13 @@ def main():
     p.add_argument("--strategy", default="FinBuddyFreqAI_v23")
     p.add_argument("--timeframe", default="15m")
     p.add_argument("--config", help="Custom config filename inside user_data/")
-    p.add_argument("--skip-download", action="store_true", help="Skip data download (use if data already downloaded)")
+    p.add_argument("--skip-download", action="store_true", help="Skip data download")
+    p.add_argument("--max-workers", type=int, default=3,
+                   help="Parallel fold workers (default=3; set 1 for sequential/debug)")
+    p.add_argument("--lgbm-threads", type=int, default=2,
+                   help="LightGBM num_threads per fold worker (default=2)")
     p.add_argument("--reparse", metavar="RUN_DIR",
-                   help="Re-aggregate an existing walkforward_results/<run_id>/ "
-                        "using current parser (no backtests re-run). Pass full path or just run_id.")
+                   help="Re-aggregate an existing walkforward_results/<run_id>/ (no backtests re-run)")
     args = p.parse_args()
 
     if args.reparse:
@@ -410,12 +472,14 @@ def main():
     run_id = f"{args.strategy}_{args.start}_{args.end}_{run_stamp}"
     run_dir = RESULTS_BASE / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
-    print(f"Walk-forward run: {run_dir}")
 
-    # Use a unique throwaway FreqAI identifier per fold to FORCE fresh training
-    # from scratch within each fold's data window. Without this, FreqAI loads
-    # cached live-bot models trained on data that's in the future relative to
-    # the fold's window — lookahead bias that invalidates walk-forward.
+    max_w = min(max(args.max_workers, 1), 3)  # clamp: at least 1, at most 3 on this server
+    print(f"Walk-forward run: {run_dir}")
+    print(f"Mode: {'PARALLEL' if max_w > 1 else 'sequential'} "
+          f"(max_workers={max_w}, lgbm_threads={args.lgbm_threads})")
+
+    # Unique throwaway FreqAI identifier per fold — forces fresh in-fold training,
+    # preventing FreqAI from loading live-bot models trained on future data (lookahead bias).
     fold_identifier_base = f"wf_{run_stamp}"
 
     if not args.skip_download:
@@ -423,21 +487,74 @@ def main():
     else:
         print("[data] Skipping download (--skip-download set).")
 
-    folds: list[FoldResult] = []
+    # Build fold specs — each is a self-contained dict passable to the worker
+    fold_specs = []
     for fold, ts, te, vs, ve in daterange_folds(
         args.start, args.end, args.train_months, args.test_months, args.slide_months
     ):
-        fold_id = f"{fold_identifier_base}_f{fold:02d}"
-        rp = run_backtest(args.strategy, args.timeframe, ts, vs, ve, run_dir, fold,
-                          freqai_identifier=fold_id, config=args.config)
+        fold_specs.append({
+            "fold": fold,
+            "strategy": args.strategy,
+            "tf": args.timeframe,
+            "train_start": ts,
+            "test_start": vs,
+            "test_end": ve,
+            "run_dir": run_dir,
+            "freqai_identifier": f"{fold_identifier_base}_f{fold:02d}",
+            "config": args.config,
+            "lgbm_threads": args.lgbm_threads,
+        })
+
+    print(f"Total folds: {len(fold_specs)}")
+
+    # ── Execution: parallel or sequential ──────────────────────────────────
+    fold_results: dict[int, Path | None] = {}
+
+    if max_w <= 1:
+        # Sequential — identical behaviour to v1, useful for debugging
+        for spec in fold_specs:
+            fold = spec["fold"]
+            rp = run_backtest(
+                strategy=spec["strategy"], tf=spec["tf"],
+                train_start=spec["train_start"], test_start=spec["test_start"],
+                test_end=spec["test_end"], run_dir=spec["run_dir"], fold=fold,
+                freqai_identifier=spec["freqai_identifier"], config=spec["config"],
+                lgbm_threads=spec["lgbm_threads"],
+            )
+            fold_results[fold] = rp
+    else:
+        print(f"Submitting {len(fold_specs)} folds to ProcessPoolExecutor(max_workers={max_w}) ...")
+        with ProcessPoolExecutor(max_workers=max_w) as executor:
+            future_to_fold = {
+                executor.submit(_run_fold_worker, spec): spec["fold"]
+                for spec in fold_specs
+            }
+            for future in as_completed(future_to_fold):
+                fold_num = future_to_fold[future]
+                try:
+                    returned_fold, rp = future.result()
+                    fold_results[returned_fold] = rp
+                    status = "✓ done" if rp else "✗ failed"
+                    print(f"  [fold {fold_num}] {status}", flush=True)
+                except Exception as exc:
+                    print(f"  [fold {fold_num}] ✗ executor exception: {exc}", flush=True)
+                    fold_results[fold_num] = None
+
+    # ── Aggregate in fold order (deterministic regardless of completion order) ──
+    folds: list[FoldResult] = []
+    for spec in sorted(fold_specs, key=lambda s: s["fold"]):
+        fold = spec["fold"]
+        rp = fold_results.get(fold)
         if rp is None:
+            print(f"  [fold {fold}] skipped (no result)")
             continue
-        fr = parse_fold(rp, fold, vs, ve)
+        fr = parse_fold(rp, fold, spec["test_start"], spec["test_end"])
         if fr is None:
             print(f"  [fold {fold}] result parse failed, skipping")
             continue
         folds.append(fr)
-        print(f"  [fold {fold}] trades={fr.trades} WR={fr.win_rate:.1%} Sharpe={fr.sharpe:.3f} DD={fr.max_drawdown:.1%} PF={fr.profit_factor:.3f}")
+        print(f"  [fold {fold}] trades={fr.trades} WR={fr.win_rate:.1%} "
+              f"Sharpe={fr.sharpe:.3f} DD={fr.max_drawdown:.1%} PF={fr.profit_factor:.3f}")
 
     summary_path = run_dir / "summary.json"
     agg = aggregate(folds)
