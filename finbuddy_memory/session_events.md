@@ -170,3 +170,12 @@ User said "do whatever you want for v23 to fix" — ran 5 backtests on 2024-01-0
 *   Action: Enhanced `scripts/runner.py`'s worker loop with robust `try...finally` lock release and orphan container cleanup (`docker stop`) to prevent permanent watchdog stalls under backtest timeouts.
 *   Action: Flushed FreqAI cache, bumped active FreqAI identifier to `finbuddy_v23_zscore_1779274507`, and recreated/restarted the live FreqTrade container to initiate clean retraining on all 37 pairs.
 - **2026-05-21 21:22 UTC** — Walk-forward status: ❌ FAIL — WR 0.0%, Sharpe 0.00, DD 0.0%, PF 0.00 (0 trades, run `FinBuddyFreqAI_v23_2025-09-01_2025-12-01_20260521T210337`)
+
+## 2026-05-22 — Parallel Walk-Forward Engine + Schedule Overhaul
+
+### Changes shipped
+- **walk_forward.py v2** (commit cde90f4): ProcessPoolExecutor(max_workers=3) replaces sequential loop. Each fold runs in an isolated Docker container with a unique per-fold .last_result_fXX.json sentinel — no shared-file race condition. --max-workers and --lgbm-threads CLI flags added.
+- **LightGBM 
+um_threads=2** added to both config.json and 23_regression_15m_di_config.json. With 3 parallel workers × 2 threads = 6 logical threads saturating the 4-core server optimally.
+- **walkforward_daily.sh** (commit 5b6b1cb): 3-month trailing window (3 folds, ~5.5h). Fast regression detector. Separate lock walkforward_daily.lock. Runs nightly 22:00 UTC.
+- **walkforward_deep.sh** (NEW, commit 5b6b1cb): Replaces monthly. 27-month trailing window (21 folds, ~38.5h, parallel). Deep promotion gate with full bull+bear+chop regime coverage. Separate lock walkforward_deep.lock. Cron: 
