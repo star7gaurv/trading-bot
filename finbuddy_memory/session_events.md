@@ -156,3 +156,4 @@ User said "do whatever you want for v23 to fix" — ran 5 backtests on 2024-01-0
 - **2026-05-21 00:00 UTC** — Walk-forward status: ⏳ Running — 1/21 folds done (FinBuddyFreqAI_v23_2025-05-01_2026-05-01_20260520T185326)
 - **2026-05-21 04:00 UTC** — Walk-forward status: ⏳ Running — 3/21 folds done (FinBuddyFreqAI_v23_2025-05-01_2026-05-01_20260520T185326)
 - **2026-05-21 08:00 UTC** — Walk-forward status: ⏳ Running — 4/21 folds done (FinBuddyFreqAI_v23_2025-05-01_2026-05-01_20260520T185326)
+- **2026-05-21 12:00 UTC** — Walk-forward status: ❌ FAIL — WR 37.5%, Sharpe -9.77, DD 6.0%, PF 0.61 (403 trades, run `FinBuddyFreqAI_v23_2025-05-01_2026-05-01_20260520T185326`)
