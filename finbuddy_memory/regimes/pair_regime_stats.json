@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-21T10:30:01.952047+00:00",
+  "updated": "2026-05-21T11:00:02.015500+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -252,13 +252,13 @@
     },
     "ZEC/USDT:USDT": {
       "NEUTRAL": {
-        "n": 9,
+        "n": 10,
         "wins": 4,
-        "losses": 5,
-        "wr": 0.4444,
-        "pf": 0.612,
-        "profit_usdt": -4.35,
-        "avg_profit_pct": -0.373
+        "losses": 6,
+        "wr": 0.4,
+        "pf": 0.523,
+        "profit_usdt": -6.27,
+        "avg_profit_pct": -0.524
       },
       "BEAR": {
         "n": 4,
