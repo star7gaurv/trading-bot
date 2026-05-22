@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-22T09:30:02.306680+00:00",
+  "updated": "2026-05-22T10:00:02.860845+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -508,6 +508,28 @@
         "pf": null,
         "profit_usdt": 3.02,
         "avg_profit_pct": 4.44
+      }
+    },
+    "1000SHIB/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 0.05,
+        "avg_profit_pct": 0.05
+      }
+    },
+    "AAVE/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.8,
+        "avg_profit_pct": -0.8
       }
     }
   },
