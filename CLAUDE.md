@@ -112,21 +112,42 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ---
 
-## What Is Live and Working Right Now (verified 2026-05-20 20:00 UTC by Claude Code)
+## What Is Live and Working Right Now (verified 2026-05-22 evening UTC by Claude Code)
 
 ### FreqTrade
 - Running **`FinBuddyFreqAI_v23.py` (v23)** in dry-run mode on **Binance Futures USDT-M** — long+short
-- FreqAI identifier: **`finbuddy_v23_zscore_1779274507`** (bumped 2026-05-20 in commit `b4b02b7` for symmetric-gates + DI/SVM + recent_wr removal)
-- FreqAI model: **LightGBMRegressor** (predicts `&-future_return %`, not classifier). DI=1.0 + SVM outlier removal active.
-- **1000 USDT** virtual wallet (reverted from 10000 on 2026-05-20 commit `2f01b56`), max 8 open trades
-- **Confidence-based leverage** (commit `60d4fb4`): 1x / 2x / 3x tiers based on `centered_pred / threshold` ratio (env-tunable). Fallback now LOW (1x) per round-3 audit (`5f37ab8`).
+- FreqAI identifier: **`finbuddy_v23_no_median_1779447827`** (bumped 2026-05-22 evening, commit `3deeafc` — per-pair median offset removed, z-score already centers predictions)
+- FreqAI model: **LightGBMRegressor** (predicts z-scored `&-future_return`, N(0,1) distribution). DI=1.0 + SVM outlier removal active.
+- **1000 USDT** virtual wallet, max 8 open trades
+- **Confidence-based leverage** (commit `60d4fb4`): 1x / 2x / 3x tiers based on `predicted_return / threshold` ratio (no median subtraction — Fix 7). Fallback LOW (1x).
 - API: `http://localhost:8080/api/v1` — user: `bot`, pass: `REDACTED-FREQTRADE__API_SERVER__PASSWORD`
 - Whitelist: **37 pairs**, **15m timeframe** (each pair has 5 TFs of historical data: 15m + 30m + 1h + 4h + 1d)
 - **Per-pair-per-regime gate active** — `pair_regime_stats.json` blocks pair-regime combos with rolling 30d (n≥5, WR<40%, PF<0.7)
-- Strategy env vars (live): K_TP=2.0, K_SL=2.0, **LONG_THRESHOLD=2.0, SHORT_THRESHOLD=-2.0, STABILITY_N=1** (loosened from 3.25/-2.75/2 on 2026-05-20 when trade volume collapsed to 3/day)
+- Strategy env vars (live): K_TP=2.0, K_SL=2.0, **LONG_THRESHOLD=0.5, SHORT_THRESHOLD=-0.5, STABILITY_N=1** (thresholds ±0.5 for z-scored N(0,1) predictions)
 
 ### Model features (~530 total after Bug D removed `%-recent_wr` 2026-05-20)
 Standard layer 4 features include 3 funding-rate features (`%-funding_rate`, `%-funding_rate_z30d`, `%-funding_rate_chg`) from BTC perp data, plus fear_greed, btc_strength, news_sentiment, regime_numeric. Daily refresh of historical funding parquet at 01:25 UTC. `%-recent_wr` DROPPED 2026-05-20 (training-serving skew: live read 0.34, brain/WF defaulted 0.50).
+
+### Fixes shipped 2026-05-22 evening — 15-bug deep analysis (commit `3deeafc`)
+
+**Tier 1 — Brain silenced (unblocks promotion):**
+- Fix 1: Renamed `recent_2025Q4/2026Q1` → `bull_2025Q4/bear_2026Q1` — promote.py classifies by substring; old names were invisible
+- Fix 2: SEED thresholds ±3.0 → ±1.5 — z-scored predictions are N(0,1); ±3.0 was 2σ, almost never hit
+- Fix 3: `target_version="zscore"` field on all new experiments; promote.py filters to zscore-only — 268 legacy raw-% experiments excluded
+- Fix 4: `filter_di`/`filter_svm` now passed as env vars to brain docker container — brain can actually vary these
+- Fix 5: `analyst.py WINDOW_DAYS` updated with `bull_2025Q4: 92, bear_2026Q1: 90`
+- Fix 6: `_config_hash()` → `json.dumps(sort_keys=True)` for deterministic hashing
+**Tier 2 — Strategy & system correctness:**
+- Fix 7: Removed per-pair median offset from 3 locations (leverage, entry, exit) — z-score target makes it double-correction + adds leverage/entry inconsistency. Identifier bumped.
+- Fix 8: WR feedback bidirectional — `wr_adj = 1.0 - ((recent_wr - 0.55) * 2.0)` clamped [0.5, 2.0]. WR=32% → 46% harder to enter (was: no adjustment at all)
+- Fix 9: Mutual-exclusion lock between daily WF and deep WF prevents OOM crashes at 03:26/09:27 UTC. Both reduced to `--max-workers 2`
+- Fix 10: `daily_summary.py` yesterday filter: `.isoformat()` → `.strftime("%Y-%m-%d %H:%M:%S")` — was silently dropping all yesterday's trades (T vs space separator)
+- Fix 11: `auto_promote.py` Telegram credentials: removed hard-coded token, reads from `config.json` like all other scripts
+- Fix 12: Removed dead OB column computation from `populate_indicators` — veto removed in commit `b44aebe`, columns still computed wasting CPU
+**Tier 3 — Robustness:**
+- Fix 13: `generate_and_queue()` dedup check — won't re-queue (config_hash, window) pairs already in queue/log
+- Fix 14: `analyst.py` import moved inside `cmd_analyse()` — analyst errors no longer break `run`/`generate`/`scan`
+- Fix 15: `walkforward_notify.py` flock prevents duplicate Telegram alerts from concurrent cron instances
 
 ### Fixes shipped 2026-05-19 → 2026-05-20 (13 commits, 5 rounds of audit)
 
@@ -150,17 +171,16 @@ Standard layer 4 features include 3 funding-rate features (`%-funding_rate`, `%-
 - Cron `pair_performance` `%` escape bug fixed (was silently truncating for 11 days)
 - `.env` reload requires `docker-compose up -d` not just `restart` (memory note saved)
 
-### Profitability reality check (2026-05-20 evening)
-- **296 lifetime trades, +$110.78 dry-run** wallet (1110.78 / 1000 = +11.08%)
-- Brain has 265+ completed experiments. Best `e0e1bf338410` profit=+0.192% WR=48.1% Sharpe=1.42 was on bear_2025Q1 — but ONLY ever tested on 5-pair brain universe. Pre-2026-05-20 brain results marked legacy via `live_baseline.json::config_aligned_at`.
-- **No promotion has fired yet.** Brain's best 16 configs (≥2+2 sample): all have B_avg ≤ 0 OR B_sharpe ≤ 0. The deferred long-bias root cause (raw % regression target with no normalization) is the structural reason bull runs underperform; per-pair median offset is a patch, not a fix.
+### Profitability reality check (2026-05-22 evening)
+- **296+ lifetime trades** (dry-run). All 268 prior brain experiments used raw-% target — excluded from promotion by `target_version` filter.
+- **Brain restarting fresh** with z-scored target + correct windows (bull_2025Q4/bear_2026Q1 now visible). First promotion needs ≥2 bull + ≥2 bear z-scored experiments passing criteria.
+- **No promotion has fired yet.** Brain explores z-scored hypothesis space for the first time.
+- Per-pair median offset removed (Fix 7) — predictions feed directly to threshold without bias correction. Model retrained fresh with new identifier.
 - v22 strategy file + LLM model file kept on disk for history; never loaded by live config or brain.
-- **In-flight:** manual WF (PID 3095719) started 13:21 UTC testing all today's fixes; fold 1 in progress; full result ~tomorrow 07:00 UTC.
 
 ### Open issues deferred to future sessions
-1. **Target z-scoring at train time** — proper fix for the long-bias the per-pair median offset only patches over. Half-day project.
-2. **Open Interest delta** as a new feature (second-best published signal after funding).
-3. **Pair expansion to ~37 pairs** — full 9-step runbook saved at `finbuddy_memory/tasks/pair_addition_runbook.md`; deferred until tonight's WF result lands so we don't conflate the bug-fix effect with universe expansion.
+1. **Open Interest delta** as a new feature (second-best published signal after funding rate).
+2. **Pair expansion** — runbook at `finbuddy_memory/tasks/pair_addition_runbook.md`; defer until z-scored brain gets first WF PASS.
 
 ### N8N
 - 🔴 **Permanently disabled** — FreqAI is sole signal source
@@ -189,10 +209,10 @@ Standard layer 4 features include 3 funding-rate features (`%-funding_rate`, `%-
 30 */6 * * * brain_cli.py analyse               # brain self-diagnose + prune
 0 7 * * *    brain_cli.py scan                  # brain promotion scan → pending.json + Telegram
 */2 * * * *  telegram_listener.py               # Apply/Skip button handler (calls promote.py --apply)
-0 22 * * *   walkforward_daily.sh               # NEW 2026-05-19: daily WF (12mo trailing, ~80min)
-0 3 1 * *    walkforward_monthly.sh             # Monthly heavy WF (27mo full)
-0 4 * * *    auto_promote.py                    # NEW 2026-05-19: WF Sharpe vs baseline alert
-*/30 * * * * walkforward_notify.py              # PASS/FAIL Telegram on new WF summary
+0 22 * * *   walkforward_daily.sh               # daily WF (3mo trailing, ~5.5h, 3 folds, 2 workers)
+0 3 */4 * *  walkforward_deep.sh               # deep WF every 4 days (27mo, 21 folds, 2 workers, ~38.5h)
+0 4 * * *    auto_promote.py                    # WF Sharpe vs baseline alert
+*/30 * * * * walkforward_notify.py              # PASS/FAIL Telegram on new WF summary (flock protected)
 30 4 * * *   download_data_daily.sh             # forward-increment data download
 ```
 **Removed from cron 2026-05-19:** `0 6 * * * run_promotion.sh` — legacy CSV-based, file kept on disk but unused. Brain promotion flows via `brain_cli.py scan` → Telegram Apply button.
@@ -240,11 +260,6 @@ Standard layer 4 features include 3 funding-rate features (`%-funding_rate`, `%-
 
 ### ❌ Retired: `AiGuardrailStrategy.py`
 - Superseded by `FinBuddyFreqAI.py`. Do not reference or restart.
-
-### ⏭️ Next: v19 — Asymmetric Barriers
-- Split K_MULT → K_TP=2.0×ATR / K_SL=1.0×ATR
-- Theoretical PF = 3.26 at 62% WR — fixes fee-drag failure of v18
-- See `CLAUDE_HANDOFF.md` for implementation plan
 
 ---
 
@@ -343,7 +358,7 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 | N8N admin | `admin` / `REDACTED-N8N_ADMIN_PASSWORD` |
 | Telegram Chat ID | `5622292536` |
 | Docker Compose path | `/home/ubuntu/var/www/html/trade/` |
-| Active strategy | `freqtrade/user_data/strategies/FinBuddyFreqAI.py` |
+| Active strategy | `freqtrade/user_data/strategies/FinBuddyFreqAI_v23.py` |
 | GitHub repo | `git@github.com:star7gaurv/trading-bot.git` |
 
 ---
@@ -386,6 +401,37 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 ## Session History Summary
 
 > Full session history lives in `finbuddy_memory/FINBUDDY_PROJECT_MEMORY.md`. Only the most recent session is kept here.
+
+### May 22, 2026 Evening (Claude Code) — 15-bug deep analysis + brain unblocked
+
+**Comprehensive codebase audit — 3 tiers of bugs, all fixed in commit `3deeafc`:**
+
+**Brain was completely silenced (Tier 1 — 6 fixes):**
+- Brain windows `recent_2025Q4/2026Q1` had no "bull"/"bear" in name → promote.py's substring classifier dropped them → brain's most recent 13 months of market invisible to promotion. Renamed to `bull_2025Q4`/`bear_2026Q1`.
+- SEED thresholds ±3.0 were unreachable for z-scored N(0,1) predictions (±3.0 = 2σ, 0.27% probability). Changed to ±1.5. `_clamp()` bounds updated from ±6.0 to ±3.0.
+- 268 legacy raw-% experiments contaminating promotion (incompatible label semantics). Added `target_version="zscore"` to all new configs; `find_candidates()` now filters to zscore-only.
+- `filter_di`/`filter_svm` config fields were never passed as env vars to brain docker → brain could not explore DI/SVM params. Added to v23 env_args block.
+- `analyst.py WINDOW_DAYS` dict was missing new windows → wrong timeframe noise computation.
+- `_config_hash()` non-deterministic for nested dicts → changed to `json.dumps(sort_keys=True)`.
+
+**Strategy correctness (Tier 2 — 6 fixes):**
+- Per-pair median offset (Fix 7): z-score training already centers predictions at 0. Subtracting rolling-100 median was adding noise AND creating inconsistency between leverage tier and entry signal (different centering formulas). Removed from all 3 locations (leverage, entry, exit). FreqAI identifier bumped to `finbuddy_v23_no_median_1779447827`, bot restarted.
+- WR feedback bidirectional (Fix 8): old formula only rewarded WR>55%, never penalized WR<55%. At current WR=32%, system was applying zero threshold adjustment. New: `wr_adj = 1.0 - ((recent_wr - 0.55) * 2.0)` clamped [0.5, 2.0] — WR=32% now raises threshold 46%.
+- Concurrent WF OOM crashes (Fix 9): confirmed cause of bot restarts at 03:26 and 09:27 UTC. Daily WF (22:00, 5.5h) + deep WF (03:00 every 4d, 38.5h) overlap on day 4 → 8 threads on 4-core. Added mutual-exclusion flock between scripts. Both reduced to max-workers=2.
+- Daily digest yesterday filter broken (Fix 10): `isoformat()` produces "T" separator; FreqTrade API uses space separator. All yesterday's trades were silently dropped. Fixed with `strftime("%Y-%m-%d %H:%M:%S")`.
+- Hard-coded Telegram token in `auto_promote.py` (Fix 11): was visible in git history. Replaced with `config.json` lookup (same as other scripts).
+- Dead OB column computation removed (Fix 12): OB veto removed from entry in commit `b44aebe` but columns still computed on every candle for all 37 pairs — wasted CPU.
+
+**Robustness (Tier 3 — 3 fixes):**
+- `generate_and_queue()` dedup: won't re-queue (config_hash, window) pairs already in queue/log.
+- `analyst.py` import lazy-loaded inside `cmd_analyse()` — analyst errors no longer crash `run`/`generate`/`scan`.
+- `walkforward_notify.py` flock prevents duplicate Telegram alerts from concurrent cron instances.
+
+**Brain state at end of session:**
+- All 268 prior experiments excluded from promotion (raw-% target, wrong label semantics).
+- Brain now explores z-scored hypothesis space with realistic ±1.5 seed thresholds and correct windows.
+- First promotion requires ≥2 bull + ≥2 bear z-scored experiments passing criteria — brain restarting from zero.
+- Bot live: 37 pairs, thresholds ±0.5, `finbuddy_v23_no_median_1779447827`, fresh model training underway.
 
 ### May 19, 2026 PM (Claude Code) — Candle-count bug fixed + full memory audit
 
