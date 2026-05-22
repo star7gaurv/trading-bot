@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-22T06:30:05.061269+00:00",
+  "generated_at": "2026-05-22T12:30:04.507412+00:00",
   "findings": {
     "dead_timeframes": [
       "1h",
@@ -194,6 +194,8 @@
     }
   },
   "pruned": 0,
-  "actions": [],
+  "actions": [
+    "Queued \u00d71 expansion to untested window bull_2025Q4"
+  ],
   "llm_insight": ""
 }
