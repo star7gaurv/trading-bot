@@ -908,8 +908,14 @@ class FinBuddyFreqAI_v23(IStrategy):
         mu  = past_return.rolling(ROLLING, min_periods=200).mean()
         sig = past_return.rolling(ROLLING, min_periods=200).std().replace(0, 1e-9)
         
-        # Standardize the raw FUTURE target using past parameters
-        dataframe["&-future_return"] = ((raw_return_pct - mu) / sig).fillna(0.0)
+        # Standardize the raw FUTURE target using past parameters.
+        # DO NOT fillna here — let NaN rows stay NaN so FreqAI drops them correctly:
+        #   - Last label_period_candles=24 rows: raw_return_pct is NaN (future unknown).
+        #     fillna(0.0) would label them "return=0%" and train on unlabeled future.
+        #   - First ~199 rows: mu/sig are NaN (rolling min_periods). fillna(0.0) would
+        #     assign a neutral-but-wrong z-score=0 to those samples.
+        # FreqAI filters NaN-target rows before fitting. Dropping them is correct.
+        dataframe["&-future_return"] = (raw_return_pct - mu) / sig
         return dataframe
 
     # ------------------------------------------------------------------ #

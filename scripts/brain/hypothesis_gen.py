@@ -77,13 +77,23 @@ def _available_timeframes(candidates: list[str]) -> list[str]:
     return [tf for tf in candidates if tf not in blacklist and _has_data_coverage(tf)]
 
 
-# ── Windows the brain evaluates on (3-month each, finish in <25min) ─────────
+# ── Windows the brain evaluates on (3-month each, finish in <65min per runner) ──
 # Mix of regimes for diversified evaluation. Each backtest must fit within the
-# runner's 30-min lock window so we keep these tight.
+# runner's 65-min lock window (BACKTEST_TIMEOUT_S=3900).
+# NOTE (2026-05-22): added recent_2025Q4 + recent_2026Q1 windows because the
+# prior windows only covered through 2025-04 — 13 months of live market not
+# represented. Brain must evaluate on the market conditions it's deployed in.
+# NOTE (2026-05-22): ALL prior experiments (268) used the old raw-% return target.
+# The z-scored target was added today. Old results have a different label
+# distribution and should not be used to drive promotion decisions. Brain is
+# effectively restarting with z-scored target as of this date.
+DATA_COVERAGE_CUTOFF = "2026-01-01"  # ensure all windows have coverage (updated)
 WINDOWS = {
-    "bull_2024Q1":  "20240101-20240401",   # BTC +60% — strong bull early-2024
-    "bull_2024Q2":  "20240401-20240701",   # mid-2024 chop/consolidation
-    "bear_2025Q1":  "20250101-20250401",   # BTC -28% — bear leg
+    "bull_2024Q1":   "20240101-20240401",   # BTC +60% — strong bull early-2024
+    "bull_2024Q2":   "20240401-20240701",   # mid-2024 chop/consolidation
+    "bear_2025Q1":   "20250101-20250401",   # BTC -28% — bear leg Q1 2025
+    "recent_2025Q4": "20251001-20260101",   # BTC recovery Q4 2025 (recent conditions)
+    "recent_2026Q1": "20260101-20260401",   # BTC Q1 2026 (closest to current live market)
 }
 
 # ══════════════════════════════════════════════════════════════════════════

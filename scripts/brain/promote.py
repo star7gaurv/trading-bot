@@ -292,15 +292,18 @@ def apply_promotion(config_hash: str) -> int:
         env_path.write_text("\n".join(out_lines) + "\n")
         print(f".env updated: {list(env_keys.keys())}")
 
-    # 4. Restart container
+    # 4. Recreate container (must be `up -d`, not `restart`).
+    # `docker-compose restart` does NOT re-read .env — the new thresholds written
+    # above would be silently ignored. `up -d` recreates the container and picks
+    # up all env-var changes. (See reference: finbuddy_memory/reference_compose_env_reload.md)
     try:
         result = subprocess.run(
-            ["docker-compose", "restart", "freqtrade"],
+            ["docker-compose", "up", "-d", "freqtrade"],
             cwd=str(ROOT / "freqtrade"),
-            capture_output=True, text=True, timeout=60,
+            capture_output=True, text=True, timeout=120,
         )
         restart_ok = (result.returncode == 0)
-        print(f"docker-compose restart: {'OK' if restart_ok else 'FAILED'}")
+        print(f"docker-compose up -d: {'OK' if restart_ok else 'FAILED'}")
         if not restart_ok:
             print(result.stderr[-400:], file=sys.stderr)
     except Exception as e:

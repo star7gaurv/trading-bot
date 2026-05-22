@@ -1,6 +1,6 @@
 {
     "$schema": "https://schema.freqtrade.io/schema.json",
-    "_comment": "v18 backtest config \u2014 1h TF, BTC/ETH/SOL/XRP/DOGE, LightGBMClassifier (no LLM). Matches live config except stake_amount=200 fixed and no Telegram.",
+    "_comment": "v18 backtest config \u2014 1h TF, BTC/ETH/SOL/XRP/DOGE, LightGBMClassifier (no LLM). Matches live config except stake_amount=200 fixed and no Telegram. | stoploss matched to live config.json -0.04 (was -0.08, fixed 2026-05-22)",
     "max_open_trades": 8,
     "stake_currency": "USDT",
     "stake_amount": "unlimited",
@@ -90,7 +90,7 @@
     },
     "bot_name": "finbuddy_backtest_v18",
     "initial_state": "running",
-    "stoploss": -0.08,
+    "stoploss": -0.04,
     "strategy": "FinBuddyFreqAI_v23",
     "strategy_path": "user_data/strategies",
     "internals": {
