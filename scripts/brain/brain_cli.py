@@ -29,7 +29,8 @@ from experiment_log import summary_stats, best_by_metric, read_log, read_queue, 
 from hypothesis_gen import queue_seed_if_empty, generate_and_queue, WINDOWS
 from runner import run_next
 from promote import find_candidates, propose, _config_hash
-from analyst import analyse
+# Fix 14 (2026-05-22): analyst import moved inside cmd_analyse() so an analyst.py
+# import error only breaks 'analyse' subcommand, not run/generate/scan/seed.
 
 
 def cmd_status(_args) -> int:
@@ -79,6 +80,7 @@ def cmd_scan(_args) -> int:
 
 
 def cmd_analyse(args) -> int:
+    from analyst import analyse   # Fix 14: lazy import — analyst errors don't break other commands
     report = analyse(dry_run=args.dry_run, no_llm=args.no_llm)
     pruned  = report.get("pruned", 0)
     actions = report.get("actions", [])

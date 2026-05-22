@@ -40,8 +40,6 @@ ANALYST_REPORT_PATH = Path(
 # Data-coverage guard: skip a timeframe in random generation if its BTC
 # feather file doesn't extend far enough to cover the active backtest windows.
 DATA_DIR = Path("/home/ubuntu/var/www/html/trade/freqtrade/user_data/data/binance/futures")
-# Newest window we evaluate ends 2025-04-01 (bear_2025Q1). Require data ≥ this.
-DATA_COVERAGE_CUTOFF = "2025-04-01"
 
 
 def _load_analyst_blacklist() -> set[str]:
@@ -80,21 +78,27 @@ def _available_timeframes(candidates: list[str]) -> list[str]:
 # ── Windows the brain evaluates on (3-month each, finish in <65min per runner) ──
 # Mix of regimes for diversified evaluation. Each backtest must fit within the
 # runner's 65-min lock window (BACKTEST_TIMEOUT_S=3900).
-# NOTE (2026-05-22): added recent_2025Q4 + recent_2026Q1 windows because the
-# prior windows only covered through 2025-04 — 13 months of live market not
-# represented. Brain must evaluate on the market conditions it's deployed in.
+# NOTE (2026-05-22): added recent windows — prior windows only covered through
+# 2025-04, missing 13 months of live market. Brain must evaluate on conditions
+# it's actually deployed in.
+# IMPORTANT: promote.py classifies windows by "bull"/"bear" substring in the
+# window name. ALL window names here must include either "bull" or "bear" so
+# they are correctly counted in the promotion gate logic.
 # NOTE (2026-05-22): ALL prior experiments (268) used the old raw-% return target.
-# The z-scored target was added today. Old results have a different label
-# distribution and should not be used to drive promotion decisions. Brain is
-# effectively restarting with z-scored target as of this date.
-DATA_COVERAGE_CUTOFF = "2026-01-01"  # ensure all windows have coverage (updated)
+# Z-scored target added 2026-05-22. Old results have incompatible label distribution.
+# New experiments carry target_version="zscore"; promote.py filters to zscore only.
+DATA_COVERAGE_CUTOFF = "2026-01-01"  # ensure all windows have coverage
 WINDOWS = {
-    "bull_2024Q1":   "20240101-20240401",   # BTC +60% — strong bull early-2024
-    "bull_2024Q2":   "20240401-20240701",   # mid-2024 chop/consolidation
-    "bear_2025Q1":   "20250101-20250401",   # BTC -28% — bear leg Q1 2025
-    "recent_2025Q4": "20251001-20260101",   # BTC recovery Q4 2025 (recent conditions)
-    "recent_2026Q1": "20260101-20260401",   # BTC Q1 2026 (closest to current live market)
+    "bull_2024Q1": "20240101-20240401",   # BTC +60% — strong bull early-2024
+    "bull_2024Q2": "20240401-20240701",   # mid-2024 chop/consolidation
+    "bear_2025Q1": "20250101-20250401",   # BTC -28% — bear leg Q1 2025
+    "bull_2025Q4": "20251001-20260101",   # BTC recovery Oct-Dec 2025 (renamed from recent_2025Q4)
+    "bear_2026Q1": "20260101-20260401",   # BTC declining Jan-Apr 2026 (renamed from recent_2026Q1)
 }
+
+# Target version tag — added to every new queued experiment so promote.py can
+# exclude the 268 legacy raw-% experiments (which have no target_version field).
+TARGET_VERSION = "zscore"
 
 # ══════════════════════════════════════════════════════════════════════════
 # Two architectures live in the brain. Each has its own seed + param space.
@@ -108,8 +112,8 @@ SEED_CONFIG_V23 = {
     "freqaimodel":        "LightGBMRegressor",
     "config_file":        "v23_regression_15m_di_config.json",
     "timeframe":          "15m",
-    "long_threshold":     3.0,
-    "short_threshold":    -3.0,
+    "long_threshold":     1.5,    # was 3.0 — z-scored N(0,1) predictions: ±3.0 hits 0.27% of candles
+    "short_threshold":    -1.5,   # ±1.5 covers ~13% of distribution (realistic signal density)
     "k_sl":               2.0,
     "k_tp":               2.0,
     "stability_n":        2,
@@ -168,9 +172,9 @@ def _clamp(v: dict, param: str) -> dict:
     """Clamp a perturbed param to a sane range."""
     if "threshold" == param.split("_")[-1] and param != "ml_threshold":
         if param == "short_threshold":
-            v[param] = max(-6.0, min(-0.25, v[param]))
+            v[param] = max(-3.0, min(-0.25, v[param]))   # was -6.0; z-score ±3σ is extreme enough
         else:
-            v[param] = max(0.25, min(6.0, v[param]))
+            v[param] = max(0.25, min(3.0, v[param]))     # was 6.0; ±3.0 already covers tail
     elif param == "ml_threshold":
         v[param] = max(0.45, min(0.85, v[param]))
     elif param.startswith("k_"):
@@ -436,9 +440,10 @@ def queue_seed_if_empty() -> int:
         seeds.append(SEED_CONFIG_V22)
     queued = 0
     for seed in seeds:
+        cfg = _stamp_target_version(seed)
         for win_name, timerange in WINDOWS.items():
             queue_hypothesis(
-                config=seed,
+                config=cfg,
                 band="seed",
                 rationale=f"seed [{seed['arch']}]: baseline",
                 window=win_name,
@@ -463,21 +468,45 @@ def queue_v22_seeds() -> int:
     return queued
 
 
+def _stamp_target_version(config: dict) -> dict:
+    """Inject target_version into a config dict (v23 zscore, v22 raw_pct).
+
+    Allows promote.py to exclude the 268 legacy raw-% experiments (which lack
+    this field) from promotion decisions. Called before every queue_hypothesis().
+    """
+    arch = config.get("arch", "v23")
+    if "target_version" not in config:
+        config = dict(config)
+        config["target_version"] = TARGET_VERSION if arch == "v23" else "raw_pct"
+    return config
+
+
 def generate_and_queue(safe_n: int = 6, aggressive_n: int = 6, windows: list[str] | None = None) -> int:
     """
     One brain cycle: generate safe + aggressive variants for BOTH architectures,
     queue on each window. Returns count of newly queued hypotheses.
     """
+    from experiment_log import read_queue as _rq
     target_windows = windows or list(WINDOWS.keys())
     safe = generate_safe_band_both(n_per_arch=safe_n // 2 + safe_n % 2)
     aggr = generate_aggressive_band(n=aggressive_n)
     all_variants = safe + aggr
 
+    # Build set of (config_hash, window) already in queue to avoid re-queueing.
+    from promote import _config_hash as _ch
+    already_queued = {
+        (_ch(r["config"]), r.get("window", ""))
+        for r in _rq()
+    }
+
     queued = 0
     for v in all_variants:
+        cfg = _stamp_target_version(v["config"])
         for win_name in target_windows:
+            if (_ch(cfg), win_name) in already_queued:
+                continue  # Fix 13: skip already-queued (config, window) pairs
             queue_hypothesis(
-                config=v["config"],
+                config=cfg,
                 band=v["band"],
                 rationale=v["rationale"],
                 window=win_name,

@@ -92,38 +92,55 @@ def main() -> int:
         print("OK: no walkforward_results dir yet")
         return 0
 
-    state = load_state()
-    notified: set[str] = set(state.get("notified", []))
+    # Fix 15 (2026-05-22): use flock to prevent race condition when two cron instances
+    # start simultaneously (every 30m). Without locking, both read the same notified set
+    # and each sends duplicate Telegram for the same WF run.
+    import fcntl
+    LOCK_FILE = Path("/tmp/finbuddy_walkforward_notify.lock")
+    lock_fd = open(LOCK_FILE, "w")
+    try:
+        fcntl.flock(lock_fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        print("OK: another instance is running, skipping")
+        lock_fd.close()
+        return 0
 
-    new = 0
-    for run_dir in sorted(RESULTS_BASE.iterdir()):
-        if not run_dir.is_dir():
-            continue
-        run_id = run_dir.name
-        if run_id in notified:
-            continue
-        summary_path = run_dir / "summary.json"
-        if not summary_path.exists():
-            continue  # run still in progress
+    try:
+        state = load_state()
+        notified: set[str] = set(state.get("notified", []))
 
-        try:
-            summary = json.loads(summary_path.read_text())
-        except Exception as e:
-            print(f"ERR: parsing {summary_path}: {e}", file=sys.stderr)
-            continue
+        new = 0
+        for run_dir in sorted(RESULTS_BASE.iterdir()):
+            if not run_dir.is_dir():
+                continue
+            run_id = run_dir.name
+            if run_id in notified:
+                continue
+            summary_path = run_dir / "summary.json"
+            if not summary_path.exists():
+                continue  # run still in progress
 
-        if send_wf_message(run_id, summary):
-            print(f"NOTIFIED: {run_id} (pass={summary.get('pass')})")
-            notified.add(run_id)
-            new += 1
-        else:
-            print(f"WARN: telegram failed for {run_id} — will retry next run")
+            try:
+                summary = json.loads(summary_path.read_text())
+            except Exception as e:
+                print(f"ERR: parsing {summary_path}: {e}", file=sys.stderr)
+                continue
 
-    state["notified"] = sorted(notified)
-    state["last_run"] = datetime.now(timezone.utc).isoformat()
-    save_state(state)
-    print(f"OK: {new} new notifications sent")
-    return 0
+            if send_wf_message(run_id, summary):
+                print(f"NOTIFIED: {run_id} (pass={summary.get('pass')})")
+                notified.add(run_id)
+                new += 1
+            else:
+                print(f"WARN: telegram failed for {run_id} — will retry next run")
+
+        state["notified"] = sorted(notified)
+        state["last_run"] = datetime.now(timezone.utc).isoformat()
+        save_state(state)
+        print(f"OK: {new} new notifications sent")
+        return 0
+    finally:
+        fcntl.flock(lock_fd.fileno(), fcntl.LOCK_UN)
+        lock_fd.close()
 
 
 if __name__ == "__main__":

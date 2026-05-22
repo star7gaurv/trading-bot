@@ -563,20 +563,20 @@ class FinBuddyFreqAI_v23(IStrategy):
                 return min(self._LEV_MED, max_leverage)
             last = df.iloc[-1]
             pred = float(last.get("&-future_return", 0.0))
-            # Reconstruct per-pair median over recent window (same as entry logic)
-            window = df["&-future_return"].tail(100)
-            pred_median = float(window.median()) if len(window) >= 20 else 0.0
-            centered = pred - pred_median
+            # Fix 7 (2026-05-22): per-pair median offset removed. Target is now z-scored
+            # (mean~0 by construction), so subtracting the rolling median was double-correcting
+            # and producing inconsistent centering vs populate_entry_trend's rolling() median.
+            centered = pred
 
             if side == "long":
                 thresh = float(last.get("dynamic_long_threshold", 1.0))
                 # threshold is positive; centered should be > thresh
-                ratio = centered / thresh if thresh > 0 else 0.0
+                ratio = centered / thresh if thresh != 0 else 0.0
             else:  # short
                 thresh = float(last.get("dynamic_short_threshold", -1.0))
                 # threshold is negative; centered should be < thresh (both negative).
                 # ratio = how many threshold-magnitudes below 0 the prediction is.
-                ratio = centered / thresh if thresh < 0 else 0.0
+                ratio = centered / thresh if thresh != 0 else 0.0
 
             if ratio >= self._LEV_HIGH_CONF_RATIO:
                 lev = self._LEV_HIGH
@@ -598,8 +598,8 @@ class FinBuddyFreqAI_v23(IStrategy):
 
             final = min(lev, max_leverage)
             logger.info(
-                f"[Leverage] {pair} {side}: pred={pred:+.3f} median={pred_median:+.3f} "
-                f"centered={centered:+.3f} thresh={thresh:+.3f} ratio={ratio:+.2f} "
+                f"[Leverage] {pair} {side}: pred={pred:+.3f} (z-scored, no median offset) "
+                f"thresh={thresh:+.3f} ratio={ratio:+.2f} "
                 f"→ tier={tier} lev={final:.1f}x (cap={max_leverage:.0f}x)"
             )
             return final
@@ -956,7 +956,14 @@ class FinBuddyFreqAI_v23(IStrategy):
         short_mult_series = regime_series.map(lambda r: self._REGIME_THRESHOLD_MULTS.get(r, (1.0, 1.0))[1])
 
         recent_wr = float(os.getenv("FINBUDDY_RECENT_WR", "0.50"))
-        wr_adj = max(0.5, 1.0 - max(0.0, (recent_wr - 0.55) * 2.0))
+        # Fix 8 (2026-05-22): bidirectional WR feedback (was one-directional — only
+        # rewarded good WR, never penalized bad WR).
+        # Now: WR=32% → wr_adj=1.46 (46% harder to enter)
+        #      WR=55% → wr_adj=1.00 (neutral)
+        #      WR=70% → wr_adj=0.70 (30% easier to enter)
+        # Clamped to [0.5, 2.0] to prevent threshold collapse or near-infinity.
+        wr_adj = 1.0 - ((recent_wr - 0.55) * 2.0)
+        wr_adj = max(0.5, min(2.0, wr_adj))
 
         base_long  = self.LONG_THRESHOLD
         base_short = abs(self.SHORT_THRESHOLD)
@@ -990,30 +997,12 @@ class FinBuddyFreqAI_v23(IStrategy):
         dataframe["atr_14"] = ta.ATR(dataframe, timeperiod=14)
         dataframe["atr_ratio"] = dataframe["atr_14"] / dataframe["close"]
 
-        # Phase 13: Order Block / Liquidity Pool Awareness
-        # Supply / Demand zones via impulsive-move detection.
-        # Bullish OB: last down-candle before a strong up-impulse (demand zone).
-        # Bearish OB: last up-candle before a strong down-impulse (supply zone).
-        dataframe['body_size'] = (dataframe['close'] - dataframe['open']).abs()
-        dataframe['is_up']     = dataframe['close'] > dataframe['open']
-        dataframe['is_down']   = dataframe['close'] < dataframe['open']
-        avg_body = dataframe['body_size'].rolling(50).mean()
-        is_impulsive_up   = dataframe['is_up']   & (dataframe['body_size'] > avg_body * 1.5)
-        is_impulsive_down = dataframe['is_down'] & (dataframe['body_size'] > avg_body * 1.5)
-
-        dataframe['potential_bullish_ob'] = np.where(
-            is_impulsive_up & dataframe['is_down'].shift(1),
-            dataframe['low'].shift(1),
-            np.nan
-        )
-        dataframe['bullish_ob'] = dataframe['potential_bullish_ob'].ffill()
-
-        dataframe['potential_bearish_ob'] = np.where(
-            is_impulsive_down & dataframe['is_up'].shift(1),
-            dataframe['high'].shift(1),
-            np.nan
-        )
-        dataframe['bearish_ob'] = dataframe['potential_bearish_ob'].ffill()
+        # Fix 12 (2026-05-22): Order Block column computation REMOVED (dead code).
+        # OB veto was removed from populate_entry_trend on 2026-05-22 (commit b44aebe)
+        # because it blocked 100% of longs (reversal logic incompatible with trend-following ML).
+        # The column computation still ran every candle for all 37 pairs, wasting CPU.
+        # Removed here. If OB columns are reintroduced as ML features in future, re-add
+        # in feature_engineering_standard() under a FREQAI_FEATURE_SET flag.
 
         # Layer 2: dynamic thresholds (regime-aware + WR feedback)
         dataframe = self._compute_dynamic_thresholds(dataframe)
@@ -1041,16 +1030,15 @@ class FinBuddyFreqAI_v23(IStrategy):
             pd.Series(0.0, index=dataframe.index)
         )
 
-        # Per-pair median offset (added 2026-05-20 to fix long-bias).
-        # The regression model was trained on bull-heavy 2024–25 data and learned
-        # to predict positive numbers (per-pair mean +1 to +8%, e.g. ZEC mean
-        # +8.2%, DOGE +3.9%, BTC/ETH +1.5%). With symmetric thresholds (+2/-2)
-        # this produced 480 long signals vs 27 short signals over 100 candles.
-        # Subtracting each pair's 100-candle rolling median centers predictions
-        # at 0 so the threshold comparison is on DEVIATION from typical, not
-        # raw value. Proper fix (target z-scoring at train time) deferred.
-        pred_median = predicted_return.rolling(100, min_periods=20).median().fillna(0.0)
-        centered_pred = predicted_return - pred_median
+        # Fix 7 (2026-05-22): per-pair median offset REMOVED.
+        # Original purpose (2026-05-20): raw-% predictions had +1 to +8% long-bias from
+        # bull training. Solution: subtract rolling-100 median to center predictions at 0.
+        # Now invalid: target is z-scored in set_freqai_targets (mean=0, std=1 by construction)
+        # so the per-pair rolling median is already ≈0 for a well-trained model. Subtracting
+        # it again added noise and — critically — produced a different centering from the
+        # leverage() callback (which used tail(100) instead of rolling(100)), creating
+        # inconsistent threshold comparisons between entry and leverage decisions.
+        centered_pred = predicted_return  # z-scored target → no offset needed
 
         long_thresh  = dataframe["dynamic_long_threshold"]
         short_thresh = dataframe["dynamic_short_threshold"]
@@ -1153,9 +1141,8 @@ class FinBuddyFreqAI_v23(IStrategy):
             "&-future_return",
             pd.Series(0.0, index=dataframe.index)
         )
-        # Same per-pair median centering as populate_entry_trend (2026-05-20).
-        pred_median = predicted_return.rolling(100, min_periods=20).median().fillna(0.0)
-        centered_pred = predicted_return - pred_median
+        # Fix 7 (2026-05-22): per-pair median offset removed — target is z-scored.
+        centered_pred = predicted_return
 
         # Regime-aware exit flip thresholds (half the entry threshold)
         long_thresh  = dataframe["dynamic_long_threshold"]

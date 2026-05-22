@@ -158,6 +158,10 @@ def run_hypothesis(h: dict) -> dict | None:
             "-e", f"FREQAI_SHORT_THRESHOLD={cfg.get('short_threshold', -1.5)}",
             "-e", f"FREQAI_STABILITY_N={cfg.get('stability_n', 2)}",
             "-e", f"FREQAI_FEATURE_SET={cfg.get('feature_set', 'all')}",
+            # Fix 4 (2026-05-22): DI and SVM filter flags were in SEED_CONFIG_V23 but
+            # never passed to the container — brain backtests always used strategy defaults.
+            "-e", f"FREQAI_FILTER_DI={'true' if cfg.get('filter_di', True) else 'false'}",
+            "-e", f"FREQAI_FILTER_SVM={'true' if cfg.get('filter_svm', True) else 'false'}",
         ]
 
     cmd = (

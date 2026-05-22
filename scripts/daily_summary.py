@@ -142,9 +142,13 @@ def main() -> None:
 
     # Yesterday closed trades — fetch wide, sort descending by close_date so the
     # "yesterday" filter works regardless of API ordering.
+    # Fix 10 (2026-05-22): use strftime not isoformat() — FreqTrade API returns
+    # close_date as "2026-05-21 23:59:59" (space separator), but isoformat() produces
+    # "2026-05-21T00:00:00" (T separator). String comparison would be False for all
+    # trades since space (0x20) < 'T' (0x54) in ASCII, silently dropping all results.
     yesterday_start = (now_utc() - timedelta(days=1)).replace(
         hour=0, minute=0, second=0, microsecond=0
-    ).isoformat()
+    ).strftime("%Y-%m-%d %H:%M:%S")
     trades_data = api_get(f"/trades?limit=500") or {}
     all_trades = trades_data.get("trades", []) if isinstance(trades_data, dict) else []
     all_trades.sort(key=lambda t: t.get("close_date") or "", reverse=True)

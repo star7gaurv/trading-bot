@@ -11,6 +11,7 @@
 set -e
 
 LOCK=/tmp/finbuddy_walkforward_deep.lock
+DAILY_LOCK=/tmp/finbuddy_walkforward_daily.lock
 LOG=/home/ubuntu/.finbuddy/logs/walk_forward_deep.log
 SCRIPT=/home/ubuntu/var/www/html/trade/scripts/walk_forward.py
 
@@ -19,6 +20,16 @@ mkdir -p "$(dirname "$LOG")"
 exec 9>"$LOCK"
 if ! flock -n 9; then
     echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] deep WF already running, skipping" >> "$LOG"
+    exit 0
+fi
+
+# Fix 9 (2026-05-22): mutual exclusion — skip deep if daily WF is still running.
+# Both spawn max-workers=2 × lgbm_threads=2 = 4 threads each. Running both in
+# parallel = 8 threads on a 4-core server → OOM. Root cause of bot crashes.
+if [ -f "$DAILY_LOCK" ] && flock -n "$DAILY_LOCK" true 2>/dev/null; then
+    : # daily lock file exists but is not held — daily WF finished, safe to proceed
+elif [ -f "$DAILY_LOCK" ]; then
+    echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] daily WF still running — skipping deep WF to prevent OOM" >> "$LOG"
     exit 0
 fi
 
@@ -38,7 +49,7 @@ python3 "$SCRIPT" \
     --timeframe 15m \
     --config config.json \
     --skip-download \
-    --max-workers 3 \
+    --max-workers 2 \
     --lgbm-threads 2 >> "$LOG" 2>&1
 
 EXIT=$?

@@ -74,10 +74,13 @@ def record_new_baseline(avg_profit_pct: float, config_hash: str) -> None:
 # ── Aggregate experiments by config hash ──────────────────────────────────
 
 def _config_hash(cfg: dict) -> str:
-    """Deterministic hash of a config dict (for grouping bull/bear runs)."""
-    import hashlib
-    keys = sorted(cfg.keys())
-    payload = "|".join(f"{k}={cfg[k]}" for k in keys)
+    """Deterministic hash of a config dict (for grouping bull/bear runs).
+
+    Uses json.dumps(sort_keys=True) to guarantee stable ordering regardless of
+    how the config dict was constructed (dict-literal vs JSON-parse insertion order).
+    """
+    import hashlib, json as _json
+    payload = _json.dumps(cfg, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(payload.encode()).hexdigest()[:12]
 
 
@@ -85,9 +88,15 @@ def find_candidates() -> list[dict]:
     """
     Group completed experiments by config. Return configs that have ≥1 bull AND ≥1 bear result,
     and where all results are positive profit.
+
+    IMPORTANT: only considers experiments with target_version="zscore" (v23 z-scored target,
+    introduced 2026-05-22). The 268 legacy raw-% experiments have incompatible label
+    distributions and must NOT be pooled with z-scored results.
     """
     log = read_log()
     completed = [r for r in log if r.get("status") == "completed" and r.get("metrics")]
+    # Filter to z-scored target experiments only (Fix 3: exclude 268 legacy raw-% runs)
+    completed = [r for r in completed if r.get("config", {}).get("target_version") == "zscore"]
 
     groups: dict[str, dict] = defaultdict(lambda: {
         "config": None, "runs": [], "bull_runs": [], "bear_runs": []

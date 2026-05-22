@@ -65,7 +65,10 @@ NEAR_BREAKEVEN_LOW   = 0.85   # best PF in this range → near-breakeven, push h
 NEAR_BREAKEVEN_HIGH  = 1.05
 FEE_DRAG_WR_MIN      = 0.50   # WR > this AND PF < 1.0 → fee drag (winners cut short)
 NOISE_TRADES_PER_DAY = 5.5    # avg trades/day above this = too noisy on that TF
-WINDOW_DAYS = {"bull_2024Q1": 91, "bull_2024Q2": 91, "bear_2025Q1": 90}
+WINDOW_DAYS = {
+    "bull_2024Q1": 91, "bull_2024Q2": 91, "bear_2025Q1": 90,
+    "bull_2025Q4": 92, "bear_2026Q1": 90,   # Fix 5 (2026-05-22): added new windows
+}
 
 
 # ─── Data loading ──────────────────────────────────────────────────────────
