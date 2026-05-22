@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-22T18:00:01.449450+00:00",
+  "updated": "2026-05-22T18:30:02.134113+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -21,13 +21,13 @@
     },
     "DOGE/USDT:USDT": {
       "NEUTRAL": {
-        "n": 5,
+        "n": 6,
         "wins": 3,
-        "losses": 2,
-        "wr": 0.6,
-        "pf": 0.647,
-        "profit_usdt": -1.49,
-        "avg_profit_pct": -0.176
+        "losses": 3,
+        "wr": 0.5,
+        "pf": 0.53,
+        "profit_usdt": -2.42,
+        "avg_profit_pct": -0.298
       },
       "BEAR": {
         "n": 2,
@@ -512,13 +512,13 @@
     },
     "1000SHIB/USDT:USDT": {
       "NEUTRAL": {
-        "n": 1,
+        "n": 2,
         "wins": 1,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 0.05,
-        "avg_profit_pct": 0.05
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 0.062,
+        "profit_usdt": -0.76,
+        "avg_profit_pct": -0.37
       }
     },
     "AAVE/USDT:USDT": {
