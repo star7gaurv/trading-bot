@@ -218,3 +218,4 @@
 | 2026-05-22 11:12:44 | AAVE/USDT:USDT | LONG | 0h41m | +0.08% | +0.08 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-22 11:46:05 | AAVE/USDT:USDT | LONG | 0h30m | +0.22% | +0.22 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-22 12:49:35 | AVAX/USDT:USDT | SHORT | 1h18m | -0.70% | -0.67 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
+| 2026-05-22 13:34:56 | AAVE/USDT:USDT | LONG | 0h03m | -1.03% | -1.04 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
