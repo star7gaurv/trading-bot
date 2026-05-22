@@ -676,6 +676,48 @@
       "proposed_by": "reasoning_agent",
       "reviewed_at": "2026-05-21",
       "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "btc_ema_bounce_reversal_20260522",
+      "hypothesis": "BTC will show mean-reversion strength against its 20-EMA, bouncing 0.3-0.5% when price dips below it, offering a short-term long entry.",
+      "timeframe": "1h",
+      "indicators": [
+        "BTC_USDT.EMA20",
+        "BTC_USDT.RSI"
+      ],
+      "entry_long": "Price < EMA20 and RSI < 45",
+      "entry_short": "No short entry defined for this strategy",
+      "exit_rule": "Target +0.4% within 2h or stop based on 20-EMA reversion",
+      "regime_filter": [
+        "NEUTRAL"
+      ],
+      "hypothesis_validated": false,
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-22",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-22",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "alt_btc_carry_funding_20260522",
+      "hypothesis": "A carry-trade edge exists by going long BTC perpetuals and shorting high-beta alt-perps when net funding rate is > 0.03% per 24h.",
+      "timeframe": "1h",
+      "indicators": [
+        "funding_rate_btc",
+        "funding_rate_alt"
+      ],
+      "entry_long": "Net carry > 0.03% per 24h; target to hold positions for 12-24h",
+      "entry_short": "Carry trade short on high-beta alt-perps when funding rate is negative",
+      "exit_rule": "Close when net funding flips positive or after 2 consecutive intervals of >+0.01% positive funding",
+      "regime_filter": [
+        "NEUTRAL"
+      ],
+      "hypothesis_validated": false,
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-22",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-22",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
     }
   ]
 }
