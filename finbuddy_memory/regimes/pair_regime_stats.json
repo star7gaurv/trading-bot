@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-22T14:00:03.048581+00:00",
+  "updated": "2026-05-22T14:30:02.686659+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -10,13 +10,13 @@
   "stats": {
     "BTC/USDT": {
       "NEUTRAL": {
-        "n": 6,
-        "wins": 4,
+        "n": 5,
+        "wins": 3,
         "losses": 2,
-        "wr": 0.6667,
-        "pf": 0.593,
-        "profit_usdt": -4.02,
-        "avg_profit_pct": -0.333
+        "wr": 0.6,
+        "pf": 0.388,
+        "profit_usdt": -6.04,
+        "avg_profit_pct": -0.602
       }
     },
     "DOGE/USDT:USDT": {
@@ -523,13 +523,13 @@
     },
     "AAVE/USDT:USDT": {
       "NEUTRAL": {
-        "n": 4,
+        "n": 6,
         "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 0.163,
-        "profit_usdt": -1.54,
-        "avg_profit_pct": -0.383
+        "losses": 4,
+        "wr": 0.3333,
+        "pf": 0.067,
+        "profit_usdt": -4.2,
+        "avg_profit_pct": -0.695
       }
     }
   },
@@ -557,6 +557,14 @@
       "n": 7,
       "wr": 0.1429,
       "pf": 0.353
+    },
+    {
+      "pair": "AAVE/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=33% PF=0.07 n=6 profit=-4.20",
+      "n": 6,
+      "wr": 0.3333,
+      "pf": 0.067
     },
     {
       "pair": "ZEC/USDT:USDT",
