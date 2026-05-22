@@ -17,3 +17,4 @@
 | 2026-05-17 | BEAR → NEUTRAL | Confidence: 70.0% |
 | 2026-05-18 | NEUTRAL → BEAR | Confidence: 80.0% |
 | 2026-05-19 | BEAR → NEUTRAL | Confidence: 70.0% |
+| 2026-05-22 | NEUTRAL → BEAR | Confidence: 80.0% |
