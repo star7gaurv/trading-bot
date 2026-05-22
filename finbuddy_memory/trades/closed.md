@@ -213,3 +213,5 @@
 | 2026-05-21 13:43:11 | ZEC/USDT:USDT | LONG | 0h58m | -2.25% | -2.30 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-22 07:01:38 | SUI/USDT:USDT | SHORT | 0h05m | +0.47% | +0.47 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
 | 2026-05-22 08:35:37 | TAO/USDT:USDT | LONG | 1h39m | +0.25% | +0.26 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-22 09:30:38 | 1000SHIB/USDT:USDT | LONG | 0h22m | +0.05% | +0.05 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-22 09:33:41 | AAVE/USDT:USDT | LONG | 0h02m | -0.80% | -0.80 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
