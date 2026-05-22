@@ -562,3 +562,50 @@ Comprehensive audit and cleanup of FinBuddyFreqAI.py to match live v17 state:
 - First trade entry after threshold fix (should happen within 1-2 candles of next 15m close)
 - NaN drop count should be 0 after startup_candle_count=2400 fix
 - Parallel WF 5-fold result: needs WR>50%, Sharpe>0.5, DD<20%, PF>1.2 to pass promotion gate
+
+---
+
+## Session 2026-05-22 (PM) — 5 Trade-Blocking Bugs Diagnosed + Fixed
+
+**Context:** Bot was producing zero trades. Zero trades started after commit `b44aebe`... wait,
+the OB veto was the reason for zero trades. Bot also self-restarted at 3:26 AM and 9:27 AM (OOM
+from parallel WF + brain processes running simultaneously).
+
+### Bug 1: Phase 13 OB Veto — 100% long block (commit `b44aebe`)
+- `ob_long_ok = close < bearish_ob * 0.99` was 0/100 candles on live BTC data (bearish_ob=77,777, BTC=77,619 — price trapped above the threshold)
+- `ob_short_ok = close > bullish_ob * 1.01` was 5/100 candles (narrow range: bullish_ob=76,995)
+- **Fix:** Removed both OB veto conditions from `populate_entry_trend`
+- **Also fixed:** `ta_short` had `close < ema_50 * 0.99` asymmetry vs `ta_long` using plain `close > ema_50`; removed `* 0.99` gap
+- **Root cause:** OB logic is for REVERSAL trading; v23 is TREND-FOLLOWING. Incompatible by design.
+
+### Bug 2: `set_freqai_targets` fillna(0.0) corrupting training data (commit `edc9435`)
+- `fillna(0.0)` on the z-scored `&-future_return` target was teaching LightGBM that the last 24 rows (unknown future) have 0% return
+- FreqAI drops NaN-target rows before fitting — `fillna` was bypassing this safety
+- **Fix:** Removed `.fillna(0.0)` — let FreqAI handle NaN rows correctly
+
+### Bug 3: `promote.py` `docker-compose restart` silently broken (commit `edc9435`)
+- `restart` does NOT reload `.env` — promoted thresholds were written to file but container kept old values
+- Every promotion since the feature was added (2026-05-19) was silently broken
+- **Fix:** Changed to `docker-compose up -d freqtrade` which recreates container and picks up `.env`
+
+### Bug 4: Brain backtest stoploss -0.08 vs live -0.04 (commit `edc9435`)
+- `v23_regression_15m_di_config.json` had `stoploss: -0.08` (2× wider than live -0.04)
+- Brain winners were validated against a safety net that doesn't exist in production
+- **Fix:** Updated to `stoploss: -0.04`
+
+### Bug 5: Brain WINDOWS missing 13 months of market (commit `edc9435`)
+- WINDOWS only covered through 2025-04 — all of Q4 2025 and Q1 2026 was unrepresented
+- Brain found "winners" on 2024 market conditions while bot ran in 2026 conditions
+- **Fix:** Added `recent_2025Q4` (20251001-20260101) and `recent_2026Q1` (20260101-20260401) windows
+- `DATA_COVERAGE_CUTOFF` updated to 2026-01-01
+
+### Active at end of session
+- Live bot: v23, 37 pairs, thresholds ±0.5 (LONG=0.5/SHORT=-0.5), RUNNING
+- First trade after OB fix: SUI SHORT +0.47% (06:56 UTC), TAO LONG open +0.90%
+- ZEC NEUTRAL **blocked** by pair-regime gate (n=11, WR=36%, PF=0.45) — gate working
+- All 268 prior brain experiments used raw-% target; z-scored target added today → brain restarting fresh
+
+### What to watch
+- Brain will generate new experiments with z-scored target + recent 2025Q4/2026Q1 windows
+- Daily WF at 22:00 UTC will run with OB veto removed — first meaningful WF result expected tomorrow
+- Next promotion: wait for brain to accumulate ≥2 bull + ≥2 bear z-scored experiments passing criteria
