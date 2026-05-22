@@ -215,3 +215,4 @@
 | 2026-05-22 08:35:37 | TAO/USDT:USDT | LONG | 1h39m | +0.25% | +0.26 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-22 09:30:38 | 1000SHIB/USDT:USDT | LONG | 0h22m | +0.05% | +0.05 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-22 09:33:41 | AAVE/USDT:USDT | LONG | 0h02m | -0.80% | -0.80 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-22 11:12:44 | AAVE/USDT:USDT | LONG | 0h41m | +0.08% | +0.08 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
