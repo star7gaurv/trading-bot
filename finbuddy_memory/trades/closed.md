@@ -221,3 +221,5 @@
 | 2026-05-22 13:34:56 | AAVE/USDT:USDT | LONG | 0h03m | -1.03% | -1.04 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-22 13:48:24 | AAVE/USDT:USDT | LONG | 0h02m | -0.93% | -0.94 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-22 14:14:56 | AAVE/USDT:USDT | LONG | 0h13m | -1.71% | -1.72 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-22 18:01:32 | DOGE/USDT:USDT | LONG | 2h30m | -0.91% | -0.93 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-22 18:04:27 | 1000SHIB/USDT:USDT | LONG | 0h33m | -0.79% | -0.81 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
