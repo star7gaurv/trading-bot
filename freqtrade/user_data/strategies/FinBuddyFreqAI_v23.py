@@ -1067,15 +1067,16 @@ class FinBuddyFreqAI_v23(IStrategy):
             & (dataframe["bb_pct"] < 0.90)
             & (dataframe["volume"] > 0)
         )
-        # Phase 13 Liquidity Veto: block longs directly under 24h resistance (Bearish OB)
-        ob_long_ok = dataframe["close"] < (dataframe["bearish_ob"] * 0.99)
+        # OB veto REMOVED (2026-05-22): ob_long_ok = close < bearish_ob * 0.99 was
+        # blocking 100% of longs. In ranging/trending markets close is always near or
+        # above bearish_ob so the condition was never true. Confirmed: 0/100 candles
+        # passed on live BTC data. OB columns kept in populate_indicators for future use.
 
         enter_long = (
             (dataframe["do_predict"] == 1)
             & long_stable
             & ta_long
             & volatility_ok
-            & ob_long_ok
         )
 
         # Phase 1 (2026-05-19) — Per-Pair-Per-Regime Dynamic Block.
@@ -1099,24 +1100,24 @@ class FinBuddyFreqAI_v23(IStrategy):
         # Short: price below EMA-50 (downtrend), not in deeply-oversold territory.
         # Bug B fix (2026-05-20): RSI short gate was 15 < rsi_14 < 50 — a 35-point
         # band that blocked shorts on ~50% of candles vs the long gate's 87-point
-        # band (rsi_14 < 68) that passed ~90%. Mid-range RSI=52 (very common)
-        # would pass longs but block shorts. Net: ~2× long bias even when the
-        # regime kill-switch tried to suppress longs. Now symmetric to long gate.
+        # band (rsi_14 < 68) that passed ~90%. Symmetric to long gate.
+        # Symmetry fix (2026-05-22): removed * 0.99 gap — ta_long uses plain > ema_50,
+        # ta_short now uses plain < ema_50 to match (no artificial dead zone).
         ta_short = (
-            (dataframe["close"] < dataframe["ema_50"] * 0.99)
+            (dataframe["close"] < dataframe["ema_50"])
             & (dataframe["rsi_14"] > 32)   # symmetric mirror of long's "rsi_14 < 68"
             & (dataframe["bb_pct"] > 0.10)
             & (dataframe["volume"] > 0)
         )
-        # Phase 13 Liquidity Veto: block shorts directly above 24h support (Bullish OB)
-        ob_short_ok = dataframe["close"] > (dataframe["bullish_ob"] * 1.01)
+        # OB veto REMOVED (2026-05-22): ob_short_ok = close > bullish_ob * 1.01 was
+        # blocking 95% of shorts. Same root cause as ob_long_ok — price trapped in
+        # the tight OB range. Confirmed: only 5/100 candles passed on live BTC data.
 
         enter_short = (
             (dataframe["do_predict"] == 1)
             & short_stable
             & ta_short
             & volatility_ok
-            & ob_short_ok
         )
 
         # Apply the same per-pair-per-regime block to shorts.

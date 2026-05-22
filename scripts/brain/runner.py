@@ -40,7 +40,7 @@ ROOT = Path("/home/ubuntu/var/www/html/trade")
 COMPOSE_DIR = ROOT / "freqtrade"
 USER_DATA = ROOT / "freqtrade" / "user_data"
 RESULTS_DIR = USER_DATA / "backtest_results"
-BACKTEST_TIMEOUT_S = 1800  # 30 min hard cap
+BACKTEST_TIMEOUT_S = 3900  # 65 min hard cap (bumped 2026-05-21 — after Bug I aligned brain to 25-pair universe in 5f37ab8, each experiment with DI+SVM needs ~50 min vs the prior 5-pair ~10 min, causing 100% timeout. Will likely need another bump after 37-pair expansion.)
 LOCK_FILE = Path("/home/ubuntu/.finbuddy/state/brain_runner.lock")  # prevent overlapping cron runs
 
 
@@ -280,53 +280,61 @@ def run_next(max_runs: int = 1, status_only: bool = False) -> int:
     if not _acquire_lock():
         return 0
 
-    completed = 0
-    for _ in range(max_runs):
-        queue = read_queue()
-        if not queue:
-            print("[brain] queue empty — nothing to run")
-            break
+    try:
+        completed = 0
+        for _ in range(max_runs):
+            queue = read_queue()
+            if not queue:
+                print("[brain] queue empty ? nothing to run")
+                break
 
-        # FIFO ordering by created_at
-        queue.sort(key=lambda r: r.get("created_at", ""))
-        h = queue[0]
-        started = datetime.now(timezone.utc).isoformat()
+            # FIFO ordering by created_at
+            queue.sort(key=lambda r: r.get("created_at", ""))
+            h = queue[0]
+            started = datetime.now(timezone.utc).isoformat()
 
-        print(f"[brain] running {h['hypothesis_id']} ({h['band']}) on {h['window']}: {h['rationale']}")
-        metrics = run_hypothesis(h)
+            print(f"[brain] running {h['hypothesis_id']} ({h['band']}) on {h['window']}: {h['rationale']}")
+            try:
+                metrics = run_hypothesis(h)
+            except Exception as e:
+                print(f"[brain] exception running hypothesis {h['hypothesis_id']}: {e}", file=sys.stderr)
+                _kill_orphan_containers(f"brain_{h['hypothesis_id']}")
+                metrics = None
 
-        if metrics is None:
-            mark_failed(h, error="run_hypothesis returned None (timeout or exit non-zero)", started_at=started)
-            print(f"[brain] FAILED {h['hypothesis_id']}")
-            continue
+            if metrics is None:
+                mark_failed(h, error="run_hypothesis returned None (timeout or exit non-zero)", started_at=started)
+                print(f"[brain] FAILED {h['hypothesis_id']}")
+                continue
 
-        mark_completed(h, metrics, started_at=started)
-        completed += 1
+            mark_completed(h, metrics, started_at=started)
+            completed += 1
 
-        # Telegram via unified template — silent for per-experiment results
-        # (avoid spamming the user; only promotion candidates make a sound)
-        arch = h.get("config", {}).get("arch", "?")
-        status = Status.OK if metrics.get("profit_pct", -1) > 0 else Status.INFO
-        tg_send(
-            subsystem=Subsystem.BRAIN_EXPERIMENT,
-            status=status,
-            title=f"#{h['hypothesis_id']} · {arch} · {h['band']}",
-            fields={
-                "Window":   h["window"],
-                "Profit":   f"{metrics['profit_pct']:+.2f}%",
-                "Win Rate": f"{metrics['wr']*100:.1f}%",
-                "Sharpe":   f"{metrics['sharpe']:+.2f}",
-                "PF":       f"{metrics['pf']:.2f}",
-                "Trades":   f"{metrics['trades']} ({metrics['long_count']}L / {metrics['short_count']}S)",
-            },
-            context=h["rationale"],
-            action=None,
-            silent=True,   # auto-logged; no need to ping
-        )
-        print(f"[brain] DONE {h['hypothesis_id']} [{arch}] → profit={metrics['profit_pct']}% WR={metrics['wr']*100:.1f}%")
+            # Telegram via unified template ? silent for per-experiment results
+            # (avoid spamming the user; only promotion candidates make a sound)
+            arch = h.get("config", {}).get("arch", "?")
+            status = Status.OK if metrics.get("profit_pct", -1) > 0 else Status.INFO
+            tg_send(
+                subsystem=Subsystem.BRAIN_EXPERIMENT,
+                status=status,
+                title=f"#{h['hypothesis_id']} ? {arch} ? {h['band']}",
+                fields={
+                    "Window":   h["window"],
+                    "Profit":   f"{metrics['profit_pct']:+.2f}%",
+                    "Win Rate": f"{metrics['wr']*100:.1f}%",
+                    "Sharpe":   f"{metrics['sharpe']:+.2f}",
+                    "PF":       f"{metrics['pf']:.2f}",
+                    "Trades":   f"{metrics['trades']} ({metrics['long_count']}L / {metrics['short_count']}S)",
+                },
+                context=h["rationale"],
+                action=None,
+                silent=True,   # auto-logged; no need to ping
+            )
+            print(f"[brain] DONE {h['hypothesis_id']} [{arch}] ? profit={metrics['profit_pct']}% WR={metrics['wr']*100:.1f}%")
+    finally:
+        _release_lock()
 
-    _release_lock()
     return completed
+
 
 
 if __name__ == "__main__":
