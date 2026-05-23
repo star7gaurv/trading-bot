@@ -231,3 +231,4 @@
 
 ---
 *← [[FINBUDDY_PROJECT_MEMORY]]*
+| 2026-05-23 19:45:02 | POL/USDT:USDT | LONG | 0h44m | -0.07% | -0.05 | exit_signal | BEAR | freqai_regression_v23_lo |
