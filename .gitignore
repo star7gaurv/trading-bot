@@ -13,6 +13,12 @@ backtests/
 freqtrade/user_data/tradesv3.dryrun.sqlite
 freqtrade/user_data/_v21_overlay_*.json
 
+# Brain temp configs — created per experiment by runner.py, auto-cleaned by finally block
+freqtrade/user_data/tmp_brain_group_g*.json
+
+# Dated pair-candidate snapshots — auto-generated, not useful in history
+freqtrade/user_data/pair_candidates_*.json
+
 # Backtest artifacts — never commit these (large binary files, machine-specific)
 freqtrade/user_data/backtest_results/*.zip
 freqtrade/user_data/backtest_results/*.meta.json
