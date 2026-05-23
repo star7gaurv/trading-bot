@@ -191,3 +191,4 @@ um_threads=2** added to both config.json and 23_regression_15m_di_config.json. 
 
 ---
 *← [[FINBUDDY_PROJECT_MEMORY]]*
+- **2026-05-23 20:00 UTC** — Regime changed: BEAR → NEUTRAL
