@@ -113,7 +113,7 @@ SEED_CONFIG_V23 = {
     "config_file":        "v23_regression_15m_di_config.json",
     "timeframe":          "15m",
     "long_threshold":     1.5,    # was 3.0 — z-scored N(0,1) predictions: ±3.0 hits 0.27% of candles
-    "short_threshold":    -1.5,   # ±1.5 covers ~13% of distribution (realistic signal density)
+    "short_threshold":    -0.8,   # was -1.5 — tighter SHORT bar guides brain to explore better SHORT WR (2026-05-23)
     "k_sl":               2.0,
     "k_tp":               2.0,
     "stability_n":        2,

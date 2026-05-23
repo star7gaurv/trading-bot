@@ -2,7 +2,8 @@
 # Daily walk-forward — short rolling window.
 # Runs every day at 22:00 UTC. Skips if a daily WF is already running.
 # 3-month trailing window · train=6mo · test=1mo · slide=1mo → 3 folds.
-# With 3 parallel workers this completes in ~5-6h (well before next 22:00 trigger).
+# With 2 parallel workers each fold takes ~6h; total wall clock ~12h (22:00→10:00 next morning).
+# Fold timeout bumped to 6h (was 4.5h) — all folds were timing out mid-training on 37-pair config.
 # Purpose: FAST REGRESSION DETECTOR — did today's live config break OOS performance?
 # Deep 21-fold monthly validation is handled by walkforward_monthly.sh.
 

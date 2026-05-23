@@ -139,6 +139,15 @@ def find_candidates() -> list[dict]:
                    and min(bear_profits) > MIN_PER_RUN_PROFIT_FLOOR)
         if not (bull_ok and bear_ok):
             continue
+
+        # WR gate (2026-05-23): at least 1 bull run AND 1 bear run must achieve
+        # WR ≥ 50%. Prevents configs that profit through massive wins but have
+        # unacceptably low win rates — consistent 10 USDT/day needs WR ≥ 50%.
+        bull_wr_ok = any(r.get("metrics", {}).get("wr", 0) >= 0.50 for r in g["bull_runs"])
+        bear_wr_ok = any(r.get("metrics", {}).get("wr", 0) >= 0.50 for r in g["bear_runs"])
+        if not bull_wr_ok or not bear_wr_ok:
+            continue
+
         if total_trades < MIN_TOTAL_TRADES:
             continue
 

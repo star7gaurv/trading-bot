@@ -479,6 +479,24 @@ class FinBuddyFreqAI_v23(IStrategy):
         side: str,
         **kwargs,
     ) -> float:
+        # Daily circuit breaker (2026-05-23): block new trades if today's closed P&L
+        # has already lost more than FREQAI_DAILY_LOSS_LIMIT USDT (default 10).
+        # Protects against runaway loss days like May 14 (-26.53 USDT) and May 21 (-14.44 USDT).
+        _daily_limit = float(os.environ.get("FREQAI_DAILY_LOSS_LIMIT", "10"))
+        from datetime import datetime, timezone as _tz
+        _today_utc = datetime.now(_tz.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+        _today_pnl = sum(
+            (t.close_profit_abs or 0.0)
+            for t in Trade.get_trades_proxy(is_open=False)
+            if t.close_date_utc and t.close_date_utc >= _today_utc
+        )
+        if _today_pnl < -_daily_limit:
+            logger.warning(
+                f"[CircuitBreaker] Today P&L = {_today_pnl:.2f} USDT "
+                f"(limit={-_daily_limit:.1f}). Blocking new trade entry."
+            )
+            return 0
+
         # Bug V fix (2026-05-20): use strategy's _get_current_regime() so all
         # regime reads in one candle agree. Previously called
         # _risk_engine.get_regime() which re-read the JSON — could disagree
@@ -968,9 +986,15 @@ class FinBuddyFreqAI_v23(IStrategy):
         base_long  = self.LONG_THRESHOLD
         base_short = abs(self.SHORT_THRESHOLD)
 
+        # 2026-05-23: cap combined multiplier so regime × WR_adj never push threshold
+        # past 2× base. Without cap: BEAR (×1.3) × bad_WR (×1.5) = ×1.95 → longs need
+        # prediction > 0.975 → effectively 0 trades on bad-WR BEAR days.
+        combined_long  = (long_mult_series  * wr_adj).clip(upper=2.0)
+        combined_short = (short_mult_series * wr_adj).clip(upper=2.0)
+
         dataframe["regime"] = regime_series
-        dataframe["dynamic_long_threshold"]  = base_long  * long_mult_series  * wr_adj
-        dataframe["dynamic_short_threshold"] = -(base_short * short_mult_series * wr_adj)
+        dataframe["dynamic_long_threshold"]  = base_long  * combined_long
+        dataframe["dynamic_short_threshold"] = -(base_short * combined_short)
         return dataframe
 
     # ------------------------------------------------------------------ #

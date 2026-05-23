@@ -40,11 +40,127 @@ ROOT = Path("/home/ubuntu/var/www/html/trade")
 COMPOSE_DIR = ROOT / "freqtrade"
 USER_DATA = ROOT / "freqtrade" / "user_data"
 RESULTS_DIR = USER_DATA / "backtest_results"
-BACKTEST_TIMEOUT_S = 3900  # 65 min hard cap (bumped 2026-05-21 — after Bug I aligned brain to 25-pair universe in 5f37ab8, each experiment with DI+SVM needs ~50 min vs the prior 5-pair ~10 min, causing 100% timeout. Will likely need another bump after 37-pair expansion.)
+BACKTEST_TIMEOUT_S = 3900  # 65 min hard cap per GROUP (2026-05-23: parallel pair-group split — each
+# group of ~18-19 pairs needs ~38 min DI+SVM; both groups run concurrently → wall clock ≈ 38 min.
+# Previously 37 pairs ran sequentially = ~74 min → always timed out after 37-pair expansion.)
 LOCK_FILE = Path("/home/ubuntu/.finbuddy/state/brain_runner.lock")  # prevent overlapping cron runs
 
 
 # Telegram via unified template (scripts/lib/telegram_template.py)
+
+
+# ── Pair-group config helpers (2026-05-23 — parallel split fix) ───────────
+
+def _load_brain_pairs(config_file: str) -> list[str]:
+    """Return full pair_whitelist from the brain config JSON."""
+    cfg_path = USER_DATA / config_file
+    try:
+        cfg = json.loads(cfg_path.read_text())
+        return cfg.get("exchange", {}).get("pair_whitelist", [])
+    except Exception:
+        return []
+
+
+def _create_pair_group_config(config_file: str, pairs_subset: list[str], group_id: str) -> str:
+    """Write a temporary config with only `pairs_subset`. Returns temp filename (not full path)."""
+    cfg_path = USER_DATA / config_file
+    cfg = json.loads(cfg_path.read_text())
+    cfg.setdefault("exchange", {})["pair_whitelist"] = pairs_subset
+    tmp_name = f"tmp_brain_group_{group_id}.json"
+    (USER_DATA / tmp_name).write_text(json.dumps(cfg, indent=2))
+    return tmp_name
+
+
+def _parse_raw_trades_from_zip(zip_path: Path) -> list[dict]:
+    """Extract the raw per-trade list from a FreqTrade backtest result zip."""
+    try:
+        with zipfile.ZipFile(zip_path) as zf:
+            json_names = [n for n in zf.namelist() if n.endswith(".json")]
+            if not json_names:
+                return []
+            with zf.open(json_names[0]) as jf:
+                data = json.load(jf)
+        strategy_data = data.get("strategy", {})
+        if not strategy_data:
+            return []
+        s = strategy_data[next(iter(strategy_data))]
+        return s.get("trades", []) or []
+    except Exception as e:
+        print(f"[parse_raw] error: {e}", file=sys.stderr)
+        return []
+
+
+def _compute_metrics_from_raw_trades(trades: list[dict]) -> dict:
+    """Compute aggregated brain metrics from a list of raw FreqTrade trade dicts."""
+    n = len(trades)
+    if n == 0:
+        return {
+            "trades": 0, "wr": 0.0, "sharpe": 0.0, "pf": 0.0,
+            "profit_pct": 0.0, "max_dd": 0.0,
+            "long_count": 0, "short_count": 0,
+            "exit_signal_count": 0, "exit_signal_wr": 0.0,
+            "stop_loss_count": 0,
+        }
+
+    wins = sum(1 for t in trades if float(t.get("profit_abs") or 0) > 0)
+    losses = n - wins
+    profits = [float(t.get("profit_abs") or 0.0) for t in trades]
+    gross_win  = sum(p for p in profits if p > 0)
+    gross_loss = -sum(p for p in profits if p < 0)
+    pf = (gross_win / gross_loss) if gross_loss > 0 else (float("inf") if gross_win > 0 else 0.0)
+
+    # Profit % relative to a 10000 USDT virtual wallet (brain uses DRY_RUN_WALLET=10000)
+    profit_pct = round(sum(profits) / 10000.0 * 100, 3)
+
+    # Max drawdown from equity curve
+    equity = 10000.0
+    peak = equity
+    max_dd = 0.0
+    sorted_trades = sorted(trades, key=lambda t: t.get("close_date") or "")
+    daily: dict[str, float] = {}
+    for t in sorted_trades:
+        p = float(t.get("profit_abs") or 0.0)
+        equity += p
+        if equity > peak:
+            peak = equity
+        if peak > 0:
+            dd = (peak - equity) / peak
+            if dd > max_dd:
+                max_dd = dd
+        d = (t.get("close_date") or "")[:10]
+        if d:
+            daily[d] = daily.get(d, 0.0) + p
+
+    # Sharpe from daily P&L
+    daily_pnl = list(daily.values())
+    if len(daily_pnl) >= 2:
+        import statistics
+        mu_d = statistics.mean(daily_pnl)
+        sd_d = statistics.stdev(daily_pnl)
+        sharpe = round((mu_d / sd_d * (252 ** 0.5)) if sd_d > 0 else 0.0, 3)
+    else:
+        sharpe = 0.0
+
+    long_count  = sum(1 for t in trades if not t.get("is_short", False))
+    short_count = sum(1 for t in trades if t.get("is_short", False))
+    exit_signal_count = sum(1 for t in trades if t.get("exit_reason") == "exit_signal")
+    exit_signal_wins  = sum(1 for t in trades if t.get("exit_reason") == "exit_signal" and float(t.get("profit_abs") or 0) > 0)
+    exit_signal_wr    = (exit_signal_wins / exit_signal_count) if exit_signal_count else 0.0
+    stop_loss_count   = sum(1 for t in trades if t.get("exit_reason") == "stop_loss")
+
+    return {
+        "trades":            n,
+        "wr":                round(wins / n, 4),
+        "sharpe":            sharpe,
+        "pf":                round(pf, 3),
+        "profit_pct":        profit_pct,
+        "max_dd":            round(max_dd * 100, 3),
+        "long_count":        long_count,
+        "short_count":       short_count,
+        "exit_signal_count": exit_signal_count,
+        "exit_signal_wr":    round(exit_signal_wr, 4),
+        "stop_loss_count":   stop_loss_count,
+    }
 
 
 # ── Result parsing ────────────────────────────────────────────────────────
@@ -130,17 +246,11 @@ def parse_zip(zip_path: Path) -> dict | None:
         return None
 
 
-# ── Run a single hypothesis ───────────────────────────────────────────────
+# ── Run a single hypothesis (parallel pair-group split, 2026-05-23) ───────
 
-def run_hypothesis(h: dict) -> dict | None:
-    """Execute one backtest. Routes env vars by architecture (v22 vs v23)."""
-    cfg = h["config"]
-    config_file = cfg.get("config_file", "v23_regression_15m_di_config.json")
-    timerange   = h["timerange"]
-    identifier  = f"brain_{h['hypothesis_id']}_{int(time.time())}"
-    arch        = cfg.get("arch", "v23")
-
-    # Architecture-aware env vars. Each strategy reads its own set.
+def _build_env_args(cfg: dict, identifier: str) -> list[str]:
+    """Build docker -e env args for one brain experiment."""
+    arch = cfg.get("arch", "v23")
     env_args = [
         "-e", f"FREQAI_K_SL={cfg.get('k_sl', 1.0)}",
         "-e", f"FREQAI_K_TP={cfg.get('k_tp', 2.0)}",
@@ -149,20 +259,32 @@ def run_hypothesis(h: dict) -> dict | None:
         "-e", f"FREQTRADE__FREQAI__FEATURE_PARAMETERS__LABEL_PERIOD_CANDLES={cfg.get('label_period_candles', 24)}",
     ]
     if arch == "v22":
-        env_args += [
-            "-e", f"FREQAI_ML_THRESHOLD={cfg.get('ml_threshold', 0.60)}",
-        ]
+        env_args += ["-e", f"FREQAI_ML_THRESHOLD={cfg.get('ml_threshold', 0.60)}"]
     else:  # v23
         env_args += [
             "-e", f"FREQAI_LONG_THRESHOLD={cfg.get('long_threshold', 1.5)}",
             "-e", f"FREQAI_SHORT_THRESHOLD={cfg.get('short_threshold', -1.5)}",
             "-e", f"FREQAI_STABILITY_N={cfg.get('stability_n', 2)}",
             "-e", f"FREQAI_FEATURE_SET={cfg.get('feature_set', 'all')}",
-            # Fix 4 (2026-05-22): DI and SVM filter flags were in SEED_CONFIG_V23 but
-            # never passed to the container — brain backtests always used strategy defaults.
             "-e", f"FREQAI_FILTER_DI={'true' if cfg.get('filter_di', True) else 'false'}",
             "-e", f"FREQAI_FILTER_SVM={'true' if cfg.get('filter_svm', True) else 'false'}",
         ]
+    return env_args
+
+
+def _run_hypothesis_group(
+    h: dict,
+    pairs_subset: list[str],
+    group_suffix: str,
+) -> list[dict]:
+    """Run one docker backtest for a pair subset. Returns raw trade list or []."""
+    cfg         = h["config"]
+    config_file = cfg.get("config_file", "v23_regression_15m_di_config.json")
+    timerange   = h["timerange"]
+    identifier  = f"brain_{h['hypothesis_id']}_{group_suffix}_{int(time.time())}"
+
+    tmp_config = _create_pair_group_config(config_file, pairs_subset, group_suffix)
+    env_args   = _build_env_args(cfg, identifier)
 
     cmd = (
         ["docker-compose", "run", "--rm", "--no-deps"]
@@ -170,7 +292,7 @@ def run_hypothesis(h: dict) -> dict | None:
         + [
             "freqtrade",
             "backtesting",
-            "--config", f"/freqtrade/user_data/{config_file}",
+            "--config", f"/freqtrade/user_data/{tmp_config}",
             "--strategy", cfg.get("strategy", "FinBuddyFreqAI_v23"),
             "--freqaimodel", cfg.get("freqaimodel", "LightGBMRegressor"),
             "--timerange", timerange,
@@ -180,12 +302,11 @@ def run_hypothesis(h: dict) -> dict | None:
         ]
     )
 
-    log_dir = ROOT / "backtests"
+    log_dir  = ROOT / "backtests"
     log_dir.mkdir(parents=True, exist_ok=True)
-    log_file = log_dir / f"brain_{h['hypothesis_id']}.log"
+    log_file = log_dir / f"brain_{h['hypothesis_id']}_{group_suffix}.log"
 
     before = set(RESULTS_DIR.glob("backtest-result-*.zip"))
-    t0 = time.time()
     try:
         with log_file.open("w") as lf:
             proc = subprocess.run(
@@ -193,21 +314,86 @@ def run_hypothesis(h: dict) -> dict | None:
                 timeout=BACKTEST_TIMEOUT_S,
             )
     except subprocess.TimeoutExpired:
-        # Kill any orphan freqtrade-run containers from this experiment
         _kill_orphan_containers(identifier)
-        return None
-    elapsed = int(time.time() - t0)
+        print(f"[brain] group {group_suffix} timeout for {h['hypothesis_id']}", file=sys.stderr)
+        return []
+    finally:
+        # Always clean up temp config
+        tmp_path = USER_DATA / tmp_config
+        tmp_path.unlink(missing_ok=True)
 
     if proc.returncode != 0:
-        return None
+        return []
 
-    after = set(RESULTS_DIR.glob("backtest-result-*.zip"))
+    after    = set(RESULTS_DIR.glob("backtest-result-*.zip"))
     new_zips = sorted(after - before, key=lambda p: p.stat().st_mtime)
     if not new_zips:
+        return []
+    return _parse_raw_trades_from_zip(new_zips[-1])
+
+
+def run_hypothesis(h: dict) -> dict | None:
+    """Execute one backtest using parallel pair-group split.
+
+    Splits the 37-pair brain config into 2 groups of ~18-19 pairs and runs
+    both groups simultaneously with ProcessPoolExecutor(max_workers=2).
+
+    Each group completes in ~38 min (well under BACKTEST_TIMEOUT_S=65 min),
+    vs the old sequential 37-pair run that needed ~74 min and always timed out.
+
+    Results from both groups are merged into a single aggregated metrics dict.
+    """
+    cfg         = h["config"]
+    config_file = cfg.get("config_file", "v23_regression_15m_di_config.json")
+
+    all_pairs   = _load_brain_pairs(config_file)
+    if not all_pairs:
+        # Fallback: no pairs found — run the old single-group path
+        all_pairs = []
+
+    t0 = time.time()
+
+    if len(all_pairs) <= 1:
+        # Edge case: ≤1 pair, run as single group
+        trades = _run_hypothesis_group(h, all_pairs or [], "g0")
+        if not trades:
+            return None
+        metrics = _compute_metrics_from_raw_trades(trades)
+        metrics["elapsed_s"] = int(time.time() - t0)
+        return metrics
+
+    # Split into 2 groups
+    mid      = len(all_pairs) // 2
+    group_a  = all_pairs[:mid]
+    group_b  = all_pairs[mid:]
+
+    import concurrent.futures
+
+    def _run_a():
+        return _run_hypothesis_group(h, group_a, "gA")
+
+    def _run_b():
+        return _run_hypothesis_group(h, group_b, "gB")
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+        fut_a = pool.submit(_run_a)
+        fut_b = pool.submit(_run_b)
+        trades_a = fut_a.result()
+        trades_b = fut_b.result()
+
+    all_trades = trades_a + trades_b
+    elapsed = int(time.time() - t0)
+
+    if not all_trades:
+        # Both groups failed
         return None
-    metrics = parse_zip(new_zips[-1])
-    if metrics:
-        metrics["elapsed_s"] = elapsed
+    if not trades_a:
+        print(f"[brain] group A failed — using group B only ({len(trades_b)} trades)", file=sys.stderr)
+    if not trades_b:
+        print(f"[brain] group B failed — using group A only ({len(trades_a)} trades)", file=sys.stderr)
+
+    metrics = _compute_metrics_from_raw_trades(all_trades)
+    metrics["elapsed_s"] = elapsed
     return metrics
 
 
