@@ -40,9 +40,9 @@ ROOT = Path("/home/ubuntu/var/www/html/trade")
 COMPOSE_DIR = ROOT / "freqtrade"
 USER_DATA = ROOT / "freqtrade" / "user_data"
 RESULTS_DIR = USER_DATA / "backtest_results"
-BACKTEST_TIMEOUT_S = 3900  # 65 min hard cap per GROUP (2026-05-23: parallel pair-group split — each
-# group of ~18-19 pairs needs ~38 min DI+SVM; both groups run concurrently → wall clock ≈ 38 min.
-# Previously 37 pairs ran sequentially = ~74 min → always timed out after 37-pair expansion.)
+BACKTEST_TIMEOUT_S = 5400  # 90 min hard cap per GROUP (2026-05-23: sequential pair-group split — each
+# group of ~18-19 pairs needs ~38 min DI+SVM; groups run sequentially → wall clock ≈ 76 min total.
+# Previously 37 pairs ran sequentially = ~74 min → always timed out. Parallel OOM-killed gB.)
 LOCK_FILE = Path("/home/ubuntu/.finbuddy/state/brain_runner.lock")  # prevent overlapping cron runs
 
 
@@ -338,8 +338,9 @@ def run_hypothesis(h: dict) -> dict | None:
     Splits the 37-pair brain config into 2 groups of ~18-19 pairs and runs
     both groups simultaneously with ProcessPoolExecutor(max_workers=2).
 
-    Each group completes in ~38 min (well under BACKTEST_TIMEOUT_S=65 min),
-    vs the old sequential 37-pair run that needed ~74 min and always timed out.
+    Groups run SEQUENTIALLY (not in parallel) to avoid OOM on the 4-core/24GB server.
+    Parallel execution caused group B to be OOM-killed mid-training every time.
+    Sequential: gA ~38min + gB ~38min = ~76min total, well under 90min timeout.
 
     Results from both groups are merged into a single aggregated metrics dict.
     """
@@ -348,7 +349,6 @@ def run_hypothesis(h: dict) -> dict | None:
 
     all_pairs   = _load_brain_pairs(config_file)
     if not all_pairs:
-        # Fallback: no pairs found — run the old single-group path
         all_pairs = []
 
     t0 = time.time()
@@ -362,24 +362,13 @@ def run_hypothesis(h: dict) -> dict | None:
         metrics["elapsed_s"] = int(time.time() - t0)
         return metrics
 
-    # Split into 2 groups
+    # Split into 2 groups — run SEQUENTIALLY to prevent OOM on 4-core server
     mid      = len(all_pairs) // 2
     group_a  = all_pairs[:mid]
     group_b  = all_pairs[mid:]
 
-    import concurrent.futures
-
-    def _run_a():
-        return _run_hypothesis_group(h, group_a, "gA")
-
-    def _run_b():
-        return _run_hypothesis_group(h, group_b, "gB")
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
-        fut_a = pool.submit(_run_a)
-        fut_b = pool.submit(_run_b)
-        trades_a = fut_a.result()
-        trades_b = fut_b.result()
+    trades_a = _run_hypothesis_group(h, group_a, "gA")
+    trades_b = _run_hypothesis_group(h, group_b, "gB")
 
     all_trades = trades_a + trades_b
     elapsed = int(time.time() - t0)
