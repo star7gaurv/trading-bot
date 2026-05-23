@@ -576,7 +576,7 @@ Three structural fixes addressing root causes found across 11 smoke tests:
 | [[tasks/phase-11-self-evolution\|11 — Self-Evolution]] | ✅ Live | Dynamic regime thresholds, per-pair-per-regime gate, WR feedback loop |
 | [[tasks/phase-12-brain-dashboard\|12 — Brain Dashboard]] | ✅ Complete | React SPA with WebSockets, Live Trades, Neural Feed |
 | [[tasks/phase-13-conscious-brain\|13 — Conscious Brain]] | ✅ Live | Regression arch, autonomous hypothesis engine, auto-apply pipeline |
-| [[tasks/phase-14-10usdt-daily\|14 — 10 USDT/Day]] | 🔄 In Progress | WR 38%→55% path; brain zscore experiments; OI feature next |
+| [[tasks/phase-14-10usdt-daily\|14 — 10 USDT/Day]] | 🔄 In Progress | WR 38%→55% path; brain zscore experiments; Open Interest Delta feature LIVE (2026-05-23) |
 
 ---
 
@@ -609,6 +609,7 @@ Three structural fixes addressing root causes found across 11 smoke tests:
 */30 * * * *  pair_regime_performance.py              # per-pair-per-regime gate update
 15 1 * * *    build_historical_macro.py               # rebuild macro parquet daily
 20 1 * * *    build_historical_regime.py              # rebuild regime parquet daily
+30 1 * * *    build_historical_oi.py                  # rebuild Open Interest proxy daily
 ```
 
 ---
