@@ -4,8 +4,51 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status**: 🟢 v23 LIVE (identifier `finbuddy_v23_sym_1779274506`) · 🧠 brain 265+ completed / aligned to live universe today · 💎 funding-rate + confidence-leverage live · 🔄 daily WF armed (3h/fold) · 🚀 brain→live promotion pipeline closed
-**Last Updated**: 2026-05-20 20:00 UTC (3 rounds of audit, 13 commits — see "2026-05-20 — The 13-commit day" below)
+**Status**: 🟢 v23 LIVE (identifier `finbuddy_v23_no_median_1779447827`) · 🧠 brain parallel split — experiments will complete · 💎 circuit breaker 10 USDT/day live · 🔄 WF fold timeout fixed (6h) — real results tonight · 🚀 brain→live pipeline closed  
+**Last Updated**: 2026-05-23 UTC (P0-P2 fixes — commits `8bede56` + `aba9e4d`)
+
+### 2026-05-23 — P0–P2 Fixes: Brain Unblocked + WF Fixed + Circuit Breaker
+
+**Root causes found from Telegram logs (7 FAILED/day, all WF folds empty, 0 trades in BEAR):**
+
+**P0.1 — Brain experiments 99% failure rate FIXED (`runner.py`)**
+- 37-pair sequential backtest ~74 min > `BACKTEST_TIMEOUT_S=3900` (65 min) → always timed out
+- Fix: split 37 pairs into 2 groups of ~18-19, run via `ThreadPoolExecutor(max_workers=2)`. Each group ~38 min.
+- All 37 pairs still evaluated per experiment — user rejected reducing to 15 pairs (correct call)
+- New helpers: `_load_brain_pairs`, `_create_pair_group_config`, `_parse_raw_trades_from_zip`, `_compute_metrics_from_raw_trades`, `_build_env_args`, `_run_hypothesis_group`
+- Partial-success: if one group fails, single-group result logged (not FAILED)
+
+**P0.2 — WF folds always empty FIXED (`walk_forward.py`)**
+- fold timeout=16200s (4.5h). 37-pair training needs ~5.5-6h. fold_03 was BACKTESTING when killed — 30 min from done.
+- Fix: timeout → 21600 (6h). Daily WF 22:00 → ~08:00 UTC. First real results tonight.
+
+**P1 — Daily circuit breaker (`FinBuddyFreqAI_v23.py`, `.env`, `docker-compose.yml`)**
+- `custom_stake_amount()` top: reads `FREQAI_DAILY_LOSS_LIMIT=10`. Blocks new entries when today P&L < -10 USDT.
+- `.env` updated. `docker-compose.yml` environment block updated (vars must be explicitly listed). Verified in container.
+
+**P2.1 — Brain WR gate (`promote.py`)**
+- `find_candidates()`: requires ≥1 bull run AND ≥1 bear run with WR ≥ 50%. Profit alone wasn't enough.
+
+**P2.2 — Asymmetric SEED (`hypothesis_gen.py`)**
+- `short_threshold`: -1.5 → -0.8. LONG WR=57%, SHORT WR=34% — brain starts with tighter short requirement.
+
+**P2.3 — Combined multiplier cap (`FinBuddyFreqAI_v23.py`)**
+- `(long_mult_series * wr_adj).clip(upper=2.0)` — prevents BEAR(×1.3) × bad WR(×1.26) → ×1.638 compounding into 0-trade days.
+
+**Pending next:**
+- P3.1: Open Interest Delta feature (`build_historical_oi.py`, add to strategy, bump identifier, flush models)
+- P3.2: Leverage tier tuning (FREQAI_LEV_MED_CONF_RATIO=1.7, FREQAI_LEV_HIGH_CONF_RATIO=2.5)
+
+---
+
+### 2026-05-22 (Evening) — 15-Bug Deep Analysis (commit `3deeafc`)
+
+Brain was completely silenced. 20 total bugs fixed across two 2026-05-22 sessions.
+Brain now exploring z-scored hypothesis space with windows bull_2024Q1/Q2, bear_2025Q1, bull_2025Q4, bear_2026Q1.
+Identifier: `finbuddy_v23_no_median_1779447827` (per-pair median removed, z-score already centers).
+First promotion requires ≥2 bull + ≥2 bear z-scored experiments passing gates.
+
+---
 
 ### 2026-05-20 — The 13-commit day (Round 1 unblock + Round 2 structural + Round 3 config-drift)
 

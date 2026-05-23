@@ -585,6 +585,45 @@ Comprehensive audit and cleanup of FinBuddyFreqAI.py to match live v17 state:
 *This file must be updated at the end of every major session. It is the operational memory for any Claude instance opening this repo.*
 
 
+## Session 2026-05-23 — P0–P2 Fixes: Brain Unblocked + WF Fixed + Circuit Breaker (commit `8bede56`, `aba9e4d`)
+
+**Context:** Telegram logs confirmed brain was producing 7 FAILED experiments/day with 0 completing, and all WF folds were returning empty `[]`. BEAR regime + bad WR compounding caused 0 trades. Root causes found and all 6 fixes shipped.
+
+### P0.1 — Brain parallel pair-group split (`runner.py`)
+- **Root cause:** 37-pair sequential backtest ~74 min > `BACKTEST_TIMEOUT_S=3900` (65 min). Every experiment timed out.
+- **Fix:** Split 37 pairs into 2 groups of ~18-19, run both simultaneously via `ThreadPoolExecutor(max_workers=2)`. Each group ~38 min — well under timeout. All 37 pairs still evaluated per experiment (user explicitly rejected reducing to 15 pairs — "we can split them like we did on WF").
+- **New helpers:** `_load_brain_pairs`, `_create_pair_group_config`, `_parse_raw_trades_from_zip`, `_compute_metrics_from_raw_trades`, `_build_env_args`, `_run_hypothesis_group`. Partial-success path: if one group fails, single-group result logged instead of FAILED.
+
+### P0.2 — WF fold timeout (`walk_forward.py`)
+- **Root cause:** `timeout=16200` (4.5h). 37-pair training needs ~5.5-6h. fold_01/02 killed at 02:29 UTC (exactly 4.5h after 22:00 start). fold_03 was actively **backtesting** (training done!) when killed at 07:00 — only 30 min from finishing.
+- **Fix:** `timeout=16200` → `21600` (6h). Daily WF 22:00 → ~08:00 UTC next morning.
+
+### P1 — Daily circuit breaker (`FinBuddyFreqAI_v23.py`, `.env`, `docker-compose.yml`)
+- Added at top of `custom_stake_amount()`. Reads `FREQAI_DAILY_LOSS_LIMIT` from env (default 10 USDT). Blocks new trade entries when today's closed P&L < -limit.
+- `.env` updated: `FREQAI_DAILY_LOSS_LIMIT=10`. `docker-compose.yml` environment block updated (was using explicit list — var wasn't forwarded without adding it). Verified in container: `docker exec freqtrade env | grep FREQAI_DAILY` = `10`.
+
+### P2.1 — Brain WR gate (`promote.py`)
+- `find_candidates()` now requires ≥1 bull run AND ≥1 bear run with WR ≥ 50% to proceed. Profit alone wasn't sufficient filter.
+
+### P2.2 — Asymmetric SEED (`hypothesis_gen.py`)
+- `SEED_CONFIG_V23["short_threshold"]`: `-1.5` → `-0.8`. LONG WR=57%, SHORT WR=34% — brain exploration should start with tighter short bar.
+
+### P2.3 — Combined multiplier cap (`FinBuddyFreqAI_v23.py`)
+- `_compute_dynamic_thresholds()`: `(long_mult_series * wr_adj).clip(upper=2.0)` — prevents BEAR(×1.3) × bad WR(×1.26) = ×1.638 compounding. With EMA-50 filter also failing in BEAR, this was causing 0-trade days.
+
+### Live state after session
+- Bot: alive, all env vars confirmed in container
+- Identifier: unchanged (`finbuddy_v23_no_median_1779447827`) — no feature change
+- Next brain experiment will use parallel split (old running experiment pid=513444 uses old code; expires at ~3900s then next cron tick picks up new code)
+- WF runs tonight 22:00 UTC — first real fold results expected tomorrow morning
+
+### What to watch next
+- Brain log: first `[brain] completed X` entry (not FAILED) — confirms parallel split working
+- WF tonight: summary.json should have `folds: [{...}, {...}, {...}]` not `[]`
+- If WF PASS (WR>50%, Sharpe>0.5, DD<20%, PF>1.2) → brain promotion auto-fires
+
+---
+
 ## Session 2026-05-22 — Parallel WF Engine + 3 Trade-Blocking Bug Fixes
 
 ### Walk-Forward Overhaul (all committed)
