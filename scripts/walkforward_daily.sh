@@ -2,10 +2,15 @@
 # Daily walk-forward — short rolling window.
 # Runs every day at 22:00 UTC. Skips if a daily WF is already running.
 # 3-month trailing window · train=6mo · test=1mo · slide=1mo → 3 folds.
-# With 2 parallel workers each fold takes ~6h; total wall clock ~12h (22:00→10:00 next morning).
-# Fold timeout bumped to 6h (was 4.5h) — all folds were timing out mid-training on 37-pair config.
-# Purpose: FAST REGRESSION DETECTOR — did today's live config break OOS performance?
-# Deep 21-fold monthly validation is handled by walkforward_monthly.sh.
+# SEQUENTIAL (max-workers=1): each fold runs alone, no CPU competition.
+# Solo fold training = 4h19m (fold_03 log 2026-05-22); 3 folds = ~13.5h → finishes by ~11:30 UTC.
+# Fold timeout 6h — solo folds finish in ~4.5h, giving 1.5h buffer even with brain competition.
+#
+# WHY max-workers=1 (not 2): parallel folds competed with each other + brain cron (every 10m) →
+# fold training exceeded 4.5h timeout on all 3 parallel attempts (2026-05-21, 2026-05-22).
+# fold_03 which ran SOLO after fold_01/02 were killed completed training in 4h19m and started
+# backtesting, confirming sequential execution is the reliable path.
+# May-20 sequential run (6 folds): ALL 6 completed successfully.
 
 set -e
 
@@ -49,7 +54,7 @@ python3 "$SCRIPT" \
     --timeframe 15m \
     --config config.json \
     --skip-download \
-    --max-workers 2 \
+    --max-workers 1 \
     --lgbm-threads 2 >> "$LOG" 2>&1
 
 EXIT=$?
