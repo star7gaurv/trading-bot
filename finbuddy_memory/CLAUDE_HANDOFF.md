@@ -1,6 +1,6 @@
 # 🤝 FinBuddy — Handoff Note for Claude Code
 
-**Last updated:** 2026-05-20 20:00 UTC (end of a 13-commit, 3-audit-round day)
+**Last updated:** 2026-05-23 UTC (P0–P2 fixes — commits `8bede56` + `aba9e4d`)  
 **Branch:** `master`
 
 ---
@@ -9,82 +9,85 @@
 
 | Item | Value |
 |---|---|
-| Live strategy | `FinBuddyFreqAI_v23.py` (15m TF, LightGBMRegressor) |
-| FreqAI identifier | `finbuddy_v23_sym_1779274506` |
-| Model features | ~530 (3 funding-rate features added; `%-recent_wr` removed for train-serve skew) |
-| Pairs | 25, futures USDT-M isolated, max 8 trades |
-| **Leverage** | **Confidence-based tiers 1×/2×/3×** (commit `60d4fb4`, FALLBACK fixed to LOW per `5f37ab8`) |
-| Regime | ⚪ NEUTRAL |
-| Wallet | **1000 USDT** (reverted from 10000 in `2f01b56`) — current balance ~1110 |
-| Live P&L | 296 trades, +$110.78 dry-run |
-| Bot status | ✅ Up since 2026-05-20 ~19:55 UTC after threshold reload via `docker-compose up -d` |
-| Per-pair-per-regime gate | ✅ Active |
+| Live strategy | `FinBuddyFreqAI_v23.py` (15m TF, LightGBMRegressor, z-scored target) |
+| FreqAI identifier | `finbuddy_v23_no_median_1779447827` |
+| Model features | ~530 (3 funding-rate + macro + regime + OHLCV lags; `%-recent_wr` removed) |
+| Pairs | **37**, futures USDT-M isolated, max 8 trades |
+| Leverage | Confidence-based tiers 1×/2×/3× (FALLBACK = LOW = 1×) |
+| Regime | BEAR (as of 2026-05-23) |
+| Wallet | **1000 USDT** dry-run |
+| Live P&L | 334 trades, +97 USDT, WR 38.6%, PF 1.37 |
+| Bot status | ✅ Up, restarted 2026-05-23 after P1 circuit breaker + P2.3 multiplier cap |
+| Per-pair-per-regime gate | ✅ Active. Blocked: OP/BEAR, LINK/NEUTRAL, AAVE/NEUTRAL, ZEC/NEUTRAL |
 | DI / SVM | DI_threshold=1.0, use_SVM_to_remove_outliers=true |
-| `dry_run_wallet` | 1000 (live), 10000 (brain + WF — explicit env override per run) |
+| Daily circuit breaker | ✅ ACTIVE — FREQAI_DAILY_LOSS_LIMIT=10 (blocks new trades when today P&L < -10 USDT) |
 
-**Live env vars (in `freqtrade/.env`):**
+**Live env vars (in `freqtrade/.env` AND `docker-compose.yml` environment block):**
 ```
 FREQAI_K_TP=2.0
 FREQAI_K_SL=2.0
-FREQAI_LONG_THRESHOLD=2.0        # was 3.25 — loosened to restore trade volume
-FREQAI_SHORT_THRESHOLD=-2.0      # was -2.75
-FREQAI_STABILITY_N=1             # was 2
-FINBUDDY_RECENT_WR=0.34
+FREQAI_LONG_THRESHOLD=0.5
+FREQAI_SHORT_THRESHOLD=-0.5
+FREQAI_STABILITY_N=1
+FREQAI_DAILY_LOSS_LIMIT=10        ← NEW 2026-05-23
 FREQAI_LEV_LOW_CONF_RATIO=1.0
 FREQAI_LEV_MED_CONF_RATIO=1.5
 FREQAI_LEV_HIGH_CONF_RATIO=2.0
 FREQAI_LEV_LOW=1.0
 FREQAI_LEV_MED=2.0
 FREQAI_LEV_HIGH=3.0
+FINBUDDY_RECENT_WR=0.42
 ```
 
----
-
-## 🐛 13 Commits Shipped 2026-05-19 → 2026-05-20
-
-### Round 1 — initial unblock + new feature
-- `4702549` — Stop-ratchet + time-limit (cache entry_atr_pct via set_custom_data; 72→24 candles)
-- `3eafab8` — Brain gates loosened + `requeue` CLI + baseline file
-- `d7bd60e` — Funding-rate feature (3 cols, 7,333 events backfilled to 2019-09)
-- `7c8bf52` — Live bot 6h dead recovery (flushed root cache) + auto_promote None rendering fix
-- `d6c883d` — Daily WF cron (22:00 UTC) + auto_promote (04:00 UTC)
-- `f9a8a2b` — WF per-fold timeout 3600s → 7200s
-
-### Round 2 — structural symmetry + bias patch
-- `b4b02b7` — 5 bugs + 3 cleanups: WF env-var drift, asymmetric RSI gate, longs-only funding gate, recent_wr feature drift, DI/SVM not in live config; stale timeframe attr, class_weight no-op, wallet 1000→10000
-- `a187ab9` — Per-pair median offset for prediction long-bias (patch, not proper z-score)
-- `60d4fb4` — Confidence-based leverage tiers (1x/2x/3x by ratio)
-- `5fcf290` — WF timeout 7200s → 10800s (DI+SVM made each fold need 3h)
-- `2f01b56` — Revert wallet 10000 → 1000
-
-### Round 3 — config drift + races
-- `5f37ab8` — 5 bugs: brain backtest config drifted from live (5 pairs vs 25!), cluster-cap race, leverage FALLBACK 2x→1x, gate order, regime read race
-- Plus cron `%` escape fix for pair_performance (was silently broken 11 days)
-- Plus `.env` reload requires `docker-compose up -d` not `restart` (memory note)
+⚠️ **IMPORTANT:** `docker-compose.yml` has an explicit `environment:` block — every new `.env` var MUST also be added there, or the container never sees it. `docker-compose restart` does NOT reload `.env` — always use `docker-compose up -d freqtrade`.
 
 ---
 
-## 🧠 Brain (Autonomous Hypothesis Engine) — Active
+## 🏗️ Phase 14 — Path to 10 USDT/Day (Active)
 
-| Cron | What |
+Full task file: `finbuddy_memory/tasks/phase-14-10usdt-daily.md`
+
+| Task | Status |
 |---|---|
-| `*/10 * * * *` | One brain experiment per fire |
-| `0 */6 * * *` | Generate 4 safe + 6 aggressive hypotheses |
-| `30 */6 * * *` | Analyse + prune dead patterns |
-| `0 7 * * *` | Daily promotion-candidate scan |
-| `0 8 * * *` | Daily digest, daily_summary, pair_performance |
-| `0 22 * * *` | **Daily walk-forward** (12mo rolling, ~18h with 25 pairs) |
-| `0 3 1 * *` | Monthly heavy walk-forward (27mo) |
-| `0 4 * * *` | `auto_promote.py` — WF Sharpe vs baseline Telegram |
-| `25 1 * * *` | **Funding-rate parquet refresh** |
-| `15 1 * * *` | Historical macro builder |
-| `20 1 * * *` | Historical regime builder |
+| P0.1 Brain parallel pair-group split | ✅ Done `8bede56` |
+| P0.2 WF fold timeout 4.5h → 6h | ✅ Done `8bede56` |
+| P1 Daily circuit breaker 10 USDT | ✅ Done `8bede56` + `aba9e4d` |
+| P2.1 Brain WR gate ≥50% | ✅ Done `8bede56` |
+| P2.2 SEED short_threshold -1.5 → -0.8 | ✅ Done `8bede56` |
+| P2.3 Combined multiplier cap 2.0× | ✅ Done `8bede56` |
+| P3.1 Open Interest Delta feature | ⬜ NEXT |
+| P3.2 Leverage tier tuning | ⬜ NEXT |
+| P4 Phase 10 prep scripts | ⬜ Deferred |
 
-**Brain state (2026-05-20 evening):**
-- 265+ completed experiments, ~26 queued
-- 16 configs have ≥2 bull + ≥2 bear samples — but ALL have bull_avg ≤ 0 OR bull_sharpe ≤ 0 (the deferred long-bias root cause)
-- Best `e0e1bf338410` profit=+0.192% WR=48.1% Sharpe=1.42 was on bear_2025Q1 only and from the 5-pair brain era (now legacy after `5f37ab8` aligned the universe)
-- **Pre-2026-05-20 results marked legacy** via `live_baseline.json::config_aligned_at`
+---
+
+## 🧠 Brain State
+
+| Item | Value |
+|---|---|
+| Legacy experiments | 268+ — ALL excluded (raw-% target, incompatible with z-score) |
+| Z-scored experiments | Starting to accumulate — parallel split fix deployed 2026-05-23 |
+| Queue pending | ~200 |
+| Promotions fired | 0 |
+| SEED thresholds | long=1.5, short=-0.8 |
+| Windows | bull_2024Q1/Q2, bear_2025Q1, bull_2025Q4, bear_2026Q1 |
+| WR gate | ≥1 bull + ≥1 bear run must have WR ≥ 50% |
+| First promotion needs | ≥2 bull + ≥2 bear z-scored passing all gates |
+
+**Why experiments were 100% failing (now fixed):** 37-pair sequential backtest ~74 min > 65-min timeout. Fixed by parallel pair-group split (2 groups × ~18-19 pairs, each ~38 min, run simultaneously).
+
+---
+
+## 📊 Walk-Forward State
+
+| Run | Schedule | Folds | Timeout/fold | Status |
+|---|---|---|---|---|
+| Daily | 22:00 UTC | 3 | 6h (fixed 2026-05-23) | ✅ Armed — first real results tonight |
+| Deep | 03:00 UTC every 4 days | 21 | 6h | ✅ Armed |
+
+**Why folds were empty (now fixed):** timeout was 4.5h; 37-pair training needs 5.5-6h. fold_03 was backtesting when killed — 30 min from done. Fixed: timeout 16200 → 21600.
+
+**Gate for Phase 10:** WR > 50%, Sharpe > 0.5, DD < 20%, PF > 1.2 across ≥3 folds.
 
 ---
 
@@ -92,8 +95,8 @@ FREQAI_LEV_HIGH=3.0
 
 | Bot | Token prefix | What |
 |---|---|---|
-| FreqTrade native | `8557119080:` | Trade events |
-| Brain | `8051489946:` | Digest + promotion candidates with Apply/Skip buttons |
+| FreqTrade native | `8557119080:` | Trade events + daily summary |
+| Brain | `8051489946:` | Brain digest + promotion Apply/Skip buttons |
 
 Listener: `*/2 * * * * flock -n /tmp/finbuddy_telegram_listener.lock telegram_listener.py`
 
@@ -103,44 +106,55 @@ Listener: `*/2 * * * * flock -n /tmp/finbuddy_telegram_listener.lock telegram_li
 
 | Thing | Status |
 |---|---|
-| `FinBuddyFreqAI.py` (bare-name v22) | History only — never activate. **ALWAYS `grep '"strategy"' config.json` before editing strategy file.** |
-| `FinBuddyLLMModel.py` (v5) | v23 dropped LLM wrapper |
-| `scripts/run_promotion.sh` | Removed from cron 2026-05-19 (legacy CSV path) |
-| `walk_forward.py` v22 re-runs | v22 catastrophe; never re-run |
+| `FinBuddyFreqAI.py` (bare-name v22) | History only — live is `FinBuddyFreqAI_v23.py`. Always `grep '"strategy"' config.json` first. |
+| `FinBuddyLLMModel.py` (v5) | Retired in v23 |
+| Per-pair median offset | Removed 2026-05-22 — z-score already centers predictions |
+| OB veto conditions | Removed 2026-05-22 — reversal logic incompatible with trend ML |
+| `%-recent_wr` feature | Removed 2026-05-20 — training-serving skew |
+| `class_weight=balanced` | No-op for regressor — removed |
+| `scripts/run_promotion.sh` | Removed from cron 2026-05-19 |
 | N8N pipeline | Permanently disabled |
 | OpenClaw proxy | Abandoned |
-| Phase 6 TradingView | Abandoned (paid plan required) |
-| Manual threshold tuning | Brain owns this |
+| Phase 6 TradingView | Abandoned |
+| Manual threshold tuning in `.env` | Brain owns LONG_THRESHOLD / SHORT_THRESHOLD |
 
 ---
 
-## ⚠️ Open Strategic Issues — Deferred to Future Sessions
+## ⬜ Open Strategic Issues — Deferred
 
-1. **Target z-scoring at train time** — proper fix for prediction long-bias. The per-pair median offset in `a187ab9` is a runtime patch; properly normalize `&-future_return` in `set_freqai_targets`. ~Half-day project.
-2. **Open Interest delta** as a new feature — second-best published signal after funding rate. Build script analogous to `build_historical_funding.py`.
-3. **Pair expansion to 37 pairs** — full 9-step runbook at `finbuddy_memory/tasks/pair_addition_runbook.md`. Gated on tonight's WF result.
+1. **P3.1 Open Interest delta** — `scripts/build_historical_oi.py` + add 3 features to strategy + bump identifier + flush models. See `phase-14-10usdt-daily.md`.
+2. **P3.2 Leverage tier tuning** — MED_CONF 1.5→1.7, HIGH_CONF 2.0→2.5 in `.env` + `docker-compose.yml`. See `phase-14-10usdt-daily.md`.
+3. **P4 Phase 10 prep** — `dry_run_report.py`, `kill_switch.sh`, `futures_live_config.json`. Deferred until WR ≥ 50% sustained.
 4. **Brain analyst occasionally queues already-pruned TFs** — minor cycle waste, not blocking.
-5. **Cluster cap counting both directions** — confirmed intentional 2026-05-20 (direction-agnostic, conservative).
 
 ---
 
-## ⏭️ Next Actions (in priority order)
+## ⏭️ Next Actions (priority order)
 
-1. **Tonight 22:00 UTC** — daily WF cron tries to fire. Currently the manual WF (PID 3095719, started 13:21 UTC) is occupying the flock — daily cron will skip. Manual run IS the test.
-2. **Tomorrow ~07:00 UTC** — manual WF completes. Check `walkforward_results/<latest>/summary.json` for aggregate Sharpe/WR/PF. Should be the FIRST WF that tested the live config (Bug A) + symmetric gates (Bug B/C) + DI/SVM (Bug E) + per-pair median offset (a187ab9). Expected: meaningful improvement vs 2026-05-09 baseline (-5.12 / 47% / 0.73).
-3. **Tomorrow 08:00 UTC** — first `pair_performance` Telegram with correct data since 2026-05-09 (cron `%` escape fixed today).
-4. **After WF lands favorably**: execute pair-expansion runbook (12 pairs across 5 new clusters → 37 total). See `tasks/pair_addition_runbook.md`.
-5. **Then**: target z-scoring fix (the proper long-bias resolution).
-6. **Eventually**: Open Interest delta feature.
+1. **Tonight 22:00 UTC** — daily WF fires with 6h timeout. Check tomorrow morning:
+   ```bash
+   cat walkforward_results/$(ls -t walkforward_results/ | head -1)/summary.json | python3 -c "import json,sys; d=json.load(sys.stdin); print('PASS' if d.get('pass') else 'FAIL', d.get('verdict',''))"
+   ```
+2. **Check brain log tomorrow** — first `[brain] completed ...` entry (not FAILED) confirms parallel split working:
+   ```bash
+   grep -E "completed|FAILED" ~/.finbuddy/logs/brain_run.log | tail -20
+   ```
+3. **When brain accumulates 30+ z-scored experiments** — check if WR ≥ 50% in any bull+bear pair
+4. **P3.1 next** — Open Interest Delta feature (bump identifier + flush models required after)
+5. **P3.2 after** — Leverage tier tuning
 
-Phase 10 (live capital) still BLOCKED until WF passes all 4 gates OR 6-month dry-run track record. v23 has been live ~2 days; track record clock is ticking.
+Phase 10 (live capital) still BLOCKED until WF passes all 4 gates OR 6-month track record. v23 live since 2026-05-19; track record clock at ~4 days.
 
 ---
 
 ## 🔗 Related Files
 
-- [[FINBUDDY_PROJECT_MEMORY]] — high-level hub
+- [[FINBUDDY_PROJECT_MEMORY]] — high-level hub + session history
 - [[CONTEXT]] — live context injected into AI prompts
 - [[../CLAUDE]] — deep project background
-- [[tasks/pair_addition_runbook]] — 9-step pair-addition mechanical recipe (NEW 2026-05-20)
+- [[tasks/TASKS.md]] — master phase index
+- [[tasks/phase-14-10usdt-daily.md]] — current active roadmap ← READ THIS
+- [[tasks/phase-13-conscious-brain.md]] — brain architecture + bug history
+- [[tasks/phase-1-freqai-brain.md]] — strategy details + live config
+- [[tasks/pair_addition_runbook]] — 9-step pair-addition recipe
 - `scripts/brain/README.md` — brain operator cheatsheet
