@@ -154,3 +154,6 @@ This becomes training data for the Karpathy loop later.
 - [ ] Gaurav can `git pull` locally and open fresh state in Obsidian
 - [ ] N8N injects CONTEXT.md into every Groq prompt
 - [ ] Signals are logged to `signals/log.md` automatically
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]] · [[tasks/TASKS]]*

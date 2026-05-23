@@ -253,3 +253,6 @@ Non-breaking changes (adding optional fields) do not require a version bump.
 - This contract does NOT include exchange-specific order parameters (limit price, time-in-force, etc.). The executor decides those based on the user's config and the signal.
 - This contract does NOT include the raw feature vector used by the AI. Keep `market_context` human-readable; the AI's internal features live in the signal generator's logs.
 - This contract does NOT prescribe position management beyond entry. Trailing stops, partial take-profits, etc. are the executor's domain once a position is open.
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]]*

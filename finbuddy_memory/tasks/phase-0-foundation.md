@@ -185,3 +185,6 @@ Create `users/user_01_gaurav.json` — the user config that the future executor 
 - [x] **Task 0.5** — User config created ✅ (`users/user_01_gaurav.json` exists with full profile)
 
 **Phase 0 Status: 5/5 tasks complete as of 2026-04-27. READY FOR PHASE 1: FreqAI Brain Development.**
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]] · [[tasks/TASKS]]*

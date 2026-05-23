@@ -179,3 +179,6 @@ Either path unlocks Phase 10.
 | OB veto conditions | Removed 2026-05-22 (reversal logic incompatible with trend ML) |
 | `%-recent_wr` feature | Removed 2026-05-20 (training-serving skew) |
 | `class_weight=balanced` | No-op for LightGBMRegressor — removed |
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]] · [[tasks/TASKS]]*

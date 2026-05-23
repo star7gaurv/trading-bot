@@ -166,3 +166,6 @@ def calculate_position_size(capital, atr, regime):
 - [ ] FreqAI strategy reads regime and adjusts behavior
 - [ ] N8N prompt includes current regime
 - [ ] Position sizing uses regime multipliers
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]] · [[tasks/TASKS]]*

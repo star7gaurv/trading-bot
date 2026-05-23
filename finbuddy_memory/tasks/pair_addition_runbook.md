@@ -195,3 +195,6 @@ git checkout freqtrade/user_data/strategies/FinBuddyFreqAI_v23.py
 - **Does not modify** `max_open_trades`, `dry_run_wallet`, `freqai.feature_parameters` — those are tuning decisions, not pair-list mechanics.
 - **Does not auto-update** the brain's analyst report — analyst will pick up new pairs over the next 6h cycle naturally.
 - **Does not delete** the legacy 265 brain experiments from `log.jsonl` — they're marked via `live_baseline.json::config_aligned_at`.
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]] · [[tasks/TASKS]]*

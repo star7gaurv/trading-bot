@@ -557,20 +557,21 @@ Three structural fixes addressing root causes found across 11 smoke tests:
 
 | Phase | Status | Focus |
 |---|---|---|
-| 0 — Foundation | ✅ Complete | FreqTrade, Telegram, server, N8N cleanup |
-| 1 — FreqAI Brain | 🔄 In Progress | **v23 live since 2026-05-19** — LightGBMRegressor, 15m, z-scored predictions, 37 pairs, parallel WF (3 workers). Thresholds ±0.8, startup_candle_count=2400. Trade-blocking bugs fixed 2026-05-22. Promotion criteria not yet met. |
-| 2 — Data Enrichment | ✅ Live | 5 external fetchers + combined_context.json, cron every 15m |
-| 3 — HMM Regime | ✅ Live | 5-regime HMM + regime-aware sizing hooks, cron every 4h |
-| 4 — Obsidian Memory | ✅ Live | CONTEXT auto-write + vault git-commit, cron every 15m |
-| 5 — Karpathy Loop | ✅ Live | Nightly Gemini + DeepSeek R1 research at 02:00 |
+| [[tasks/phase-0-foundation\|0 — Foundation]] | ✅ Complete | FreqTrade, Telegram, server, N8N cleanup |
+| [[tasks/phase-1-freqai-brain\|1 — FreqAI Brain]] | 🔄 In Progress | **v23 live since 2026-05-19** — LightGBMRegressor, 15m, z-scored predictions, 37 pairs, parallel WF (3 workers). 195 zscore experiments queued. First real WF result tonight 22:00 UTC. |
+| [[tasks/phase-2-data-enrichment\|2 — Data Enrichment]] | ✅ Live | 5 external fetchers + combined_context.json, cron every 15m |
+| [[tasks/phase-3-hmm-regime\|3 — HMM Regime]] | ✅ Live | 5-regime HMM + regime-aware sizing hooks, cron every 4h |
+| [[tasks/phase-4-obsidian-memory\|4 — Obsidian Memory]] | ✅ Live | CONTEXT auto-write + vault git-commit, cron every 15m (credentials fixed 2026-05-23) |
+| [[tasks/phase-5-karpathy-loop\|5 — Karpathy Loop]] | ✅ Live | Nightly Gemini + DeepSeek R1 research at 02:00 |
 | 6 — TradingView | 🔴 Abandoned | Requires paid plan — dropped 2026-05-04 |
-| 7 — Executor | ✅ Live (paper) | Python signal executor cron every 5m |
-| 8 — Futures Setup | ✅ Complete | Binance futures API, isolated margin, memory mounted |
-| 9 — Risk Engine | ✅ Complete | Regime stake sizing, cluster cap, funding guard, DD gate |
-| 10 — Live Migration | ⬜ BLOCKED | Needs brain to find passing config + walk-forward PASS |
-| 11 — Self-Evolution | ✅ Live | Dynamic regime thresholds, per-pair-per-regime gate, WR feedback loop |
-| 12 — Brain Dashboard | ✅ Complete | React SPA with WebSockets, Live Trades, Neural Feed |
-| 13 — Conscious Brain | ✅ Live | Regression arch, OB veto, autonomous hypothesis engine, auto-apply pipeline |
+| [[tasks/phase-7-executor\|7 — Executor]] | ✅ Live (paper) | Python signal executor cron every 5m |
+| [[tasks/phase-8-futures-setup\|8 — Futures Setup]] | ✅ Complete | Binance futures API, isolated margin, memory mounted |
+| [[tasks/phase-9-futures-risk\|9 — Risk Engine]] | ✅ Complete | Regime stake sizing, cluster cap, funding guard, DD gate |
+| [[tasks/phase-10-live-migration\|10 — Live Migration]] | ⬜ BLOCKED | Needs brain to find passing config + walk-forward PASS |
+| [[tasks/phase-11-self-evolution\|11 — Self-Evolution]] | ✅ Live | Dynamic regime thresholds, per-pair-per-regime gate, WR feedback loop |
+| [[tasks/phase-12-brain-dashboard\|12 — Brain Dashboard]] | ✅ Complete | React SPA with WebSockets, Live Trades, Neural Feed |
+| [[tasks/phase-13-conscious-brain\|13 — Conscious Brain]] | ✅ Live | Regression arch, autonomous hypothesis engine, auto-apply pipeline |
+| [[tasks/phase-14-10usdt-daily\|14 — 10 USDT/Day]] | 🔄 In Progress | WR 38%→55% path; brain zscore experiments; OI feature next |
 
 ---
 

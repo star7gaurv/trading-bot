@@ -24,3 +24,6 @@
 
 ---
 *This file tracks the exact execution steps for Phase 11.*
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]] · [[tasks/TASKS]]*

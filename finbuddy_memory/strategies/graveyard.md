@@ -52,3 +52,6 @@ All backtests and conclusions from 2025-02 to 2026-04 were run on BTC **spot** (
 ---
 
 *Last updated: 2026-05-19*
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]] · [[tasks/TASKS]]*

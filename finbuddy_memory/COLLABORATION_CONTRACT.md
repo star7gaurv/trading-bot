@@ -222,3 +222,6 @@ Your constraints are now baked into this contract:
 ---
 
 *This contract is a living document. Any time roles or triggers change, Perplexity will update this file and ping you to review.*
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]]*

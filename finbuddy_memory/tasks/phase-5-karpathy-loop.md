@@ -234,3 +234,6 @@ if __name__ == "__main__":
 - [ ] At least 1 strategy promoted or deprecated by the loop (end-to-end test)
 - [ ] Telegram notification fires on promotion/demotion
 - [ ] Everything auto-committed to git
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]] · [[tasks/TASKS]]*

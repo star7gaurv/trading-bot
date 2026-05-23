@@ -181,3 +181,6 @@ SEED_CONFIG_V23 = {
 | Brain experiments 100% timeout (37 pairs > 65-min limit) | 2026-05-23 | `8bede56` |
 | Brain promotion not checking WR | 2026-05-23 | `8bede56` |
 | SEED short_threshold too loose (-1.5) | 2026-05-23 | `8bede56` |
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]] · [[tasks/TASKS]]*

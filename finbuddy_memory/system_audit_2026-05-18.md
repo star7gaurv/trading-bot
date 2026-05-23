@@ -99,3 +99,6 @@ At current rate: disk fills in ~30 days.
 | Live bot P&L | +103.96 USDT |
 
 Brain trajectory: 11 → 18 experiments in ~5h, best improved from -0.16% → -0.11%. At current rate (4/h × 24h = ~96/day), expect first promotion candidate within 24-72h once v22 hypotheses start running (they're at back of FIFO).
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]]*

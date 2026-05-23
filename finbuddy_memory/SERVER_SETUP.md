@@ -57,3 +57,6 @@ python3 /home/ubuntu/var/www/html/trade/finbuddy_memory/scripts/memory_writer.py
 ---
 *Strategy history → [[strategies/graveyard]]*
 *Cron logs at: `/home/ubuntu/.finbuddy/logs/`*
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]]*

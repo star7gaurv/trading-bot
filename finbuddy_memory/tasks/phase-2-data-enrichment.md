@@ -212,3 +212,6 @@ Master script that calls all individual fetchers and writes a combined JSON file
 - [ ] FreqAI strategy reads external data as features
 - [ ] LightGBM retrain includes external features
 - [ ] TradingView webhook receiver running and persistent
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]] · [[tasks/TASKS]]*

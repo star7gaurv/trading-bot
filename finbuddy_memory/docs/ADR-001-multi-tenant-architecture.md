@@ -250,3 +250,6 @@ This ADR is the answer to "what shape does FinBuddy take when it stops being a b
 **On the single-user-first approach:** the whole point of Phase 1 is that you get to ship *immediately* (no SaaS complexity) but do not accumulate architectural debt you'll have to pay back later. The rule of thumb: if you catch yourself writing `my_api_key`, `my_capital`, `my_telegram_id` anywhere outside a user config file, stop. That's a Phase 1 violation and will cost weeks in Phase 2.
 
 If in six months you find yourself considering per-user strategy customization, that is the signal that this architecture needs to evolve — probably toward "strategy tiers" (conservative / balanced / aggressive) rather than per-user tuning, to preserve the O(1) brain property.
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]]*

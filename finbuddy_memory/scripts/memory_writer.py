@@ -10,7 +10,17 @@ from pathlib import Path
 ROOT = Path("/home/ubuntu/var/www/html/trade")
 VAULT = ROOT / "finbuddy_memory"
 FT_API = "http://localhost:8080/api/v1"
-FT_AUTH = ("freqtrader", os.getenv("FREQTRADE_API_PASSWORD", "password"))
+
+def _read_ft_auth() -> tuple[str, str]:
+    """Read FreqTrade API credentials from config.json (same as sync_context.py)."""
+    try:
+        cfg = json.loads((ROOT / "freqtrade/user_data/config.json").read_text())
+        api = cfg.get("api_server", {})
+        return (api.get("username", "bot"), api.get("password", "REDACTED-FREQTRADE__API_SERVER__PASSWORD"))
+    except Exception:
+        return ("bot", "REDACTED-FREQTRADE__API_SERVER__PASSWORD")
+
+FT_AUTH = _read_ft_auth()
 
 def ft_get(endpoint, default=None):
     try:

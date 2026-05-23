@@ -166,3 +166,6 @@ def get_history():
 - [ ] Paper trading mode active — orders logged but not placed on exchange
 - [ ] N8N wired to POST signals to executor
 - [ ] Signal history accessible via GET /history
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]] · [[tasks/TASKS]]*

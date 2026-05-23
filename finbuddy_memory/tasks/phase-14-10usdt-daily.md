@@ -157,3 +157,6 @@ tail -20 /home/ubuntu/.finbuddy/logs/brain_run.log | grep -E "completed|FAILED|r
 ls -lt /home/ubuntu/var/www/html/trade/walkforward_results/ | head -3
 cat /home/ubuntu/var/www/html/trade/walkforward_results/$(ls -t /home/ubuntu/var/www/html/trade/walkforward_results/ | head -1)/summary.json 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print('PASS' if d.get('pass') else 'FAIL', d.get('verdict',''))"
 ```
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]] · [[tasks/TASKS]]*
