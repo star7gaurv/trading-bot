@@ -130,4 +130,4 @@
 _Generated 2026-05-04 — Claude (compassionate-clarke worktree)._
 
 ---
-*← [[FINBUDDY_PROJECT_MEMORY]] · [[research/README]]*
+*← [[FINBUDDY_PROJECT_MEMORY]]*

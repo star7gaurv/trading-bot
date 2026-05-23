@@ -151,7 +151,7 @@ Phase 10 (live capital) still BLOCKED until WF passes all 4 gates OR 6-month tra
 
 - [[FINBUDDY_PROJECT_MEMORY]] — high-level hub + session history
 - [[CONTEXT]] — live context injected into AI prompts
-- [[../CLAUDE]] — deep project background
+- [[CLAUDE]] — deep project background
 - [[tasks/TASKS.md]] — master phase index
 - [[tasks/phase-14-10usdt-daily.md]] — current active roadmap ← READ THIS
 - [[tasks/phase-13-conscious-brain.md]] — brain architecture + bug history

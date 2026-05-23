@@ -70,4 +70,4 @@ Full task files in `tasks/` directory. Start with Phase 0.
 *→ Full session log: session_log_2026-04-27.md in repo root*
 
 ---
-*← [[FINBUDDY_PROJECT_MEMORY]] · [[research/README]]*
+*← [[FINBUDDY_PROJECT_MEMORY]]*

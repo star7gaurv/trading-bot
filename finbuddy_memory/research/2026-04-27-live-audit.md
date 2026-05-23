@@ -117,4 +117,4 @@ N8N workspace is clean. No action needed.
 *Next audit: After Phase 0 completion.*
 
 ---
-*← [[FINBUDDY_PROJECT_MEMORY]] · [[research/README]]*
+*← [[FINBUDDY_PROJECT_MEMORY]]*

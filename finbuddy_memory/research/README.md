@@ -1,6 +1,6 @@
 # Research Log
 Daily research digests written by the Karpathy auto-research loop.
-Back to hub → [[../CONTEXT]]  |  Trade log → [[trades/closed]]
+Back to hub → [[CONTEXT]]  |  Trade log → [[closed]]
 
 Each file = one day, named `YYYY-MM-DD.md`, auto-created by the loop.
 
@@ -19,4 +19,4 @@ Each file = one day, named `YYYY-MM-DD.md`, auto-created by the loop.
 ```
 
 ---
-*← [[FINBUDDY_PROJECT_MEMORY]] · [[research/README]]*
+*← [[FINBUDDY_PROJECT_MEMORY]]*

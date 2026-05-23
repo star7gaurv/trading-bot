@@ -3,7 +3,7 @@
 **Created:** 2026-05-04 by Claude Code
 **Status:** ⛔ SUPERSEDED (2026-05-18) — historical reference only
 
-> Strategy iterated v12 → v13 → v15 → v17 → v19 → v22 since this plan. Asymmetric barriers (the root-cause fix proposed here) shipped in v19; current live is v22. Brain (Phase 13) now owns variant exploration. See [[../strategies/graveyard]] for full lifecycle.
+> Strategy iterated v12 → v13 → v15 → v17 → v19 → v22 since this plan. Asymmetric barriers (the root-cause fix proposed here) shipped in v19; current live is v22. Brain (Phase 13) now owns variant exploration. See [[strategies/graveyard]] for full lifecycle.
 **Trigger:** R4 grid (90 combos, bull window 2024-01-01 → 2025-01-01) failing.
 Empirical stats across 28 completed combos as of 25/90 rows:
 
@@ -84,4 +84,4 @@ Same as v11: bull-window walk-forward must pass:
 *End of v12 plan. No code written yet — awaiting Gaurav review on this file before any strategy edits.*
 
 ---
-*← [[FINBUDDY_PROJECT_MEMORY]] · [[research/README]]*
+*← [[FINBUDDY_PROJECT_MEMORY]]*

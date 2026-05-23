@@ -85,10 +85,10 @@ Phases Abandoned:    1 / 14  (Phase 6 — TradingView)
 ---
 
 ## 🔗 Related Files
-- [[../CLAUDE]] ← operational context
-- [[../FINBUDDY_PROJECT_MEMORY]] ← master hub
-- [[../CLAUDE_HANDOFF]] ← current live state + dead-things list
-- [[../COLLABORATION_CONTRACT]] ← roles, automation principles
-- [[../CONTEXT]] ← live context injected into AI prompts
-- [[../regimes/current]] ← live regime snapshot
-- [[../strategies/graveyard]] ← retired strategies + historical backtests
+- [[CLAUDE]] ← operational context
+- [[FINBUDDY_PROJECT_MEMORY]] ← master hub
+- [[CLAUDE_HANDOFF]] ← current live state + dead-things list
+- [[COLLABORATION_CONTRACT]] ← roles, automation principles
+- [[CONTEXT]] ← live context injected into AI prompts
+- [[regimes/current]] ← live regime snapshot
+- [[strategies/graveyard]] ← retired strategies + historical backtests

@@ -28,4 +28,4 @@ Installed via cron (running at 2:00 AM nightly), this script:
 FinBuddy now evolves autonomously without human intervention.
 
 ---
-*← [[FINBUDDY_PROJECT_MEMORY]] · [[research/README]]*
+*← [[FINBUDDY_PROJECT_MEMORY]]*
