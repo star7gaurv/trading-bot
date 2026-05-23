@@ -40,7 +40,7 @@ def _within(iso_str: str, start: datetime, end: datetime) -> bool:
 def _best_n(records: list[dict], n: int = 3) -> list[dict]:
     records = [r for r in records
                if r.get("status") == "completed"
-               and r.get("metrics", {}).get("trades", 0) >= 20]
+               and r.get("metrics", {}).get("trades", 0) >= 10]
     records.sort(key=lambda r: r["metrics"].get("profit_pct", -1e9), reverse=True)
     return records[:n]
 
@@ -66,7 +66,7 @@ def _best_of_day_trend(log: list[dict], days: int = 7) -> list[tuple[str, float]
         day_end = day_start + timedelta(days=1)
         day_runs = [r for r in log
                     if r.get("status") == "completed"
-                    and r.get("metrics", {}).get("trades", 0) >= 20
+                    and r.get("metrics", {}).get("trades", 0) >= 10
                     and _within(r.get("completed_at", ""), day_start, day_end)]
         if not day_runs:
             out.append((day_start.strftime("%m-%d"), None))

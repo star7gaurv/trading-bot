@@ -73,7 +73,7 @@ WINDOW_DAYS = {
 
 # ─── Data loading ──────────────────────────────────────────────────────────
 
-def _completed(min_trades: int = 15) -> list[dict]:
+def _completed(min_trades: int = 10) -> list[dict]:
     return [
         r for r in read_log()
         if r.get("status") == "completed"
@@ -537,7 +537,7 @@ def send_report(findings: dict, pruned: int, actions: list[str], insight: str) -
 # ─── Main ──────────────────────────────────────────────────────────────────
 
 def analyse(dry_run: bool = False, no_llm: bool = False) -> dict:
-    completed = _completed(min_trades=15)
+    completed = _completed(min_trades=10)
     print(f"[analyst] {len(completed)} completed experiments to analyse")
 
     findings = detect_patterns(completed)

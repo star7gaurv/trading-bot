@@ -41,7 +41,7 @@ def cmd_status(_args) -> int:
     print(f"  Failed      : {stats['failed']}")
     print(f"  By band     : {stats['by_band']}")
     print(f"  Last result : {stats['last_completion']}")
-    best = best_by_metric("profit_pct", min_trades=20)
+    best = best_by_metric("profit_pct", min_trades=10)
     if best:
         m = best["metrics"]
         arch = best.get("config", {}).get("arch", "?")
@@ -162,7 +162,7 @@ def cmd_requeue(args) -> int:
 
 
 def cmd_best(_args) -> int:
-    best = best_by_metric("profit_pct", min_trades=20)
+    best = best_by_metric("profit_pct", min_trades=10)
     if not best:
         print("No completed experiments yet.")
         return 0
