@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-23T20:30:02.233863+00:00",
+  "updated": "2026-05-23T21:00:02.312495+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -541,6 +541,15 @@
         "pf": 0.0,
         "profit_usdt": -1.06,
         "avg_profit_pct": -0.78
+      },
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 3.19,
+        "avg_profit_pct": 3.14
       }
     },
     "WIF/USDT:USDT": {
@@ -552,6 +561,15 @@
         "pf": null,
         "profit_usdt": 0.88,
         "avg_profit_pct": 1.29
+      },
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 1.74,
+        "avg_profit_pct": 2.56
       }
     }
   },
