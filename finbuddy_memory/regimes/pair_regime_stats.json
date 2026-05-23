@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-23T18:00:01.383876+00:00",
+  "updated": "2026-05-23T18:30:02.493788+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -161,13 +161,13 @@
         "avg_profit_pct": 1.365
       },
       "BEAR": {
-        "n": 3,
+        "n": 4,
         "wins": 1,
-        "losses": 2,
-        "wr": 0.3333,
-        "pf": 0.75,
-        "profit_usdt": -0.44,
-        "avg_profit_pct": -0.27
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.564,
+        "profit_usdt": -1.02,
+        "avg_profit_pct": -0.415
       }
     },
     "ETH/USDT:USDT": {
