@@ -123,9 +123,8 @@ SEED_CONFIG_V23 = {
     "feature_set":        "all",   # which external features to include (see strategy FREQAI_FEATURE_SET)
 }
 
-# v22 Classifier+LLM — currently live, +110 USDT all-time
-# Uses LightGBMClassifier (pure, no LLM layer) for clean brain backtests.
-# When promoted to live, the LIVE strategy adds the LLM layer on top.
+# v22 Classifier+LLM — RETIRED 2026-05-19. v23 regression is live. V22_ENABLED=False keeps this dead.
+# Kept for historical reference only. Do not re-enable without verifying brain config + windows.
 SEED_CONFIG_V22 = {
     "arch":               "v22",
     "strategy":           "FinBuddyFreqAI",

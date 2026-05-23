@@ -11,8 +11,8 @@ restarts the bot automatically. Gaurav reviews the Telegram alert and
 manually applies the promoted config. Fully autonomous promotion is a
 future Phase 2 unlock.
 
-Designed to run 5 minutes after the monthly walk-forward cron (03:00 UTC):
-  Cron:  5 3 1 * *  python /path/to/auto_promote.py
+Designed to run daily after the walk-forward results window (04:00 UTC):
+  Cron:  0 4 * * *  python /path/to/auto_promote.py
 
 State file: ~/.finbuddy/state/promotion_state.json
   - records the Sharpe of the currently deployed config
@@ -153,7 +153,7 @@ def main() -> int:
         _tg_send(
             subsystem=Subsystem.WALK_FORWARD,
             status=Status.FAIL,
-            title=f"monthly run failed — no promotion",
+            title=f"daily walk-forward run failed — no promotion",
             fields=metrics_fields,
             context="Keeping current config — iterate on failing metrics first.",
         )
@@ -178,7 +178,7 @@ def main() -> int:
     _tg_send(
         subsystem=Subsystem.BRAIN_PROMOTION,
         status=Status.ACTION,
-        title=f"monthly walk-forward winner found",
+        title=f"daily walk-forward winner found",
         fields={
             "Run":         f"<code>{run_name}</code>",
             "New Sharpe":  f"{new_sharpe} (+{improvement:.3f} vs baseline)",
@@ -187,7 +187,7 @@ def main() -> int:
             "Drawdown":    f"{new_dd}%",
             "Live ID":     f"<code>{live_identifier}</code>",
         },
-        context="Monthly auto-promote · notify-only (no auto config change)",
+        context="Daily auto-promote · notify-only (no auto config change)",
         action=(
             f"1. Review: <code>walkforward_results/{run_name}/</code> · "
             f"2. Update config.json + restart · "

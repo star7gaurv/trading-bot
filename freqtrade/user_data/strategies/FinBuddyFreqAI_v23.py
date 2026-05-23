@@ -217,9 +217,9 @@ class FinBuddyFreqAI_v23(IStrategy):
 
     def custom_exit(self, pair: str, trade: "Trade", current_time: datetime,
                     current_rate: float, current_profit: float, **kwargs):
-        # Time-limit exit: close trade after 24 candles (timeframe-aware).
-        # 2× label_period_candles=12 → covers the model's prediction horizon
-        # plus one full reversal window. Was 72 (6× horizon) which let dead
+        # Time-limit exit: close trade after label_period_candles=24 (timeframe-aware).
+        # Equals the model's prediction horizon — holding beyond 24 candles (6h on 15m TF)
+        # means the signal has fully expired. Was 72 (3× horizon) which let dead
         # positions drift 18h on 15m TF — the 11 force_exit + 3 time_limit
         # trades in the live log all averaged -0.83% at >12h open.
         candles_open = int((current_time - trade.open_date_utc).total_seconds() / timeframe_to_seconds(self.timeframe))

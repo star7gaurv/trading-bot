@@ -151,7 +151,7 @@ def _remove_from_queue(hypothesis_id: str) -> None:
 
 # ── Queries ────────────────────────────────────────────────────────────────
 
-def best_by_metric(metric: str, window: str | None = None, min_trades: int = 20) -> dict | None:
+def best_by_metric(metric: str, window: str | None = None, min_trades: int = 10) -> dict | None:
     """Return the experiment with the highest value of `metric`.
 
     metric: 'profit_pct' | 'sharpe' | 'wr' | 'pf' (higher = better for all)

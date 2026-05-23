@@ -19,8 +19,6 @@ from __future__ import annotations
 import json
 import sqlite3
 import sys
-import urllib.parse
-import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -28,7 +26,6 @@ DB_PATH = Path("/home/ubuntu/var/www/html/trade/freqtrade/user_data/tradesv3.sql
 TRADES_LOG = Path("/home/ubuntu/var/www/html/trade/finbuddy_memory/trades/closed.md")
 REGIME_FILE = Path("/home/ubuntu/var/www/html/trade/finbuddy_memory/regimes/current.json")
 STATE_FILE = Path("/home/ubuntu/.finbuddy/state/postmortem_state.json")
-CONFIG_PATH = Path("/home/ubuntu/var/www/html/trade/freqtrade/user_data/config.json")
 ENV_PATH = Path("/home/ubuntu/var/www/html/trade/freqtrade/.env")
 
 # Rolling WR window for FINBUDDY_RECENT_WR feedback signal
@@ -110,25 +107,6 @@ def ensure_log() -> None:
     TRADES_LOG.parent.mkdir(parents=True, exist_ok=True)
     if not TRADES_LOG.exists():
         TRADES_LOG.write_text(HEADER)
-
-
-def telegram_send(msg: str) -> bool:
-    try:
-        cfg = json.loads(CONFIG_PATH.read_text())
-        tg = cfg.get("telegram") or {}
-        token, chat_id = tg.get("token"), tg.get("chat_id")
-        if not (token and chat_id):
-            return False
-        url = f"https://api.telegram.org/bot{token}/sendMessage"
-        data = urllib.parse.urlencode({
-            "chat_id": chat_id, "text": msg,
-            "parse_mode": "Markdown", "disable_web_page_preview": "true",
-        }).encode()
-        with urllib.request.urlopen(urllib.request.Request(url, data=data), timeout=10) as r:
-            return r.status == 200
-    except Exception as e:
-        print(f"WARN: telegram failed: {e}", file=sys.stderr)
-        return False
 
 
 def fetch_recent_sides(limit: int) -> list[bool]:

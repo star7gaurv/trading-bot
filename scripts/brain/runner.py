@@ -429,35 +429,46 @@ def _kill_orphan_containers(identifier: str) -> None:
 
 
 def _acquire_lock() -> bool:
-    """Atomic file-based lock. Returns True if acquired, False if another runner is alive.
+    """OS-level exclusive lock via fcntl.flock (non-blocking).
 
-    Lock file content: PID + timestamp. If lock exists but PID is dead OR lock is older
-    than 2× BACKTEST_TIMEOUT_S, it's stale — we steal it.
+    Returns True if the lock was acquired, False if another runner already holds it.
+
+    Fix 16 (2026-05-23): replaced the previous PID-file TOCTOU approach with
+    fcntl.flock — two cron instances starting within the same second could both
+    find the lock "stale" and both proceed, causing duplicate experiments in the
+    log. flock is atomic at the kernel level.
+
+    The lock fd is stored in a module-level variable so _release_lock() can close it.
     """
-    import os
+    import fcntl, os as _os
+    global _LOCK_FD
     LOCK_FILE.parent.mkdir(parents=True, exist_ok=True)
-    if LOCK_FILE.exists():
-        try:
-            content = LOCK_FILE.read_text().strip().split(":")
-            pid, ts = int(content[0]), float(content[1])
-        except Exception:
-            pid, ts = -1, 0
-        # Stale if PID dead or older than 2× timeout
-        age = time.time() - ts
-        pid_alive = True
-        try:
-            os.kill(pid, 0)
-        except (ProcessLookupError, ValueError):
-            pid_alive = False
-        if pid_alive and age < 2 * BACKTEST_TIMEOUT_S:
-            print(f"[brain] another runner active (pid={pid}, age={int(age)}s) — skipping")
-            return False
-        print(f"[brain] stale lock (pid={pid}, age={int(age)}s) — stealing")
-    LOCK_FILE.write_text(f"{os.getpid()}:{time.time()}")
-    return True
+    _LOCK_FD = open(LOCK_FILE, "w")
+    try:
+        fcntl.flock(_LOCK_FD.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        _LOCK_FD.write(f"{_os.getpid()}:{time.time()}\n")
+        _LOCK_FD.flush()
+        return True
+    except BlockingIOError:
+        _LOCK_FD.close()
+        _LOCK_FD = None
+        print("[brain] another runner is active (flock held) — skipping")
+        return False
+
+
+_LOCK_FD = None  # module-level fd kept open while lock is held
 
 
 def _release_lock() -> None:
+    import fcntl
+    global _LOCK_FD
+    if _LOCK_FD is not None:
+        try:
+            fcntl.flock(_LOCK_FD.fileno(), fcntl.LOCK_UN)
+            _LOCK_FD.close()
+        except Exception:
+            pass
+        _LOCK_FD = None
     LOCK_FILE.unlink(missing_ok=True)
 
 
