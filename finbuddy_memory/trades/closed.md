@@ -225,3 +225,4 @@
 | 2026-05-22 18:04:27 | 1000SHIB/USDT:USDT | LONG | 0h33m | -0.79% | -0.81 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-22 23:45:13 | POL/USDT:USDT | LONG | 2h14m | -1.49% | -1.01 | stop_loss | BEAR | freqai_regression_v23_lo |
 | 2026-05-23 07:15:37 | UNI/USDT:USDT | SHORT | 4h05m | +2.11% | +1.43 | exit_signal | BEAR | freqai_regression_v23_sh |
+| 2026-05-23 14:00:00 | UNI/USDT:USDT | SHORT | 3h59m | -2.10% | -1.39 | stop_loss | BEAR | freqai_regression_v23_sh |
