@@ -154,7 +154,7 @@ def send_digest() -> bool:
         status=Status.INFO,
         title=f"daily digest — {datetime.now(timezone.utc).strftime('%Y-%m-%d')}",
         fields=fields,
-        context=context,
+        html_context=context,   # context contains <b> and <code> HTML — must not be escaped
     )
 
 

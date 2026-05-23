@@ -92,6 +92,7 @@ def format_message(
     fields: dict[str, Any] | None = None,
     context: str | None = None,
     action: str | None = None,
+    html_context: str | None = None,
 ) -> str:
     """
     Build a consistent, scannable Telegram message.
@@ -100,11 +101,18 @@ def format_message(
         subsystem: which FinBuddy subsystem is speaking
         status: OK / INFO / WARN / FAIL / ACTION / RUNNING
         title: one-line subject (lowercase imperative or noun phrase)
-        fields: dict of key → value pairs (rendered as `<b>key</b>: value`)
-        context: one short sentence describing scope (window, regime, etc.)
-        action: if user must act, the action text (bold; with code spans if needed)
+        fields: dict of key → value pairs. Values may contain HTML (<code>, <b>, etc.)
+                — they are NOT escaped. Keys are always plain text.
+        context: short plain-text sentence (wrapped in <i>, special chars escaped).
+        action: if user must act, the action text (may contain HTML code spans).
+        html_context: multi-line pre-formatted HTML block (NOT escaped, NOT wrapped in <i>).
+                      Use for rich digest content. Takes precedence over `context`.
 
     Returns: HTML-formatted message ready for Telegram (parse_mode=HTML).
+
+    NOTE: field VALUES and html_context are passed through unchanged — callers are
+    responsible for either plain ASCII or valid Telegram HTML. Only field KEYS and
+    the plain `context` argument are auto-escaped.
     """
     prefix_emoji, subsystem_label = subsystem.value
     status_emoji, status_label = status.value
@@ -116,9 +124,14 @@ def format_message(
     ]
     if fields:
         for k, v in fields.items():
-            lines.append(f"<b>{_escape(str(k))}</b>: {_escape(str(v))}")
+            # Keys: always plain text → escape. Values: may be HTML → do NOT escape.
+            lines.append(f"<b>{_escape(str(k))}</b>: {str(v)}")
         lines.append(_DIVIDER)
-    if context:
+    if html_context:
+        # Pre-formatted HTML block (digest rich content, etc.) — render as-is.
+        lines.append(html_context)
+    elif context:
+        # Plain text sentence — escape special chars and italicise.
         lines.append(f"<i>{_escape(context)}</i>")
     if action:
         lines.append(f"<b>✋ ACTION</b>: {action}")  # action may contain HTML (code spans)
@@ -135,6 +148,7 @@ def send(
     *,
     silent: bool = False,
     buttons: list[list[dict]] | None = None,
+    html_context: str | None = None,
 ) -> bool:
     """
     Build and send a formatted message. Returns True on success.
@@ -148,7 +162,7 @@ def send(
                  callback_data is opaque to Telegram but processed by our listener.
                  Max 64 bytes per callback_data.
     """
-    text = format_message(subsystem, status, title, fields, context, action)
+    text = format_message(subsystem, status, title, fields, context, action, html_context=html_context)
     payload: dict[str, Any] = {
         "chat_id":                  TELEGRAM_CHAT,
         "text":                     text,

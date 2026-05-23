@@ -66,23 +66,66 @@ def send_wf_message(run_id: str, summary: dict) -> bool:
     sys.path.insert(0, str(REPO / "scripts" / "lib"))
     from telegram_template import send as _tg_send, Subsystem, Status
 
-    agg = summary.get("aggregate", {})
+    agg    = summary.get("aggregate", {}) or {}
     passed = summary.get("pass", False)
+    # Verdicts from walk_forward.py (e.g. "❌ no trades across all folds")
+    verdict_lines = summary.get("verdict", [])
+    verdict_str   = " · ".join(verdict_lines) if verdict_lines else ""
+
+    # Shorten the run_id for display: strip the strategy prefix, keep date+timestamp.
+    # e.g. "FinBuddyFreqAI_v23_2025-08-01_2026-05-01_20260522T220002"
+    #   → "2025-08-01 → 2026-05-01 (20260522T220002)"
+    try:
+        parts = run_id.split("_")
+        # find first date part (YYYY-MM-DD format)
+        date_parts = [p for p in parts if len(p) == 10 and p[4] == "-"]
+        ts_parts   = [p for p in parts if len(p) == 15 and "T" in p]
+        if len(date_parts) >= 2:
+            display_id = f"{date_parts[0]} → {date_parts[1]}"
+            if ts_parts:
+                display_id += f" ({ts_parts[0]})"
+        else:
+            display_id = run_id
+    except Exception:
+        display_id = run_id
+
+    no_data = not agg  # aggregate is empty — all folds timed out / no trades
+
+    if no_data:
+        fields = {
+            "Verdict":  "FAIL — keep iterating",
+            "Run":      display_id,
+            "Reason":   verdict_str or "all folds produced no trades",
+            "Folds":    "0 with data",
+        }
+        ctx = "All folds timed out or produced no trades — fold timeout was just increased to 6h"
+    else:
+        n_folds  = agg.get("folds", "?")
+        n_trades = agg.get("total_trades", "?")
+        profit   = agg.get("total_profit_abs", 0)
+        wr_raw   = agg.get("weighted_win_rate")
+        sharpe   = agg.get("weighted_sharpe", "?")
+        pf       = agg.get("weighted_profit_factor", "?")
+        fields = {
+            "Verdict":      "PASS ✅ — Phase 10 unblocked" if passed else "FAIL — keep iterating",
+            "Run":          display_id,
+            "Folds":        f"{n_folds}",
+            "Total Trades": f"{n_trades}",
+            "Total Profit": f"{profit:+.2f} USDT",
+            "Win Rate":     f"{wr_raw*100:.1f}%" if isinstance(wr_raw, (int, float)) else "—",
+            "Sharpe":       f"{sharpe}",
+            "PF":           f"{pf}",
+        }
+        ctx = "Out-of-sample validator · gates live deployment"
+        if verdict_str:
+            ctx += f"\n{verdict_str}"
 
     return _tg_send(
         subsystem=Subsystem.WALK_FORWARD,
         status=Status.OK if passed else Status.FAIL,
-        title=f"run {run_id}",
-        fields={
-            "Verdict":      "PASS — Phase 10 unblocked" if passed else "FAIL — keep iterating",
-            "Folds":        f"{agg.get('folds', '?')}",
-            "Total Trades": f"{agg.get('total_trades', '?')}",
-            "Total Profit": f"{agg.get('total_profit_abs', 0):+.2f} USDT",
-            "Win Rate":     f"{agg.get('weighted_win_rate', 0)*100:.1f}%" if 'weighted_win_rate' in agg else "—",
-            "Sharpe":       f"{agg.get('weighted_sharpe', '?')}",
-            "PF":           f"{agg.get('weighted_profit_factor', '?')}",
-        },
-        context="Out-of-sample validator · gates live deployment",
+        title=f"{'daily' if 'T220' in run_id or 'T21' in run_id else 'deep'} walk-forward result",
+        fields=fields,
+        context=ctx,
         action=("Review walkforward_results/ and discuss deployment" if passed else None),
     )
 
