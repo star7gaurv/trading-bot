@@ -1,6 +1,6 @@
 # Research Log
 Daily research digests written by the Karpathy auto-research loop.
-Back to hub → [[../CONTEXT]]  |  Signal log → [[../signals/log]]
+Back to hub → [[../CONTEXT]]  |  Trade log → [[trades/closed]]
 
 Each file = one day, named `YYYY-MM-DD.md`, auto-created by the loop.
 

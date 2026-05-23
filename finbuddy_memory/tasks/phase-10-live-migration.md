@@ -220,6 +220,6 @@ curl -s -u bot:REDACTED-FREQTRADE__API_SERVER__PASSWORD http://localhost:8080/ap
 - [[FINBUDDY_PROJECT_MEMORY]] ← master hub, overall vision
 - [[tasks/phase-9-futures-risk]] ← prerequisite risk engine
 - [[tasks/phase-8-futures-setup]] ← futures account setup
-- [[users/user_01_gaurav]] ← user config with capital settings
+- `users/user_01_gaurav.json` ← user config with capital settings
 - [[finbuddy_memory/regimes/current]] ← must not be CRASH on go-live
 - [[docs/ADR-001-multi-tenant-architecture]] ← eventual SaaS vision

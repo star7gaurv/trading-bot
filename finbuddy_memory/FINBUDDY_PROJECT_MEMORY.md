@@ -616,7 +616,7 @@ Three structural fixes addressing root causes found across 11 smoke tests:
 - [[tasks/TASKS]] ← canonical phase list and statuses
 - [[finbuddy_memory/CONTEXT]] ← live context injected into AI prompts
 - [[finbuddy_memory/regimes/current]] ← live regime snapshot
-- [[strategies/registry]] ← strategy registry & lifecycle
+- [[strategies/graveyard]] ← strategy registry & lifecycle
 
 ---
 

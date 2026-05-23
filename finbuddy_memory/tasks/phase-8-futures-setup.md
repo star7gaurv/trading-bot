@@ -153,4 +153,4 @@ Blacklist: TRUMP, DOGE, SHIB, PEPE, WIF, BONK and all pairs with < $50M daily vo
 - [[FINBUDDY_PROJECT_MEMORY]] ← master hub
 - [[tasks/phase-9-futures-risk]] ← next phase: risk engine
 - [[tasks/phase-1-freqai-brain]] ← strategy that runs inside this setup
-- [[users/user_01_gaurav]] ← user config to update with futures params
+- `users/user_01_gaurav.json` ← user config to update with futures params
