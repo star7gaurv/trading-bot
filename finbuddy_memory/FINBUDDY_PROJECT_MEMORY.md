@@ -35,6 +35,11 @@
 **P2.3 — Combined multiplier cap (`FinBuddyFreqAI_v23.py`)**
 - `(long_mult_series * wr_adj).clip(upper=2.0)` — prevents BEAR(×1.3) × bad WR(×1.26) → ×1.638 compounding into 0-trade days.
 
+**P2.4 — Karpathy `backtest_runner` `NoneType.predict` crash FIXED (`backtest_runner.py`)**
+- Nightly Phase 5 validation crashed because it hardcoded the old `--strategy FinBuddyFreqAI` (v22 classifier emitting "L"/"S" strings) while the live `config.json` uses `LightGBMRegressor`. This mismatch raised `ValueError: could not convert string to float: 'S'`.
+- Second root cause: hardcoded `20260101-20260401` window dropped 100% of ETH/SOL data because 2400 candles of warmup reached before data availability.
+- Fix: Updated to `--strategy FinBuddyFreqAI_v23` and shifted window to `20260301-20260515` (guaranteed data coverage). Pending hypotheses will now backtest properly tonight.
+
 **Pending next:**
 - P3.1: Open Interest Delta feature (`build_historical_oi.py`, add to strategy, bump identifier, flush models)
 - P3.2: Leverage tier tuning (FREQAI_LEV_MED_CONF_RATIO=1.7, FREQAI_LEV_HIGH_CONF_RATIO=2.5)

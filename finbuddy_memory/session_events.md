@@ -192,3 +192,4 @@ um_threads=2** added to both config.json and 23_regression_15m_di_config.json. 
 ---
 *← [[FINBUDDY_PROJECT_MEMORY]]*
 - **2026-05-23 20:00 UTC** — Regime changed: BEAR → NEUTRAL
+- **2026-05-23 20:46 UTC** — Bugfix: Karpathy backtest_runner `NoneType.predict` crash resolved by migrating to FinBuddyFreqAI_v23 and adjusting historical data window.
