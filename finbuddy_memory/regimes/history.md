@@ -1,7 +1,7 @@
 # Regime Transition History
 > Append-only log. Each row = one detected regime change.
 > Written by the HMM engine automatically.
-> Current regime → [[regimes/current]]  |  Back to hub → [[CONTEXT]]
+> Current regime → [[current]]  |  Back to hub → [[CONTEXT]]
 
 | Date       | From    | To      | Confidence | Notes                    |
 |------------|---------|---------|------------|--------------------------|

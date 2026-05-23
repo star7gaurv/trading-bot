@@ -69,3 +69,8 @@ python3 /home/ubuntu/var/www/html/trade/finbuddy_memory/scripts/memory_writer.py
   --reason "{{ $json.reason }}"
 ```
 This closes the loop — every signal gets written back to memory.
+
+---
+> ⚠️ **ARCHIVED** — N8N was permanently disabled 2026-04-30. This doc is kept for reference only.
+
+*← [[FINBUDDY_PROJECT_MEMORY]]*
