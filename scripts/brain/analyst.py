@@ -196,6 +196,9 @@ def prune_queue(findings: dict, dry_run: bool = False) -> int:
     Remove queued hypotheses that match dead patterns.
 
     Rules:
+    - non-zscore entries (no target_version='zscore') → always pruned; they use
+      raw-% label semantics incompatible with the current z-scored model and can
+      never qualify for promotion
     - dead timeframe → prune all aggressive/seed experiments with that TF
       (keep safe-band experiments since those target current best, not dead zones)
     - noisy timeframe (too many trades) → same pruning logic
@@ -203,11 +206,26 @@ def prune_queue(findings: dict, dry_run: bool = False) -> int:
 
     Returns count of pruned entries.
     """
+    # ── Phase 0: always remove non-zscore entries (incompatible label semantics) ──
+    zscore_pruned = 0
+    _all = read_queue()
+    non_zscore_ids = [
+        h["hypothesis_id"] for h in _all
+        if h.get("config", {}).get("target_version") != "zscore"
+    ]
+    if non_zscore_ids:
+        if not dry_run:
+            for hid in non_zscore_ids:
+                _remove_from_queue(hid)
+        zscore_pruned = len(non_zscore_ids)
+        print(f"[analyst] pruned {zscore_pruned} non-zscore queue entries (incompatible label semantics)")
+
+    # ── Phase 1: timeframe-based pruning ──
     dead_tfs  = set(findings.get("dead_timeframes", []))
     noisy_tfs = set(findings.get("noisy_timeframes", []))
     bad_tfs   = dead_tfs | noisy_tfs
     if not bad_tfs:
-        return 0
+        return zscore_pruned
 
     queue = read_queue()
     prunable = []
@@ -226,11 +244,11 @@ def prune_queue(findings: dict, dry_run: bool = False) -> int:
         prunable = prunable[keep_n:]  # spare the first N
 
     if dry_run:
-        return len(prunable)
+        return zscore_pruned + len(prunable)
 
     for hid in prunable:
         _remove_from_queue(hid)
-    return len(prunable)
+    return zscore_pruned + len(prunable)
 
 
 # ─── Targeted hypothesis injection ─────────────────────────────────────────

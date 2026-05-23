@@ -119,12 +119,6 @@ class FinBuddyFreqAI_v23(IStrategy):
     #   "minimal"   — drop all of the above (only raw OHLCV-derived indicators)
     FEATURE_SET = os.getenv("FREQAI_FEATURE_SET", "all").lower()
 
-    # v11.1 — BTC daily MA200 macro-regime gate.
-    # Long  entries require  BTC_1d_close > BTC_1d_MA200 (macro bull).
-    # Short entries require  BTC_1d_close < BTC_1d_MA200 (macro bear).
-    # Toggle via env BTC_MA200_GATE=0 to disable for ablation testing.
-    use_btc_ma200_gate = (__import__("os").environ.get("BTC_MA200_GATE", "0") == "1")
-
     def informative_pairs(self):
         pairs = self.dp.current_whitelist()
         informative = [(pair, "15m") for pair in pairs]

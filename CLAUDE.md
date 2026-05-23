@@ -112,7 +112,7 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ---
 
-## What Is Live and Working Right Now (verified 2026-05-22 evening UTC by Claude Code)
+## What Is Live and Working Right Now (verified 2026-05-23 UTC by Claude Code — post 21-bug-fix audit)
 
 ### FreqTrade
 - Running **`FinBuddyFreqAI_v23.py` (v23)** in dry-run mode on **Binance Futures USDT-M** — long+short
@@ -214,6 +214,7 @@ Standard layer 4 features include 3 funding-rate features (`%-funding_rate`, `%-
 0 4 * * *    auto_promote.py                    # WF Sharpe vs baseline alert
 */30 * * * * walkforward_notify.py              # PASS/FAIL Telegram on new WF summary (flock protected)
 30 4 * * *   download_data_daily.sh             # forward-increment data download
+25 1 * * *   build_historical_funding.py        # daily BTC perp funding rate parquet refresh
 ```
 **Removed from cron 2026-05-19:** `0 6 * * * run_promotion.sh` — legacy CSV-based, file kept on disk but unused. Brain promotion flows via `brain_cli.py scan` → Telegram Apply button.
 
