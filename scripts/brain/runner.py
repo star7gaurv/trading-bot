@@ -61,6 +61,70 @@ def _load_brain_pairs(config_file: str) -> list[str]:
         return []
 
 
+def _filter_pairs_for_window(pairs: list[str], window: str) -> list[str]:
+    """Remove pairs that don't have enough historical data for this brain window.
+
+    FreqAI needs train_period_days (90) + startup_candle_count (2400 × 15m = 25 days)
+    = ~115 days of data BEFORE the window start date. We use 120 days as a safe margin.
+
+    Late-listed pairs (TON → 2024-03-01, ENA → 2024-04-02, etc.) crash the FreqTrade
+    docker container mid-training with "all training data dropped due to NaNs", which
+    causes the entire group backtest to fail with AttributeError: 'NoneType'.predict.
+
+    Returns only pairs with data coverage starting at or before required_start.
+    Pairs whose feather file cannot be read are kept (fail open — let FreqTrade handle it).
+    """
+    from datetime import timedelta
+
+    # Map window name → window start date string (YYYYMMDD)
+    _WINDOW_STARTS = {
+        "bull_2024Q1": "20240101",
+        "bull_2024Q2": "20240401",
+        "bear_2025Q1": "20250101",
+        "bull_2025Q4": "20251001",
+        "bear_2026Q1": "20260101",
+    }
+    start_str = _WINDOW_STARTS.get(window)
+    if not start_str:
+        return pairs  # unknown window — pass through unchanged
+
+    import pandas as pd
+    from datetime import timezone as _tz
+
+    window_start = datetime.strptime(start_str, "%Y%m%d").replace(tzinfo=_tz.utc)
+    required_start = window_start - timedelta(days=120)  # 90 train + 30 startup buffer
+
+    data_dir = USER_DATA / "data" / "binance" / "futures"
+    filtered, skipped = [], []
+
+    for pair in pairs:
+        # BTC/USDT:USDT → BTC_USDT_USDT-15m-futures.feather
+        fname = pair.replace("/", "_").replace(":", "_") + "-15m-futures.feather"
+        fpath = data_dir / fname
+        if not fpath.exists():
+            filtered.append(pair)  # file missing → keep (fail open)
+            continue
+        try:
+            df = pd.read_feather(fpath, columns=["date"])
+            earliest = df["date"].min()
+            if hasattr(earliest, "tzinfo") and earliest.tzinfo is None:
+                earliest = earliest.tz_localize("UTC")
+            if earliest > required_start:
+                skipped.append(pair)
+                continue
+        except Exception:
+            pass  # unreadable → keep (fail open)
+        filtered.append(pair)
+
+    if skipped:
+        print(
+            f"[brain] window={window}: skipped {len(skipped)} late-listed pairs "
+            f"(need data before {required_start.date()}): {skipped}",
+            file=sys.stderr,
+        )
+    return filtered
+
+
 def _create_pair_group_config(config_file: str, pairs_subset: list[str], group_id: str) -> str:
     """Write a temporary config with only `pairs_subset`. Returns temp filename (not full path)."""
     cfg_path = USER_DATA / config_file
@@ -350,6 +414,11 @@ def run_hypothesis(h: dict) -> dict | None:
     all_pairs   = _load_brain_pairs(config_file)
     if not all_pairs:
         all_pairs = []
+
+    # Drop pairs that don't have enough history for this window's training period.
+    # Late-listed pairs (e.g. TON listed 2024-03-01) crash the docker container when
+    # their training data is all NaNs → "Fatal exception" → gB returns empty every time.
+    all_pairs = _filter_pairs_for_window(all_pairs, h.get("window", ""))
 
     t0 = time.time()
 
