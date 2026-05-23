@@ -718,6 +718,46 @@
       "proposed_by": "reasoning_agent",
       "reviewed_at": "2026-05-22",
       "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "btc_outperformance_alt_rotation_20260523",
+      "hypothesis": "BTC-USDT will out-perform the alt-coin basket (ETH-USDT, SOL-USDT, ADA-USDT) on a 1h basis.",
+      "timeframe": "1h",
+      "indicators": [
+        "BTC/USDT",
+        "alt_pair_basket"
+      ],
+      "entry_long": "When BTC/USDT outperforms alts with specific spread thresholds",
+      "entry_short": "When aggregate alt-basket underperforms and BTC shows relative strength",
+      "exit_rule": "Exit long when alt performance converges or BTC dominance weakens",
+      "regime_filter": [
+        "BEAR"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-23",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-23",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "altcoin_short_dominance_20260523",
+      "hypothesis": "Short-bias on the top-5 alt-coin futures will generate a positive P&L > 0.3% per 24h in a bear regime.",
+      "timeframe": "1h",
+      "indicators": [
+        "funding_rate",
+        "alt_performance_vs_btc"
+      ],
+      "entry_long": "When alt-coins show relative underperformance and bear regime confirms weakness",
+      "entry_short": "Confirmed short-bias on underperforming alt-coin futures",
+      "exit_rule": "Exit short when regime flips or Fear & Greed > 45",
+      "regime_filter": [
+        "BEAR"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-23",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-23",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
     }
   ]
 }
