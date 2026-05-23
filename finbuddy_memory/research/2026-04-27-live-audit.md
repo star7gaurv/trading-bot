@@ -115,3 +115,6 @@ N8N workspace is clean. No action needed.
 
 *Updated 2026-04-27 via Cowork audit.*
 *Next audit: After Phase 0 completion.*
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]] · [[research/README]]*

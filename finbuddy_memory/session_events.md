@@ -188,3 +188,6 @@ um_threads=2** added to both config.json and 23_regression_15m_di_config.json. 
 - Commits: cde90f4, 5b6b1cb, eeae872, 1786d01
 - **2026-05-22 12:00 UTC** — FreqAI identifier changed: finbuddy_v23_zscore_1779274507 → finbuddy_v23_no_median_1779447827
 - **2026-05-22 20:00 UTC** — Regime changed: NEUTRAL → BEAR
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]]*

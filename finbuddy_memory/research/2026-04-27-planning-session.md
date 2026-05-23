@@ -68,3 +68,6 @@ Full task files in `tasks/` directory. Start with Phase 0.
 
 *This note was auto-created from the Cowork planning session.*
 *→ Full session log: session_log_2026-04-27.md in repo root*
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]] · [[research/README]]*

@@ -113,6 +113,9 @@ updated: {now}
 | NEUTRAL | Normal trading. Default sizing. |
 | BULL | Normal trading. |
 | EUPHORIA | Reduced entries. Take profits faster. |
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]]*
 """
     with open(CURRENT_MD, "w") as f:
         f.write(md)

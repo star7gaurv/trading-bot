@@ -151,3 +151,6 @@ chmod +x scripts/run_backtest.sh
 
 *All scripts that interact with FreqTrade run inside the Docker container via `docker exec`.*
 *Never run strategy-adjacent scripts directly on host Python.*
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]]*

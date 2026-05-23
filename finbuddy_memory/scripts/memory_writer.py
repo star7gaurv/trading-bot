@@ -76,6 +76,9 @@ Total Trades: {total_trades} | Win Rate: {round(win_rate, 1)}% | Total P&L: {rou
 ## Open Trades ({len(open_trades)})
 {open_trades_md}## Risk Flags
 {'- CRASH REGIME — NO NEW ENTRIES' if regime.get('regime') == 'CRASH' else '- None'}
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]]*
 """
 
     (VAULT / "CONTEXT.md").write_text(context_md)

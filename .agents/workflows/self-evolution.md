@@ -28,3 +28,6 @@ Once the memory is synchronized and the code is written:
 1. Add all modified files.
 2. Commit the changes to the Git repository with a highly descriptive message detailing the intelligence added.
 3. Restart the trading engine container (`docker restart freqtrade`) to immediately boot the new consciousness.
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]]*

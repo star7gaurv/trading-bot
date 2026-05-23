@@ -128,6 +128,9 @@ def run_research() -> str:
 
 ## Analysis ({source})
 {analysis}
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]] · [[research/README]]*
 """
 
     out_file = VAULT / f"research/{date_str}-nightly.md"

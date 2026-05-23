@@ -122,3 +122,6 @@ rm /home/ubuntu/.finbuddy/state/brain_runner.lock
 ```
 
 The live v22 bot is in a separate container (`freqtrade`) and is NEVER touched by the brain.
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]]*

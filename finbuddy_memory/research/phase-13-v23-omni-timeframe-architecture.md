@@ -26,3 +26,6 @@ Installed via cron (running at 2:00 AM nightly), this script:
 4. Restarts the Freqtrade Docker container to immediately begin trading with the evolved intelligence.
 
 FinBuddy now evolves autonomously without human intervention.
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]] · [[research/README]]*

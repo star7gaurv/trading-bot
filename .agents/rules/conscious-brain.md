@@ -27,3 +27,6 @@ Before concluding any session, you must write your learnings and state changes b
 - Update `FINBUDDY_PROJECT_MEMORY.md` with new versions or architectural changes.
 - Append major decisions to `finbuddy_memory/session_events.md`.
 - Keep the `CLAUDE.md` session history updated with what you changed and *why*.
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]]*

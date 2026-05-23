@@ -19,3 +19,6 @@ updated: 2026-05-23T16:00:02.202740+00:00
 | NEUTRAL | Normal trading. Default sizing. |
 | BULL | Normal trading. |
 | EUPHORIA | Reduced entries. Take profits faster. |
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]]*

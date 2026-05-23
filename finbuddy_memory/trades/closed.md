@@ -228,3 +228,6 @@
 | 2026-05-23 14:00:00 | UNI/USDT:USDT | SHORT | 3h59m | -2.10% | -1.39 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-05-23 17:16:00 | WIF/USDT:USDT | LONG | 0h50m | +1.29% | +0.88 | exit_signal | BEAR | freqai_regression_v23_lo |
 | 2026-05-23 18:11:13 | ATOM/USDT:USDT | SHORT | 0h10m | -0.85% | -0.58 | stop_loss | BEAR | freqai_regression_v23_sh |
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]]*

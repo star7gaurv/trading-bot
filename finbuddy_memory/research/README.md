@@ -17,3 +17,6 @@ Each file = one day, named `YYYY-MM-DD.md`, auto-created by the loop.
 - **Risk flag:** ...
 - **Action taken:** ...
 ```
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]] · [[research/README]]*

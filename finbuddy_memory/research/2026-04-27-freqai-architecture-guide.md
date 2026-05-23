@@ -266,3 +266,6 @@ FreqAI returns predictions as probabilities (0.0–1.0):
 ---
 
 *This guide will be the foundation for Phase 1 implementation. Read before starting FinBuddyFreqAI.py.*
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]] · [[research/README]]*

@@ -82,3 +82,6 @@ Same as v11: bull-window walk-forward must pass:
 ---
 
 *End of v12 plan. No code written yet — awaiting Gaurav review on this file before any strategy edits.*
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]] · [[research/README]]*

@@ -36,3 +36,6 @@ crontab -l
 - Latest WF JSON : `experiments/wf_latest.json`
 - Historical CSV : `experiments/results_log.csv`
 - All run logs   : `logs/auto_experiment.log`
+
+---
+*← [[FINBUDDY_PROJECT_MEMORY]]*
