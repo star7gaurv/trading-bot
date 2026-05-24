@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-24T11:30:02.024693+00:00",
+  "updated": "2026-05-24T12:00:02.037039+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -152,13 +152,13 @@
     },
     "ATOM/USDT:USDT": {
       "NEUTRAL": {
-        "n": 5,
-        "wins": 1,
+        "n": 6,
+        "wins": 2,
         "losses": 4,
-        "wr": 0.2,
-        "pf": 1.323,
-        "profit_usdt": 1.76,
-        "avg_profit_pct": -0.386
+        "wr": 0.3333,
+        "pf": 1.327,
+        "profit_usdt": 1.78,
+        "avg_profit_pct": -0.318
       },
       "BEAR": {
         "n": 4,
@@ -570,6 +570,17 @@
         "pf": 1.582,
         "profit_usdt": 0.64,
         "avg_profit_pct": 0.745
+      }
+    },
+    "FIL/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 0.06,
+        "avg_profit_pct": 0.06
       }
     }
   },

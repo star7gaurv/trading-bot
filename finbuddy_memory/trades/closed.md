@@ -238,3 +238,5 @@
 | 2026-05-24 06:45:01 | ATOM/USDT:USDT | SHORT | 0h44m | -1.68% | -1.71 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
 | 2026-05-24 08:04:44 | ATOM/USDT:USDT | SHORT | 0h34m | -0.85% | -0.86 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
 | 2026-05-24 08:44:02 | ATOM/USDT:USDT | SHORT | 0h13m | -2.13% | -2.16 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
+| 2026-05-24 11:49:30 | FIL/USDT:USDT | SHORT | 1h18m | +0.06% | +0.06 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
+| 2026-05-24 11:45:32 | ATOM/USDT:USDT | SHORT | 0h34m | +0.02% | +0.02 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
