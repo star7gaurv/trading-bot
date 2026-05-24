@@ -1,5 +1,5 @@
 # FinBuddy — Master Context
-Last updated: 2026-05-24 02:00 UTC
+Last updated: 2026-05-24 02:15 UTC
 
 ## Current Regime
 Regime: **NEUTRAL** | Confidence: 50.0% | Since: 2026-05-24
@@ -13,7 +13,7 @@ News Sentiment: 94.7% bullish
 Total Trades: 343 | Win Rate: 38.8% | Total P&L: 10.12%
 
 ## Open Trades (1)
-- LTC/USDT:USDT: Entry 53.42 | Current 53.46 | P&L: 0.03%
+- LTC/USDT:USDT: Entry 53.42 | Current 53.43 | P&L: -0.02%
 ## Risk Flags
 - None
 
