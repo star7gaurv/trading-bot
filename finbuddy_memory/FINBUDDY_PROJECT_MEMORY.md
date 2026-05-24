@@ -7,6 +7,24 @@
 **Status**: 🟢 v23 LIVE (identifier `finbuddy_v23_no_median_1779447827`) · 🧠 brain single-group (reverted 2026-05-24) · 💎 circuit breaker 10 USDT/day · ✂️ pair universe trimmed 37→26 (2026-05-24) · 🔄 brain cron */30 + flock  
 **Last Updated**: 2026-05-24 UTC (CPU optimization + pair universe trim to 26 high-edge pairs)
 
+### 2026-05-24 (Late Evening) — Phase 12b: Dashboard v2 Started
+
+**Context:** Existing dashboard (Phase 12 v1) feels like a hobby project — heavy neon, low density, missing FreqTrade trade history / performance, zero visibility into 24 crons + processes.
+
+**Scope** (full plan: `phase-12b-dashboard-v2.md`):
+- Rebuild from scratch as compact, Binance-class trading console (Claude-designed visual language)
+- 7 tabs: Overview · Trades · Performance · Brain · Walk-Forward · System Health · Settings
+- Mirror full FreqTrade UI (closed trades, performance, per-pair, daily/weekly/monthly)
+- New System Health panel — live status of all 24 crons + 3 processes
+- Password-gated (JWT)
+- Stack unchanged: React 19 + Vite + Tailwind + FastAPI streamer + nginx
+
+**Approach:** Five incremental commits — Foundation → Overview+SystemHealth → Trades+Performance → Brain+WF → Settings+Polish.
+
+**Task file:** `finbuddy_memory/tasks/phase-12b-dashboard-v2.md`
+
+---
+
 ### 2026-05-24 (Evening) — Pair Universe Trim 37 → 26 + CPU Optimization Complete
 
 **Pair removal:** 356 closed trades analyzed with full exit-reason breakdown. Two-framework consensus (Claude behavioral + Antigravity structural). 11 pairs removed:

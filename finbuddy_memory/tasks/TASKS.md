@@ -22,7 +22,8 @@
 | 9 | [phase-9-futures-risk.md](phase-9-futures-risk.md) | ✅ Complete (2026-05-09) | Regime-aware sizing, cluster cap, funding guard |
 | 10 | [phase-10-live-migration.md](phase-10-live-migration.md) | ⛔ BLOCKED | Real-capital migration — needs WF PASS or 60-day track record |
 | 11 | [phase-11-self-evolution.md](phase-11-self-evolution.md) | ✅ Live | RS metrics + dynamic regime sizing in strategy |
-| 12 | [phase-12-brain-dashboard.md](phase-12-brain-dashboard.md) | ✅ Complete | React SPA dashboard |
+| 12 | [phase-12-brain-dashboard.md](phase-12-brain-dashboard.md) | ✅ v1 Complete · 🟡 v2 IN PROGRESS | React SPA dashboard |
+| 12b | [phase-12b-dashboard-v2.md](phase-12b-dashboard-v2.md) | 🟡 IN PROGRESS (started 2026-05-24) | Dashboard v2 — professional trading console: 7 tabs, FreqTrade UI mirror, System Health, Brain/WF views, auth |
 | 13 | [phase-13-conscious-brain.md](phase-13-conscious-brain.md) | 🟢 OPERATIONAL | Autonomous hypothesis engine — brain runs every 10m |
 | **14** | **[phase-14-10usdt-daily.md](phase-14-10usdt-daily.md)** | **🟡 IN PROGRESS — P0–P2 done, P3 next** | **Path to 10 USDT/day — brain fixes + OI feature + leverage tuning** |
 
