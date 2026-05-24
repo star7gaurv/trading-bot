@@ -237,3 +237,4 @@
 | 2026-05-24 05:26:47 | WIF/USDT:USDT | LONG | 2h56m | -1.07% | -1.10 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-24 06:45:01 | ATOM/USDT:USDT | SHORT | 0h44m | -1.68% | -1.71 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
 | 2026-05-24 08:04:44 | ATOM/USDT:USDT | SHORT | 0h34m | -0.85% | -0.86 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
+| 2026-05-24 08:44:02 | ATOM/USDT:USDT | SHORT | 0h13m | -2.13% | -2.16 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
