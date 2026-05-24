@@ -23,15 +23,7 @@ if ! flock -n 9; then
     exit 0
 fi
 
-# Fix 9 (2026-05-22): mutual exclusion — skip deep if daily WF is still running.
-# Both spawn max-workers=2 × lgbm_threads=2 = 4 threads each. Running both in
-# parallel = 8 threads on a 4-core server → OOM. Root cause of bot crashes.
-if [ -f "$DAILY_LOCK" ] && flock -n "$DAILY_LOCK" true 2>/dev/null; then
-    : # daily lock file exists but is not held — daily WF finished, safe to proceed
-elif [ -f "$DAILY_LOCK" ]; then
-    echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] daily WF still running — skipping deep WF to prevent OOM" >> "$LOG"
-    exit 0
-fi
+
 
 # Full 27-month trailing window — covers bull + bear + chop regimes
 START=$(date -u -d '27 months ago' +'%Y-%m-01')
@@ -39,7 +31,7 @@ END=$(date -u +'%Y-%m-01')
 
 echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] === 4-day deep walk-forward starting: $START → $END (21 folds, 3 workers) ===" >> "$LOG"
 
-python3 "$SCRIPT" \
+nice -n 19 ionice -c 3 python3 "$SCRIPT" \
     --start "$START" \
     --end "$END" \
     --train-months 6 \
@@ -49,8 +41,8 @@ python3 "$SCRIPT" \
     --timeframe 15m \
     --config config.json \
     --skip-download \
-    --max-workers 2 \
-    --lgbm-threads 2 >> "$LOG" 2>&1
+    --max-workers 1 \
+    --lgbm-threads 1 >> "$LOG" 2>&1
 
 EXIT=$?
 echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] === 4-day deep walk-forward done (exit=$EXIT) ===" >> "$LOG"

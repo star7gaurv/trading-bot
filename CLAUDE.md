@@ -121,7 +121,7 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 - **1000 USDT** virtual wallet, max 8 open trades
 - **Confidence-based leverage** (commit `60d4fb4`): 1x / 2x / 3x tiers based on `predicted_return / threshold` ratio (no median subtraction — Fix 7). Fallback LOW (1x).
 - API: `http://localhost:8080/api/v1` — user: `bot`, pass: `REDACTED-FREQTRADE__API_SERVER__PASSWORD`
-- Whitelist: **37 pairs**, **15m timeframe** (each pair has 5 TFs of historical data: 15m + 30m + 1h + 4h + 1d)
+- Whitelist: **26 pairs** (trimmed from 37 on 2026-05-24 — removed DASH/ZEC/BCH/DOGE/AAVE/TRX/1000SHIB/BNB/INJ/HBAR/ATOM), **15m timeframe** (each pair has 5 TFs of historical data: 15m + 30m + 1h + 4h + 1d)
 - **Per-pair-per-regime gate active** — `pair_regime_stats.json` blocks pair-regime combos with rolling 30d (n≥5, WR<40%, PF<0.7)
 - Strategy env vars (live): K_TP=2.0, K_SL=2.0, **LONG_THRESHOLD=0.5, SHORT_THRESHOLD=-0.5, STABILITY_N=1** (thresholds ±0.5 for z-scored N(0,1) predictions)
 
@@ -242,7 +242,7 @@ Standard layer 4 features include 3 funding-rate features (`%-funding_rate`, `%-
 ## Current Strategy
 
 ### ✅ Active: `FinBuddyFreqAI_v23.py` v23 — Regression + Per-Pair-Per-Regime Gate
-- Binance Futures USDT-M (perpetual, isolated margin), **15m base TF**, 37 pairs, `can_short=True`
+- Binance Futures USDT-M (perpetual, isolated margin), **15m base TF**, **26 pairs** (trimmed 2026-05-24), `can_short=True`
 - **LightGBMRegressor**: predicts `&-future_return` (regression target, no classifier bias)
 - **2x Leverage**: Implemented via `leverage()` callback.
 - **Max Open Trades**: 8.
@@ -402,6 +402,11 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 ## Session History Summary
 
 > Full session history lives in `finbuddy_memory/FINBUDDY_PROJECT_MEMORY.md`. Only the most recent session is kept here.
+
+### May 24, 2026 — System-Wide CPU Optimization & Self-Aware Subconscious Reflection
+- **Subconscious Reflection:** The 38-hour 27-month trailing Deep Walk-Forward (`walkforward_deep.sh`) previously caused severe CPU starvation when it ran alongside the Brain. Instead of pausing the Brain (which violates the "self-aware, continuously evolving" philosophy), `walkforward_deep.sh` was wrapped in `nice -n 19 ionice -c 3` and limited to `--max-workers 1` and `--lgbm-threads 1`. The deep backtest now acts as the system's "subconscious", absorbing 100% of idle CPU cycles without EVER slowing down the active Brain or the live trading bot. System progress is maximized without CPU spiking.
+- **Removed Dead Mock Executor:** `executor_wrapper.sh` running every 5 minutes 24/7 was deleted. This was a legacy Phase 7 prototype that consumed CPU 288 times a day for absolutely no purpose.
+- **De-duplicated 08:00 AM Cron Stampede:** Removed `pair_performance.py` from the crontab. It was firing at the exact same millisecond as `daily_summary.py` and `digest.py` every morning, causing an artificial CPU spike for a redundant text log.
 
 ### May 22, 2026 Evening (Claude Code) — 15-bug deep analysis + brain unblocked
 

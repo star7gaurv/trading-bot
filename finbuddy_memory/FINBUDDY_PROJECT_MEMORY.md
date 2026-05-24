@@ -4,10 +4,31 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status**: 🟢 v23 LIVE (identifier `finbuddy_v23_no_median_1779447827`) · 🧠 brain parallel split — experiments will complete · 💎 circuit breaker 10 USDT/day live · 🔄 WF fold timeout fixed (6h) — real results tonight · 🚀 brain→live pipeline closed  
-**Last Updated**: 2026-05-23 UTC (P0-P2 fixes — commits `8bede56` + `aba9e4d`)
+**Status**: 🟢 v23 LIVE (identifier `finbuddy_v23_no_median_1779447827`) · 🧠 brain single-group (reverted 2026-05-24) · 💎 circuit breaker 10 USDT/day · ✂️ pair universe trimmed 37→26 (2026-05-24) · 🔄 brain cron */30 + flock  
+**Last Updated**: 2026-05-24 UTC (CPU optimization + pair universe trim to 26 high-edge pairs)
 
-### 2026-05-24 — System-Wide CPU Optimization & Self-Aware Subconscious Reflection
+### 2026-05-24 (Evening) — Pair Universe Trim 37 → 26 + CPU Optimization Complete
+
+**Pair removal:** 356 closed trades analyzed with full exit-reason breakdown. Two-framework consensus (Claude behavioral + Antigravity structural). 11 pairs removed:
+
+| Pair | Reason |
+|---|---|
+| DASH, ZEC, BCH | Dead coins — no institutional volume, negative P&L |
+| DOGE | Structural: trailing_stop WR=14% (-$8.91). Spike-revert faster than 15m ATR can arm/disarm |
+| AAVE | PF=0.07, avg win $0.15 / avg loss $1.12 — gap-risk incompatible with ATR stop |
+| TRX | WR=20% — announcement-driven, not learnable from OHLCV/funding features |
+| 1000SHIB | edge=0.05 — model wins $0.05, loses $0.89; needs 95% WR to break even |
+| BNB, INJ, HBAR | 0 entries in 5 weeks post all bug fixes — model sees no edge above ±0.5 threshold |
+| ATOM | Borderline data, dual-framework agreement |
+
+**Remaining 26 pairs:** 1000PEPE, ADA, APT, ARB, AVAX, BTC, DOT, ENA, ETH, FET, FIL, LDO, LINK, LTC, NEAR, ONDO, OP, POL, RENDER, SOL, SUI, TAO, TON, UNI, WIF, XRP
+**Watch list (2 weeks):** AVAX, ADA — borderline edge, monitor until June 7.
+**FreqAI cache flushed** (historic_predictions.pkl, pair_dictionary.json moved to .bak) — prevents schema mismatch on restart.
+**Container restarted** with `docker-compose up -d` — 26-pair training underway.
+
+---
+
+### 2026-05-24 (Day) — System-Wide CPU Optimization & Self-Aware Subconscious Reflection
 
 **Root causes found:** Massive load average (7.38 on 4 cores) caused by overlapping cron jobs, redundant dummy scripts, and the monthly Deep Walk-Forward backtest crushing the CPU at the exact same time as the continuous Brain.
 
