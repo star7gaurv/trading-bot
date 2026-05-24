@@ -1,64 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;700;900&display=swap');
+@import "./styles/tokens.css";
+@import "./styles/base-pre.css";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-body {
-  @apply bg-cyber-dark text-slate-200 antialiased font-sans m-0 p-0 overflow-x-hidden;
-  background-color: #0b1120;
-}
-
-/* Animated Mesh Background */
-.bg-mesh {
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(56, 189, 248, 0.08), transparent 40%),
-    radial-gradient(circle at 85% 30%, rgba(192, 132, 252, 0.08), transparent 40%),
-    radial-gradient(circle at 50% 80%, rgba(74, 222, 128, 0.05), transparent 40%);
-  filter: blur(60px);
-  animation: pulse-bg 15s ease-in-out infinite alternate;
-}
-
-@keyframes pulse-bg {
-  0% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.1); }
-  100% { opacity: 0.3; transform: scale(1); }
-}
-
-/* Glassmorphism utility */
-.glass-panel {
-  @apply bg-slate-900/40 backdrop-blur-2xl border border-slate-700/50 rounded-3xl shadow-2xl overflow-hidden;
-}
-
-/* Custom scrollbar for the brain feed */
-.brain-feed::-webkit-scrollbar {
-  width: 4px;
-}
-.brain-feed::-webkit-scrollbar-track {
-  background: transparent;
-}
-.brain-feed::-webkit-scrollbar-thumb {
-  @apply bg-slate-700/50 rounded-full;
-}
-
-/* Glowing Text Shadows */
-@layer utilities {
-  .text-shadow-neon {
-    text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
-  }
-  .text-shadow-green {
-    text-shadow: 0 0 20px rgba(74, 222, 128, 0.5);
-  }
-  .text-shadow-red {
-    text-shadow: 0 0 20px rgba(248, 113, 113, 0.5);
-  }
-}
-
-/* Neural pulse animation */
-@keyframes pulse-neon {
-  0%, 100% { opacity: 1; text-shadow: 0 0 15px rgba(56,189,248,0.6); }
-  50% { opacity: 0.7; text-shadow: none; }
-}
-.animate-neon {
-  animation: pulse-neon 3s infinite;
-}

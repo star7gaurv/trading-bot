@@ -1,0 +1,35 @@
+/* Dashboard v2 — design tokens as CSS variables.
+   Mirrors tailwind.config.js. Use these for styles outside Tailwind utility classes. */
+
+:root {
+  --canvas: #0a0d11;
+  --surface: #13171c;
+  --elevated: #1a1f26;
+  --hover: #222831;
+
+  --border-default: #1f242b;
+  --border-strong: #2b323b;
+
+  --accent: #3b82f6;
+  --accent-dim: #1d4ed8;
+
+  --profit: #22c55e;
+  --loss: #ef4444;
+  --warn: #f59e0b;
+  --info: #3b82f6;
+
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-tertiary: #64748b;
+  --text-muted: #475569;
+
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-lg: 10px;
+
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-lifted: 0 4px 12px rgba(0, 0, 0, 0.45);
+
+  --tab-h: 44px;
+  --topnav-h: 56px;
+}

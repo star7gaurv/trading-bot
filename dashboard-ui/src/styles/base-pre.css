@@ -1,0 +1,140 @@
+/* Base styles — minimal resets + global typography rules.
+   Applied via @import in index.css after Tailwind. */
+
+* {
+  border-color: var(--border-default);
+}
+
+html,
+body {
+  background: var(--canvas);
+  color: var(--text-primary);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Tabular numerics on numeric content */
+.num,
+.font-mono,
+table td,
+table th {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scrollbars (WebKit) — slim, dark, restrained */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #2b323b;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a4350;
+}
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Inputs: minimal styling */
+input,
+button,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="search"] {
+  background: var(--elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus {
+  border-color: var(--accent);
+}
+
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Pulse indicator for live-data dots */
+.live-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--profit);
+  animation: live-pulse 2s ease-in-out infinite;
+}
+.live-dot.stale {
+  background: var(--warn);
+  animation: none;
+}
+.live-dot.dead {
+  background: var(--loss);
+  animation: none;
+}
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Table polish */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+thead th {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-default);
+}
+tbody td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-default);
+  font-size: 13px;
+}
+tbody tr:hover {
+  background: var(--hover);
+}
+tbody tr:last-child td {
+  border-bottom: none;
+}
