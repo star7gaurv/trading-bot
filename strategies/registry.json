@@ -758,6 +758,49 @@
       "proposed_by": "reasoning_agent",
       "reviewed_at": "2026-05-23",
       "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "btc_regime_breakout_20260524",
+      "hypothesis": "If BTC price breaks above the 28-day high of $73,200 with >2% volume surge, the market will shift to a bullish regime (>60% confidence) within 48h.",
+      "timeframe": "1h",
+      "indicators": [
+        "BTC_PRICE",
+        "BTC_VOLUME_2PCT",
+        "REGIME_SCORE"
+      ],
+      "entry_long": "BTC price breaks above $73,200 with volume surge >2% and regime score >60%",
+      "entry_short": "BTC price drops below $71,500 with Fear & Greed \u226430 and regime score <40%",
+      "exit_rule": "Close position when regime score drops below 50 or rises above 70",
+      "regime_filter": [
+        "REGIME_NEUTRAL",
+        "REGIME_BULLISH"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-24",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-24",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
+    },
+    {
+      "strategy_id": "fear_sentiment_reversal_20260524",
+      "hypothesis": "A sudden Google Trends jump to >65 in search interest will precede a 3%+ market rally within 12h, regardless of F&G level.",
+      "timeframe": "1h",
+      "indicators": [
+        "GOOGLE_TRENDS_65",
+        "MARKET_RALLY_3PCT"
+      ],
+      "entry_long": "Google Trends >65 triggers a long entry",
+      "entry_short": "No Google Trends spike, hold cash",
+      "exit_rule": "Exit when market-wide returns drop below 1%",
+      "regime_filter": [
+        "REGIME_NEUTRAL",
+        "REGIME_BULLISH"
+      ],
+      "status": "needs_implementation",
+      "proposed_at": "2026-05-24",
+      "proposed_by": "reasoning_agent",
+      "reviewed_at": "2026-05-24",
+      "review_note": "Hypothesis queued for manual implementation. Auto-backtest validates current live config only."
     }
   ]
 }
