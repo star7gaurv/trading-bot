@@ -1,15 +1,455 @@
+/**
+ * Overview tab — at-a-glance dashboard.
+ *
+ * Rows:
+ *   1. Stat strip (P&L today/7d/30d, WR, open positions, regime, F&G)
+ *   2. Open positions mini-table + System health summary card
+ *   3. Brain status + Walk-forward status
+ */
 import Card from "../components/Card";
+import Stat from "../components/Stat";
+import Table from "../components/Table";
+import Badge from "../components/Badge";
+import { usePolling } from "../api/hooks";
+import {
+  getProfitSummary,
+  getOpenTrades,
+  getRegimeCurrent,
+  getCronStatus,
+  getSystemHealth,
+  getBrainQueue,
+  getWfLatest,
+} from "../api/client";
+import {
+  formatUsdt,
+  formatNumber,
+  formatPct,
+  formatRelative,
+  formatDuration,
+} from "../utils/format";
 
-export default function Overview() {
+// ─── Helpers ───
+const REGIME_TONE = {
+  BULL: "profit",
+  EUPHORIA: "profit",
+  NEUTRAL: "warn",
+  BEAR: "loss",
+  CRASH: "loss",
+};
+
+function safe(obj, key, fallback = null) {
+  if (!obj || typeof obj !== "object") return fallback;
+  const v = obj[key];
+  return v == null ? fallback : v;
+}
+
+function trades7dPnl(profit) {
+  // FT /profit endpoint exposes `profit_closed_coin` / `profit_all_coin` etc.
+  // Best-effort: prefer absolute USDT field, fall back to nothing.
+  return (
+    safe(profit, "profit_closed_coin") ??
+    safe(profit, "profit_all_coin") ??
+    null
+  );
+}
+
+// ─── Sub-panels ───
+function StatStrip({ profit, openTrades, regime }) {
+  const today = safe(profit, "profit_today_abs");
+  const all = safe(profit, "profit_closed_coin");
+  const winning = safe(profit, "winning_trades", 0) || 0;
+  const losing = safe(profit, "losing_trades", 0) || 0;
+  const total = winning + losing;
+  const wr = total > 0 ? (winning / total) * 100 : null;
+
+  const openCount = Array.isArray(openTrades) ? openTrades.length : 0;
+  const regimeName = safe(regime, "regime", "—");
+  const regimeTone = REGIME_TONE[regimeName] || "default";
+  const regimeConf = safe(regime, "confidence");
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
+      <Stat
+        label="P&L Today"
+        value={today != null ? today.toFixed(2) : "—"}
+        unit={today != null ? "USDT" : ""}
+        tone={today == null ? "default" : today >= 0 ? "profit" : "loss"}
+      />
+      <Stat
+        label="P&L Closed"
+        value={all != null ? all.toFixed(2) : "—"}
+        unit={all != null ? "USDT" : ""}
+        tone={all == null ? "default" : all >= 0 ? "profit" : "loss"}
+      />
+      <Stat
+        label="Trades (W/L)"
+        value={total > 0 ? `${winning}/${losing}` : "—"}
+        mono
+      />
+      <Stat
+        label="Win Rate"
+        value={wr != null ? wr.toFixed(1) : "—"}
+        unit={wr != null ? "%" : ""}
+        tone={wr == null ? "default" : wr >= 50 ? "profit" : "loss"}
+      />
+      <Stat label="Open Positions" value={openCount} />
+      <Stat
+        label="Regime"
+        value={regimeName}
+        tone={regimeTone}
+        mono={false}
+      />
+      <Stat
+        label="Regime Conf."
+        value={regimeConf != null ? (regimeConf * 100).toFixed(0) : "—"}
+        unit={regimeConf != null ? "%" : ""}
+      />
+    </div>
+  );
+}
+
+function OpenTradesPanel({ data, error, lastUpdated, loading }) {
+  const rows = Array.isArray(data) ? data.slice(0, 5) : [];
+  const columns = [
+    { key: "pair", label: "Pair", mono: true },
+    {
+      key: "side",
+      label: "Side",
+      render: (r) => {
+        const isShort = r.is_short || r.trade_direction === "short";
+        return (
+          <Badge variant={isShort ? "short" : "long"} size="xs">
+            {isShort ? "SHORT" : "LONG"}
+          </Badge>
+        );
+      },
+    },
+    {
+      key: "leverage",
+      label: "Lev",
+      align: "right",
+      mono: true,
+      render: (r) => (r.leverage ? `${r.leverage}x` : "—"),
+    },
+    {
+      key: "profit_pct",
+      label: "P&L %",
+      align: "right",
+      mono: true,
+      render: (r) => {
+        const p = r.profit_pct ?? r.profit_ratio;
+        if (p == null) return "—";
+        const v = typeof p === "number" && Math.abs(p) < 1 ? p * 100 : p;
+        const cls = v >= 0 ? "text-profit" : "text-loss";
+        return (
+          <span className={cls}>
+            {v >= 0 ? "+" : ""}
+            {v.toFixed(2)}%
+          </span>
+        );
+      },
+    },
+    {
+      key: "profit_abs",
+      label: "P&L USDT",
+      align: "right",
+      mono: true,
+      render: (r) => {
+        const v = r.profit_abs;
+        if (v == null) return "—";
+        const cls = v >= 0 ? "text-profit" : "text-loss";
+        return (
+          <span className={cls}>
+            {v >= 0 ? "+" : ""}
+            {v.toFixed(2)}
+          </span>
+        );
+      },
+    },
+  ];
+
+  return (
+    <Card
+      title="Open Positions"
+      subtitle={`${Array.isArray(data) ? data.length : 0} open`}
+      lastUpdated={lastUpdated}
+    >
+      {error ? (
+        <p className="text-xs text-text-muted italic">Error: {error}</p>
+      ) : (
+        <Table
+          columns={columns}
+          rows={rows}
+          loading={loading && !data}
+          emptyMessage="No open positions"
+        />
+      )}
+    </Card>
+  );
+}
+
+function SystemHealthSummaryPanel({
+  cronData,
+  cronLastUpdated,
+  sysData,
+  onNavigateTab,
+}) {
+  const summary = safe(cronData, "summary", {});
+  const overall = summary.overall || "unknown";
+  const ok = summary.ok || 0;
+  const stale = summary.stale || 0;
+
+  const load = safe(sysData, "load", {});
+  const disk = safe(sysData, "disk", {});
+  const mem = safe(sysData, "memory", {});
+
+  const overallVariant =
+    overall === "ok" ? "ok" : overall === "warn" ? "stale" : "dead";
+
+  return (
+    <Card
+      title="System Health"
+      lastUpdated={cronLastUpdated}
+      actions={
+        <button
+          onClick={() => (onNavigateTab || (() => {}))("system")}
+          className="text-xxs text-accent hover:underline"
+        >
+          View all →
+        </button>
+      }
+    >
+      <div className="flex items-center justify-between mb-3">
+        <Badge variant={overallVariant} size="sm">
+          {overall.toUpperCase()}
+        </Badge>
+        <span className="text-xxs text-text-tertiary font-mono">
+          {ok} ok · {stale} stale
+        </span>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <MiniStat
+          label="Load 1m"
+          value={load.load_1m != null ? load.load_1m.toFixed(2) : "—"}
+          sub={load.cores ? `/ ${load.cores}` : ""}
+          tone={
+            load.utilization_pct == null
+              ? "default"
+              : load.utilization_pct > 150
+              ? "loss"
+              : load.utilization_pct > 100
+              ? "warn"
+              : "default"
+          }
+        />
+        <MiniStat
+          label="Mem"
+          value={mem.used_pct != null ? `${mem.used_pct.toFixed(0)}%` : "—"}
+          sub={mem.used_gb != null ? `${mem.used_gb.toFixed(1)} GB` : ""}
+          tone={
+            mem.used_pct == null
+              ? "default"
+              : mem.used_pct > 90
+              ? "loss"
+              : mem.used_pct > 80
+              ? "warn"
+              : "default"
+          }
+        />
+        <MiniStat
+          label="Disk"
+          value={disk.used_pct != null ? `${disk.used_pct.toFixed(0)}%` : "—"}
+          sub={disk.free_gb != null ? `${disk.free_gb.toFixed(0)} GB free` : ""}
+          tone={
+            disk.used_pct == null
+              ? "default"
+              : disk.used_pct > 90
+              ? "loss"
+              : disk.used_pct > 80
+              ? "warn"
+              : "default"
+          }
+        />
+        <MiniStat
+          label="Crons"
+          value={`${ok}/${(ok || 0) + (stale || 0)}`}
+          sub={stale > 0 ? `${stale} stale` : "all ok"}
+          tone={stale > 0 ? "warn" : "default"}
+        />
+      </div>
+    </Card>
+  );
+}
+
+function MiniStat({ label, value, sub, tone = "default" }) {
+  const toneCls = {
+    profit: "text-profit",
+    loss: "text-loss",
+    warn: "text-warn",
+    default: "text-text-primary",
+  }[tone];
+  return (
+    <div className="bg-elevated border border-border rounded px-2.5 py-2 min-w-0">
+      <div className="text-xxs uppercase tracking-wider text-text-tertiary truncate">
+        {label}
+      </div>
+      <div className={`text-lg font-mono font-semibold ${toneCls} truncate`}>
+        {value}
+      </div>
+      {sub && (
+        <div className="text-xxs text-text-muted font-mono truncate">{sub}</div>
+      )}
+    </div>
+  );
+}
+
+function BrainPanel({ data, error, lastUpdated }) {
+  const total = safe(data, "total", 0);
+  const byStatus = safe(data, "by_status", {}) || {};
+  const queued = byStatus.queued || 0;
+  const completed = byStatus.completed || 0;
+  const failed = byStatus.failed || 0;
+  const running = byStatus.running || 0;
+  const oldestTs = safe(data, "oldest_queued_ts");
+  const oldestAgeS = oldestTs ? Date.now() / 1000 - oldestTs : null;
+
+  return (
+    <Card title="Brain" lastUpdated={lastUpdated}>
+      {error ? (
+        <p className="text-xs text-text-muted italic">Error: {error}</p>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <MiniStat label="Total" value={total} />
+          <MiniStat
+            label="Queued"
+            value={queued}
+            sub={oldestAgeS != null ? `${formatDuration(oldestAgeS)} oldest` : ""}
+            tone={queued > 0 ? "warn" : "default"}
+          />
+          <MiniStat label="Running" value={running} />
+          <MiniStat
+            label="Completed"
+            value={completed}
+            sub={failed > 0 ? `${failed} failed` : ""}
+            tone={failed > 0 ? "warn" : "default"}
+          />
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function WfPanel({ data, error, lastUpdated }) {
+  const available = safe(data, "available", false);
+  const name = safe(data, "name", "");
+  const summary = safe(data, "summary") || {};
+  const agg = summary.aggregate || summary.summary || {};
+  const passed = !!summary.pass;
+
+  const wr = agg.win_rate;
+  const sharpe = agg.weighted_sharpe ?? agg.sharpe;
+  const dd = agg.max_drawdown;
+  const pf = agg.profit_factor;
+
+  // Gate thresholds: WR>50%, Sharpe>0.5, DD<20%, PF>1.2
+  const gates = [
+    { label: "WR", value: wr, fmt: (v) => `${(v * 100).toFixed(1)}%`, ok: wr != null && wr > 0.5 },
+    { label: "Sharpe", value: sharpe, fmt: (v) => v.toFixed(2), ok: sharpe != null && sharpe > 0.5 },
+    { label: "DD", value: dd, fmt: (v) => `${(v * 100).toFixed(1)}%`, ok: dd != null && Math.abs(dd) < 0.2 },
+    { label: "PF", value: pf, fmt: (v) => v.toFixed(2), ok: pf != null && pf > 1.2 },
+  ];
+
+  return (
+    <Card title="Walk-Forward" lastUpdated={lastUpdated}>
+      {error ? (
+        <p className="text-xs text-text-muted italic">Error: {error}</p>
+      ) : !available ? (
+        <p className="text-xs text-text-muted italic">No WF runs found</p>
+      ) : (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-xs font-mono text-text-secondary truncate">
+                {name}
+              </div>
+              <div className="text-xxs text-text-tertiary">
+                {summary.verdict || (passed ? "Latest run" : "Latest run")}
+              </div>
+            </div>
+            <Badge variant={passed ? "ok" : "loss"} size="sm">
+              {passed ? "PASS" : "FAIL"}
+            </Badge>
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            {gates.map((g) => (
+              <div
+                key={g.label}
+                className="bg-elevated border border-border rounded px-2 py-1.5 text-center"
+              >
+                <div className="text-xxs uppercase tracking-wider text-text-tertiary">
+                  {g.label}
+                </div>
+                <div
+                  className={`text-sm font-mono font-semibold ${
+                    g.value == null
+                      ? "text-text-muted"
+                      : g.ok
+                      ? "text-profit"
+                      : "text-loss"
+                  }`}
+                >
+                  {g.value != null ? g.fmt(g.value) : "—"}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+// ─── Tab root ───
+export default function Overview({ onNavigateTab }) {
+  const profit = usePolling(getProfitSummary, 15000);
+  const trades = usePolling(getOpenTrades, 5000);
+  const regime = usePolling(getRegimeCurrent, 60000);
+  const cron = usePolling(getCronStatus, 30000);
+  const sys = usePolling(getSystemHealth, 30000);
+  const brain = usePolling(getBrainQueue, 30000);
+  const wf = usePolling(getWfLatest, 60000);
+
   return (
     <div className="space-y-4">
-      <Card title="Overview" subtitle="At-a-glance state — coming in Increment 2">
-        <p className="text-xs text-text-tertiary">
-          This tab will hold the top stat row (P&L today/7d/30d, WR, open positions,
-          regime, F&G), live trades mini-table, brain status, WF status, and a
-          system-health summary card.
-        </p>
-      </Card>
+      <StatStrip
+        profit={profit.data}
+        openTrades={trades.data}
+        regime={regime.data}
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <OpenTradesPanel
+          data={trades.data}
+          error={trades.error}
+          lastUpdated={trades.lastUpdated}
+          loading={trades.loading}
+        />
+        <SystemHealthSummaryPanel
+          cronData={cron.data}
+          cronLastUpdated={cron.lastUpdated}
+          sysData={sys.data}
+          onNavigateTab={onNavigateTab}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <BrainPanel
+          data={brain.data}
+          error={brain.error}
+          lastUpdated={brain.lastUpdated}
+        />
+        <WfPanel data={wf.data} error={wf.error} lastUpdated={wf.lastUpdated} />
+      </div>
     </div>
   );
 }

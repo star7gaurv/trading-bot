@@ -99,7 +99,7 @@ export default function App() {
 
   return (
     <Layout tabs={TABS} activeTab={activeTab} onTabChange={handleTabChange}>
-      <ActiveComponent />
+      <ActiveComponent onNavigateTab={handleTabChange} />
     </Layout>
   );
 }
