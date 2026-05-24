@@ -184,11 +184,7 @@ def check_trade_bias(state: dict) -> None:
 def update_recent_wr() -> None:
     """
     Layer 2 self-awareness: compute rolling WR of last WR_FEEDBACK_WINDOW trades,
-    write FINBUDDY_RECENT_WR=0.XX to freqtrade/.env so the live strategy can read it
-    as an env var on next FreqAI retrain cycle.
-
-    Format: one KEY=value per line. We find and replace the FINBUDDY_RECENT_WR line
-    or append it if absent. Safe to run even when .env has other keys.
+    write recent_wr.json so the live strategy can read it dynamically on each candle eval.
     """
     if not DB_PATH.exists():
         return
@@ -213,13 +209,18 @@ def update_recent_wr() -> None:
     key  = "FINBUDDY_RECENT_WR"
 
     try:
-        lines = ENV_PATH.read_text().splitlines() if ENV_PATH.exists() else []
-        new_lines = [l for l in lines if not l.startswith(f"{key}=")]
-        new_lines.append(f"{key}={wr}")
-        ENV_PATH.write_text("\n".join(new_lines) + "\n")
-        print(f"OK: {key}={wr} written to .env ({len(rows)} trades, {wins} wins)")
+        wr_file = Path("/home/ubuntu/.finbuddy/state/recent_wr.json")
+        wr_file.parent.mkdir(parents=True, exist_ok=True)
+        wr_data = {
+            "wr": wr,
+            "trades": len(rows),
+            "wins": wins,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        wr_file.write_text(json.dumps(wr_data, indent=2))
+        print(f"OK: recent_wr={wr} written to JSON ({len(rows)} trades, {wins} wins)")
     except Exception as e:
-        print(f"WARN: .env write failed: {e}", file=sys.stderr)
+        print(f"WARN: JSON write failed: {e}", file=sys.stderr)
 
 
 def format_row(row: tuple, regime: str) -> str:

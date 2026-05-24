@@ -250,6 +250,10 @@ class FinBuddyFreqAI_v23(IStrategy):
     _pair_regime_blocks       = None    # dict[pair] -> set[regime]
     _pair_regime_blocks_mtime = 0.0
 
+    _RECENT_WR_FILE = "/home/ubuntu/.finbuddy/state/recent_wr.json"
+    _recent_wr_cache = 0.50
+    _recent_wr_mtime = 0.0
+
     def _load_historical_regime(self):
         """Load BTC-derived historical regime parquet once. Cached at class level."""
         if FinBuddyFreqAI_v23._historical_regime_df is not None:
@@ -326,6 +330,24 @@ class FinBuddyFreqAI_v23(IStrategy):
             return blocks
         except Exception:
             return FinBuddyFreqAI_v23._pair_regime_blocks or {}
+
+    def _load_recent_wr(self) -> float:
+        """Return the recent WR. Refreshes when JSON mtime changes."""
+        try:
+            mtime = os.path.getmtime(self._RECENT_WR_FILE)
+        except OSError:
+            return FinBuddyFreqAI_v23._recent_wr_cache
+        if mtime <= FinBuddyFreqAI_v23._recent_wr_mtime:
+            return FinBuddyFreqAI_v23._recent_wr_cache
+        try:
+            with open(self._RECENT_WR_FILE) as f:
+                data = json.load(f)
+            wr = float(data.get("wr", 0.50))
+            FinBuddyFreqAI_v23._recent_wr_cache = wr
+            FinBuddyFreqAI_v23._recent_wr_mtime = mtime
+            return wr
+        except Exception:
+            return FinBuddyFreqAI_v23._recent_wr_cache
 
     def _load_historical_macro(self):
         """Load historical macro features (F&G + BTC strength). Cached at class level."""
@@ -1018,7 +1040,7 @@ class FinBuddyFreqAI_v23(IStrategy):
         long_mult_series  = regime_series.map(lambda r: self._REGIME_THRESHOLD_MULTS.get(r, (1.0, 1.0))[0])
         short_mult_series = regime_series.map(lambda r: self._REGIME_THRESHOLD_MULTS.get(r, (1.0, 1.0))[1])
 
-        recent_wr = float(os.getenv("FINBUDDY_RECENT_WR", "0.50"))
+        recent_wr = self._load_recent_wr()
         # Fix 8 (2026-05-22): bidirectional WR feedback (was one-directional — only
         # rewarded good WR, never penalized bad WR).
         # Now: WR=32% → wr_adj=1.46 (46% harder to enter)
