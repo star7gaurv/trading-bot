@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-24T06:30:02.857088+00:00",
+  "generated_at": "2026-05-24T12:30:02.541147+00:00",
   "findings": {
     "dead_timeframes": [
       "1h",
@@ -10,7 +10,7 @@
     "noisy_timeframes": [
       "5m"
     ],
-    "short_bias": true,
+    "short_bias": false,
     "fee_drag": false,
     "near_breakeven": false,
     "best_bear": {
@@ -144,8 +144,8 @@
     },
     "window_stats": {
       "bear_2025Q1": {
-        "n": 106,
-        "avg_wr": 0.4,
+        "n": 108,
+        "avg_wr": 0.404,
         "avg_pf": 0.828
       },
       "bull_2024Q1": {
@@ -154,27 +154,27 @@
         "avg_pf": 0.468
       },
       "bull_2024Q2": {
-        "n": 63,
-        "avg_wr": 0.437,
-        "avg_pf": 0.858
+        "n": 65,
+        "avg_wr": 0.439,
+        "avg_pf": 0.846
       },
       "bull_2025Q4": {
-        "n": 1,
-        "avg_wr": 0.443,
-        "avg_pf": 0.414
+        "n": 3,
+        "avg_wr": 0.492,
+        "avg_pf": 0.495
       },
       "bear_2026Q1": {
-        "n": 2,
-        "avg_wr": 0.509,
-        "avg_pf": 0.636
+        "n": 4,
+        "avg_wr": 0.489,
+        "avg_pf": 0.575
       }
     },
     "tf_stats": {
       "15m": {
-        "n": 220,
-        "avg_pf": 0.734,
-        "avg_wr": 0.393,
-        "avg_trades_day": 1.57
+        "n": 228,
+        "avg_pf": 0.729,
+        "avg_wr": 0.397,
+        "avg_trades_day": 1.58
       },
       "1h": {
         "n": 25,
@@ -202,11 +202,7 @@
       }
     }
   },
-  "pruned": 1,
-  "actions": [
-    "Queued \u00d72 short-bias/lower-long-threshold on BULL windows",
-    "Queued \u00d75 short-bias/symmetric-thresholds \u00b13.5",
-    "Queued \u00d75 cross-window validation of best config"
-  ],
+  "pruned": 18,
+  "actions": [],
   "llm_insight": ""
 }

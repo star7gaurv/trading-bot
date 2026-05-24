@@ -200,3 +200,8 @@ um_threads=2** added to both config.json and 23_regression_15m_di_config.json. 
 - Increased Walk-Forward subprocess timeout to 10 hours (`36000` seconds) to prevent `TimeoutExpired` failure.
 - Fixed paralyzed WR feedback loop: The strategy previously read `FINBUDDY_RECENT_WR` from a static Docker environment variable. Replaced it with a fast JSON mtime-cached loader reading from `recent_wr.json`. This unlocks the strategy's real-time adaptability.
 - Removed obsolete `run_loop.py` from crontab to eliminate duplicate Karpathy loop execution, saving CPU.
+
+## 2026-05-24: Subconscious Deep Walk-Forward & De-Duplication
+- **Subconscious Processing:** Modified `walkforward_deep.sh` to remove restrictive mutual exclusion locks. Prepended the FreqAI execution with `nice -n 19 ionice -c 3` and restricted it to `--max-workers 1` and `--lgbm-threads 1`. The 27-month trailing walk-forward now acts as a continuous background Subconscious Reflection, utilizing 100% of idle CPU cycles without ever slowing down the active Brain or the live trading bot.
+- **Removed Dead Executor:** Deleted the obsolete Phase 7 `executor_wrapper.sh` cron job and `scripts/executor/` directory. FreqTrade natively handles execution; this script was a 288-times-daily CPU drain serving no purpose.
+- **De-duplicated 08:00 AM Cron:** Removed `pair_performance.py` from the crontab to eliminate an artificial CPU spike alongside the `daily_summary.py` and `digest.py` Telegram scripts.

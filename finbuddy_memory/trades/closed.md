@@ -242,3 +242,4 @@
 | 2026-05-24 11:45:32 | ATOM/USDT:USDT | SHORT | 0h34m | +0.02% | +0.02 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
 | 2026-05-24 12:10:49 | SUI/USDT:USDT | LONG | 0h25m | -1.05% | -1.07 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-24 12:04:24 | 1000PEPE/USDT:USDT | LONG | 0h18m | -0.68% | -0.69 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-24 12:17:34 | FET/USDT:USDT | LONG | 0h16m | -1.39% | -1.41 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
