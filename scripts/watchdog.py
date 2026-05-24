@@ -8,8 +8,8 @@ predictions stale" — the bot looks alive but is silently broken.
 
 Checks (run every 30m via cron):
   1. Container `freqtrade` is running (docker inspect)
-  2. At least one `Done training` event in the last 8h
-     (live_retrain_hours=4, so an 8h gap = two missed cycles = broken)
+  2. At least one `Done training` event in the last 14h
+     (live_retrain_hours=12 + 2h buffer; update this comment if retrain hours change)
   3. At least one `Bot heartbeat` line in the last 5m
      (heartbeat is per-minute; 5m gap = bot loop dead)
 
@@ -38,7 +38,7 @@ STATE_DIR = Path("/home/ubuntu/.finbuddy/state")
 STATE_FILE = STATE_DIR / "watchdog_alerts.json"
 CONTAINER = "freqtrade"
 
-TRAINING_MAX_AGE_MIN = 8 * 60   # 8h
+TRAINING_MAX_AGE_MIN = 14 * 60  # 14h (live_retrain_hours=12 + 2h buffer; was 8h when retrain=4h)
 HEARTBEAT_MAX_AGE_MIN = 5       # 5m
 ALERT_COOLDOWN_MIN = 60         # don't repeat same alert within 1h
 DISK_USAGE_WARN_PCT = 80        # warn when filesystem usage exceeds this %
