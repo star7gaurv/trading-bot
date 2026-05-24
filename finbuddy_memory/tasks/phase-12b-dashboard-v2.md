@@ -1,6 +1,9 @@
 # Phase 12b — Dashboard v2: Professional Trading Console
 
-**Status:** 🟡 IN PROGRESS — started 2026-05-24
+**Status:** ✅ COMPLETE — all 5 increments shipped 2026-05-24  
+**Final commits:** `3a7786e` → `7c432bd` → `dcaa2db` → `c40455d` → `8b9eb6e`  
+**Live at:** `https://trade.star7gaurav.in/new-dashboard` (password-gated)
+
 **Supersedes:** Phase 12 v1 (kept as history at `phase-12-brain-dashboard.md`)
 **Plan reference:** `/home/ubuntu/.claude/plans/5-24-2026-12-00-am-star7gaurav-gleaming-rain.md`
 

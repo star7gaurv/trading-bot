@@ -4,22 +4,30 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status**: 🟢 v23 LIVE (identifier `finbuddy_v23_no_median_1779447827`) · 🧠 brain single-group (reverted 2026-05-24) · 💎 circuit breaker 10 USDT/day · ✂️ pair universe trimmed 37→26 (2026-05-24) · 🔄 brain cron */30 + flock  
-**Last Updated**: 2026-05-24 UTC (CPU optimization + pair universe trim to 26 high-edge pairs)
+**Status**: 🟢 v23 LIVE (identifier `finbuddy_v23_no_median_1779447827`) · 🧠 brain single-group (reverted 2026-05-24) · 💎 circuit breaker 10 USDT/day · ✂️ pair universe trimmed 37→26 (2026-05-24) · 🔄 brain cron */30 + flock · 📊 Dashboard v2 LIVE (auth-gated, 7 tabs)  
+**Last Updated**: 2026-05-24 UTC (Dashboard v2 fully shipped — all 5 increments)
 
-### 2026-05-24 (Late Evening) — Phase 12b: Dashboard v2 Started
+### 2026-05-24 (Evening) — Phase 12b: Dashboard v2 ✅ COMPLETE
 
-**Context:** Existing dashboard (Phase 12 v1) feels like a hobby project — heavy neon, low density, missing FreqTrade trade history / performance, zero visibility into 24 crons + processes.
+**All 5 increments shipped in one session.** Dashboard rebuilt from scratch as a dense, Binance-class trading console and deployed live at `https://trade.star7gaurav.in/new-dashboard`.
 
-**Scope** (full plan: `phase-12b-dashboard-v2.md`):
-- Rebuild from scratch as compact, Binance-class trading console (Claude-designed visual language)
-- 7 tabs: Overview · Trades · Performance · Brain · Walk-Forward · System Health · Settings
-- Mirror full FreqTrade UI (closed trades, performance, per-pair, daily/weekly/monthly)
-- New System Health panel — live status of all 24 crons + 3 processes
-- Password-gated (JWT)
-- Stack unchanged: React 19 + Vite + Tailwind + FastAPI streamer + nginx
+**Commits:** `3a7786e` (foundation) · `7c432bd` (Overview+SystemHealth) · `dcaa2db` (Trades+Performance) · `c40455d` (Brain+WF) · `8b9eb6e` (Settings)
 
-**Approach:** Five incremental commits — Foundation → Overview+SystemHealth → Trades+Performance → Brain+WF → Settings+Polish.
+**What was built:**
+
+| Tab | Content |
+|---|---|
+| Overview | 7-stat strip (P&L/WR/positions/regime/conf.), live trades mini-table, system health summary, Brain queue, WF gate badges |
+| Trades | Open trades table, paginated closed trades (pair+exit filter), per-pair WR/PF table, trade detail drawer |
+| Performance | Cumulative P&L SVG chart (area+line, zero baseline), daily/weekly/monthly tables, per-pair horizontal bar chart |
+| Brain | Queue stat strip, experiments table (window filter), live WebSocket brain log stream |
+| Walk-Forward | Latest run PASS/FAIL gates (WR/Sharpe/DD/PF), fold-by-fold table, expandable history list |
+| System Health | Load/disk/mem/FreqTrade strip, full cron table with expandable log tails (stale-first), Docker containers, Watchdog |
+| Settings | Strategy config, FreqAI identifier, thresholds, pair whitelist badge grid (26 pairs), wallet balance |
+
+**Backend (FastAPI streamer):** `auth.py` (HMAC-signed JWT, 7-day expiry) · `cron_status.py` (parse crontab + tail logs) · `system_health.py` (uptime/disk/mem/docker) · 20+ REST endpoints · 30s in-memory cache · systemd service `finbuddy-streamer.service`.
+
+**Design:** Inter + JetBrains Mono · 7 color tokens · restrained dark theme · no neon/glow · all numeric cells tabular-nums · 76.5KB gzipped JS bundle.
 
 **Task file:** `finbuddy_memory/tasks/phase-12b-dashboard-v2.md`
 
