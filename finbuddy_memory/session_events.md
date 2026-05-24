@@ -209,3 +209,4 @@ um_threads=2** added to both config.json and 23_regression_15m_di_config.json. 
 - **2026-05-24 18:02 UTC** — CPU optimization complete: load avg 7.38 → 0.50. Brain cron */10→*/30+flock, runner.py single-group (parallel reverted), WF daily 3→1 fold, walkforward_deep.sh nice -n 19 subconscious mode, live_retrain_hours 4→12, executor scripts deleted, OpenClaw killed.
 - **2026-05-24 18:30 UTC** — Watchdog threshold fixed: TRAINING_MAX_AGE_MIN 8h → 14h (calibrated for live_retrain_hours=12).
 - **2026-05-24 18:30 UTC** — pair_regime_stats.json cleaned: removed 8 stale entries for removed pairs. Remaining: 25 entries.
+- **2026-05-24 20:00 UTC** — Pair whitelist changed: 37 → 26 pairs
