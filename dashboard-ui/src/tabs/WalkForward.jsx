@@ -280,7 +280,7 @@ function HistoryRow({ run }) {
 }
 
 function HistoryList({ data, error, loading, lastUpdated }) {
-  const runs = Array.isArray(data) ? data : [];
+  const runs = Array.isArray(data) ? data : (data?.items ?? []);
 
   return (
     <Card

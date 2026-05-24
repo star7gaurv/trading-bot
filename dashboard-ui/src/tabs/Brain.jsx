@@ -62,80 +62,70 @@ function statusVariant(status) {
 function ExperimentsTable({ data, error, loading, lastUpdated }) {
   const [windowFilter, setWindowFilter] = useState("");
 
-  const rows = Array.isArray(data) ? data : [];
+  const rows = Array.isArray(data) ? data : (data?.items ?? []);
+
+  // Enrich rows: extract window + numeric values from raw log line
+  const enriched = rows.map((r) => {
+    const windowMatch = r.raw?.match(/on ([\w]+):/)?.[1] ?? r.window ?? "";
+    const profitRaw = r.kvs?.profit ?? "";
+    const wrRaw = r.kvs?.WR ?? "";
+    const profitNum = profitRaw ? parseFloat(profitRaw) : null;
+    const wrNum = wrRaw ? parseFloat(wrRaw) : null;
+    return { ...r, _window: windowMatch, _profit: profitNum, _wr: wrNum };
+  });
+
   const filtered = windowFilter
-    ? rows.filter((r) => (r.window ?? "").toLowerCase().includes(windowFilter.toLowerCase()))
-    : rows;
+    ? enriched.filter((r) =>
+        r._window.toLowerCase().includes(windowFilter.toLowerCase()) ||
+        (r.raw ?? "").toLowerCase().includes(windowFilter.toLowerCase())
+      )
+    : enriched;
 
   const columns = [
     {
-      key: "status",
-      label: "Status",
+      key: "verdict",
+      label: "Result",
       render: (r) => (
-        <Badge variant={statusVariant(r.status)} size="xs">
-          {r.status ?? "—"}
+        <Badge variant={statusVariant(r.verdict)} size="xs">
+          {r.verdict ?? "—"}
         </Badge>
       ),
     },
-    { key: "window", label: "Window", mono: true },
+    { key: "_window", label: "Window", mono: true },
     {
-      key: "profit_pct",
+      key: "_profit",
       label: "Profit %",
       align: "right",
       render: (r) => {
-        const v = r.profit_pct ?? r.avg_profit_pct;
+        const v = r._profit;
         if (v == null) return <span className="text-text-muted font-mono">—</span>;
         const cls = v >= 0 ? "text-profit" : "text-loss";
         return (
           <span className={`font-mono ${cls}`}>
-            {v >= 0 ? "+" : ""}
-            {v.toFixed(3)}%
+            {v >= 0 ? "+" : ""}{v.toFixed(2)}%
           </span>
         );
       },
     },
     {
-      key: "win_rate",
+      key: "_wr",
       label: "WR",
       align: "right",
       render: (r) => {
-        const v = r.win_rate ?? r.wr;
+        const v = r._wr;
         if (v == null) return <span className="text-text-muted font-mono">—</span>;
-        const wr = v < 1 ? v * 100 : v;
-        const cls = wr >= 50 ? "text-profit" : "text-loss";
-        return <span className={`font-mono ${cls}`}>{wr.toFixed(1)}%</span>;
+        const cls = v >= 50 ? "text-profit" : "text-loss";
+        return <span className={`font-mono ${cls}`}>{v.toFixed(1)}%</span>;
       },
     },
+    { key: "version", label: "Ver", mono: true },
+    { key: "hypothesis_id", label: "ID", mono: true },
     {
-      key: "sharpe",
-      label: "Sharpe",
+      key: "ts",
+      label: "Time",
       align: "right",
       mono: true,
-      render: (r) => {
-        const v = r.sharpe ?? r.weighted_sharpe;
-        if (v == null) return <span className="text-text-muted font-mono">—</span>;
-        const cls = v >= 0.5 ? "text-profit" : v >= 0 ? "text-warn" : "text-loss";
-        return <span className={`font-mono ${cls}`}>{v.toFixed(3)}</span>;
-      },
-    },
-    {
-      key: "trade_count",
-      label: "Trades",
-      align: "right",
-      mono: true,
-      render: (r) => r.trade_count ?? r.trades ?? "—",
-    },
-    {
-      key: "completed_at",
-      label: "Completed",
-      align: "right",
-      mono: true,
-      render: (r) =>
-        r.completed_at
-          ? formatRelative(new Date(r.completed_at).getTime())
-          : r.queued_at
-          ? formatRelative(new Date(r.queued_at).getTime())
-          : "—",
+      render: (r) => (r.ts ? formatRelative(new Date(r.ts).getTime()) : "—"),
     },
   ];
 

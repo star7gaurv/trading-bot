@@ -283,16 +283,20 @@ async def wf_latest(_: dict = Depends(require_auth)):
     runs = _wf_runs_sorted()
     if not runs:
         return {"available": False}
-    latest = runs[0]
-    summary_path = latest / "summary.json"
-    if not summary_path.exists():
-        return {"available": False, "name": latest.name}
-    try:
-        with open(summary_path) as f:
-            data = json.load(f)
-    except (OSError, json.JSONDecodeError):
-        return {"available": False, "name": latest.name, "error": "summary unreadable"}
-    return {"available": True, "name": latest.name, "summary": data}
+    # Walk sorted runs (newest first) and return the first one WITH a summary.json
+    for latest in runs:
+        summary_path = latest / "summary.json"
+        if not summary_path.exists():
+            continue
+        try:
+            with open(summary_path) as f:
+                data = json.load(f)
+        except (OSError, json.JSONDecodeError):
+            continue
+        return {"available": True, "name": latest.name, "summary": data}
+    # No run with a valid summary found
+    return {"available": False, "name": runs[0].name if runs else ""}
+
 
 
 @app.get("/api/wf/history")
