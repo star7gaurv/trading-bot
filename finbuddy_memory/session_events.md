@@ -194,3 +194,4 @@ um_threads=2** added to both config.json and 23_regression_15m_di_config.json. 
 - **2026-05-23 20:00 UTC** — Regime changed: BEAR → NEUTRAL
 - **2026-05-23 20:46 UTC** — Bugfix: Karpathy backtest_runner `NoneType.predict` crash resolved by migrating to FinBuddyFreqAI_v23 and adjusting historical data window.
 - **2026-05-23 21:15 UTC** — Feature Addition: Implemented BTC Open Interest (OI) Delta as a global macro proxy. Added `scripts/build_historical_oi.py` (cron 1:30 AM), injected `%-btc_oi_z30d` and `%-btc_oi_chg` into `FinBuddyFreqAI_v23.py`, and bumped FreqAI identifier to `finbuddy_v23_oi_delta_1779570511` to force clean retraining.
+- **2026-05-24 00:00 UTC** — FreqAI identifier changed: finbuddy_v23_no_median_1779447827 → finbuddy_v23_oi_delta_1779570511
