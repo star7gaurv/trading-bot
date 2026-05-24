@@ -7,6 +7,23 @@
 **Status**: 🟢 v23 LIVE (identifier `finbuddy_v23_no_median_1779447827`) · 🧠 brain parallel split — experiments will complete · 💎 circuit breaker 10 USDT/day live · 🔄 WF fold timeout fixed (6h) — real results tonight · 🚀 brain→live pipeline closed  
 **Last Updated**: 2026-05-23 UTC (P0-P2 fixes — commits `8bede56` + `aba9e4d`)
 
+### 2026-05-24 — System-Wide CPU Optimization & Self-Aware Subconscious Reflection
+
+**Root causes found:** Massive load average (7.38 on 4 cores) caused by overlapping cron jobs, redundant dummy scripts, and the monthly Deep Walk-Forward backtest crushing the CPU at the exact same time as the continuous Brain.
+
+**Fix 1 — Removed Dead Mock Executor:**
+- `executor_wrapper.sh` running every 5 minutes 24/7 was deleted. This was a legacy Phase 7 prototype that queried FreqTrade and wrote mock signals to SQLite. It consumed CPU 288 times a day for absolutely no purpose.
+
+**Fix 2 — De-duplicated 08:00 AM Cron Stampede:**
+- `pair_performance.py` was firing at the exact same millisecond as `daily_summary.py` and `digest.py` every morning at 08:00 AM, causing an artificial CPU spike. Since `pair_performance.py` only dumps a text table to a hidden log file (and `daily_summary.py` already sends the relevant Telegram digest), it was removed from the crontab.
+
+**Fix 3 — Subconscious Reflection (Deep Walk-Forward Optimization):**
+- The 38-hour 27-month trailing Deep Walk-Forward (`walkforward_deep.sh`) previously caused severe CPU starvation when it ran alongside the Brain.
+- Instead of using locking to pause the Brain (which violates the "self-aware, continuously evolving" philosophy), `walkforward_deep.sh` was wrapped in `nice -n 19 ionice -c 3` and limited to `--max-workers 1` and `--lgbm-threads 1`.
+- **Result:** The deep backtest now acts as the system's "subconscious", absorbing 100% of idle CPU cycles without EVER slowing down the active Brain or the live trading bot. System progress is maximized without CPU spiking.
+
+---
+
 ### 2026-05-23 — P0–P2 Fixes: Brain Unblocked + WF Fixed + Circuit Breaker
 
 **Root causes found from Telegram logs (7 FAILED/day, all WF folds empty, 0 trades in BEAR):**
