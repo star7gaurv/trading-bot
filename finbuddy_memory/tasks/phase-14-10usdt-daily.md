@@ -2,9 +2,9 @@
 
 **Goal:** Earn 10 USDT/day on the existing 1000 USDT dry-run wallet — NOT by adding capital.  
 **Why 10 USDT/day:** = 1%/day = 365%/year. Once proven in dry-run, deploy ~$700 real capital → ~7 USDT/day real.  
-**Current rate:** ~3.3 USDT/day (38.6% WR, 334 trades, +97 USDT since ~2026-04-04)  
-**Status:** 🟢 P0–P2 shipped (commit `8bede56` + `aba9e4d`, 2026-05-23). P3–P4 pending.  
-**Last Updated:** 2026-05-23
+**Current rate:** ~2.9 USDT/day (38.2% WR, 356 trades, +86.19 USDT since ~2026-04-04)  
+**Status:** 🟢 P0–P2 shipped + CPU optimization + pair trim 37→26 done (2026-05-24). P3.1 partial (OI script+cron exist, parquet tonight). P3.2 pending.  
+**Last Updated:** 2026-05-24
 
 ---
 
@@ -25,7 +25,7 @@
 
 | Task | File | Status | Commit |
 |---|---|---|---|
-| P0.1 Brain parallel pair-group split | `scripts/brain/runner.py` | ✅ Done | `8bede56` |
+| P0.1 Brain parallel split → **REVERTED to single-group** | `scripts/brain/runner.py` | ✅ Reverted 2026-05-24 — parallel caused 3.5 vCPU sustained load avg 7.38 | `8bede56` + revert |
 | P0.2 WF fold timeout 4.5h → 6h | `scripts/walk_forward.py` | ✅ Done | `8bede56` |
 
 **P0.1 detail:** 37-pair sequential experiment = ~74 min > 65-min timeout = 100% failure rate.  
@@ -65,12 +65,33 @@ Blocks new entries when today's UTC closed P&L < -10 USDT.
 
 ---
 
-### P3 — Signal Quality Improvements ⬜ NEXT
+### CPU Optimization + Pair Trim ✅ DONE (2026-05-24)
 
-#### P3.1 — Open Interest Delta Feature
+| Task | Status |
+|---|---|
+| Brain cron */10 → */30 + flock | ✅ Done |
+| Runner.py single-group (parallel reverted) | ✅ Done |
+| WF daily 3 folds → 1 fold | ✅ Done |
+| WF deep nice -n 19 subconscious mode | ✅ Done |
+| live_retrain_hours 4 → 12 | ✅ Done |
+| Watchdog threshold 8h → 14h | ✅ Done |
+| Executor scripts deleted | ✅ Done |
+| OpenClaw killed | ✅ Done |
+| Pair trim 37 → 26 (11 removed) | ✅ Done |
+| pair_regime_stats.json cleaned | ✅ Done |
+| **Result** | Load 7.38 → 0.50 |
+
+---
+
+### P3 — Signal Quality Improvements 🟡 IN PROGRESS
+
+#### P3.1 — Open Interest Delta Feature 🟡 PARTIAL
+**Status:** `build_historical_oi.py` ✅ exists. Cron `30 1 * * *` ✅ active. `oi_history.parquet` ⬜ builds tonight at 01:30 UTC.  
+**After parquet exists:** add 3 OI features to strategy + bump identifier + flush + restart.
+
 **Why:** Second-best published signal for futures direction after funding rate. Adds model edge.  
 **Files to create/edit:**
-- **New:** `scripts/build_historical_oi.py` — mirrors `build_historical_funding.py` structure
+- **New:** `scripts/build_historical_oi.py` — ✅ DONE (mirrors `build_historical_funding.py` structure)
   - Binance endpoint: `/fapi/v1/openInterestHist` (public, no key needed)
   - 3 features: `%-oi_delta` (5-candle % change), `%-oi_z30d` (30-day z-score), `%-oi_chg` (1-candle % change)
   - Output: `freqtrade/user_data/data/oi_history.parquet`
@@ -119,11 +140,12 @@ Also update `docker-compose.yml` environment block defaults to match.
 
 | When | Milestone |
 |---|---|
-| **Tonight 22:00 UTC** | WF fold timeout fix → first valid WF results (fold_03 was 30 min from done) |
-| **Tomorrow** | Brain parallel split → first completed z-scored experiments (not FAILED) |
-| **3 days** | Brain accumulates 30+ z-scored experiments with correct timeout |
+| ✅ **2026-05-24** | CPU optimization: load 7.38 → 0.50. Pair trim 37→26. |
+| **Tonight 01:30 UTC** | `build_historical_oi.py` creates `oi_history.parquet` — P3.1 ready to wire |
+| **Tonight 22:00 UTC** | Daily WF (1 fold, 26 pairs) — should complete by ~01:30 UTC |
+| **This week** | Brain accumulates z-scored experiments on clean 26-pair universe |
 | **1 week** | Brain promotes first z-scored config with WR ≥ 50% → live threshold improves |
-| **2 weeks** | OI feature adds edge. Daily P&L averaging ≥ 6 USDT/day |
+| **2 weeks (June 7)** | AVAX/ADA watch review. OI feature wired = richer model. |
 | **4 weeks** | WR → 55%. Daily P&L ≥ 10 USDT/day |
 | **After target** | Real capital: ~$700 → ~$7/day real money |
 

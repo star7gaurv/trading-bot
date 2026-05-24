@@ -19,7 +19,7 @@
 
 ---
 
-## Live Config (2026-05-23)
+## Live Config (2026-05-24)
 
 | Item | Value |
 |---|---|
@@ -28,9 +28,10 @@
 | Model | LightGBMRegressor — predicts z-scored `&-future_return` (N(0,1)) |
 | Base timeframe | 15m |
 | Informative TFs | 30m, 1h, 4h, 1d |
-| Pairs | 37, Binance Futures USDT-M perpetual, isolated margin |
+| **Pairs** | **26** (trimmed from 37 on 2026-05-24 — removed DASH/ZEC/BCH/DOGE/AAVE/TRX/1000SHIB/BNB/INJ/HBAR/ATOM) |
 | Max open trades | 8 |
 | Wallet | 1000 USDT dry-run |
+| **live_retrain_hours** | **12** (was 4, changed 2026-05-24) |
 | Leverage | Confidence-based tiers 1×/2×/3× by `predicted_return / threshold` ratio |
 | Features | ~530: OHLCV × lags × corr-pairs + 3 funding-rate + macro + regime + fear_greed + btc_strength |
 | DI / SVM | DI_threshold=1.0, use_SVM_to_remove_outliers=true |
@@ -55,7 +56,7 @@ FINBUDDY_RECENT_WR=0.42
 
 ---
 
-## Live Performance (2026-05-23)
+## Live Performance (2026-05-24)
 
 | Metric | Value | Target |
 |---|---|---|
