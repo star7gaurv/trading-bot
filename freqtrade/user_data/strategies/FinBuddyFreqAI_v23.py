@@ -237,6 +237,7 @@ class FinBuddyFreqAI_v23(IStrategy):
     _HISTORICAL_REGIME_FILE = "/freqtrade/finbuddy_memory/regimes/historical_regime.parquet"
     _HISTORICAL_MACRO_FILE  = "/freqtrade/finbuddy_memory/historical/macro_features.parquet"
     _HISTORICAL_FUNDING_FILE = "/freqtrade/finbuddy_memory/historical/funding_rate.parquet"
+    _HISTORICAL_OI_FILE      = "/freqtrade/finbuddy_memory/historical/open_interest.parquet"
     _COMBINED_CTX_FILE = "/freqtrade/user_data/data/external/combined_context.json"
     _PAIR_REGIME_FILE  = "/freqtrade/finbuddy_memory/regimes/pair_regime_stats.json"
 
@@ -244,6 +245,7 @@ class FinBuddyFreqAI_v23(IStrategy):
     _historical_regime_df  = None
     _historical_macro_df   = None
     _historical_funding_df = None
+    _historical_oi_df      = None
     # Pair-regime block cache: refreshed when JSON mtime changes (every 30 min via cron).
     _pair_regime_blocks       = None    # dict[pair] -> set[regime]
     _pair_regime_blocks_mtime = 0.0
@@ -254,7 +256,7 @@ class FinBuddyFreqAI_v23(IStrategy):
             return FinBuddyFreqAI_v23._historical_regime_df
         try:
             df = pd.read_parquet(self._HISTORICAL_REGIME_FILE)
-            df["date"] = pd.to_datetime(df["date"], utc=True)
+            df["date"] = pd.to_datetime(df["date"], utc=True).astype("datetime64[ns, UTC]")
             df = df.sort_values("date").reset_index(drop=True)
             FinBuddyFreqAI_v23._historical_regime_df = df
             max_date = df['date'].max()
@@ -331,7 +333,7 @@ class FinBuddyFreqAI_v23(IStrategy):
             return FinBuddyFreqAI_v23._historical_macro_df
         try:
             df = pd.read_parquet(self._HISTORICAL_MACRO_FILE)
-            df["date"] = pd.to_datetime(df["date"], utc=True)
+            df["date"] = pd.to_datetime(df["date"], utc=True).astype("datetime64[ns, UTC]")
             df = df.sort_values("date").reset_index(drop=True)
             FinBuddyFreqAI_v23._historical_macro_df = df
             max_date = df['date'].max()
@@ -361,7 +363,7 @@ class FinBuddyFreqAI_v23(IStrategy):
                 "fear_greed":   pd.Series([float(ctx.get("fear_greed", 50))]   * n, index=dataframe.index),
                 "btc_strength": pd.Series([0.0] * n, index=dataframe.index),
             }
-        dates = pd.to_datetime(dataframe["date"], utc=True)
+        dates = pd.to_datetime(dataframe["date"], utc=True).astype("datetime64[ns, UTC]")
         df_for_join = pd.DataFrame({"date": dates}).sort_values("date").reset_index()
         merged = pd.merge_asof(df_for_join, hist, on="date", direction="backward")
         merged = merged.sort_values("index").reset_index(drop=True)
@@ -380,7 +382,7 @@ class FinBuddyFreqAI_v23(IStrategy):
             return FinBuddyFreqAI_v23._historical_funding_df
         try:
             df = pd.read_parquet(self._HISTORICAL_FUNDING_FILE)
-            df["date"] = pd.to_datetime(df["date"], utc=True)
+            df["date"] = pd.to_datetime(df["date"], utc=True).astype("datetime64[ns, UTC]")
             df = df.sort_values("date").reset_index(drop=True)
             FinBuddyFreqAI_v23._historical_funding_df = df
             max_date = df["date"].max()
@@ -423,7 +425,7 @@ class FinBuddyFreqAI_v23(IStrategy):
                 "funding_rate_z30d": pd.Series([0.0]  * n, index=dataframe.index),
                 "funding_rate_chg":  pd.Series([0.0]  * n, index=dataframe.index),
             }
-        dates = pd.to_datetime(dataframe["date"], utc=True)
+        dates = pd.to_datetime(dataframe["date"], utc=True).astype("datetime64[ns, UTC]")
         df_for_join = pd.DataFrame({"date": dates}).sort_values("date").reset_index()
         merged = pd.merge_asof(df_for_join, hist, on="date", direction="backward")
         merged = merged.sort_values("index").reset_index(drop=True)
@@ -431,6 +433,50 @@ class FinBuddyFreqAI_v23(IStrategy):
             "funding_rate":      pd.Series(merged["funding_rate"].fillna(0.0).values,      index=dataframe.index),
             "funding_rate_z30d": pd.Series(merged["funding_rate_z30d"].fillna(0.0).values, index=dataframe.index),
             "funding_rate_chg":  pd.Series(merged["funding_rate_chg"].fillna(0.0).values,  index=dataframe.index),
+        }
+
+    def _load_historical_oi(self):
+        """Load historical BTC Open Interest. Cached at class level."""
+        if FinBuddyFreqAI_v23._historical_oi_df is not None:
+            return FinBuddyFreqAI_v23._historical_oi_df
+        try:
+            df = pd.read_parquet(self._HISTORICAL_OI_FILE)
+            df["date"] = pd.to_datetime(df["date"], utc=True).astype("datetime64[ns, UTC]")
+            df = df.sort_values("date").reset_index(drop=True)
+            FinBuddyFreqAI_v23._historical_oi_df = df
+            max_date = df["date"].max()
+            gap_days = (pd.Timestamp.now(tz="UTC") - max_date).days
+            logger.info(
+                f"[OI] Loaded {len(df)} historical OI events from "
+                f"{df['date'].min()} to {max_date} (gap={gap_days}d)"
+            )
+            if gap_days > 3:
+                logger.warning(f"[OI] STALE: open_interest.parquet is {gap_days}d behind")
+            return df
+        except Exception as e:
+            logger.warning(f"[OI] Could not load historical OI parquet ({e})")
+            FinBuddyFreqAI_v23._historical_oi_df = pd.DataFrame()
+            return FinBuddyFreqAI_v23._historical_oi_df
+
+    def _get_oi_series(self, dataframe: DataFrame) -> dict[str, pd.Series]:
+        """
+        Vectorized lookup: per-candle BTC Open Interest features.
+        Returns 2 Series aligned to dataframe.index.
+        """
+        hist = self._load_historical_oi()
+        n = len(dataframe)
+        if hist.empty:
+            return {
+                "btc_oi_z30d": pd.Series([0.0] * n, index=dataframe.index),
+                "btc_oi_chg":  pd.Series([0.0] * n, index=dataframe.index),
+            }
+        dates = pd.to_datetime(dataframe["date"], utc=True).astype("datetime64[ns, UTC]")
+        df_for_join = pd.DataFrame({"date": dates}).sort_values("date").reset_index()
+        merged = pd.merge_asof(df_for_join, hist, on="date", direction="backward")
+        merged = merged.sort_values("index").reset_index(drop=True)
+        return {
+            "btc_oi_z30d": pd.Series(merged["btc_oi_z30d"].fillna(0.0).values, index=dataframe.index),
+            "btc_oi_chg":  pd.Series(merged["btc_oi_chg"].fillna(0.0).values,  index=dataframe.index),
         }
 
     def _get_regime_series(self, dataframe: DataFrame) -> pd.Series:
@@ -445,7 +491,7 @@ class FinBuddyFreqAI_v23(IStrategy):
         if hist.empty:
             return pd.Series([self._get_current_regime()] * len(dataframe), index=dataframe.index)
 
-        dates = pd.to_datetime(dataframe["date"], utc=True)
+        dates = pd.to_datetime(dataframe["date"], utc=True).astype("datetime64[ns, UTC]")
         # merge_asof requires both sides sorted by the join key
         df_for_join = pd.DataFrame({"date": dates}).sort_values("date").reset_index()
         merged = pd.merge_asof(df_for_join, hist[["date", "regime"]], on="date", direction="backward")
@@ -858,6 +904,11 @@ class FinBuddyFreqAI_v23(IStrategy):
             dataframe["%-funding_rate"]      = funding["funding_rate"]
             dataframe["%-funding_rate_z30d"] = funding["funding_rate_z30d"]
             dataframe["%-funding_rate_chg"]  = funding["funding_rate_chg"]
+
+            # Open Interest Delta (added 2026-05-23): global proxy for market leverage
+            oi = self._get_oi_series(dataframe)
+            dataframe["%-btc_oi_z30d"] = oi["btc_oi_z30d"]
+            dataframe["%-btc_oi_chg"]  = oi["btc_oi_chg"]
         else:
             logger.info(f"[FeatureSet] mode={self.FEATURE_SET} — skipping fear_greed/btc_strength/news_sentiment/funding")
 

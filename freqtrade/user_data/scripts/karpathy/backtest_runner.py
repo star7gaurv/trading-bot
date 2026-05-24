@@ -21,7 +21,7 @@ LOG_DIR  = Path("/home/ubuntu/.finbuddy/logs")
 
 # Short window to keep nightly run fast — 3 liquid pairs, last 3 months
 PAIRS     = ["BTC/USDT:USDT", "ETH/USDT:USDT", "SOL/USDT:USDT"]
-TIMERANGE = "20260101-20260401"
+TIMERANGE = "20260301-20260515"
 CONTAINER = "freqtrade"
 
 # Acceptance thresholds (same as walk-forward)
@@ -50,7 +50,7 @@ def _run_backtest() -> dict | None:
     cmd = [
         "docker", "exec", CONTAINER,
         "freqtrade", "backtesting",
-        "--strategy", "FinBuddyFreqAI",
+        "--strategy", "FinBuddyFreqAI_v23",
         "--timerange", TIMERANGE,
         "--pairs", *PAIRS,
         "--export", "none",
@@ -61,12 +61,12 @@ def _run_backtest() -> dict | None:
         result = subprocess.run(
             cmd,
             capture_output=True, text=True,
-            timeout=300,  # 5-min ceiling
+            timeout=900,  # 15-min ceiling
             cwd=str(ROOT),
         )
         output = result.stdout + result.stderr
     except subprocess.TimeoutExpired:
-        print("[backtest_runner] Timed out after 5 min — skipping this run")
+        print("[backtest_runner] Timed out after 15 min — skipping this run")
         return None
     except Exception as e:
         print(f"[backtest_runner] docker exec failed: {e}")

@@ -40,9 +40,9 @@ ROOT = Path("/home/ubuntu/var/www/html/trade")
 COMPOSE_DIR = ROOT / "freqtrade"
 USER_DATA = ROOT / "freqtrade" / "user_data"
 RESULTS_DIR = USER_DATA / "backtest_results"
-BACKTEST_TIMEOUT_S = 5400  # 90 min hard cap per GROUP (2026-05-23: sequential pair-group split — each
-# group of ~18-19 pairs needs ~38 min DI+SVM; groups run sequentially → wall clock ≈ 76 min total.
-# Previously 37 pairs ran sequentially = ~74 min → always timed out. Parallel OOM-killed gB.)
+BACKTEST_TIMEOUT_S = 6000  # 100 min hard cap for the whole experiment (2026-05-24: reverted to
+# single-group of all 37 pairs after CPU starvation audit. 37 pairs ~74 min on the live config; the
+# 100 min cap leaves comfortable buffer without re-introducing pair-split CPU overhead.
 LOCK_FILE = Path("/home/ubuntu/.finbuddy/state/brain_runner.lock")  # prevent overlapping cron runs
 
 
@@ -397,16 +397,16 @@ def _run_hypothesis_group(
 
 
 def run_hypothesis(h: dict) -> dict | None:
-    """Execute one backtest using parallel pair-group split.
+    """Execute one backtest as a single group of all pairs.
 
-    Splits the 37-pair brain config into 2 groups of ~18-19 pairs and runs
-    both groups simultaneously with ProcessPoolExecutor(max_workers=2).
+    REVERTED 2026-05-24 from the 2026-05-23 parallel pair-group split. The split was
+    introduced to fit under the old 3900s timeout, but with BACKTEST_TIMEOUT_S=5400 (90m)
+    a single backtest of all 37 pairs (~74 min) fits comfortably. Running a single
+    container instead of two reduces concurrent CPU contention with the live bot.
 
-    Groups run SEQUENTIALLY (not in parallel) to avoid OOM on the 4-core/24GB server.
-    Parallel execution caused group B to be OOM-killed mid-training every time.
-    Sequential: gA ~38min + gB ~38min = ~76min total, well under 90min timeout.
-
-    Results from both groups are merged into a single aggregated metrics dict.
+    Combined with cron throttle */10 → */30 + flock (2026-05-24), this brings the brain
+    down to one active backtest container at a time (~1.76 vCPU) instead of overlapping
+    instances pinning the 4-core server.
     """
     cfg         = h["config"]
     config_file = cfg.get("config_file", "v23_regression_15m_di_config.json")
@@ -417,40 +417,18 @@ def run_hypothesis(h: dict) -> dict | None:
 
     # Drop pairs that don't have enough history for this window's training period.
     # Late-listed pairs (e.g. TON listed 2024-03-01) crash the docker container when
-    # their training data is all NaNs → "Fatal exception" → gB returns empty every time.
+    # their training data is all NaNs.
     all_pairs = _filter_pairs_for_window(all_pairs, h.get("window", ""))
 
     t0 = time.time()
 
-    if len(all_pairs) <= 1:
-        # Edge case: ≤1 pair, run as single group
-        trades = _run_hypothesis_group(h, all_pairs or [], "g0")
-        if not trades:
-            return None
-        metrics = _compute_metrics_from_raw_trades(trades)
-        metrics["elapsed_s"] = int(time.time() - t0)
-        return metrics
-
-    # Split into 2 groups — run SEQUENTIALLY to prevent OOM on 4-core server
-    mid      = len(all_pairs) // 2
-    group_a  = all_pairs[:mid]
-    group_b  = all_pairs[mid:]
-
-    trades_a = _run_hypothesis_group(h, group_a, "gA")
-    trades_b = _run_hypothesis_group(h, group_b, "gB")
-
-    all_trades = trades_a + trades_b
+    trades = _run_hypothesis_group(h, all_pairs or [], "g0")
     elapsed = int(time.time() - t0)
 
-    if not all_trades:
-        # Both groups failed
+    if not trades:
         return None
-    if not trades_a:
-        print(f"[brain] group A failed — using group B only ({len(trades_b)} trades)", file=sys.stderr)
-    if not trades_b:
-        print(f"[brain] group B failed — using group A only ({len(trades_a)} trades)", file=sys.stderr)
 
-    metrics = _compute_metrics_from_raw_trades(all_trades)
+    metrics = _compute_metrics_from_raw_trades(trades)
     metrics["elapsed_s"] = elapsed
     return metrics
 

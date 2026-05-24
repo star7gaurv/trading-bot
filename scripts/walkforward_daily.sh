@@ -1,16 +1,12 @@
 #!/bin/bash
-# Daily walk-forward — short rolling window.
+# Daily walk-forward — single-fold regression detector.
 # Runs every day at 22:00 UTC. Skips if a daily WF is already running.
-# 3-month trailing window · train=6mo · test=1mo · slide=1mo → 3 folds.
-# SEQUENTIAL (max-workers=1): each fold runs alone, no CPU competition.
-# Solo fold training = 4h19m (fold_03 log 2026-05-22); 3 folds = ~13.5h → finishes by ~11:30 UTC.
-# Fold timeout 6h — solo folds finish in ~4.5h, giving 1.5h buffer even with brain competition.
-#
-# WHY max-workers=1 (not 2): parallel folds competed with each other + brain cron (every 10m) →
-# fold training exceeded 4.5h timeout on all 3 parallel attempts (2026-05-21, 2026-05-22).
-# fold_03 which ran SOLO after fold_01/02 were killed completed training in 4h19m and started
-# backtesting, confirming sequential execution is the reliable path.
-# May-20 sequential run (6 folds): ALL 6 completed successfully.
+# 2026-05-24 (CPU starvation fix): reduced to 1 fold (train=6mo · test=1mo · slide=1mo).
+# Deep WF every 4 days remains the source of truth for promotion decisions; this is a daily
+# pulse-check that today's live config still works on the last month of data.
+# Solo fold training ~5h with ~536 features × 37 pairs → finishes by ~03:00 UTC.
+# SEQUENTIAL (max-workers=1) — must stay this way: parallel folds caused OOM crashes that
+# restarted the live bot at 03:26 and 09:27 UTC (15-bug session Fix 9, commit 3deeafc).
 
 set -e
 
@@ -38,8 +34,9 @@ elif [ -f "$DEEP_LOCK" ]; then
     exit 0
 fi
 
-# Trailing 3 months — 3 folds, fast feedback
-START=$(date -u -d '9 months ago' +'%Y-%m-01')   # 6mo train + 3mo test window
+# Trailing 1 month — single fold, fast regression detector
+# 7mo window = 6mo train + 1mo test → (7-6-1)/1 + 1 = 1 fold
+START=$(date -u -d '7 months ago' +'%Y-%m-01')
 END=$(date -u +'%Y-%m-01')
 
 echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] === Daily walk-forward starting: $START → $END ===" >> "$LOG"
