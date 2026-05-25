@@ -7,6 +7,19 @@
 **Status**: 🟢 v23 LIVE (identifier `finbuddy_v23_no_median_1779447827`) · 🧠 brain single-group (reverted 2026-05-24) · 💎 circuit breaker 10 USDT/day · ✂️ pair universe trimmed 37→26 (2026-05-24) · 🔄 brain cron */30 + flock · 📊 Dashboard v2 LIVE (auth-gated, 7 tabs)  
 **Last Updated**: 2026-05-24 UTC (Dashboard v2 fully shipped — all 5 increments)
 
+### 2026-05-25 (Morning) — Deep Analysis & Fix: The Target Leakage Bug
+
+**Root cause found:** FreqAI columns prefixed with `&-` are **targets** (labels with 100% lookahead bias), while `&s-` are **predictions** output by the model.
+In `populate_entry_trend`, `predicted_return` was reading `&-future_return`.
+- **Brain Experiments:** Backtesting evaluated the raw future return (with lookahead bias), generating thousands of "perfect" entries that hit stop-losses due to intra-path volatility, resulting in catastrophic losses.
+- **Walk-Forward:** OOS folds had `NaN` at the edge for targets, defaulting to `0.0`. This never triggered the dynamic thresholds, resulting in **0 trades**.
+- **Live Trading:** Disconnected from the backtest reality because live targets are always `NaN`.
+
+**Fix:** Changed `predicted_return` to read `&s-future_return` in `FinBuddyFreqAI_v23.py`.
+Walk-Forward validator started (running in background) to verify valid trade generation.
+
+---
+
 ### 2026-05-24 (Evening) — Phase 12b: Dashboard v2 ✅ COMPLETE
 
 **All 5 increments shipped in one session.** Dashboard rebuilt from scratch as a dense, Binance-class trading console and deployed live at `https://trade.star7gaurav.in/new-dashboard`.
