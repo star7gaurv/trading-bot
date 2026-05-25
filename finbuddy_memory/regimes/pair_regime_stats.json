@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-25T14:00:01.360468+00:00",
+  "updated": "2026-05-25T14:30:01.302888+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -574,13 +574,13 @@
     },
     "FIL/USDT:USDT": {
       "NEUTRAL": {
-        "n": 1,
-        "wins": 1,
+        "n": 2,
+        "wins": 2,
         "losses": 0,
         "wr": 1.0,
         "pf": null,
-        "profit_usdt": 0.06,
-        "avg_profit_pct": 0.06
+        "profit_usdt": 1.04,
+        "avg_profit_pct": 0.525
       }
     },
     "1000PEPE/USDT:USDT": {
