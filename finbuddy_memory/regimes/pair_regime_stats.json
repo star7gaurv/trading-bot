@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-25T01:30:01.254473+00:00",
+  "updated": "2026-05-25T02:00:01.920644+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -212,13 +212,13 @@
     },
     "ARB/USDT:USDT": {
       "NEUTRAL": {
-        "n": 5,
+        "n": 6,
         "wins": 2,
-        "losses": 3,
-        "wr": 0.4,
-        "pf": 1.917,
-        "profit_usdt": 5.51,
-        "avg_profit_pct": 1.098
+        "losses": 4,
+        "wr": 0.3333,
+        "pf": 1.65,
+        "profit_usdt": 4.54,
+        "avg_profit_pct": 0.753
       },
       "BEAR": {
         "n": 4,
@@ -596,13 +596,13 @@
     },
     "FET/USDT:USDT": {
       "NEUTRAL": {
-        "n": 1,
-        "wins": 0,
+        "n": 2,
+        "wins": 1,
         "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -1.41,
-        "avg_profit_pct": -1.39
+        "wr": 0.5,
+        "pf": 0.22,
+        "profit_usdt": -1.1,
+        "avg_profit_pct": -0.54
       }
     },
     "RENDER/USDT:USDT": {
@@ -614,6 +614,17 @@
         "pf": 0.0,
         "profit_usdt": -1.98,
         "avg_profit_pct": -1.96
+      }
+    },
+    "LDO/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 0.32,
+        "avg_profit_pct": 0.32
       }
     }
   },
