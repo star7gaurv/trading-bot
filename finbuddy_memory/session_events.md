@@ -210,3 +210,4 @@ um_threads=2** added to both config.json and 23_regression_15m_di_config.json. 
 - **2026-05-24 18:30 UTC** — Watchdog threshold fixed: TRAINING_MAX_AGE_MIN 8h → 14h (calibrated for live_retrain_hours=12).
 - **2026-05-24 18:30 UTC** — pair_regime_stats.json cleaned: removed 8 stale entries for removed pairs. Remaining: 25 entries.
 - **2026-05-24 20:00 UTC** — Pair whitelist changed: 37 → 26 pairs
+- **2026-05-25 00:00 UTC** — Walk-forward status: ⏳ Running — 0/21 folds (FinBuddyFreqAI_v23_2025-10-01_2026-05-01_20260524T220002)
