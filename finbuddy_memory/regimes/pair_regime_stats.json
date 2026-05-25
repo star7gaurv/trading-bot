@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-25T01:00:01.620316+00:00",
+  "updated": "2026-05-25T01:30:01.254473+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -101,13 +101,13 @@
     },
     "XRP/USDT:USDT": {
       "NEUTRAL": {
-        "n": 3,
+        "n": 4,
         "wins": 2,
-        "losses": 1,
-        "wr": 0.6667,
-        "pf": 3.459,
-        "profit_usdt": 3.59,
-        "avg_profit_pct": 0.637
+        "losses": 2,
+        "wr": 0.5,
+        "pf": 2.44,
+        "profit_usdt": 2.98,
+        "avg_profit_pct": 0.325
       },
       "BEAR": {
         "n": 2,
@@ -232,13 +232,13 @@
     },
     "DOT/USDT:USDT": {
       "NEUTRAL": {
-        "n": 2,
+        "n": 3,
         "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 1.833,
-        "profit_usdt": 0.6,
-        "avg_profit_pct": -0.005
+        "losses": 2,
+        "wr": 0.3333,
+        "pf": 0.846,
+        "profit_usdt": -0.24,
+        "avg_profit_pct": -0.283
       },
       "BEAR": {
         "n": 1,
@@ -585,13 +585,13 @@
     },
     "1000PEPE/USDT:USDT": {
       "NEUTRAL": {
-        "n": 2,
+        "n": 3,
         "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 0.348,
-        "profit_usdt": -0.45,
-        "avg_profit_pct": -0.22
+        "losses": 2,
+        "wr": 0.3333,
+        "pf": 0.143,
+        "profit_usdt": -1.44,
+        "avg_profit_pct": -0.473
       }
     },
     "FET/USDT:USDT": {
