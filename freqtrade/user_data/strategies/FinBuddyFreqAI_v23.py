@@ -250,6 +250,9 @@ class FinBuddyFreqAI_v23(IStrategy):
     _pair_regime_blocks       = None    # dict[pair] -> set[regime]
     _pair_regime_blocks_mtime = 0.0
 
+    _HISTORICAL_BTC_15M_FILE = "/freqtrade/user_data/data/binance/futures/BTC_USDT_USDT-15m-futures.feather"
+    _btc_15m_df = None  # class-level cache for BTC 15m OHLCV (for rel-strength feature)
+
     _RECENT_WR_FILE = "/home/ubuntu/.finbuddy/state/recent_wr.json"
     _recent_wr_cache = 0.50
     _recent_wr_mtime = 0.0
@@ -369,6 +372,46 @@ class FinBuddyFreqAI_v23(IStrategy):
             logger.warning(f"[Macro] Could not load historical macro parquet ({e}) — using live combined_context")
             FinBuddyFreqAI_v23._historical_macro_df = pd.DataFrame()
             return FinBuddyFreqAI_v23._historical_macro_df
+
+    def _load_btc_15m(self) -> pd.DataFrame:
+        """Load BTC/USDT_USDT 15m OHLCV feather once. Cached at class level.
+
+        Used to compute per-candle BTC return for the rel-strength feature.
+        Falls back to empty DataFrame (feature defaults to 0.0) if file missing.
+        """
+        if FinBuddyFreqAI_v23._btc_15m_df is not None:
+            return FinBuddyFreqAI_v23._btc_15m_df
+        try:
+            df = pd.read_feather(self._HISTORICAL_BTC_15M_FILE)
+            df["date"] = pd.to_datetime(df["date"], utc=True).astype("datetime64[ns, UTC]")
+            df = df[["date", "close"]].sort_values("date").reset_index(drop=True)
+            FinBuddyFreqAI_v23._btc_15m_df = df
+            logger.info(f"[RelStrength] Loaded {len(df)} BTC 15m rows from {df['date'].min()} to {df['date'].max()}")
+            return df
+        except Exception as e:
+            logger.warning(f"[RelStrength] Could not load BTC 15m feather ({e}) — rel_strength_btc defaulting to 0.0")
+            FinBuddyFreqAI_v23._btc_15m_df = pd.DataFrame()
+            return FinBuddyFreqAI_v23._btc_15m_df
+
+    def _get_btc_returns(self, dataframe: DataFrame, windows: tuple) -> dict[str, pd.Series]:
+        """Return per-candle BTC pct_change at each window, aligned to dataframe dates.
+
+        Uses merge_asof(direction='backward') — same pattern as macro/funding loaders.
+        Falls back to 0.0 series if BTC data unavailable.
+        """
+        n = len(dataframe)
+        btc = self._load_btc_15m()
+        if btc.empty:
+            return {w: pd.Series(0.0, index=dataframe.index) for w in windows}
+        # pre-compute all window returns on BTC once
+        btc_with_rets = btc.copy()
+        for w in windows:
+            btc_with_rets[f"btc_ret_{w}"] = btc_with_rets["close"].pct_change(w)
+        dates = pd.to_datetime(dataframe["date"], utc=True).astype("datetime64[ns, UTC]")
+        df_for_join = pd.DataFrame({"date": dates}).sort_values("date").reset_index()
+        merged = pd.merge_asof(df_for_join, btc_with_rets.drop(columns=["close"]), on="date", direction="backward")
+        merged = merged.sort_values("index").reset_index(drop=True)
+        return {w: pd.Series(merged[f"btc_ret_{w}"].fillna(0.0).values, index=dataframe.index) for w in windows}
 
     def _get_macro_series(self, dataframe: DataFrame) -> dict[str, pd.Series]:
         """
@@ -951,6 +994,23 @@ class FinBuddyFreqAI_v23(IStrategy):
         # was never validated as predictive in the first place. Dropping
         # cleanly is the right call. Brain hypothesis space loses one knob
         # but no profitable config has ever relied on it.
+
+        # Per-pair relative strength vs BTC (added 2026-05-25).
+        # Cross-sectional momentum: how strongly is this pair moving vs BTC?
+        # Positive = outperforming BTC (structural strength → long signal).
+        # Negative = underperforming BTC (structural weakness → short signal).
+        # Uses 3 lookback windows on 15m base: 14 (~3.5h), 28 (~7h), 56 (~14h).
+        # Diagnostic (2026-05-25): BTC informative features rank 4th/8th in the live model,
+        # confirming the model values BTC-relative signals. Per-pair RS is the natural extension.
+        if include_macro and metadata.get("pair") != "BTC/USDT:USDT":
+            rs_windows = (14, 28, 56)
+            btc_rets = self._get_btc_returns(dataframe, rs_windows)
+            for w in rs_windows:
+                pair_ret = dataframe["close"].pct_change(w).fillna(0.0)
+                dataframe[f"%-rel_strength_btc_{w}"] = pair_ret - btc_rets[w]
+        else:
+            for w in (14, 28, 56):
+                dataframe[f"%-rel_strength_btc_{w}"] = 0.0
 
         return dataframe
 
