@@ -212,3 +212,4 @@ um_threads=2** added to both config.json and 23_regression_15m_di_config.json. 
 - **2026-05-24 20:00 UTC** — Pair whitelist changed: 37 → 26 pairs
 - **2026-05-25 00:00 UTC** — Walk-forward status: ⏳ Running — 0/21 folds (FinBuddyFreqAI_v23_2025-10-01_2026-05-01_20260524T220002)
 - **2026-05-25 04:00 UTC** — Walk-forward status: ❌ FAIL — WR 0.0%, Sharpe 0.00, DD 0.0%, PF 0.00 (0 trades, run `FinBuddyFreqAI_v23_2025-10-01_2026-05-01_20260524T220002`)
+- **2026-05-25 16:00 UTC** — FreqAI identifier changed: finbuddy_v23_oi_delta_1779570511 → finbuddy_v23_relstr_regul_1779710422
