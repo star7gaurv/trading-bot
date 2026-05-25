@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-25T00:00:02.314729+00:00",
+  "updated": "2026-05-25T00:30:01.941212+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -585,13 +585,13 @@
     },
     "1000PEPE/USDT:USDT": {
       "NEUTRAL": {
-        "n": 1,
-        "wins": 0,
+        "n": 2,
+        "wins": 1,
         "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -0.69,
-        "avg_profit_pct": -0.68
+        "wr": 0.5,
+        "pf": 0.348,
+        "profit_usdt": -0.45,
+        "avg_profit_pct": -0.22
       }
     },
     "FET/USDT:USDT": {
@@ -603,6 +603,17 @@
         "pf": 0.0,
         "profit_usdt": -1.41,
         "avg_profit_pct": -1.39
+      }
+    },
+    "RENDER/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -1.98,
+        "avg_profit_pct": -1.96
       }
     }
   },

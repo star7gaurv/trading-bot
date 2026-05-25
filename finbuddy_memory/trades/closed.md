@@ -243,3 +243,5 @@
 | 2026-05-24 12:10:49 | SUI/USDT:USDT | LONG | 0h25m | -1.05% | -1.07 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-24 12:04:24 | 1000PEPE/USDT:USDT | LONG | 0h18m | -0.68% | -0.69 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-24 12:17:34 | FET/USDT:USDT | LONG | 0h16m | -1.39% | -1.41 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-25 00:28:02 | 1000PEPE/USDT:USDT | LONG | 0h27m | +0.24% | +0.24 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-25 00:29:17 | RENDER/USDT:USDT | LONG | 0h28m | -1.96% | -1.98 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
