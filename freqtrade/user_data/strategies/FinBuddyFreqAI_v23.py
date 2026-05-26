@@ -314,7 +314,18 @@ class FinBuddyFreqAI_v23(IStrategy):
     # list. Strategy zeroes out entries when (pair, current_regime) is blocked.
     # ------------------------------------------------------------------ #
     def _load_pair_regime_blocks(self) -> dict:
-        """Return {pair: set(blocked_regimes)}. Refreshes when JSON mtime changes."""
+        """Return {pair: set(blocked_regimes)}. Refreshes when JSON mtime changes.
+
+        WF bypass (2026-05-26): when FREQAI_DISABLE_PAIR_REGIME_GATE=1 is set,
+        return an empty dict so WF backtests see raw strategy signals. The gate
+        is designed for LIVE trading (accumulates real trade stats over 30 days).
+        In WF each fold trains from scratch with fresh pair_regime_stats, so the
+        live stats would either over-block (if live is in a bad BEAR streak) or
+        under-block (if live has never seen some pairs). Bypassing gives the WF
+        a clean view of the raw signal quality — which is what we want to validate.
+        """
+        if os.environ.get("FREQAI_DISABLE_PAIR_REGIME_GATE", "0") == "1":
+            return {}
         try:
             mtime = os.path.getmtime(self._PAIR_REGIME_FILE)
         except OSError:

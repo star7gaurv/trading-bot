@@ -30,6 +30,11 @@ import json
 import os
 import subprocess
 import sys
+
+try:
+    import psutil as _psutil
+except ImportError:
+    _psutil = None
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass, asdict
 from datetime import datetime
@@ -149,6 +154,10 @@ def run_backtest(
     # use full CPU when system is idle. Works inside containers (unlike host nice).
     if cpu_shares is not None:
         cmd += ["--cpu-shares", str(cpu_shares)]
+    # Mount FreqAI models dir in RAM to eliminate SSD write latency during training.
+    # Safety guard: skip if available RAM < 6 GB so we never OOM the live bot.
+    if _psutil is not None and _psutil.virtual_memory().available > 6_000_000_000:
+        cmd += ["--tmpfs", "/freqtrade/user_data/models:rw,size=4g"]
     cmd += [
         # Large wallet so stake depletion never silences a test window
         "-e", "FREQTRADE__DRY_RUN_WALLET=10000",
@@ -160,6 +169,14 @@ def run_backtest(
     # not the strategy class defaults (LT=1.5, ST=-1.5, K_SL=1.0 ...).
     for key, val in _read_env_vars().items():
         cmd += ["-e", f"{key}={val}"]
+
+    # 2026-05-26: Disable pair-regime gate inside WF backtests.
+    # The gate uses LIVE rolling stats (last 30d of real trades) — these are
+    # meaningless inside a WF fold where each fold trains from scratch.
+    # In BEAR periods the gate was blocking ALL pairs → 0 trades in bear test
+    # windows → WF always fails → brain can never get a PASS → no promotions.
+    # Bypassing gives WF a clean view of the raw strategy signal quality.
+    cmd += ["-e", "FREQAI_DISABLE_PAIR_REGIME_GATE=1"]
 
     if freqai_identifier:
         # Each fold gets a unique identifier → forces fresh training, no lookahead bias

@@ -17,6 +17,11 @@ SCRIPT=/home/ubuntu/var/www/html/trade/scripts/walk_forward.py
 
 mkdir -p "$(dirname "$LOG")"
 
+# Always emit one stdout line so the crontab redirect (walk_forward_daily.log)
+# gets its mtime updated every day — prevents dashboard showing STALE when
+# deep WF flock blocks the run and all internal echoes go only to $LOG.
+echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] daily WF cron fired"
+
 # Single-instance lock — bail if a previous daily run is still going
 exec 9>"$LOCK"
 if ! flock -n 9; then
@@ -35,8 +40,15 @@ elif [ -f "$DEEP_LOCK" ]; then
 fi
 
 # Trailing 1 month — single fold, fast regression detector
-# 7mo window = 6mo train + 1mo test → (7-6-1)/1 + 1 = 1 fold
-START=$(date -u -d '7 months ago' +'%Y-%m-01')
+# 2026-05-26: Reduced training window 6mo → 4mo.
+# Reason: With 26 pairs × 530+ features, 6mo training was taking 5-6h and
+# occasionally exceeding the 10h timeout. 4mo training ≈ 3-4h → completes
+# reliably by 02:00 UTC. Daily WF is a pulse-check, not a promotion gate —
+# 4 months of training data is sufficient to confirm today's live config
+# still generates valid signals. Deep WF (7 folds × 6mo) remains the
+# authoritative promotion gate with full historical coverage.
+# 5mo window = 4mo train + 1mo test → 1 fold
+START=$(date -u -d '5 months ago' +'%Y-%m-01')
 END=$(date -u +'%Y-%m-01')
 
 echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] === Daily walk-forward starting: $START → $END ===" >> "$LOG"
@@ -44,7 +56,7 @@ echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] === Daily walk-forward starting: $ST
 python3 "$SCRIPT" \
     --start "$START" \
     --end "$END" \
-    --train-months 6 \
+    --train-months 4 \
     --test-months 1 \
     --slide-months 1 \
     --strategy FinBuddyFreqAI_v23 \
