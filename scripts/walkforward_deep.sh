@@ -1,9 +1,11 @@
 #!/bin/bash
 # 4-day deep walk-forward — full 27-month rolling window.
-# Runs every 4 days at 03:00 UTC (0 3 */4 * *).
+# Runs every 4 days at 18:30 UTC (30 18 */4 * *) = midnight IST.
+# Finishes ~38.5h later → report ready by morning IST on day 2.
 # 27-month window · train=6mo · test=1mo · slide=1mo → 21 folds.
-# With 3 parallel workers: ceil(21/3)=7 rounds × ~5.5h ≈ 38.5h.
-# Finishes well within the 96h (4-day) window before next trigger.
+# --cpu-shares 256: Docker-native nice — yields CPU to live bot+brain under
+#   contention, uses full CPU when system is idle. Replaces host nice (which
+#   does NOT propagate into Docker containers).
 # Purpose: DEEP PROMOTION GATE — full regime coverage (bull+bear+chop)
 #          for Phase 10 live migration decisions.
 # Separate lock from daily so daily regression checks still fire independently.
@@ -31,7 +33,7 @@ END=$(date -u +'%Y-%m-01')
 
 echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] === 4-day deep walk-forward starting: $START → $END (21 folds, 3 workers) ===" >> "$LOG"
 
-nice -n 19 ionice -c 3 python3 "$SCRIPT" \
+python3 "$SCRIPT" \
     --start "$START" \
     --end "$END" \
     --train-months 6 \
@@ -42,7 +44,8 @@ nice -n 19 ionice -c 3 python3 "$SCRIPT" \
     --config config.json \
     --skip-download \
     --max-workers 1 \
-    --lgbm-threads 1 >> "$LOG" 2>&1
+    --lgbm-threads 1 \
+    --cpu-shares 256 >> "$LOG" 2>&1
 
 EXIT=$?
 echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] === 4-day deep walk-forward done (exit=$EXIT) ===" >> "$LOG"

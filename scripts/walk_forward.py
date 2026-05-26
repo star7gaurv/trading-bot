@@ -106,6 +106,7 @@ def run_backtest(
     freqai_identifier: str | None = None,
     config: str | None = None,
     lgbm_threads: int = 2,
+    cpu_shares: int | None = None,
 ) -> Path | None:
     """Run a single backtest fold via docker-compose. Returns path to result json or None.
 
@@ -143,6 +144,12 @@ def run_backtest(
 
     cmd = [
         "docker-compose", "run", "--rm",
+    ]
+    # Docker-native nice equivalent: yield CPU to live bot + brain under contention,
+    # use full CPU when system is idle. Works inside containers (unlike host nice).
+    if cpu_shares is not None:
+        cmd += ["--cpu-shares", str(cpu_shares)]
+    cmd += [
         # Large wallet so stake depletion never silences a test window
         "-e", "FREQTRADE__DRY_RUN_WALLET=10000",
         # v2: LightGBM multi-threading — fill available cores without context thrashing
@@ -221,6 +228,7 @@ def _run_fold_worker(kwargs: dict) -> tuple[int, Path | None]:
             freqai_identifier=kwargs["freqai_identifier"],
             config=kwargs["config"],
             lgbm_threads=kwargs["lgbm_threads"],
+            cpu_shares=kwargs.get("cpu_shares"),
         )
         return fold, rp
     except Exception as exc:
@@ -456,6 +464,9 @@ def main():
                    help="Parallel fold workers (default=3; set 1 for sequential/debug)")
     p.add_argument("--lgbm-threads", type=int, default=2,
                    help="LightGBM num_threads per fold worker (default=2)")
+    p.add_argument("--cpu-shares", type=int, default=None,
+                   help="Docker --cpu-shares for each fold container (default=1024/unlimited). "
+                        "Set 256 for deep WF so it yields CPU to live bot+brain under contention.")
     p.add_argument("--reparse", metavar="RUN_DIR",
                    help="Re-aggregate an existing walkforward_results/<run_id>/ (no backtests re-run)")
     args = p.parse_args()
@@ -504,6 +515,7 @@ def main():
             "freqai_identifier": f"{fold_identifier_base}_f{fold:02d}",
             "config": args.config,
             "lgbm_threads": args.lgbm_threads,
+            "cpu_shares": args.cpu_shares,
         })
 
     print(f"Total folds: {len(fold_specs)}")
@@ -520,7 +532,7 @@ def main():
                 train_start=spec["train_start"], test_start=spec["test_start"],
                 test_end=spec["test_end"], run_dir=spec["run_dir"], fold=fold,
                 freqai_identifier=spec["freqai_identifier"], config=spec["config"],
-                lgbm_threads=spec["lgbm_threads"],
+                lgbm_threads=spec["lgbm_threads"], cpu_shares=spec.get("cpu_shares"),
             )
             fold_results[fold] = rp
     else:
