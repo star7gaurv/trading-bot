@@ -11,7 +11,7 @@
 | Phase | File | Status | Description |
 |---|---|---|---|
 | 0 | [phase-0-foundation.md](phase-0-foundation.md) | ✅ Complete (2026-04-27) | Foundation — Docker, FreqTrade, Telegram |
-| 1 | [phase-1-freqai-brain.md](phase-1-freqai-brain.md) | 🟢 LIVE — v23 dry-run +97 USDT, WR 38.6% | FreqAI brain — `FinBuddyFreqAI_v23.py`, 15m TF, 37 pairs, LightGBMRegressor |
+| 1 | [phase-1-freqai-brain.md](phase-1-freqai-brain.md) | 🟢 LIVE — v23 dry-run, LT=1.2/ST=-0.8, 26 pairs, 339 exps, 0 promotions | FreqAI brain — `FinBuddyFreqAI_v23.py`, 15m TF, 26 pairs, LightGBMRegressor |
 | 2 | [phase-2-data-enrichment.md](phase-2-data-enrichment.md) | ✅ Live (cron 15m) | Fear & Greed, CoinGecko, CryptoPanic, DefiLlama, Google Trends |
 | 3 | [phase-3-hmm-regime.md](phase-3-hmm-regime.md) | ✅ Live (cron 4h) | 5-regime HMM engine |
 | 4 | [phase-4-obsidian-memory.md](phase-4-obsidian-memory.md) | ✅ Live (cron 15m) | Auto-write + git auto-commit |

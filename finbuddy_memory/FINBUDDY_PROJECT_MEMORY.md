@@ -4,8 +4,41 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status**: 🟢 v23 LIVE (identifier `finbuddy_v23_no_median_1779447827`) · 🧠 brain single-group (reverted 2026-05-24) · 💎 circuit breaker 10 USDT/day · ✂️ pair universe trimmed 37→26 (2026-05-24) · 🔄 brain cron */30 + flock · 📊 Dashboard v2 LIVE (auth-gated, 7 tabs)  
-**Last Updated**: 2026-05-24 UTC (Dashboard v2 fully shipped — all 5 increments)
+**Status**: 🟢 v23 LIVE · LT=1.2/ST=-0.8 · BEAR 80% · 339 completed experiments · 140 queued (66 bear at front) · 0 promotions · brain cron */15 + flock  
+**Last Updated**: 2026-05-27 UTC (regime-seeding, queue prioritization, queue pruned, all memory updated)
+
+### 2026-05-27 — Regime-Targeted Brain Seeding + Queue Prioritization (commits `5639d98`, `2c6c0b2`, `b3eb3a7`)
+
+**Problem:** Brain has 339 completed experiments, 0 promotions. Queue was FIFO — bull-window experiments ran ahead of bear-window ones despite BEAR 80% regime. Also: 165 queued configs with lt≥3.0 produced 0 trades on bear_2026Q1 (recent bear market has lower prediction amplitude — P(>3.25σ) ≈ 0.06%, generates 0-6 trades in 3 months vs MIN_TOTAL_TRADES=60).
+
+**4 housekeeping bugs fixed (commit `5639d98`):**
+1. Watchdog: removed misleading INFO log line that printed on every training check run
+2. fetch_all_external.py: deprecated `datetime.utcnow()` → `datetime.now(timezone.utc)`
+3. pair_regime_stats.json: pruned 9 stale entries for removed pairs (AAVE, ZEC, DOGE, BCH, DASH, TRX, ATOM, 1000SHIB) + 2 stale blocks. 3 active blocks remain: OP/BEAR, LINK/NEUTRAL, UNI/BEAR.
+4. queue.jsonl: pruned 165 unreachable lt≥3.0 configs (290 → 125). These would generate 0 trades on bear_2026Q1.
+
+**Regime-targeted brain seeding (commit `2c6c0b2`):**
+- NEW: `scripts/brain/seed_regime_targets.py` — finds top-N scoring configs from log, cross-seeds missing windows, re-sorts queue by current regime
+- NEW: `experiment_log.py` `prioritize_regime_windows(regime)` function — rewrites queue atomically with bear/bull-window entries at front
+- NEW: `brain_cli.py seed-regime [--top-n 5] [--regime auto] [--dry-run]` subcommand
+- Runner.py: auto-triggers `prioritize_regime_windows()` after every experiment → queue stays regime-sorted automatically
+
+**16 targeted bear configs + re-sort (commit `b3eb3a7`):**
+- Generated 16 new bear-targeted configs (lt=2.0-2.5 × 2 bear windows × 4 config variations)
+- Re-sorted queue: 66 bear-window entries now at front
+- Expected: first bear pass within 1-2 days → cross-window auto-queue fires → bull experiments added → promotion scan fires in 3-5 days
+
+**Confirmed already implemented (memory was stale):**
+- `btc_ls_ratio`: already in strategy at line ~1008 — `dataframe["%-btc_ls_ratio"] = oi["btc_ls_ratio"]`
+- `num_leaves` + `learning_rate`: already in `AGGRESSIVE_CHOICES_V23` in hypothesis_gen.py AND properly plumbed through runner.py
+
+**State after session:**
+- Brain: 339 completed, 108 failed, 140 queued (66 bear at front)
+- Live: LT=1.2, ST=-0.8, K_SL=2.0, K_TP=2.0, STAB=1, DAILY_LOSS_LIMIT=10
+- Deep WF: 7 folds, 18mo window, 18:30 UTC every 4 days, cpu-shares=256
+- Brain cron confirmed: `*/15 * * * *` (not */30 as was in memory)
+
+---
 
 ### 2026-05-26 — Docker CPU-Shares Fix + Deep WF Rescheduled to Midnight IST (commit `42eb5d8`)
 
@@ -678,37 +711,40 @@ Three structural fixes addressing root causes found across 11 smoke tests:
 
 ---
 
-## 🗓️ Live Crontab (server — verified 2026-05-19)
+## 🗓️ Live Crontab (server — verified 2026-05-27)
 
 ```
-0 * * * *     auto_commit.sh                          # vault git commit hourly
-*/15 * * * *  fetch_all_external.py                   # Phase 2 external data
-0 */4 * * *   hmm_regime_detector.py                  # Phase 3 HMM every 4h
-*/15 * * * *  memory_writer.py && git_commit.sh        # Phase 4 memory
-0 2 * * *     karpathy/run_loop.py                    # Phase 5 research
-*/5 * * * *   executor_wrapper.sh                     # Phase 7 executor
-0 6 * * *     run_promotion.sh                        # daily brain promotion check
-0 8 * * *     pair_performance.py                     # per-pair WR/PF report
-*/30 * * * *  watchdog.py                             # container/training/heartbeat + NaN-training alert
-*/15 * * * *  trade_postmortem.py                     # closed-trade ledger + bias detector
-0 8 * * *     daily_summary.py                        # Telegram morning digest
-0 */4 * * *   sync_context.py                         # auto-sync FINBUDDY_PROJECT_MEMORY.md
-*/30 * * * *  walkforward_notify.py                   # notify on walk-forward complete
-0 22 * * *    walkforward_daily.sh                    # daily 3mo fast regression check (3 folds, ~5.5h, parallel)
-30 18 */4 * * walkforward_deep.sh                      # 4-day deep WF at 18:30 UTC (midnight IST) — 27mo/21 folds, ~38.5h, --cpu-shares 256
-30 4 * * *    download_data_daily.sh                  # forward-increment market data
-*/10 * * * *  brain_cli.py run --max 1                # brain: run next pending hypothesis
-0 */6 * * *   brain_cli.py generate                   # brain: generate hypotheses
-0 7 * * *     brain_cli.py scan                       # brain: scan for promotable configs
-0 8 * * *     digest.py                               # brain: daily digest to Telegram
-*/2 * * * *   flock -n ... telegram_listener.py       # Telegram button listener (flock: no dupes)
-0 4 * * *     brain_cleanup.py                        # brain: prune old model dirs
-30 */6 * * *  brain_cli.py analyse                    # brain: analyst report
-*/30 * * * *  pair_regime_performance.py              # per-pair-per-regime gate update
-15 1 * * *    build_historical_macro.py               # rebuild macro parquet daily
-20 1 * * *    build_historical_regime.py              # rebuild regime parquet daily
-30 1 * * *    build_historical_oi.py                  # rebuild Open Interest proxy daily
+0 * * * *      auto_commit.sh                          # vault git commit hourly
+*/15 * * * *   fetch_all_external.py                   # Phase 2 external data
+0 */4 * * *    hmm_regime_detector.py                  # Phase 3 HMM every 4h
+*/15 * * * *   memory_writer.py && git_commit.sh       # Phase 4 memory
+*/30 * * * *   watchdog.py                             # CPU alert (CRIT≥6.0, WARN≥4.0) + training + heartbeat
+*/15 * * * *   trade_postmortem.py                     # closed-trade ledger + bias detector
+0 8 * * *      daily_summary.py                        # Telegram morning digest
+0 8 * * *      digest.py                               # brain daily digest to Telegram
+0 */4 * * *    sync_context.py                         # auto-sync FINBUDDY_PROJECT_MEMORY.md
+*/30 * * * *   walkforward_notify.py (flock)           # notify on walk-forward complete
+30 4 * * *     download_data_daily.sh                  # forward-increment market data
+*/15 * * * *   brain_cli.py run --max 1 (flock)        # brain: run next pending hypothesis
+0 */6 * * *    brain_cli.py generate --safe 1 --aggr 1 # brain: generate hypotheses (limited rate)
+30 */6 * * *   brain_cli.py analyse                    # brain: analyst self-diagnose + prune
+0 7 * * *      brain_cli.py scan                       # brain: scan for promotable configs → Telegram
+*/2 * * * *    telegram_listener.py (flock)            # Apply/Skip button handler
+0 4 * * *      brain_cleanup.py                        # prune old model dirs
+0 4 * * *      auto_promote.py                         # WF Sharpe vs baseline alert
+*/30 * * * *   pair_regime_performance.py --quiet      # per-pair-per-regime gate update
+15 1 * * *     build_historical_macro.py               # rebuild macro parquet daily
+20 1 * * *     build_historical_regime.py              # rebuild regime parquet daily
+25 1 * * *     build_historical_funding.py             # rebuild funding rate parquet daily
+30 1 * * *     build_historical_oi.py                  # rebuild Open Interest parquet daily
+0 22 * * *     walkforward_daily.sh                    # daily WF — 1 fold, 4mo train+1mo test (~3.5h)
+30 18 */4 * *  walkforward_deep.sh                     # deep WF — 7 folds, 18mo window, --cpu-shares 256 (~35h)
 ```
+
+**Removed from cron (historical):**
+- `executor_wrapper.sh` — deleted 2026-05-24 (dead Phase 7 prototype)
+- `run_promotion.sh` — removed 2026-05-19 (replaced by brain_cli.py scan + telegram Apply button)
+- `karpathy/run_loop.py` — removed 2026-05-24 (outputs feed nowhere; CPU waste)
 
 ---
 
