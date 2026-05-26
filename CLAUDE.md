@@ -210,7 +210,7 @@ Standard layer 4 features include 3 funding-rate features (`%-funding_rate`, `%-
 0 7 * * *    brain_cli.py scan                  # brain promotion scan → pending.json + Telegram
 */2 * * * *  telegram_listener.py               # Apply/Skip button handler (calls promote.py --apply)
 0 22 * * *   walkforward_daily.sh               # daily WF (3mo trailing, ~5.5h, 3 folds, 2 workers)
-0 3 */4 * *  walkforward_deep.sh               # deep WF every 4 days (27mo, 21 folds, 2 workers, ~38.5h)
+30 18 */4 * * walkforward_deep.sh              # deep WF every 4 days at 18:30 UTC (midnight IST) — 27mo, 21 folds, ~38.5h
 0 4 * * *    auto_promote.py                    # WF Sharpe vs baseline alert
 */30 * * * * walkforward_notify.py              # PASS/FAIL Telegram on new WF summary (flock protected)
 30 4 * * *   download_data_daily.sh             # forward-increment data download
@@ -403,8 +403,13 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 
 > Full session history lives in `finbuddy_memory/FINBUDDY_PROJECT_MEMORY.md`. Only the most recent session is kept here.
 
-### May 24, 2026 — System-Wide CPU Optimization & Self-Aware Subconscious Reflection
-- **Subconscious Reflection:** The 38-hour 27-month trailing Deep Walk-Forward (`walkforward_deep.sh`) previously caused severe CPU starvation when it ran alongside the Brain. Instead of pausing the Brain (which violates the "self-aware, continuously evolving" philosophy), `walkforward_deep.sh` was wrapped in `nice -n 19 ionice -c 3` and limited to `--max-workers 1` and `--lgbm-threads 1`. The deep backtest now acts as the system's "subconscious", absorbing 100% of idle CPU cycles without EVER slowing down the active Brain or the live trading bot. System progress is maximized without CPU spiking.
+### May 26, 2026 — Docker CPU-Shares Fix + Deep WF Rescheduled to Midnight IST (commit `42eb5d8`)
+- **Root cause found:** `nice -n 19 ionice -c 3` in `walkforward_deep.sh` was applied to the Python `walk_forward.py` process but Docker containers spawn their own process namespace and do NOT inherit host nice values. All 3 FreqTrade processes (live bot + WF fold + brain experiment) ran at NI=0, causing load average 7.79 on a 4-core server (380% CPU saturation).
+- **Fix — Docker `--cpu-shares 256`:** `walk_forward.py` now accepts `--cpu-shares` flag and passes it directly to `docker-compose run`. Docker's CPU shares are cgroup-level weights (applied INSIDE the container): 256/1024 = yields to live bot+brain under contention, uses full CPU when system is idle. `nice`/`ionice` wrapper removed from `walkforward_deep.sh` (it was doing nothing).
+- **Deep WF rescheduled:** Cron `0 3 */4 * *` (8:30 AM IST — work hours!) → `30 18 */4 * *` (18:30 UTC = midnight IST). Deep WF now runs overnight; report in Telegram by morning IST.
+
+### May 24, 2026 — System-Wide CPU Optimization
+- **Subconscious Reflection (PARTIALLY INCORRECT — see May 26 fix):** `walkforward_deep.sh` was wrapped in `nice -n 19 ionice -c 3`. This was not effective inside Docker containers (nice does not propagate into container namespaces). The real fix shipped 2026-05-26 via `--cpu-shares 256`.
 - **Removed Dead Mock Executor:** `executor_wrapper.sh` running every 5 minutes 24/7 was deleted. This was a legacy Phase 7 prototype that consumed CPU 288 times a day for absolutely no purpose.
 - **De-duplicated 08:00 AM Cron Stampede:** Removed `pair_performance.py` from the crontab. It was firing at the exact same millisecond as `daily_summary.py` and `digest.py` every morning, causing an artificial CPU spike for a redundant text log.
 
@@ -636,7 +641,7 @@ Comprehensive audit and cleanup of FinBuddyFreqAI.py to match live v17 state:
 - **walk_forward.py v2** (`cde90f4`): `ProcessPoolExecutor(max_workers=3)` replaces sequential fold loop. Per-fold isolated `.last_result_fXX.json` sentinels eliminate race condition. `--max-workers` and `--lgbm-threads` CLI flags.
 - **LightGBM `num_threads=2`** in both config files. 3 workers × 2 threads = 6 logical threads on 4-core server.
 - **`walkforward_daily.sh`** (`5b6b1cb`): 3-month trailing, 3 folds, ~5.5h. Fast nightly regression detector. Lock: `walkforward_daily.lock`.
-- **`walkforward_deep.sh`** (`5b6b1cb`): Replaces monthly. 27-month trailing, 21 folds, ~38.5h. Cron: `0 3 */4 * *`. Lock: `walkforward_deep.lock`.
+- **`walkforward_deep.sh`** (`5b6b1cb`): Replaces monthly. 27-month trailing, 21 folds, ~38.5h. Cron: `30 18 */4 * *` (midnight IST). Lock: `walkforward_deep.lock`. `--cpu-shares 256` passes Docker CPU weight so WF yields to live bot+brain (added `42eb5d8`).
 - Speedup: 7-fold campaign 38.5h → 13h. Monthly 115h → 38.5h.
 
 ### 3 Trade-Blocking Bugs Fixed (`eeae872`, `1786d01`)

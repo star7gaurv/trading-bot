@@ -7,6 +7,27 @@
 **Status**: 🟢 v23 LIVE (identifier `finbuddy_v23_no_median_1779447827`) · 🧠 brain single-group (reverted 2026-05-24) · 💎 circuit breaker 10 USDT/day · ✂️ pair universe trimmed 37→26 (2026-05-24) · 🔄 brain cron */30 + flock · 📊 Dashboard v2 LIVE (auth-gated, 7 tabs)  
 **Last Updated**: 2026-05-24 UTC (Dashboard v2 fully shipped — all 5 increments)
 
+### 2026-05-26 — Docker CPU-Shares Fix + Deep WF Rescheduled to Midnight IST (commit `42eb5d8`)
+
+**Root cause diagnosed:** Server load average 7.79 on 4-core machine (380% CPU saturation). Three FreqTrade processes all at NI=0 (full priority):
+1. Deep WF fold (PID 2312422): 123% CPU — running since 03:45 UTC (4.5h), timerange 20241001-20250501
+2. Brain experiment (PID 2373445): 194% CPU — started 07:15 UTC
+3. Live bot (PID 2401056): 121% CPU
+
+**Why `nice -n 19` was not working:** `walkforward_deep.sh` applied `nice -n 19 ionice -c 3` to the Python `walk_forward.py` process. But Docker containers create their own process namespace — they do NOT inherit host nice values. The WF fold containers always ran at NI=0 regardless.
+
+**Fix 1 — Docker `--cpu-shares 256` (commit `42eb5d8`):**
+- `walk_forward.py`: new `--cpu-shares` CLI flag; when set, adds `--cpu-shares <N>` to `docker-compose run` command. This is a cgroup-level weight applied INSIDE Docker — the actual mechanism that works.
+- `walkforward_deep.sh`: passes `--cpu-shares 256`. At 256/1024 = WF yields CPU to live bot+brain under contention; uses full CPU when system is idle.
+- `nice -n 19 ionice -c 3` removed from `walkforward_deep.sh` (was a no-op for Docker processes).
+
+**Fix 2 — Deep WF rescheduled to midnight IST:**
+- Old cron: `0 3 */4 * *` = 3:00 AM UTC = **8:30 AM IST** (work hours — WF competed with brain during the day)
+- New cron: `30 18 */4 * *` = 18:30 UTC = **midnight IST** (runs overnight, Telegram report ready by morning IST)
+- Daily WF remains at `0 22 * * *` = 10:00 PM UTC = 3:30 AM IST (starts early morning IST, finishes ~8:30-9:00 IST)
+
+---
+
 ### 2026-05-25 (Morning) — Deep Analysis & Fix: The Target Leakage Bug
 
 **Root cause found:** FreqAI columns prefixed with `&-` are **targets** (labels with 100% lookahead bias), while `&s-` are **predictions** output by the model.
@@ -79,8 +100,8 @@ Walk-Forward validator started (running in background) to verify valid trade gen
 
 **Fix 3 — Subconscious Reflection (Deep Walk-Forward Optimization):**
 - The 38-hour 27-month trailing Deep Walk-Forward (`walkforward_deep.sh`) previously caused severe CPU starvation when it ran alongside the Brain.
-- Instead of using locking to pause the Brain (which violates the "self-aware, continuously evolving" philosophy), `walkforward_deep.sh` was wrapped in `nice -n 19 ionice -c 3` and limited to `--max-workers 1` and `--lgbm-threads 1`.
-- **Result:** The deep backtest now acts as the system's "subconscious", absorbing 100% of idle CPU cycles without EVER slowing down the active Brain or the live trading bot. System progress is maximized without CPU spiking.
+- `walkforward_deep.sh` was wrapped in `nice -n 19 ionice -c 3` and limited to `--max-workers 1` and `--lgbm-threads 1`.
+- **⚠️ CORRECTED 2026-05-26:** `nice -n 19` was ineffective — Docker containers spawn their own process namespace and do NOT inherit host nice values. All WF fold containers ran at NI=0. Real fix: `--cpu-shares 256` passed to `docker-compose run` inside `walk_forward.py` (commit `42eb5d8`). See 2026-05-26 session below.
 
 ---
 
@@ -674,7 +695,7 @@ Three structural fixes addressing root causes found across 11 smoke tests:
 0 */4 * * *   sync_context.py                         # auto-sync FINBUDDY_PROJECT_MEMORY.md
 */30 * * * *  walkforward_notify.py                   # notify on walk-forward complete
 0 22 * * *    walkforward_daily.sh                    # daily 3mo fast regression check (3 folds, ~5.5h, parallel)
-0 3 */4 * *   walkforward_deep.sh                     # 4-day deep WF (27mo/21 folds, ~38.5h, parallel) — promotion gate
+30 18 */4 * * walkforward_deep.sh                      # 4-day deep WF at 18:30 UTC (midnight IST) — 27mo/21 folds, ~38.5h, --cpu-shares 256
 30 4 * * *    download_data_daily.sh                  # forward-increment market data
 */10 * * * *  brain_cli.py run --max 1                # brain: run next pending hypothesis
 0 */6 * * *   brain_cli.py generate                   # brain: generate hypotheses
