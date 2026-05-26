@@ -218,3 +218,5 @@ um_threads=2** added to both config.json and 23_regression_15m_di_config.json. 
 - 2026-05-26: Applied detailed Walk-Forward UI fixes. Filtered out 'archive/' directories from history, added 12h stale check to prevent zombie runs from showing as 'RUNNING', fixed GATES keys (weighted_win_rate, worst_drawdown, etc) so metrics stop showing as N/A, updated API to send correct top-level aggregates to frontend.
 - **2026-05-26**: Executed P0, P1, P2 fixes based on Claude code/security review. Fixed P&L Today null error, fixed walk-forward dashboard to show live running folds using new `/api/wf/running-folds` endpoint, secured streamer.py by moving FreqTrade credentials to .env, adding token auth to websockets, and restricting CORS.
 - **2026-05-26 11:30 UTC** — FreqAI identifier changed: finbuddy_v23_relstr_regul_1779710422 → finbuddy_v23_lp12_1779783141
+- **2026-05-26 20:00 UTC** — FreqAI identifier changed: finbuddy_v23_lp12_1779783141 → finbuddy_v23_ls_1779815877
+- **2026-05-26 20:00 UTC** — Regime changed: NEUTRAL → BEAR
