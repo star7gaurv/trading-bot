@@ -32,8 +32,8 @@ CONFIG_PATH = Path("/home/ubuntu/var/www/html/trade/freqtrade/user_data/config.j
 REGIME_PATH = Path("/home/ubuntu/var/www/html/trade/finbuddy_memory/regimes/current.json")
 FILE_LOG    = Path("/home/ubuntu/var/www/html/trade/freqtrade/user_data/logs/freqtrade.log")
 API_BASE    = "http://localhost:8080/api/v1"
-API_USER    = "bot"
-API_PASS    = "REDACTED-FREQTRADE__API_SERVER__PASSWORD"
+API_USER    = os.environ.get("FT_USER", "bot")
+API_PASS    = os.environ.get("FT_API_PASS", "REDACTED-FREQTRADE__API_SERVER__PASSWORD")
 LOG_TS_RE   = re.compile(r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})")
 
 

@@ -14,7 +14,8 @@ from collections import defaultdict
 from datetime import datetime
 
 API = "http://localhost:8080/api/v1"
-AUTH = ("bot", "REDACTED-FREQTRADE__API_SERVER__PASSWORD")
+import os
+AUTH = (os.environ.get("FT_USER", "bot"), os.environ.get("FT_API_PASS", "REDACTED-FREQTRADE__API_SERVER__PASSWORD"))
 
 
 def fetch_trades(since_date=None):

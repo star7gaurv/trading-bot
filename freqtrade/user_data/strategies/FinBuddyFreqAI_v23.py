@@ -610,6 +610,25 @@ class FinBuddyFreqAI_v23(IStrategy):
         # with populate_entry_trend's cached value on cron-boundary candles.
         regime = self._get_current_regime()
         multiplier = _risk_engine.stake_multiplier(regime)
+
+        # HMM confidence-gated stake sizing (Fix 3, 2026-05-26).
+        # The HMM already emits a confidence score (0–1) in current.json but it
+        # was NEVER used — only the regime LABEL affected thresholds/stakes.
+        # Regime TRANSITIONS are highest-risk (model temporarily miscalibrated).
+        # Low confidence → transitioning → reduce stake to limit drawdown.
+        # Formula: conf=0.3 → 0.65x stake; conf=0.9 → 0.95x; conf=1.0 → 1.0x.
+        # Risk is one-sided: confidence can ONLY REDUCE stake, never increase it.
+        try:
+            with open(self._REGIME_FILE) as _rf:
+                _regime_data = json.load(_rf)
+            _regime_conf = float(_regime_data.get("confidence", 0.5))
+        except Exception:
+            _regime_conf = 0.5
+        confidence_factor = 0.5 + 0.5 * _regime_conf   # maps [0,1] → [0.5, 1.0]
+        logger.debug(
+            f"[HMMConfidence] regime={regime} conf={_regime_conf:.2f} "
+            f"factor={confidence_factor:.3f}"
+        )
         current_profit_ratio = kwargs.get('current_profit_ratio', 0.0) or 0.0
         if not _risk_engine.max_drawdown_gate(abs(current_profit_ratio)):
             logger.warning(f"[RiskEngine] DD gate CLOSED — skipping trade (dd={current_profit_ratio:.2%})")
@@ -638,8 +657,11 @@ class FinBuddyFreqAI_v23(IStrategy):
                 return 0
 
         base_stake = min(proposed_stake, max_stake)
-        result = round(base_stake * multiplier, 2)
-        logger.info(f"[RiskEngine] stake={result} regime={regime} mult={multiplier}")
+        result = round(base_stake * multiplier * confidence_factor, 2)
+        logger.info(
+            f"[RiskEngine] stake={result} regime={regime} mult={multiplier} "
+            f"conf_factor={confidence_factor:.3f}"
+        )
         return max(result, min_stake or 0)
 
     # Confidence-based leverage tiers (added 2026-05-20).
@@ -1118,9 +1140,43 @@ class FinBuddyFreqAI_v23(IStrategy):
         combined_long  = (long_mult_series  * wr_adj).clip(upper=2.0)
         combined_short = (short_mult_series * wr_adj).clip(upper=2.0)
 
+        # Per-pair prediction percentile thresholds (Fix 4, 2026-05-26).
+        # Each pair has a different prediction std from the model (ZEC std≈3.42,
+        # BTC std≈0.40). A global threshold is too tight for volatile pairs
+        # (near-zero signals on ZEC) and too loose for stable ones (noisy entries
+        # on BTC). We normalize by the pair's own rolling std vs the global
+        # expected std=0.95, so every pair is judged at the same signal-quality bar.
+        #
+        # The column "%-future_return" is the raw target BEFORE FreqAI labels it —
+        # in inference it reflects the model's rolling prediction distribution for
+        # THIS pair specifically.  Use it during live inference; fall back to the
+        # global baseline (0.95) if the column is absent (early candles, backtest
+        # first rows, etc.).
+        #
+        # Clip: min 0.5× (never collapse threshold below half-base for noisy pairs)
+        #       max 3.0× (never push threshold above 3× for very stable pairs)
+        _GLOBAL_STD = 0.95   # observed live model prediction std across all pairs
+        if "%-future_return" in dataframe.columns:
+            pair_pred_std = (
+                dataframe["%-future_return"]
+                .rolling(100, min_periods=10)
+                .std()
+                .fillna(_GLOBAL_STD)
+            )
+        elif "&-future_return" in dataframe.columns:
+            pair_pred_std = (
+                dataframe["&-future_return"]
+                .rolling(100, min_periods=10)
+                .std()
+                .fillna(_GLOBAL_STD)
+            )
+        else:
+            pair_pred_std = pd.Series(_GLOBAL_STD, index=dataframe.index)
+        std_factor = (pair_pred_std / _GLOBAL_STD).clip(lower=0.5, upper=3.0)
+
         dataframe["regime"] = regime_series
-        dataframe["dynamic_long_threshold"]  = base_long  * combined_long
-        dataframe["dynamic_short_threshold"] = -(base_short * combined_short)
+        dataframe["dynamic_long_threshold"]  = base_long  * combined_long  * std_factor
+        dataframe["dynamic_short_threshold"] = -(base_short * combined_short * std_factor)
         return dataframe
 
     # ------------------------------------------------------------------ #

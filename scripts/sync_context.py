@@ -52,7 +52,10 @@ LOG_FILE = REPO / "freqtrade/user_data/logs/freqtrade.log"
 STATE_FILE = Path("/home/ubuntu/.finbuddy/state/sync_context_prev.json")
 
 FREQTRADE_API = "http://localhost:8080/api/v1"
-FREQTRADE_AUTH = ("bot", "REDACTED-FREQTRADE__API_SERVER__PASSWORD")
+FREQTRADE_AUTH = (
+    os.environ.get("FT_USER", "bot"),
+    os.environ.get("FT_API_PASS", "REDACTED-FREQTRADE__API_SERVER__PASSWORD"),
+)
 
 SYNC_START = "<!-- AUTO-SYNC-START -->"
 SYNC_END = "<!-- AUTO-SYNC-END -->"

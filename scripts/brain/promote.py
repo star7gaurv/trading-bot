@@ -328,6 +328,25 @@ def apply_promotion(config_hash: str) -> int:
         restart_ok = False
         print(f"restart error: {e}", file=sys.stderr)
 
+    # 4b. Reset pair-regime gate stats (Fix 2, 2026-05-26).
+    # After an identifier bump, the new model's early trades should NOT be
+    # blocked by statistics accumulated under the old model. A pair that had
+    # WR=32% with the old model may be perfectly fine with the new one.
+    # Reset every entry to neutral (n=0, wr=0.5, pf=1.0) so the gate
+    # accumulates fresh data from the promoted model's trades.
+    pair_regime_path = ROOT / "finbuddy_memory" / "regimes" / "pair_regime_stats.json"
+    try:
+        if pair_regime_path.exists():
+            data = json.loads(pair_regime_path.read_text())
+            for pair in data:
+                data[pair] = {r: {"n": 0, "wr": 0.5, "pf": 1.0} for r in data[pair]}
+            pair_regime_path.write_text(json.dumps(data, indent=2))
+            print(f"pair_regime_stats.json reset ({len(data)} pairs) for new identifier")
+        else:
+            print("pair_regime_stats.json not found — skipping reset (will be created fresh)")
+    except Exception as e:
+        print(f"WARN: pair_regime_stats reset failed: {e}", file=sys.stderr)
+
     # 5. Telegram confirmation
     try:
         tg_send(
