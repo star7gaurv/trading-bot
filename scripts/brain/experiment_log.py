@@ -12,7 +12,7 @@ Schema (versioned; field names stable across versions):
   window            str        — "bull" | "bear" | "full" | custom timerange
   timerange         str        — "YYYYMMDD-YYYYMMDD"
   config            dict       — every parameter (timeframe, K_SL, threshold, etc.)
-  status            str        — "queued" | "running" | "completed" | "failed"
+  status            str        — "queued" | "running" | "completed" | "failed" | "scout_failed"
   created_at        iso8601    — when the hypothesis entered the queue
   started_at        iso8601|null
   completed_at      iso8601|null
@@ -137,6 +137,29 @@ def mark_failed(hypothesis: dict, error: str, started_at: str | None = None) -> 
     _remove_from_queue(record["hypothesis_id"])
 
 
+def mark_scout_failed(hypothesis: dict, scout_metrics: dict) -> None:
+    """Mark a hypothesis as rejected at the scout stage and move to log.
+
+    scout_metrics contains the metrics from the cheap 6-pair scout run so we
+    can review whether the scout gate is calibrated correctly.
+    """
+    record = dict(hypothesis)
+    record["status"]       = "scout_failed"
+    record["completed_at"] = _now_iso()
+    record["metrics"]      = scout_metrics
+    _atomic_append(LOG_FILE, record)
+    _remove_from_queue(record["hypothesis_id"])
+
+
+def experiments_today_count() -> int:
+    """Count experiments logged today (any terminal status). Used for scout bypass cadence."""
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    return sum(
+        1 for r in read_log()
+        if (r.get("completed_at") or "").startswith(today)
+    )
+
+
 def _remove_from_queue(hypothesis_id: str) -> None:
     """Rewrite queue.jsonl without the given hypothesis. O(n) but n is small."""
     if not QUEUE_FILE.exists():
@@ -188,6 +211,34 @@ def prioritize_same_config(completed_hypothesis: dict) -> int:
             f.write(json.dumps(e, separators=(",", ":")) + "\n")
     tmp.replace(QUEUE_FILE)
     return len(priority)
+
+
+def prioritize_regime_windows(regime: str) -> int:
+    """Reorder the queue so experiments for the current regime run first.
+
+    regime: "BEAR" moves bear_* windows to front; "BULL" moves bull_* to front.
+    Entries not matching the regime are pushed to the back, preserving their
+    relative order within each group. Returns number of entries moved to front.
+
+    Called by `brain_cli.py seed-regime` and optionally after each experiment
+    completion in runner.py to keep the queue aligned with the live market.
+    """
+    if not QUEUE_FILE.exists():
+        return 0
+    regime_key = regime.strip().lower()   # "bear" or "bull"
+    all_queued = read_queue()
+    front = [e for e in all_queued
+             if e.get("status") == "queued"
+             and regime_key in e.get("window", "").lower()]
+    if not front:
+        return 0
+    back = [e for e in all_queued if e not in front]
+    tmp = QUEUE_FILE.with_suffix(".jsonl.tmp")
+    with tmp.open("w") as f:
+        for e in front + back:
+            f.write(json.dumps(e, separators=(",", ":")) + "\n")
+    tmp.replace(QUEUE_FILE)
+    return len(front)
 
 
 def queue_missing_windows(completed_hypothesis: dict, windows: dict[str, str]) -> int:
@@ -258,17 +309,19 @@ def summary_stats() -> dict:
     """Quick brain status summary."""
     log = read_log()
     queue = read_queue()
-    completed = [r for r in log if r.get("status") == "completed"]
-    failed = [r for r in log if r.get("status") == "failed"]
+    completed    = [r for r in log if r.get("status") == "completed"]
+    failed       = [r for r in log if r.get("status") == "failed"]
+    scout_failed = [r for r in log if r.get("status") == "scout_failed"]
     by_band = {}
     for r in completed:
         b = r.get("band", "?")
         by_band[b] = by_band.get(b, 0) + 1
     return {
-        "queued": len(queue),
-        "completed": len(completed),
-        "failed": len(failed),
-        "by_band": by_band,
+        "queued":       len(queue),
+        "completed":    len(completed),
+        "failed":       len(failed),
+        "scout_failed": len(scout_failed),
+        "by_band":      by_band,
         "last_completion": completed[-1]["completed_at"] if completed else None,
     }
 

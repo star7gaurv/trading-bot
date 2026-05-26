@@ -35,6 +35,7 @@ from experiment_log import (
     read_queue, mark_completed, mark_failed, mark_scout_failed,
     experiments_today_count, summary_stats,
     prioritize_same_config, queue_missing_windows,
+    prioritize_regime_windows,
 )
 from telegram_template import send as tg_send, Subsystem, Status
 
@@ -656,6 +657,17 @@ def run_next(max_runs: int = 1, status_only: bool = False) -> int:
                 added = queue_missing_windows(h_with_metrics, WINDOWS)
                 if added:
                     print(f"[brain] CROSS-WINDOW: queued {added} new windows for {h['hypothesis_id'][:8]} (not yet tested)")
+
+            # After every completion, keep queue sorted so current-regime windows
+            # stay at the front. This is a lightweight rewrite (queue is small).
+            try:
+                import json as _json
+                _regime_file = ROOT / "finbuddy_memory" / "regimes" / "current.json"
+                _regime = _json.load(_regime_file.open()).get("regime", "NEUTRAL")
+                if _regime in ("BEAR", "BULL"):
+                    prioritize_regime_windows(_regime)
+            except Exception:
+                pass  # never crash the experiment loop on a queue-sort failure
 
             # Telegram via unified template ? silent for per-experiment results
             # (avoid spamming the user; only promotion candidates make a sound)

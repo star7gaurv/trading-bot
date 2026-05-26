@@ -29,6 +29,7 @@ from experiment_log import summary_stats, best_by_metric, read_log, read_queue, 
 from hypothesis_gen import queue_seed_if_empty, generate_and_queue, WINDOWS
 from runner import run_next
 from promote import find_candidates, propose, _config_hash
+# seed_regime_targets imported lazily inside cmd_seed_regime (same pattern as analyst)
 # Fix 14 (2026-05-22): analyst import moved inside cmd_analyse() so an analyst.py
 # import error only breaks 'analyse' subcommand, not run/generate/scan/seed.
 
@@ -161,6 +162,54 @@ def cmd_requeue(args) -> int:
     return 0
 
 
+def cmd_seed_regime(args) -> int:
+    """Regime-targeted seeding: find top-N configs, cross-seed missing windows,
+    reorder queue so current-regime windows run first.
+
+    Usage:
+      brain_cli.py seed-regime                  # auto-detect regime, seed top-5
+      brain_cli.py seed-regime --dry-run        # preview only
+      brain_cli.py seed-regime --regime BEAR    # force BEAR prioritization
+      brain_cli.py seed-regime --top-n 3        # top-3 configs only
+    """
+    from seed_regime_targets import seed_regime_targets  # lazy import
+    result = seed_regime_targets(
+        top_n=args.top_n,
+        regime=args.regime,
+        dry_run=args.dry_run,
+    )
+
+    if "error" in result:
+        print(f"ERROR: {result['error']}")
+        return 1
+
+    dry_label = " [DRY RUN — no changes written]" if result["dry_run"] else ""
+    print(f"== Brain Regime Seed{dry_label} ==")
+    print(f"  Regime       : {result['regime']}")
+    print(f"  Eligible exps: {result['eligible_experiments']}  unique configs: {result['unique_configs']}")
+    print()
+    print(f"  Top-{result['top_n']} configs scored:")
+    for cfg in result.get("top_configs", []):
+        print(f"    lt={cfg['lt']:>5}  st={cfg['st']:>5}  k_sl={cfg['k_sl']}  k_tp={cfg['k_tp']}"
+              f"  score={cfg['score']:+.3f}"
+              f"  profit={cfg['profit_pct']:+.2f}%  WR={cfg['wr']*100:.0f}%  Sharpe={cfg['sharpe']:+.2f}"
+              f"  trades={cfg['trades']}  best_win={cfg['best_window']}")
+    print()
+    if result["seeded"]:
+        print(f"  Seeded {result['seeded']} new experiments:")
+        for d in result["seeded_details"]:
+            print(f"    + {d}")
+    else:
+        print("  No new experiments needed (all windows already covered for top configs)")
+    print()
+    print(f"  Queue reordered: {result['reordered_to_front']} {result['regime'].lower()}-window entries moved to front")
+    if result.get("queue_head_after"):
+        print("  Queue head (next 5 to run):")
+        for e in result["queue_head_after"]:
+            print(f"    [{e['band']:10s}] {e['window']:14s}  lt={e['lt']}  st={e['st']}")
+    return 0
+
+
 def cmd_best(_args) -> int:
     best = best_by_metric("profit_pct", min_trades=10)
     if not best:
@@ -189,6 +238,16 @@ def main() -> int:
 
     sub.add_parser("scan").set_defaults(func=cmd_scan)
     sub.add_parser("best").set_defaults(func=cmd_best)
+
+    sr = sub.add_parser("seed-regime",
+        help="find top-N configs, cross-seed missing windows, front-load regime experiments")
+    sr.add_argument("--top-n",  type=int, default=5,
+        help="number of top-scoring unique configs to cross-seed (default 5)")
+    sr.add_argument("--regime", default="auto",
+        help="BEAR|BULL|NEUTRAL|auto — auto reads regimes/current.json (default auto)")
+    sr.add_argument("--dry-run", action="store_true",
+        help="report what would happen without writing to queue")
+    sr.set_defaults(func=cmd_seed_regime)
 
     rq = sub.add_parser("requeue",
         help="force-queue runs for given config_hash(es) to reach 2 bull + 2 bear")
