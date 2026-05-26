@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-26T15:30:01.817898+00:00",
+  "updated": "2026-05-26T16:00:01.831685+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -625,6 +625,15 @@
         "pf": 2.473,
         "profit_usdt": 2.96,
         "avg_profit_pct": 0.745
+      },
+      "BEAR": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -1.63,
+        "avg_profit_pct": -1.63
       }
     }
   },

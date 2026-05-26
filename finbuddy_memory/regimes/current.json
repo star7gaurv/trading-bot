@@ -1,7 +1,7 @@
 {
-  "regime": "NEUTRAL",
-  "confidence": 0.7,
+  "regime": "BEAR",
+  "confidence": 0.8,
   "since": "2026-05-26",
-  "updated": "2026-05-26T12:00:01.818271+00:00",
+  "updated": "2026-05-26T16:00:01.767500+00:00",
   "previous_regime": "NEUTRAL"
 }
