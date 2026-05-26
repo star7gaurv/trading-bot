@@ -1,8 +1,8 @@
 # 🤝 FinBuddy — Handoff Note for Claude Code
 
-**Last updated:** 2026-05-27 UTC (regime-seeding + queue prioritization + brain hyperparam sweep + all memory updated)  
+**Last updated:** 2026-05-27 UTC (5 improvements: WF 0-trade fix, brain queue rate, analyst 0-trade pruning, scout BEAR calibration, n_estimators aligned)  
 **Branch:** `master`  
-**Latest commits:** `b3eb3a7` bear-configs + resort | `2c6c0b2` regime-seeding | `5639d98` 4 bug fixes | `bb4fa96` pair trim 37→26
+**Latest commits:** `2c69b63` 5 improvements | `b3eb3a7` bear-configs + resort | `2c6c0b2` regime-seeding | `5639d98` 4 bug fixes
 
 ---
 
@@ -164,11 +164,23 @@ Listener: `*/2 * * * * flock -n /tmp/finbuddy_telegram_listener.lock telegram_li
 
 ## ⬜ Open Strategic Issues — Deferred
 
-1. **n_estimators A/B gate check (Day 2):** compare brain experiments at n=100 vs n=200 cohort. If within 10% Sharpe → bump live `config.json` identifier → live retrains at n=100 (40% faster).
-2. **AVAX/ADA watch** — 2-week probation until June 7. If still negative edge, remove.
-3. **Per-pair prediction percentile thresholds** — scales effective threshold by pair's own prediction std. `_compute_dynamic_thresholds()` in strategy. 2-3h effort, no retrain.
-4. **HMM confidence-gated stake sizing** — `custom_stake_amount()` already reads `current.json`. Just wire `confidence` field into stake multiplier. 1h effort.
-5. **Phase 10 (live capital)** — BLOCKED until WF passes all 4 gates OR 6-month dry-run track record.
+1. **AVAX/ADA watch** — 2-week probation until June 7. If still negative edge, remove.
+2. **Per-pair prediction percentile thresholds** — scales effective threshold by pair's own prediction std. `_compute_dynamic_thresholds()` in strategy. 2-3h effort, no retrain.
+3. **HMM confidence-gated stake sizing** — `custom_stake_amount()` already reads `current.json`. Wire `confidence` field into stake multiplier. 1h effort.
+4. **Phase 10 (live capital)** — BLOCKED until WF passes all 4 gates OR 6-month dry-run track record.
+5. **Historical parquets for live-only features** — market_cap_change_24h, news_sentiment, btc_dominance need historical parquets before they can be model features (currently constant in training = harmful if added).
+
+---
+
+## ⚙️ Changes from 2026-05-27 Improvement Session (commit `2c69b63`)
+
+| Fix | What changed |
+|---|---|
+| WF 0-trade root cause | `walk_forward.py` no longer forwards `FINBUDDY_RECENT_WR` to WF containers — overrides with neutral 0.55 so effective threshold stays at base level |
+| Brain generate rate | Crontab: `--safe 1 --aggr 1` → `--safe 3 --aggr 6` (8 → 36 hypotheses/day; prevents queue starvation) |
+| Analyst 0-trade pruning | `analyst.py` Phase 0.5: reads log for (lt, bear_window) combos with <5 trades → blacklists + prunes from queue automatically |
+| Regime-aware scout | `runner.py` BEAR pool: FET + LDO replace BNB + LINK — better bear signal representation |
+| n_estimators aligned | `config.json` n=200→100; `hypothesis_gen.py` stamps n_estimators=100 in every new experiment config; `runner.py` adds n_estimators to lgbm_keys |
 
 ---
 
