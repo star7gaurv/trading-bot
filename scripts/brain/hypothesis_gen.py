@@ -117,7 +117,7 @@ SEED_CONFIG_V23 = {
     "k_sl":               2.0,
     "k_tp":               2.0,
     "stability_n":        2,
-    "label_period_candles": 24,
+    "label_period_candles": 12,
     "filter_di":          True,
     "filter_svm":         True,
     "feature_set":        "all",   # which external features to include (see strategy FREQAI_FEATURE_SET)
@@ -239,7 +239,11 @@ AGGRESSIVE_CHOICES_V23 = {
     "label_period_candles": [12, 24, 48, 72, 144],
     "filter_di":          [True, False],
     "filter_svm":         [True, False],
-    "feature_set":        ["all", "no_macro", "no_regime", "minimal"],
+    "feature_set":        ["all", "no_regime"],
+    # LightGBM tree hyperparameters — previously locked, now swept by brain
+    # Lower num_leaves = more regularized (less overfit); lower lr = better generalisation
+    "num_leaves":         [15, 31, 63, 127],
+    "learning_rate":      [0.01, 0.03, 0.05],
 }
 
 AGGRESSIVE_CHOICES_V22 = {

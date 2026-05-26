@@ -114,7 +114,7 @@ class FinBuddyFreqAI_v23(IStrategy):
     # Feature-set toggle (brain Fix F, 2026-05-19).
     # Lets the brain test which external features actually help. Values:
     #   "all"       — include macro (fear_greed, btc_strength) + regime + recent_wr (default, live behavior unchanged)
-    #   "no_macro"  — drop fear_greed + btc_strength + news_sentiment
+    #   "no_macro"  — drop fear_greed + btc_strength + funding/OI features
     #   "no_regime" — drop regime_numeric
     #   "minimal"   — drop all of the above (only raw OHLCV-derived indicators)
     FEATURE_SET = os.getenv("FREQAI_FEATURE_SET", "all").lower()
@@ -532,16 +532,18 @@ class FinBuddyFreqAI_v23(IStrategy):
         n = len(dataframe)
         if hist.empty:
             return {
-                "btc_oi_z30d": pd.Series([0.0] * n, index=dataframe.index),
-                "btc_oi_chg":  pd.Series([0.0] * n, index=dataframe.index),
+                "btc_oi_z30d":   pd.Series([0.0] * n, index=dataframe.index),
+                "btc_oi_chg":    pd.Series([0.0] * n, index=dataframe.index),
+                "btc_ls_ratio":  pd.Series([1.0] * n, index=dataframe.index),  # neutral default
             }
         dates = pd.to_datetime(dataframe["date"], utc=True).astype("datetime64[ns, UTC]")
         df_for_join = pd.DataFrame({"date": dates}).sort_values("date").reset_index()
         merged = pd.merge_asof(df_for_join, hist, on="date", direction="backward")
         merged = merged.sort_values("index").reset_index(drop=True)
         return {
-            "btc_oi_z30d": pd.Series(merged["btc_oi_z30d"].fillna(0.0).values, index=dataframe.index),
-            "btc_oi_chg":  pd.Series(merged["btc_oi_chg"].fillna(0.0).values,  index=dataframe.index),
+            "btc_oi_z30d":  pd.Series(merged["btc_oi_z30d"].fillna(0.0).values,  index=dataframe.index),
+            "btc_oi_chg":   pd.Series(merged["btc_oi_chg"].fillna(0.0).values,   index=dataframe.index),
+            "btc_ls_ratio": pd.Series(merged["btc_ls_ratio"].fillna(1.0).values,  index=dataframe.index),
         }
 
     def _get_regime_series(self, dataframe: DataFrame) -> pd.Series:
@@ -934,7 +936,6 @@ class FinBuddyFreqAI_v23(IStrategy):
         Layer 4 (v23) — wider context from existing cron pipelines:
           %-fear_greed       — Fear & Greed index 0-100 (Phase 2 cron, every 15m)
           %-btc_dominance    — BTC market dominance % (Phase 2 cron)
-          %-news_sentiment   — 0=bearish…1=bullish (Phase 2 cron)
           %-regime_numeric   — HMM regime encoding: CRASH=-2…EUPHORIA=+2 (Phase 3, every 4h)
           %-recent_wr        — rolling 50-trade WR, written to env by trade_postmortem cron
 
@@ -959,9 +960,6 @@ class FinBuddyFreqAI_v23(IStrategy):
             macros = self._get_macro_series(dataframe)
             dataframe["%-fear_greed"]    = macros["fear_greed"]
             dataframe["%-btc_strength"]  = macros["btc_strength"]
-            ctx = self._get_combined_context()
-            dataframe["%-news_sentiment"] = float(ctx.get("news_sentiment_ratio", 0.5))
-
             # BTC perp funding rate (added 2026-05-19): strongest cheap signal for
             # 1–4h crypto perp moves. Already used as a long-block gate; now also
             # fed to LightGBM so the model can learn funding × momentum × regime.
@@ -972,10 +970,11 @@ class FinBuddyFreqAI_v23(IStrategy):
 
             # Open Interest Delta (added 2026-05-23): global proxy for market leverage
             oi = self._get_oi_series(dataframe)
-            dataframe["%-btc_oi_z30d"] = oi["btc_oi_z30d"]
-            dataframe["%-btc_oi_chg"]  = oi["btc_oi_chg"]
+            dataframe["%-btc_oi_z30d"]  = oi["btc_oi_z30d"]
+            dataframe["%-btc_oi_chg"]   = oi["btc_oi_chg"]
+            dataframe["%-btc_ls_ratio"] = oi["btc_ls_ratio"]  # L/S positioning ratio; high=crowded longs
         else:
-            logger.info(f"[FeatureSet] mode={self.FEATURE_SET} — skipping fear_greed/btc_strength/news_sentiment/funding")
+            logger.info(f"[FeatureSet] mode={self.FEATURE_SET} — skipping fear_greed/btc_strength/funding")
 
         if include_regime:
             # HMM regime encoding — per-candle historical regime (Fix 2026-05-17)

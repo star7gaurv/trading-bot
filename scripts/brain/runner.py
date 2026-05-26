@@ -32,7 +32,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
 from experiment_log import (
-    read_queue, mark_completed, mark_failed, summary_stats,
+    read_queue, mark_completed, mark_failed, mark_scout_failed,
+    experiments_today_count, summary_stats,
     prioritize_same_config, queue_missing_windows,
 )
 from telegram_template import send as tg_send, Subsystem, Status
@@ -126,11 +127,23 @@ def _filter_pairs_for_window(pairs: list[str], window: str) -> list[str]:
     return filtered
 
 
-def _create_pair_group_config(config_file: str, pairs_subset: list[str], group_id: str) -> str:
-    """Write a temporary config with only `pairs_subset`. Returns temp filename (not full path)."""
+def _create_pair_group_config(
+    config_file: str,
+    pairs_subset: list[str],
+    group_id: str,
+    lgbm_overrides: dict | None = None,
+) -> str:
+    """Write a temporary config with only `pairs_subset` and optional LightGBM overrides.
+
+    lgbm_overrides keys (e.g. 'num_leaves', 'learning_rate') are patched into
+    freqai.model_training_parameters so each hypothesis can test different tree shapes.
+    Returns temp filename (not full path).
+    """
     cfg_path = USER_DATA / config_file
     cfg = json.loads(cfg_path.read_text())
     cfg.setdefault("exchange", {})["pair_whitelist"] = pairs_subset
+    if lgbm_overrides:
+        cfg.setdefault("freqai", {}).setdefault("model_training_parameters", {}).update(lgbm_overrides)
     tmp_name = f"tmp_brain_group_{group_id}.json"
     (USER_DATA / tmp_name).write_text(json.dumps(cfg, indent=2))
     return tmp_name
@@ -341,14 +354,19 @@ def _run_hypothesis_group(
     h: dict,
     pairs_subset: list[str],
     group_suffix: str,
+    timeout_s: int | None = None,
 ) -> list[dict]:
     """Run one docker backtest for a pair subset. Returns raw trade list or []."""
     cfg         = h["config"]
     config_file = cfg.get("config_file", "v23_regression_15m_di_config.json")
     timerange   = h["timerange"]
     identifier  = f"brain_{h['hypothesis_id']}_{group_suffix}_{int(time.time())}"
+    effective_timeout = timeout_s if timeout_s is not None else BACKTEST_TIMEOUT_S
 
-    tmp_config = _create_pair_group_config(config_file, pairs_subset, group_suffix)
+    # Extract any LightGBM hyperparams from hypothesis config to patch into the JSON
+    lgbm_keys = ("num_leaves", "learning_rate", "min_child_samples", "reg_alpha", "reg_lambda")
+    lgbm_overrides = {k: cfg[k] for k in lgbm_keys if k in cfg}
+    tmp_config = _create_pair_group_config(config_file, pairs_subset, group_suffix, lgbm_overrides)
     env_args   = _build_env_args(cfg, identifier)
 
     cmd = (
@@ -376,7 +394,7 @@ def _run_hypothesis_group(
         with log_file.open("w") as lf:
             proc = subprocess.run(
                 cmd, cwd=str(COMPOSE_DIR), stdout=lf, stderr=subprocess.STDOUT,
-                timeout=BACKTEST_TIMEOUT_S,
+                timeout=effective_timeout,
             )
     except subprocess.TimeoutExpired:
         _kill_orphan_containers(identifier)
@@ -395,6 +413,57 @@ def _run_hypothesis_group(
     if not new_zips:
         return []
     return _parse_raw_trades_from_zip(new_zips[-1])
+
+
+# ── Scout: cheap 6-pair pre-filter ────────────────────────────────────────
+
+# Top-6 most liquid USDT-M perps — enough regime diversity to catch bad configs
+# without running all 26 pairs. Saves ~75% of training time when a hypothesis fails.
+SCOUT_PAIRS = [
+    "BTC/USDT:USDT", "ETH/USDT:USDT", "SOL/USDT:USDT",
+    "BNB/USDT:USDT", "XRP/USDT:USDT", "LINK/USDT:USDT",
+]
+SCOUT_TIMEOUT_S = 1800  # 30 min — 6 pairs should finish in ~15 min; generous buffer
+
+
+def _run_scout(h: dict) -> tuple[bool, dict]:
+    """Run a cheap 6-pair backtest on the hypothesis's full timerange.
+
+    Uses the same config and env vars as the full run — only the pair list shrinks.
+    Returns (passed, scout_metrics).
+
+    Pass gate: profit_pct > 0 AND sharpe > 0 AND trades >= 5.
+    Fail means the hypothesis is very unlikely to pass the full 26-pair run.
+
+    Note: train_period_days=90 requires the full 3-month timerange — we can't shorten
+    it here. Runtime is ~6/26 × full_time ≈ 15 min (vs 74 min full).
+    """
+    cfg         = h["config"]
+    config_file = cfg.get("config_file", "v23_regression_15m_di_config.json")
+    all_pairs   = _load_brain_pairs(config_file)
+
+    # Intersect SCOUT_PAIRS with the pairs available for this window
+    filtered_scout = _filter_pairs_for_window(SCOUT_PAIRS, h.get("window", ""))
+    if not filtered_scout:
+        # All scout pairs filtered out (odd window) — pass through to full run
+        return True, {}
+
+    # Make a shallow copy with a distinct hypothesis_id so the scout identifier
+    # never collides with the full-run identifier for the same hypothesis.
+    scout_h = {**h, "hypothesis_id": f"scout_{h['hypothesis_id']}_{int(time.time())}"}
+
+    trades = _run_hypothesis_group(scout_h, filtered_scout, "scout", timeout_s=SCOUT_TIMEOUT_S)
+
+    if not trades:
+        return False, {"trades": 0, "profit_pct": 0.0, "sharpe": 0.0}
+
+    m = _compute_metrics_from_raw_trades(trades)
+    passed = (
+        m.get("profit_pct", -1) > 0
+        and m.get("sharpe", -1) > 0
+        and m.get("trades", 0) >= 5
+    )
+    return passed, m
 
 
 def run_hypothesis(h: dict) -> dict | None:
@@ -532,6 +601,25 @@ def run_next(max_runs: int = 1, status_only: bool = False) -> int:
             started = datetime.now(timezone.utc).isoformat()
 
             print(f"[brain] running {h['hypothesis_id']} ({h['band']}) on {h['window']}: {h['rationale']}")
+
+            # Two-tier scout: cheap 6-pair pre-filter before the full 26-pair run.
+            # Every 10th experiment bypasses the scout (sanity check we're not
+            # over-filtering configs that only work on rare pairs).
+            today_n = experiments_today_count()
+            run_scout = today_n % 10 != 0  # bypass on the 10th, 20th, etc.
+            if run_scout:
+                scout_pass, scout_m = _run_scout(h)
+                if not scout_pass:
+                    mark_scout_failed(h, scout_m)
+                    print(
+                        f"[brain] SCOUT_FAILED {h['hypothesis_id']} "
+                        f"(profit={scout_m.get('profit_pct', 0):+.2f}% "
+                        f"sharpe={scout_m.get('sharpe', 0):+.2f} "
+                        f"trades={scout_m.get('trades', 0)})"
+                    )
+                    continue
+                print(f"[brain] scout PASSED {h['hypothesis_id'][:8]} — proceeding to full run")
+
             try:
                 metrics = run_hypothesis(h)
             except Exception as e:
