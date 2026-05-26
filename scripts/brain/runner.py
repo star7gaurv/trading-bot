@@ -32,7 +32,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
 from experiment_log import (
-    read_queue, mark_completed, mark_failed, summary_stats
+    read_queue, mark_completed, mark_failed, summary_stats,
+    prioritize_same_config, queue_missing_windows,
 )
 from telegram_template import send as tg_send, Subsystem, Status
 
@@ -546,14 +547,30 @@ def run_next(max_runs: int = 1, status_only: bool = False) -> int:
             mark_completed(h, metrics, started_at=started)
             completed += 1
 
+            # Cross-window validation: if this window passed (profit>0, sharpe>0),
+            # 1. Move existing queued windows for this config to the queue front.
+            # 2. Auto-add any windows not yet queued or tested — so a promising config
+            #    gets tested on ALL 5 windows without waiting for random re-discovery.
+            if metrics.get("profit_pct", -1) > 0 and metrics.get("sharpe", -1) > 0:
+                from hypothesis_gen import WINDOWS
+                # Attach metrics to h so queue_missing_windows can log them in rationale
+                h_with_metrics = {**h, "metrics": metrics}
+                promoted = prioritize_same_config(h)
+                if promoted:
+                    print(f"[brain] PRIORITY: moved {promoted} queued windows for {h['hypothesis_id'][:8]} to front")
+                added = queue_missing_windows(h_with_metrics, WINDOWS)
+                if added:
+                    print(f"[brain] CROSS-WINDOW: queued {added} new windows for {h['hypothesis_id'][:8]} (not yet tested)")
+
             # Telegram via unified template ? silent for per-experiment results
             # (avoid spamming the user; only promotion candidates make a sound)
             arch = h.get("config", {}).get("arch", "?")
             status = Status.OK if metrics.get("profit_pct", -1) > 0 else Status.INFO
+            elapsed_s = metrics.get("elapsed_s", 0)
             tg_send(
                 subsystem=Subsystem.BRAIN_EXPERIMENT,
                 status=status,
-                title=f"#{h['hypothesis_id']} ? {arch} ? {h['band']}",
+                title=f"#{h['hypothesis_id']} | {arch} | {h['band']}",
                 fields={
                     "Window":   h["window"],
                     "Profit":   f"{metrics['profit_pct']:+.2f}%",
@@ -561,6 +578,7 @@ def run_next(max_runs: int = 1, status_only: bool = False) -> int:
                     "Sharpe":   f"{metrics['sharpe']:+.2f}",
                     "PF":       f"{metrics['pf']:.2f}",
                     "Trades":   f"{metrics['trades']} ({metrics['long_count']}L / {metrics['short_count']}S)",
+                    "Duration": f"{elapsed_s//60}m {elapsed_s%60}s",
                 },
                 context=h["rationale"],
                 action=None,

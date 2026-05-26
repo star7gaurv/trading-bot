@@ -52,7 +52,8 @@ python3 "$SCRIPT" \
     --config config.json \
     --skip-download \
     --max-workers 1 \
-    --lgbm-threads 2 >> "$LOG" 2>&1
+    --lgbm-threads 2 \
+    --cpu-shares 512 >> "$LOG" 2>&1
 
 EXIT=$?
 echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] === Daily walk-forward done (exit=$EXIT) ===" >> "$LOG"

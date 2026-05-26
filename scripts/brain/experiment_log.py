@@ -149,6 +149,88 @@ def _remove_from_queue(hypothesis_id: str) -> None:
     tmp.replace(QUEUE_FILE)
 
 
+def _config_signature(config: dict) -> str:
+    """Stable hash of a config dict ignoring window/identity fields.
+
+    Two hypotheses share a config if all parameters except hypothesis_id,
+    window, timerange, and created_at are identical.
+    """
+    skip = {"hypothesis_id", "parent_id", "window", "timerange", "created_at",
+            "started_at", "completed_at", "status", "metrics", "error",
+            "band", "rationale", "schema_version"}
+    canonical = {k: v for k, v in config.items() if k not in skip}
+    return json.dumps(canonical, sort_keys=True)
+
+
+def prioritize_same_config(completed_hypothesis: dict) -> int:
+    """Move all queued entries with the same config to the front of the queue.
+
+    Called after a passing experiment (profit>0, sharpe>0) to fast-track
+    cross-window validation. Returns number of entries promoted.
+
+    The queue is rewritten so matching entries come first, preserving the
+    relative order of non-matching entries. Safe to call concurrently — uses
+    the same atomic tmp-replace pattern as _remove_from_queue.
+    """
+    if not QUEUE_FILE.exists():
+        return 0
+    target_sig = _config_signature(completed_hypothesis.get("config", {}))
+    all_queued = read_queue()
+    priority = [e for e in all_queued
+                if e.get("status") == "queued"
+                and _config_signature(e.get("config", {})) == target_sig]
+    if not priority:
+        return 0
+    rest = [e for e in all_queued if e not in priority]
+    tmp = QUEUE_FILE.with_suffix(".jsonl.tmp")
+    with tmp.open("w") as f:
+        for e in priority + rest:
+            f.write(json.dumps(e, separators=(",", ":")) + "\n")
+    tmp.replace(QUEUE_FILE)
+    return len(priority)
+
+
+def queue_missing_windows(completed_hypothesis: dict, windows: dict[str, str]) -> int:
+    """After a passing run, auto-queue any windows not yet tested or queued for this config.
+
+    This is the cross-window validation accelerator: when the brain finds a
+    promising config on window A, it immediately queues it on windows B/C/D/E
+    instead of waiting for the random exploration to rediscover it.
+
+    Returns number of new entries added.
+    """
+    config = completed_hypothesis.get("config", {})
+    this_sig = _config_signature(config)
+
+    # Collect all windows already covered (queued or completed) for this config
+    covered: set[str] = set()
+    for entry in read_queue() + read_log():
+        if _config_signature(entry.get("config", {})) == this_sig:
+            covered.add(entry.get("window", ""))
+
+    added = 0
+    for win_name, timerange in windows.items():
+        if win_name in covered:
+            continue
+        profit = completed_hypothesis.get("metrics", {}) or {}
+        profit_pct = profit.get("profit_pct", 0)
+        wr = profit.get("wr", 0)
+        queue_hypothesis(
+            config=config,
+            band=completed_hypothesis.get("band", "aggressive"),
+            rationale=(
+                f"cross-window: derived from {completed_hypothesis['hypothesis_id'][:8]} "
+                f"(profit={profit_pct:+.2f}% WR={wr*100:.1f}%) on "
+                f"{completed_hypothesis.get('window', '?')}"
+            ),
+            window=win_name,
+            timerange=timerange,
+            parent_id=completed_hypothesis.get("hypothesis_id"),
+        )
+        added += 1
+    return added
+
+
 # ── Queries ────────────────────────────────────────────────────────────────
 
 def best_by_metric(metric: str, window: str | None = None, min_trades: int = 10) -> dict | None:

@@ -106,6 +106,7 @@ def send_wf_message(run_id: str, summary: dict) -> bool:
         wr_raw   = agg.get("weighted_win_rate")
         sharpe   = agg.get("weighted_sharpe", "?")
         pf       = agg.get("weighted_profit_factor", "?")
+        worst_dd = agg.get("worst_drawdown", 0) or 0
         fields = {
             "Verdict":      "PASS ✅ — Phase 10 unblocked" if passed else "FAIL — keep iterating",
             "Run":          display_id,
@@ -115,6 +116,7 @@ def send_wf_message(run_id: str, summary: dict) -> bool:
             "Win Rate":     f"{wr_raw*100:.1f}%" if isinstance(wr_raw, (int, float)) else "—",
             "Sharpe":       f"{sharpe}",
             "PF":           f"{pf}",
+            "Worst DD":     f"{worst_dd*100:.1f}%",
         }
         ctx = "Out-of-sample validator · gates live deployment"
         if verdict_str:

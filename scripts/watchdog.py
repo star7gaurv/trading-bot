@@ -43,6 +43,9 @@ HEARTBEAT_MAX_AGE_MIN = 5       # 5m
 ALERT_COOLDOWN_MIN = 60         # don't repeat same alert within 1h
 DISK_USAGE_WARN_PCT = 80        # warn when filesystem usage exceeds this %
 DISK_USAGE_CRITICAL_PCT = 90    # critical alert at this %
+CPU_CORES = 4                   # Oracle Free Tier ARM64
+CPU_LOAD_WARN = CPU_CORES       # 4.0 — all cores busy, bot may slow
+CPU_LOAD_CRITICAL = CPU_CORES * 1.5  # 6.0 — server saturated, brain + WF fighting bot
 
 LOG_LINE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})")
 
@@ -330,6 +333,24 @@ def main() -> int:
     elif used_pct >= 0:
         maybe_recover(state, "disk",
                       f"✅ FinBuddy disk pressure cleared — {mount} at {used_pct}% ({avail_gb}GB free).")
+
+    # 5. CPU load — alert when server is saturated (brain + WF + bot fighting for cores)
+    load1, load5, _ = os.getloadavg()
+    if load1 >= CPU_LOAD_CRITICAL:
+        maybe_alert(state, "cpu_load",
+                    f"🚨 *FinBuddy CPU CRITICAL* — load {load1:.1f} on {CPU_CORES} cores "
+                    f"({load1/CPU_CORES*100:.0f}% saturation). "
+                    f"WF fold + brain + live bot may be fighting. "
+                    f"Check: `docker stats --no-stream`")
+        issues.append("cpu_load")
+    elif load1 >= CPU_LOAD_WARN:
+        maybe_alert(state, "cpu_load",
+                    f"⚠️ *FinBuddy CPU high* — load {load1:.1f} on {CPU_CORES} cores. "
+                    f"All cores busy — bot responses may be slow.")
+        issues.append("cpu_load")
+    else:
+        maybe_recover(state, "cpu_load",
+                      f"✅ FinBuddy CPU normal — load {load1:.1f} on {CPU_CORES} cores.")
 
     save_state(state)
     if issues:
