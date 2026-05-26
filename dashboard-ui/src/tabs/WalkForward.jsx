@@ -65,11 +65,35 @@ function LatestRun({ data, error, loading, lastUpdated }) {
     );
   }
 
-  if (error || !data?.available) {
+  if (error || (!data?.available && !data?.active_run_name)) {
     return (
       <Card title="Latest Walk-Forward" lastUpdated={lastUpdated}>
         <div className="text-xs text-text-muted italic p-4">
           {error ?? "No WF runs found yet."}
+        </div>
+      </Card>
+    );
+  }
+
+  const isRunning = !!data?.active_run_name;
+  
+  if (isRunning && !data?.summary) {
+    return (
+      <Card
+        title="Walk-Forward Status"
+        subtitle={
+          <span className="flex items-center gap-2">
+            <span className="font-mono text-xxs truncate max-w-xs">{data.active_run_name}</span>
+            <Badge variant="default" size="xs">
+              RUNNING
+            </Badge>
+          </span>
+        }
+        lastUpdated={lastUpdated}
+      >
+        <div className="p-4 text-sm text-text-secondary">
+          <p>A Walk-Forward analysis is currently running across the 21 folds.</p>
+          <p className="text-xs mt-2 italic text-text-tertiary">Metrics will appear once all folds complete and the summary is generated.</p>
         </div>
       </Card>
     );
@@ -98,7 +122,13 @@ function LatestRun({ data, error, loading, lastUpdated }) {
       }
       lastUpdated={lastUpdated}
     >
-      <div className="space-y-4">
+      {isRunning && (
+        <div className="px-4 py-2 bg-blue-500/10 border-b border-blue-500/20 text-blue-400 text-xs flex items-center justify-between">
+          <span>A newer Walk-Forward is currently running...</span>
+          <span className="font-mono">{data.active_run_name}</span>
+        </div>
+      )}
+      <div className="space-y-4 p-4">
         <GateRow agg={agg} />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-1">
           <div className="bg-elevated border border-border rounded px-3 py-2">
@@ -231,6 +261,7 @@ function HistoryRow({ run }) {
   const [expanded, setExpanded] = useState(false);
   const agg = run.summary?.aggregate ?? run.summary ?? {};
   const passed = !!run.summary?.pass;
+  const isRunning = !run.has_summary;
 
   return (
     <>
@@ -243,8 +274,8 @@ function HistoryRow({ run }) {
           )}
         </td>
         <td>
-          <Badge variant={passed ? "ok" : "dead"} size="xs">
-            {passed ? "PASS" : "FAIL"}
+          <Badge variant={isRunning ? "default" : passed ? "ok" : "dead"} size="xs">
+            {isRunning ? "RUNNING" : passed ? "PASS" : "FAIL"}
           </Badge>
         </td>
         <td className="font-mono text-text-secondary truncate max-w-xs">{run.name}</td>
@@ -269,9 +300,15 @@ function HistoryRow({ run }) {
       {expanded && (
         <tr>
           <td colSpan={6} className="px-4 pb-3 pt-1">
-            <div className="grid grid-cols-4 gap-2">
-              <GateRow agg={agg} />
-            </div>
+            {isRunning ? (
+              <div className="text-xs text-text-muted italic py-2 text-center">
+                Currently running — details will appear once completed.
+              </div>
+            ) : (
+              <div className="grid grid-cols-4 gap-2">
+                <GateRow agg={agg} />
+              </div>
+            )}
           </td>
         </tr>
       )}

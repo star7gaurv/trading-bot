@@ -283,6 +283,11 @@ async def wf_latest(_: dict = Depends(require_auth)):
     runs = _wf_runs_sorted()
     if not runs:
         return {"available": False}
+        
+    active_run_name = None
+    if not (runs[0] / "summary.json").exists():
+        active_run_name = runs[0].name
+
     # Walk sorted runs (newest first) and return the first one WITH a summary.json
     for latest in runs:
         summary_path = latest / "summary.json"
@@ -293,9 +298,10 @@ async def wf_latest(_: dict = Depends(require_auth)):
                 data = json.load(f)
         except (OSError, json.JSONDecodeError):
             continue
-        return {"available": True, "name": latest.name, "summary": data}
+        return {"available": True, "name": latest.name, "summary": data, "active_run_name": active_run_name}
+    
     # No run with a valid summary found
-    return {"available": False, "name": runs[0].name if runs else ""}
+    return {"available": False, "name": runs[0].name if runs else "", "active_run_name": active_run_name}
 
 
 
