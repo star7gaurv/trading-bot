@@ -259,3 +259,6 @@
 | 2026-05-26 10:30:49 | OP/USDT:USDT | LONG | 0h45m | +1.64% | +1.63 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-26 10:30:25 | ADA/USDT:USDT | LONG | 0h05m | +0.53% | +0.53 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-26 12:08:59 | LDO/USDT:USDT | LONG | 0h08m | -1.11% | -1.10 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-26 14:38:14 | ETH/USDT:USDT | LONG | 2h22m | +0.14% | +0.14 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-26 14:39:48 | OP/USDT:USDT | LONG | 1h09m | +0.42% | +0.41 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-26 14:30:48 | LDO/USDT:USDT | LONG | 1h00m | +4.68% | +4.65 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
