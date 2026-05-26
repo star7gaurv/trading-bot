@@ -159,7 +159,7 @@
       "test_size": 0.15
     },
     "model_training_parameters": {
-      "n_estimators": 200,
+      "n_estimators": 100,
       "learning_rate": 0.03,
       "num_threads": 2,
       "min_child_samples": 50,

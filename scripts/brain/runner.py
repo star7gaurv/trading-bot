@@ -372,7 +372,10 @@ def _run_hypothesis_group(
     effective_timeout = timeout_s if timeout_s is not None else BACKTEST_TIMEOUT_S
 
     # Extract any LightGBM hyperparams from hypothesis config to patch into the JSON
-    lgbm_keys = ("num_leaves", "learning_rate", "min_child_samples", "reg_alpha", "reg_lambda")
+    # n_estimators is stamped into hypothesis config by SEED_CONFIG_V23 (2026-05-27)
+    # so it's tracked per-experiment in experiment logs for future A/B comparisons.
+    lgbm_keys = ("num_leaves", "learning_rate", "min_child_samples", "reg_alpha", "reg_lambda",
+                 "n_estimators")
     lgbm_overrides = {k: cfg[k] for k in lgbm_keys if k in cfg}
     tmp_config = _create_pair_group_config(config_file, pairs_subset, group_suffix, lgbm_overrides)
     env_args   = _build_env_args(cfg, identifier)
@@ -425,13 +428,39 @@ def _run_hypothesis_group(
 
 # ── Scout: cheap 6-pair pre-filter ────────────────────────────────────────
 
-# Top-6 most liquid USDT-M perps — enough regime diversity to catch bad configs
-# without running all 26 pairs. Saves ~75% of training time when a hypothesis fails.
-SCOUT_PAIRS = [
+# Regime-calibrated scout pool (2026-05-27):
+# In BEAR regime: include high-beta pairs that trend sharply bearish (FET, RENDER,
+# LDO) so the scout doesn't miss bear-friendly configs that score poorly on BTC/ETH
+# alone. These pairs have high short-WR in bear markets.
+# In BULL regime: swap in momentum pairs (SOL, TAO, WIF) that amplify bull moves.
+# BTC + ETH are always in — they're the regime anchors.
+SCOUT_PAIRS_BEAR = [
+    "BTC/USDT:USDT", "ETH/USDT:USDT", "SOL/USDT:USDT",
+    "XRP/USDT:USDT", "FET/USDT:USDT", "LDO/USDT:USDT",
+]
+SCOUT_PAIRS_BULL = [
+    "BTC/USDT:USDT", "ETH/USDT:USDT", "SOL/USDT:USDT",
+    "TAO/USDT:USDT", "WIF/USDT:USDT", "XRP/USDT:USDT",
+]
+SCOUT_PAIRS_NEUTRAL = [
     "BTC/USDT:USDT", "ETH/USDT:USDT", "SOL/USDT:USDT",
     "BNB/USDT:USDT", "XRP/USDT:USDT", "LINK/USDT:USDT",
 ]
 SCOUT_TIMEOUT_S = 1800  # 30 min — 6 pairs should finish in ~15 min; generous buffer
+
+
+def _get_scout_pairs() -> list[str]:
+    """Return the scout pair pool calibrated to the current live regime."""
+    try:
+        regime_file = ROOT / "finbuddy_memory" / "regimes" / "current.json"
+        regime = json.load(regime_file.open()).get("regime", "NEUTRAL").upper()
+    except Exception:
+        regime = "NEUTRAL"
+    if regime == "BEAR":
+        return SCOUT_PAIRS_BEAR
+    if regime == "BULL":
+        return SCOUT_PAIRS_BULL
+    return SCOUT_PAIRS_NEUTRAL
 
 
 def _run_scout(h: dict) -> tuple[bool, dict]:
@@ -450,8 +479,9 @@ def _run_scout(h: dict) -> tuple[bool, dict]:
     config_file = cfg.get("config_file", "v23_regression_15m_di_config.json")
     all_pairs   = _load_brain_pairs(config_file)
 
-    # Intersect SCOUT_PAIRS with the pairs available for this window
-    filtered_scout = _filter_pairs_for_window(SCOUT_PAIRS, h.get("window", ""))
+    scout_pairs = _get_scout_pairs()
+    # Intersect scout pairs with the pairs available for this window
+    filtered_scout = _filter_pairs_for_window(scout_pairs, h.get("window", ""))
     if not filtered_scout:
         # All scout pairs filtered out (odd window) — pass through to full run
         return True, {}

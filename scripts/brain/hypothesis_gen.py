@@ -121,6 +121,7 @@ SEED_CONFIG_V23 = {
     "filter_di":          True,
     "filter_svm":         True,
     "feature_set":        "all",   # which external features to include (see strategy FREQAI_FEATURE_SET)
+    "n_estimators":       100,     # stamped so A/B comparisons are possible in experiment logs
 }
 
 # v22 Classifier+LLM — RETIRED 2026-05-19. v23 regression is live. V22_ENABLED=False keeps this dead.

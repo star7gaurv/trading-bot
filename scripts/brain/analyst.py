@@ -220,6 +220,43 @@ def prune_queue(findings: dict, dry_run: bool = False) -> int:
         zscore_pruned = len(non_zscore_ids)
         print(f"[analyst] pruned {zscore_pruned} non-zscore queue entries (incompatible label semantics)")
 
+    # ── Phase 0.5: prune queued configs proven to generate 0 trades on bear windows ──
+    # Root cause: lt ≥ 3.0 on bear_2026Q1 (recent bear market, lower prediction
+    # amplitude) produces 0-5 trades — structurally impossible to reach
+    # MIN_TOTAL_TRADES=60. Detect this from completed experiments and blacklist
+    # the (long_threshold, window) pairs that consistently generate <5 trades.
+    zero_trade_blacklist: set[tuple] = set()
+    all_log = read_log()
+    for r in all_log:
+        if r.get("status") not in ("completed", "scout_failed"):
+            continue
+        m = r.get("metrics") or {}
+        if m.get("trades", 999) < 5 and "bear" in r.get("window", ""):
+            lt = r.get("config", {}).get("long_threshold")
+            win = r.get("window", "")
+            if lt is not None:
+                zero_trade_blacklist.add((lt, win))
+
+    zero_trade_pruned = 0
+    if zero_trade_blacklist:
+        _queue = read_queue()
+        zero_ids = []
+        for h in _queue:
+            if h.get("band") == "safe":
+                continue
+            lt = h.get("config", {}).get("long_threshold")
+            win = h.get("window", "")
+            if (lt, win) in zero_trade_blacklist:
+                zero_ids.append(h["hypothesis_id"])
+        if zero_ids:
+            if not dry_run:
+                for hid in zero_ids:
+                    _remove_from_queue(hid)
+            zero_trade_pruned = len(zero_ids)
+            print(f"[analyst] pruned {zero_trade_pruned} zero-trade bear configs "
+                  f"(blacklisted (lt,window) pairs: {len(zero_trade_blacklist)})")
+    zscore_pruned += zero_trade_pruned
+
     # ── Phase 1: timeframe-based pruning ──
     dead_tfs  = set(findings.get("dead_timeframes", []))
     noisy_tfs = set(findings.get("noisy_timeframes", []))

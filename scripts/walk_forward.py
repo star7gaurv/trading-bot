@@ -81,13 +81,24 @@ def daterange_folds(start: str, end: str, train_m: int, test_m: int, slide_m: in
 
 
 def _read_env_vars() -> dict[str, str]:
-    """Read live strategy env vars from freqtrade/.env (DRY helper)."""
+    """Read live strategy env vars from freqtrade/.env (DRY helper).
+
+    NOTE: FINBUDDY_RECENT_WR is intentionally EXCLUDED and overridden with
+    the neutral value 0.55. The WR feedback loop is a live-bot metric
+    (set by trade_postmortem.py based on the bot's recent closed trades).
+    Forwarding it to WF containers causes the dynamic threshold to penalise
+    fresh WF models that haven't yet accumulated a trade history — in BEAR
+    regime, WR=0.42 + regime_mult × wr_adj easily pushes the effective
+    long_threshold above 2.0, producing 0 trades on every WF fold.
+    WF should evaluate the BASE threshold (from .env) without the live-bot
+    noise penalty.
+    """
     env_path = COMPOSE_DIR / ".env"
     keys = (
         "FREQAI_K_SL", "FREQAI_K_TP",
         "FREQAI_LONG_THRESHOLD", "FREQAI_SHORT_THRESHOLD",
         "FREQAI_STABILITY_N", "FREQAI_FEATURE_SET",
-        "FINBUDDY_RECENT_WR",
+        # FINBUDDY_RECENT_WR deliberately omitted — see docstring
     )
     result: dict[str, str] = {}
     for key in keys:
@@ -101,6 +112,8 @@ def _read_env_vars() -> dict[str, str]:
             val = os.environ.get(key)
         if val is not None:
             result[key] = val
+    # Force neutral WR so _compute_dynamic_thresholds() applies no WR penalty in WF
+    result["FINBUDDY_RECENT_WR"] = "0.55"
     return result
 
 
