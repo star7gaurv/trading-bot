@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-26T12:00:01.770397+00:00",
+  "updated": "2026-05-26T12:30:01.304074+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -618,13 +618,13 @@
     },
     "LDO/USDT:USDT": {
       "NEUTRAL": {
-        "n": 2,
+        "n": 3,
         "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 0.352,
-        "profit_usdt": -0.59,
-        "avg_profit_pct": -0.295
+        "losses": 2,
+        "wr": 0.3333,
+        "pf": 0.159,
+        "profit_usdt": -1.69,
+        "avg_profit_pct": -0.567
       }
     }
   },
