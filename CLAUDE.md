@@ -123,7 +123,7 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 - API: `http://localhost:8080/api/v1` — user: `bot`, pass: `REDACTED-FREQTRADE__API_SERVER__PASSWORD`
 - Whitelist: **26 pairs** (trimmed from 37 on 2026-05-24 — removed DASH/ZEC/BCH/DOGE/AAVE/TRX/1000SHIB/BNB/INJ/HBAR/ATOM), **15m timeframe** (each pair has 5 TFs of historical data: 15m + 30m + 1h + 4h + 1d)
 - **Per-pair-per-regime gate active** — `pair_regime_stats.json` blocks pair-regime combos with rolling 30d (n≥5, WR<40%, PF<0.7)
-- Strategy env vars (live): K_TP=2.0, K_SL=2.0, **LONG_THRESHOLD=0.5, SHORT_THRESHOLD=-0.5, STABILITY_N=1** (thresholds ±0.5 for z-scored N(0,1) predictions)
+- Strategy env vars (live): K_TP=2.0, K_SL=2.0, **LONG_THRESHOLD=0.8, SHORT_THRESHOLD=-0.8, STABILITY_N=1** (thresholds ±0.8 for z-scored N(0,1) predictions — verified from .env 2026-05-26)
 
 ### Model features (~530 total after Bug D removed `%-recent_wr` 2026-05-20)
 Standard layer 4 features include 3 funding-rate features (`%-funding_rate`, `%-funding_rate_z30d`, `%-funding_rate_chg`) from BTC perp data, plus fear_greed, btc_strength, news_sentiment, regime_numeric. Daily refresh of historical funding parquet at 01:25 UTC. `%-recent_wr` DROPPED 2026-05-20 (training-serving skew: live read 0.34, brain/WF defaulted 0.50).
