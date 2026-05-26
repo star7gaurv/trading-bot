@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-25T18:30:01.527416+00:00",
+  "generated_at": "2026-05-26T00:30:01.813316+00:00",
   "findings": {
     "dead_timeframes": [
       "1h",
@@ -58,12 +58,12 @@
     },
     "best_bull": {
       "schema_version": 1,
-      "hypothesis_id": "73bed8f1e80a",
-      "parent_id": "7ce40af8ce86",
-      "band": "aggressive",
-      "rationale": "guided [v23]: derived from 7ce40a (profit=0.179% WR=51.0%)",
-      "window": "bull_2024Q1",
-      "timerange": "20240101-20240401",
+      "hypothesis_id": "a13423212e8e",
+      "parent_id": null,
+      "band": "safe",
+      "rationale": "safe [v23]: k_tp +0.25 (more upside on trail)",
+      "window": "bull_2024Q2",
+      "timerange": "20240401-20240701",
       "config": {
         "strategy": "FinBuddyFreqAI_v23",
         "freqaimodel": "LightGBMRegressor",
@@ -73,29 +73,30 @@
         "short_threshold": -3.0,
         "k_sl": 2.0,
         "k_tp": 2.25,
-        "stability_n": 2,
+        "stability_n": 1,
         "label_period_candles": 12,
-        "filter_di": false,
+        "filter_di": true,
         "filter_svm": true,
-        "arch": "v23"
+        "arch": "v23",
+        "target_version": "zscore"
       },
       "status": "completed",
-      "created_at": "2026-05-21T18:00:02.601133+00:00",
-      "started_at": "2026-05-23T12:30:01.993364+00:00",
-      "completed_at": "2026-05-23T13:01:12.635341+00:00",
+      "created_at": "2026-05-22T18:00:02.268500+00:00",
+      "started_at": "2026-05-25T21:15:01.529557+00:00",
+      "completed_at": "2026-05-25T22:15:38.990041+00:00",
       "metrics": {
-        "trades": 19,
-        "wr": 0.6316,
-        "sharpe": 5.763,
-        "pf": 1.735,
-        "profit_pct": 0.209,
-        "max_dd": 0.089,
-        "long_count": 0,
-        "short_count": 19,
-        "exit_signal_count": 10,
-        "exit_signal_wr": 1.0,
-        "stop_loss_count": 6,
-        "elapsed_s": 1870
+        "trades": 59,
+        "wr": 0.5763,
+        "sharpe": 0.95,
+        "pf": 1.122,
+        "profit_pct": 0.337,
+        "max_dd": 1.086,
+        "long_count": 35,
+        "short_count": 24,
+        "exit_signal_count": 24,
+        "exit_signal_wr": 0.9583,
+        "stop_loss_count": 19,
+        "elapsed_s": 3636
       },
       "error": null
     },
@@ -154,9 +155,9 @@
         "avg_pf": 0.463
       },
       "bull_2024Q2": {
-        "n": 71,
-        "avg_wr": 0.428,
-        "avg_pf": 0.816
+        "n": 72,
+        "avg_wr": 0.43,
+        "avg_pf": 0.82
       },
       "bull_2025Q4": {
         "n": 8,
@@ -171,10 +172,10 @@
     },
     "tf_stats": {
       "15m": {
-        "n": 251,
-        "avg_pf": 0.704,
-        "avg_wr": 0.389,
-        "avg_trades_day": 3.0
+        "n": 252,
+        "avg_pf": 0.706,
+        "avg_wr": 0.39,
+        "avg_trades_day": 2.99
       },
       "1h": {
         "n": 25,
