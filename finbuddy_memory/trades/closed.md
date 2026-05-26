@@ -256,3 +256,5 @@
 | 2026-05-26 07:24:20 | DOT/USDT:USDT | LONG | 0h39m | -1.51% | -1.50 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-26 09:15:40 | ARB/USDT:USDT | LONG | 0h15m | +0.32% | +0.32 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-26 10:00:49 | ARB/USDT:USDT | LONG | 0h15m | +0.50% | +0.50 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-26 10:30:49 | OP/USDT:USDT | LONG | 0h45m | +1.64% | +1.63 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-26 10:30:25 | ADA/USDT:USDT | LONG | 0h05m | +0.53% | +0.53 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
