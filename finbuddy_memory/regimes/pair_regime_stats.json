@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-26T14:30:01.362238+00:00",
+  "updated": "2026-05-26T15:00:01.904034+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -172,13 +172,13 @@
     },
     "ETH/USDT:USDT": {
       "NEUTRAL": {
-        "n": 4,
-        "wins": 2,
+        "n": 5,
+        "wins": 3,
         "losses": 2,
-        "wr": 0.5,
-        "pf": 0.635,
-        "profit_usdt": -2.98,
-        "avg_profit_pct": -0.39
+        "wr": 0.6,
+        "pf": 0.652,
+        "profit_usdt": -2.84,
+        "avg_profit_pct": -0.284
       },
       "BEAR": {
         "n": 2,
@@ -272,13 +272,13 @@
     },
     "OP/USDT:USDT": {
       "NEUTRAL": {
-        "n": 7,
-        "wins": 4,
+        "n": 8,
+        "wins": 5,
         "losses": 3,
-        "wr": 0.5714,
-        "pf": 2.552,
-        "profit_usdt": 4.92,
-        "avg_profit_pct": 0.487
+        "wr": 0.625,
+        "pf": 2.681,
+        "profit_usdt": 5.33,
+        "avg_profit_pct": 0.479
       },
       "BEAR": {
         "n": 10,
@@ -618,13 +618,13 @@
     },
     "LDO/USDT:USDT": {
       "NEUTRAL": {
-        "n": 3,
-        "wins": 1,
+        "n": 4,
+        "wins": 2,
         "losses": 2,
-        "wr": 0.3333,
-        "pf": 0.159,
-        "profit_usdt": -1.69,
-        "avg_profit_pct": -0.567
+        "wr": 0.5,
+        "pf": 2.473,
+        "profit_usdt": 2.96,
+        "avg_profit_pct": 0.745
       }
     }
   },
