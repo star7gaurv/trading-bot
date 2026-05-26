@@ -14,10 +14,10 @@ import { formatRelative, formatDateTime } from "../utils/format";
 // ─── Gate badges ─────────────────────────────────────────────────────────────
 
 const GATES = [
-  { label: "WR", key: "win_rate", threshold: 0.5, fmt: (v) => `${(v * 100).toFixed(1)}%`, compare: (v, t) => v > t },
-  { label: "Sharpe", key: "weighted_sharpe", altKey: "sharpe", threshold: 0.5, fmt: (v) => v.toFixed(3), compare: (v, t) => v > t },
-  { label: "DD", key: "max_drawdown", threshold: 0.2, fmt: (v) => `${(Math.abs(v) * 100).toFixed(1)}%`, compare: (v, t) => Math.abs(v) < t },
-  { label: "PF", key: "profit_factor", threshold: 1.2, fmt: (v) => v.toFixed(2), compare: (v, t) => v > t },
+  { label: "WR",     key: "weighted_win_rate",      threshold: 0.5, fmt: (v) => `${(v*100).toFixed(1)}%`, compare: (v,t) => v > t },
+  { label: "Sharpe", key: "weighted_sharpe", altKey: "sharpe", threshold: 0.5, fmt: (v) => v.toFixed(3), compare: (v,t) => v > t },
+  { label: "DD",     key: "worst_drawdown",          threshold: 0.2, fmt: (v) => `${(Math.abs(v)*100).toFixed(1)}%`, compare: (v,t) => Math.abs(v) < t },
+  { label: "PF",     key: "weighted_profit_factor",  threshold: 1.2, fmt: (v) => v.toFixed(2), compare: (v,t) => v > t },
 ];
 
 function GateRow({ agg }) {
@@ -105,9 +105,9 @@ function LatestRun({ data, error, loading, lastUpdated }) {
   const name = data.name ?? "";
 
   // Additional fields
-  const tradeCount = agg.trade_count ?? agg.trades;
-  const totalPnl = agg.profit_all_coin ?? agg.profit_closed_coin;
-  const folds = agg.folds ?? summary.fold_count;
+  const tradeCount = agg.total_trades;
+  const totalPnl   = agg.total_profit_abs;
+  const folds      = agg.folds;
 
   return (
     <Card
@@ -259,55 +259,66 @@ function FoldTable({ data }) {
 
 function HistoryRow({ run }) {
   const [expanded, setExpanded] = useState(false);
-  const agg = run.summary?.aggregate ?? run.summary ?? {};
-  const passed = !!run.summary?.pass;
-  const isRunning = !run.has_summary;
+  // History API sends flat fields; map to aggregate-shaped object for GateRow
+  const agg = run.has_summary
+    ? {
+        weighted_win_rate:     run.wr,
+        weighted_sharpe:       run.sharpe,
+        worst_drawdown:        run.dd,
+        weighted_profit_factor: run.pf,
+        total_trades:          run.trades,
+        total_profit_abs:      run.pnl,
+      }
+    : {};
+  const passed    = !!run.pass;
+  const isRunning = run.is_active === true;
+  const isStalled = !run.has_summary && !isRunning;
+
+  const statusVariant = isRunning ? "default" : isStalled ? "warn" : passed ? "ok" : "dead";
+  const statusLabel   = isRunning ? "RUNNING" : isStalled ? "STALLED" : passed ? "PASS" : "FAIL";
 
   return (
     <>
       <tr onClick={() => setExpanded((v) => !v)} className="cursor-pointer">
         <td style={{ width: 20 }}>
-          {expanded ? (
-            <ChevronDown size={13} className="text-text-tertiary" />
-          ) : (
-            <ChevronRight size={13} className="text-text-tertiary" />
-          )}
+          {expanded
+            ? <ChevronDown size={13} className="text-text-tertiary" />
+            : <ChevronRight size={13} className="text-text-tertiary" />}
         </td>
         <td>
-          <Badge variant={isRunning ? "default" : passed ? "ok" : "dead"} size="xs">
-            {isRunning ? "RUNNING" : passed ? "PASS" : "FAIL"}
-          </Badge>
+          <Badge variant={statusVariant} size="xs">{statusLabel}</Badge>
         </td>
-        <td className="font-mono text-text-secondary truncate max-w-xs">{run.name}</td>
+        <td className="font-mono text-text-secondary truncate max-w-xs">
+          {run.name}
+          {isRunning && run.completed_folds != null && (
+            <span className="text-xxs text-text-tertiary ml-2">
+              ({run.completed_folds}/21 folds)
+            </span>
+          )}
+        </td>
         <td className="font-mono text-right">
           {run.mtime ? formatRelative(run.mtime * 1000) : "—"}
         </td>
         <td className="font-mono text-right">
-          {agg.trade_count ?? agg.trades ?? "—"}
+          {agg.total_trades ?? "—"}
         </td>
-        <td
-          className={`font-mono text-right ${
-            agg.win_rate != null
-              ? agg.win_rate >= 0.5
-                ? "text-profit"
-                : "text-loss"
-              : "text-text-muted"
-          }`}
-        >
-          {agg.win_rate != null ? `${(agg.win_rate * 100).toFixed(1)}%` : "—"}
+        <td className={`font-mono text-right ${
+          agg.weighted_win_rate != null
+            ? agg.weighted_win_rate >= 0.5 ? "text-profit" : "text-loss"
+            : "text-text-muted"
+        }`}>
+          {agg.weighted_win_rate != null ? `${(agg.weighted_win_rate * 100).toFixed(1)}%` : "—"}
         </td>
       </tr>
       {expanded && (
         <tr>
           <td colSpan={6} className="px-4 pb-3 pt-1">
-            {isRunning ? (
+            {isRunning || isStalled ? (
               <div className="text-xs text-text-muted italic py-2 text-center">
-                Currently running — details will appear once completed.
+                {isRunning ? "Currently running — details will appear once completed." : "Run stalled or failed before completing."}
               </div>
             ) : (
-              <div className="grid grid-cols-4 gap-2">
-                <GateRow agg={agg} />
-              </div>
+              <GateRow agg={agg} />
             )}
           </td>
         </tr>

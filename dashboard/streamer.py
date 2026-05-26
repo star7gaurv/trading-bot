@@ -64,6 +64,8 @@ QUEUE_FILE = REPO_ROOT / "finbuddy_memory/experiments/queue.jsonl"
 BRAIN_RUN_LOG = Path("/home/ubuntu/.finbuddy/logs/brain_run.log")
 WF_RESULTS_DIR = REPO_ROOT / "walkforward_results"
 CONFIG_JSON = REPO_ROOT / "freqtrade/user_data/config.json"
+WF_RUN_PATTERN = re.compile(r"^.+_\d{8}T\d{6}$")
+ACTIVE_STALE_S = 12 * 3600
 
 # FreqTrade API
 FT_BASE = "http://127.0.0.1:8080/api/v1"
@@ -273,7 +275,10 @@ async def brain_experiments(
 def _wf_runs_sorted() -> list[Path]:
     if not WF_RESULTS_DIR.exists():
         return []
-    runs = [p for p in WF_RESULTS_DIR.iterdir() if p.is_dir()]
+    runs = [
+        p for p in WF_RESULTS_DIR.iterdir()
+        if p.is_dir() and WF_RUN_PATTERN.match(p.name)
+    ]
     runs.sort(key=lambda p: p.stat().st_mtime, reverse=True)
     return runs
 
@@ -285,8 +290,12 @@ async def wf_latest(_: dict = Depends(require_auth)):
         return {"available": False}
         
     active_run_name = None
-    if not (runs[0] / "summary.json").exists():
-        active_run_name = runs[0].name
+    for run in runs:
+        if not (run / "summary.json").exists():
+            age_s = time.time() - run.stat().st_mtime
+            if age_s < ACTIVE_STALE_S:
+                active_run_name = run.name
+                break
 
     # Walk sorted runs (newest first) and return the first one WITH a summary.json
     for latest in runs:
@@ -316,17 +325,25 @@ async def wf_history(limit: int = Query(20, ge=1, le=100), _: dict = Depends(req
             "mtime": int(run.stat().st_mtime),
             "has_summary": summary_path.exists(),
         }
+        item["is_active"] = (
+            not summary_path.exists()
+            and (time.time() - run.stat().st_mtime) < ACTIVE_STALE_S
+        )
+        item["completed_folds"] = len(list(run.glob("fold_*_result.json")))
+
         if summary_path.exists():
             try:
                 with open(summary_path) as f:
                     s = json.load(f)
                 item["pass"] = bool(s.get("pass"))
                 item["verdict"] = s.get("verdict") or ""
-                agg = s.get("aggregate") or s.get("summary") or {}
-                item["wr"] = agg.get("win_rate")
+                agg = s.get("aggregate") or {}
+                item["wr"]     = agg.get("weighted_win_rate")
                 item["sharpe"] = agg.get("weighted_sharpe") or agg.get("sharpe")
-                item["pf"] = agg.get("profit_factor")
-                item["dd"] = agg.get("max_drawdown")
+                item["pf"]     = agg.get("weighted_profit_factor")
+                item["dd"]     = agg.get("worst_drawdown")
+                item["trades"] = agg.get("total_trades")
+                item["pnl"]    = agg.get("total_profit_abs")
             except (OSError, json.JSONDecodeError):
                 pass
         items.append(item)
