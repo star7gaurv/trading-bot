@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-26T17:30:01.905903+00:00",
+  "updated": "2026-05-26T18:00:01.143456+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -281,13 +281,13 @@
         "avg_profit_pct": 0.479
       },
       "BEAR": {
-        "n": 10,
+        "n": 11,
         "wins": 0,
-        "losses": 10,
+        "losses": 11,
         "wr": 0.0,
         "pf": 0.0,
-        "profit_usdt": -6.88,
-        "avg_profit_pct": -1.008
+        "profit_usdt": -8.84,
+        "avg_profit_pct": -1.185
       }
     },
     "TON/USDT:USDT": {
@@ -641,8 +641,8 @@
     {
       "pair": "OP/USDT:USDT",
       "regime": "BEAR",
-      "reason": "WR=0% PF=0.00 n=10 profit=-6.88",
-      "n": 10,
+      "reason": "WR=0% PF=0.00 n=11 profit=-8.84",
+      "n": 11,
       "wr": 0.0,
       "pf": 0.0
     },
