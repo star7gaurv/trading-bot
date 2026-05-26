@@ -403,6 +403,13 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 
 > Full session history lives in `finbuddy_memory/FINBUDDY_PROJECT_MEMORY.md`. Only the most recent session is kept here.
 
+### May 26, 2026 — 5 System Improvements (commit `7a65b56`)
+1. **Daily WF `--cpu-shares 512`**: `walkforward_daily.sh` now passes `--cpu-shares 512` to docker containers. Daily WF (medium priority) yields to live bot under contention. Deep WF uses 256 (lower priority).
+2. **Watchdog CPU load alert**: Added check #5 to `watchdog.py` — CRITICAL alert when `load >= 6.0` (1.5× cores), WARN at `>= 4.0`. Runs via existing 30m cron. Today's 7.79 load would have fired ~5h earlier.
+3. **WF Telegram: Worst DD field**: `walkforward_notify.py` now includes `Worst DD` in every WF result Telegram. Key: `worst_drawdown` from aggregate dict.
+4. **Brain experiment duration**: Per-experiment Telegram now shows `Duration` (e.g. "74m 22s"). `elapsed_s` was already computed but not surfaced.
+5. **Cross-window auto-queue**: `queue_missing_windows()` added to `experiment_log.py`. After any passing brain run (profit>0, sharpe>0), runner auto-queues the same config on all 5 windows not yet tested/queued. Eliminates the need for random re-discovery of promising configs on other windows. Accelerates reaching ≥2 bull + ≥2 bear promotion bar.
+
 ### May 26, 2026 — Docker CPU-Shares Fix + Deep WF Rescheduled to Midnight IST (commit `42eb5d8`)
 - **Root cause found:** `nice -n 19 ionice -c 3` in `walkforward_deep.sh` was applied to the Python `walk_forward.py` process but Docker containers spawn their own process namespace and do NOT inherit host nice values. All 3 FreqTrade processes (live bot + WF fold + brain experiment) ran at NI=0, causing load average 7.79 on a 4-core server (380% CPU saturation).
 - **Fix — Docker `--cpu-shares 256`:** `walk_forward.py` now accepts `--cpu-shares` flag and passes it directly to `docker-compose run`. Docker's CPU shares are cgroup-level weights (applied INSIDE the container): 256/1024 = yields to live bot+brain under contention, uses full CPU when system is idle. `nice`/`ionice` wrapper removed from `walkforward_deep.sh` (it was doing nothing).
