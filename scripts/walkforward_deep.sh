@@ -1,8 +1,8 @@
 #!/bin/bash
 # 4-day deep walk-forward — full 27-month rolling window.
 # Runs every 4 days at 18:30 UTC (30 18 */4 * *) = midnight IST.
-# Finishes ~38.5h later → report ready by morning IST on day 2.
-# 27-month window · train=6mo · test=1mo · slide=1mo → 21 folds.
+# Finishes ~6-8h later → report ready by morning IST on day 2.
+# 27-month window · train=6mo · test=1mo · slide=2mo → 11 folds.
 # --cpu-shares 256: Docker-native nice — yields CPU to live bot+brain under
 #   contention, uses full CPU when system is idle. Replaces host nice (which
 #   does NOT propagate into Docker containers).
@@ -31,20 +31,20 @@ fi
 START=$(date -u -d '27 months ago' +'%Y-%m-01')
 END=$(date -u +'%Y-%m-01')
 
-echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] === 4-day deep walk-forward starting: $START → $END (21 folds, 3 workers) ===" >> "$LOG"
+echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] === 4-day deep walk-forward starting: $START → $END (11 folds, 2 workers) ===" >> "$LOG"
 
 python3 "$SCRIPT" \
     --start "$START" \
     --end "$END" \
     --train-months 6 \
     --test-months 1 \
-    --slide-months 1 \
+    --slide-months 2 \
     --strategy FinBuddyFreqAI_v23 \
     --timeframe 15m \
     --config config.json \
     --skip-download \
-    --max-workers 1 \
-    --lgbm-threads 1 \
+    --max-workers 2 \
+    --lgbm-threads 2 \
     --cpu-shares 256 >> "$LOG" 2>&1
 
 EXIT=$?

@@ -336,18 +336,30 @@ def main() -> int:
 
     # 5. CPU load — alert when server is saturated (brain + WF + bot fighting for cores)
     load1, load5, _ = os.getloadavg()
+    wf_active = False
+    try:
+        out = subprocess.run(["pgrep", "-f", "walk_forward.py"], capture_output=True, text=True)
+        wf_active = out.returncode == 0
+    except Exception:
+        pass
+
     if load1 >= CPU_LOAD_CRITICAL:
         maybe_alert(state, "cpu_load",
                     f"🚨 *FinBuddy CPU CRITICAL* — load {load1:.1f} on {CPU_CORES} cores "
                     f"({load1/CPU_CORES*100:.0f}% saturation). "
-                    f"WF fold + brain + live bot may be fighting. "
+                    f"{'WF is active (low-priority) but server load is critical.' if wf_active else 'WF fold + brain + live bot may be fighting.'} "
                     f"Check: `docker stats --no-stream`")
         issues.append("cpu_load")
     elif load1 >= CPU_LOAD_WARN:
-        maybe_alert(state, "cpu_load",
-                    f"⚠️ *FinBuddy CPU high* — load {load1:.1f} on {CPU_CORES} cores. "
-                    f"All cores busy — bot responses may be slow.")
-        issues.append("cpu_load")
+        if wf_active:
+            # Suppress normal warning since WF is designed to run low-priority on idle cores
+            maybe_recover(state, "cpu_load",
+                          f"✅ FinBuddy CPU normal (WF active and running low-priority at load {load1:.1f}).")
+        else:
+            maybe_alert(state, "cpu_load",
+                        f"⚠️ *FinBuddy CPU high* — load {load1:.1f} on {CPU_CORES} cores. "
+                        f"All cores busy — bot responses may be slow.")
+            issues.append("cpu_load")
     else:
         maybe_recover(state, "cpu_load",
                       f"✅ FinBuddy CPU normal — load {load1:.1f} on {CPU_CORES} cores.")

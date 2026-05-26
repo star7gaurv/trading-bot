@@ -207,6 +207,18 @@ def run_backtest(
     target = run_dir / f"fold_{fold:02d}_result.json"
     target.write_bytes(sentinel.read_bytes())
     fold_sentinel.unlink(missing_ok=True)
+
+    # Clean up FreqAI model directory to save space and reduce disk I/O load
+    if freqai_identifier:
+        model_dir = COMPOSE_DIR / "user_data" / "models" / freqai_identifier
+        if model_dir.exists():
+            import shutil
+            try:
+                shutil.rmtree(model_dir)
+                print(f"  [fold {fold}] Cleaned up FreqAI models in {model_dir.name}", flush=True)
+            except Exception as e:
+                print(f"  [fold {fold}] Warning: failed to clean up model dir: {e}", flush=True)
+
     return target
 
 
