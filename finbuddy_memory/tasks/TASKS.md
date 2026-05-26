@@ -17,7 +17,7 @@
 | 4 | [phase-4-obsidian-memory.md](phase-4-obsidian-memory.md) | ✅ Live (cron 15m) | Auto-write + git auto-commit |
 | 5 | [phase-5-karpathy-loop.md](phase-5-karpathy-loop.md) | ✅ Live (cron 02:00) | Nightly research loop — Gemini + DeepSeek |
 | 6 | _phase-6 deleted_ | 🔴 Abandoned (2026-05-04) | TradingView dropped (paid plan required) |
-| 7 | [phase-7-executor.md](phase-7-executor.md) | ✅ Live (cron 5m) | Python signal executor (paper mode) |
+| 7 | [phase-7-executor.md](phase-7-executor.md) | 🔴 Retired 2026-05-24 | executor_wrapper.sh deleted — dead Phase 7 prototype, consumed CPU for nothing |
 | 8 | [phase-8-futures-setup.md](phase-8-futures-setup.md) | ✅ Complete (2026-05-05) | Binance USDT-M, isolated margin |
 | 9 | [phase-9-futures-risk.md](phase-9-futures-risk.md) | ✅ Complete (2026-05-09) | Regime-aware sizing, cluster cap, funding guard |
 | 10 | [phase-10-live-migration.md](phase-10-live-migration.md) | ⛔ BLOCKED | Real-capital migration — needs WF PASS or 60-day track record |
@@ -29,32 +29,38 @@
 
 ---
 
-## 🚨 Current Focus (2026-05-23)
+## 🚨 Current Focus (2026-05-27)
 
-**Active strategy:** `FinBuddyFreqAI_v23.py` — v23 live, 37 pairs, 15m TF, LightGBMRegressor  
+**Active strategy:** `FinBuddyFreqAI_v23.py` — v23 live, **26 pairs**, 15m TF, LightGBMRegressor  
 **Identifier:** `finbuddy_v23_no_median_1779447827`  
-**Wallet:** 1000 USDT dry-run. P&L: +97 USDT. WR: 38.6%. Target: 10 USDT/day.
+**Live thresholds:** LT=1.2 / ST=-0.8 (asymmetric — compensates for model mean bias)  
+**Wallet:** 1000 USDT dry-run. Regime: **BEAR 80%**.
 
-**Phase 14 progress (P0–P2 shipped, P3 next):**
-- ✅ P0.1: Brain parallel pair-group split — experiments completing again (was 100% timeout)
-- ✅ P0.2: WF fold timeout 4.5h → 6h — real fold results expected tonight 22:00 UTC
-- ✅ P1: Daily circuit breaker 10 USDT — prevents -26 USDT loss days
-- ✅ P2.1: Brain WR gate ≥50% — only consistent configs promoted
-- ✅ P2.2: Asymmetric SEED short=-0.8 — brain explores better shorts first
-- ✅ P2.3: Combined multiplier cap 2.0× — prevents 0-trade days in BEAR+bad WR
-- ⬜ P3.1: Open Interest Delta feature — `build_historical_oi.py` + strategy + identifier bump
-- ⬜ P3.2: Leverage tier tuning — MED_CONF 1.5→1.7, HIGH_CONF 2.0→2.5
+**Brain state (2026-05-27):**
+- 339 completed, 108 failed, **140 queued** (66 bear-window entries at front)
+- 0 promotions fired — first expected within Days 1-5
+- Hypothesis space: num_leaves [15,31,63,127], learning_rate [0.01,0.03,0.05] ✅
+- btc_ls_ratio feature in strategy ✅, n_estimators=100 in brain ✅
+- Cross-window auto-queue active ✅, regime-sort auto-trigger in runner ✅
 
-**Brain state:**
-- 268+ experiments — all excluded from promotion (legacy raw-% target, wrong label semantics)
-- Now exploring z-scored hypothesis space with correct windows + parallel pair split
-- Seed: long_threshold=1.5, short_threshold=-0.8, windows: bull_2024Q1/Q2, bear_2025Q1, bull_2025Q4, bear_2026Q1
-- First promotion: needs ≥2 bull + ≥2 bear z-scored experiments passing WR ≥ 50% gate
+**All immediate items done:**
+- ✅ P0.1: Brain parallel split (reverted 2026-05-24); single-group working
+- ✅ P0.2: WF fold timeout fixed
+- ✅ P1: Circuit breaker 10 USDT/day
+- ✅ P2.1-P2.3: WR gate, SEED thresholds, multiplier cap
+- ✅ btc_ls_ratio: already in strategy
+- ✅ num_leaves/learning_rate: already in brain
+- ✅ Regime-seeding: seed-regime command + auto-trigger
+
+**Next actions:**
+- ⬜ Days 1-2: bear configs run → first bear pass → cross-window auto-queue fires
+- ⬜ Day 2: n_estimators A/B gate check (n=100 vs n=200 cohort Sharpe)
+- ⬜ Days 3-5: ≥2 bull + ≥2 bear → scan fires → Telegram Apply
+- ⬜ Future: historical parquets for market_cap_change_24h, news_sentiment, btc_dominance
 
 **Walk-forward:**
-- Daily @ 22:00 UTC (9mo window, 3 folds, 2 workers, ~8-10h with 6h/fold timeout)
-- Deep @ 03:00 UTC every 4 days (27mo, 21 folds)
-- All folds were timing out until P0.2 fix — first real results tonight
+- Daily @ 22:00 UTC — 1 fold, 4mo train + 1mo test (~3.5h)
+- Deep @ 18:30 UTC every 4 days — **7 folds**, **18mo window**, --cpu-shares 256 (~35h)
 
 ---
 

@@ -712,3 +712,8 @@ from parallel WF + brain processes running simultaneously).
 - Brain will generate new experiments with z-scored target + recent 2025Q4/2026Q1 windows
 - Daily WF at 22:00 UTC will run with OB veto removed — first meaningful WF result expected tomorrow
 - Next promotion: wait for brain to accumulate ≥2 bull + ≥2 bear z-scored experiments passing criteria
+
+### May 26, 2026 — UI and Security Fixes (Conscious Brain Update)
+1. **P&L Today Fix**: `Overview.jsx` was checking `Array.isArray(dailyPerf)` but FreqTrade wraps it in `{"data": [...]}`. It also read `profit_all_coin` instead of `abs_profit`, and read the oldest entry instead of the newest. Fixed all 3 bugs to render P&L Today correctly.
+2. **Live Walk-Forward Folds UI**: The UI used to mix the active Deep WF's progress ("8/21 folds") with the metrics of the older 1-fold Daily WF. We added `/api/wf/running-folds` to `streamer.py` to parse the `fold_*_result.json` files on the fly for the active run, and decoupled the UI so you now see a dedicated "Active Walk-Forward (Running)" card with live updating stats.
+3. **Streamer.py Security Audit**: Fixed hardcoded FreqTrade credentials by moving them to `.env` (`FT_USER`, `FT_PASS`). Added token auth checks (`verify_token`) to both `/ws/brain` and `/ws/memory` WebSockets to prevent unauthorized access. Restricted CORS origins, and tightened the WF regex to prevent potential path traversal via symlinks.
