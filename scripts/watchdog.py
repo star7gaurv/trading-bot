@@ -202,8 +202,6 @@ def latest_log_match(
         except Exception as e:
             print(f"ERR: reading {log_path}: {e}", file=sys.stderr)
 
-    if file_result:
-        print(f"INFO: docker logs had no match; file log found pattern at {file_result}")
     return file_result
 
 

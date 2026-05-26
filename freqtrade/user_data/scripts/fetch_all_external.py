@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Master external data fetcher — runs all sub-fetchers and writes combined JSON."""
 import subprocess, json, os, sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path("/home/ubuntu/var/www/html/trade/freqtrade/user_data")
@@ -48,7 +48,7 @@ def main():
         regime_data = {"regime": "NEUTRAL", "confidence": 0.5}
 
     combined = {
-        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f") + "Z",
         "fear_greed": fg.get("current_value", 50),
         "fear_greed_label": fg.get("current_label", "Neutral"),
         "fear_greed_normalized": fg.get("normalized", 0.5),
