@@ -335,6 +335,13 @@ def _build_env_args(cfg: dict, identifier: str) -> list[str]:
         "-e", "FREQTRADE__DRY_RUN_WALLET=10000",
         "-e", f"FREQTRADE__FREQAI__IDENTIFIER={identifier}",
         "-e", f"FREQTRADE__FREQAI__FEATURE_PARAMETERS__LABEL_PERIOD_CANDLES={cfg.get('label_period_candles', 24)}",
+        # Bypass the pair-regime gate in brain backtests (2026-05-26).
+        # The gate uses LIVE rolling trade stats (last 30d) which are irrelevant
+        # to historical test windows. e.g. OP blocked in BEAR because it has a
+        # bad recent WR — but when testing bull_2024Q1, OP in 2024 is unrelated
+        # to 2026 live stats. Using live stats here contaminates results.
+        # Same fix applied to walk_forward.py for the same reason.
+        "-e", "FREQAI_DISABLE_PAIR_REGIME_GATE=1",
     ]
     if arch == "v22":
         env_args += ["-e", f"FREQAI_ML_THRESHOLD={cfg.get('ml_threshold', 0.60)}"]
