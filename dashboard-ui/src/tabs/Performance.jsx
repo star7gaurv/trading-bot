@@ -370,7 +370,7 @@ function SummaryStrip({ data }) {
       />
       <Stat
         label="Closed Trades"
-        value={data.trade_count ?? "—"}
+        value={data.closed_trade_count ?? "—"}
       />
       <Stat
         label="Win Rate"

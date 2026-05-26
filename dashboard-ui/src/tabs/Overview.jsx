@@ -19,6 +19,8 @@ import {
   getSystemHealth,
   getBrainQueue,
   getWfLatest,
+  getBalance,
+  getDailyPerformance,
 } from "../api/client";
 import {
   formatUsdt,
@@ -54,8 +56,9 @@ function trades7dPnl(profit) {
 }
 
 // ─── Sub-panels ───
-function StatStrip({ profit, openTrades, regime }) {
-  const today = safe(profit, "profit_today_abs");
+function StatStrip({ profit, openTrades, regime, dailyPerf, balance }) {
+  const todayEntry = Array.isArray(dailyPerf) && dailyPerf.length > 0 ? dailyPerf[dailyPerf.length - 1] : null;
+  const today = todayEntry ? (todayEntry.profit_all_coin ?? todayEntry.profit_fiat) : null;
   const all = safe(profit, "profit_closed_coin");
   const winning = safe(profit, "winning_trades", 0) || 0;
   const losing = safe(profit, "losing_trades", 0) || 0;
@@ -63,6 +66,9 @@ function StatStrip({ profit, openTrades, regime }) {
   const wr = total > 0 ? (winning / total) * 100 : null;
 
   const openCount = Array.isArray(openTrades) ? openTrades.length : 0;
+  const totalOpenProfit = Array.isArray(openTrades) ? openTrades.reduce((acc, t) => acc + (t.profit_abs || 0), 0) : null;
+  const balanceTotal = safe(balance, "total_bot") ?? safe(balance, "total");
+
   const regimeName = safe(regime, "regime", "—");
   const regimeTone = REGIME_TONE[regimeName] || "default";
   const regimeConf = safe(regime, "confidence");
@@ -92,7 +98,18 @@ function StatStrip({ profit, openTrades, regime }) {
         unit={wr != null ? "%" : ""}
         tone={wr == null ? "default" : wr >= 50 ? "profit" : "loss"}
       />
-      <Stat label="Open Positions" value={openCount} />
+      <Stat label="Open Positions" value={String(openCount)} />
+      <Stat
+        label="Open Profit"
+        value={totalOpenProfit != null ? totalOpenProfit.toFixed(2) : "—"}
+        unit={totalOpenProfit != null ? "USDT" : ""}
+        tone={totalOpenProfit == null ? "default" : totalOpenProfit >= 0 ? "profit" : "loss"}
+      />
+      <Stat
+        label="Balance"
+        value={balanceTotal != null ? balanceTotal.toFixed(2) : "—"}
+        unit={balanceTotal != null ? "USDT" : ""}
+      />
       <Stat
         label="Regime"
         value={regimeName}
@@ -139,7 +156,7 @@ function OpenTradesPanel({ data, error, lastUpdated, loading }) {
       render: (r) => {
         const p = r.profit_pct ?? r.profit_ratio;
         if (p == null) return "—";
-        const v = typeof p === "number" && Math.abs(p) < 1 ? p * 100 : p;
+        const v = p;
         const cls = v >= 0 ? "text-profit" : "text-loss";
         return (
           <span className={cls}>
@@ -418,6 +435,8 @@ export default function Overview({ onNavigateTab }) {
   const sys = usePolling(getSystemHealth, 30000);
   const brain = usePolling(getBrainQueue, 30000);
   const wf = usePolling(getWfLatest, 60000);
+  const balance = usePolling(getBalance, 60000);
+  const dailyPerf = usePolling(() => getDailyPerformance(1), 60000);
 
   return (
     <div className="space-y-4">
@@ -425,6 +444,8 @@ export default function Overview({ onNavigateTab }) {
         profit={profit.data}
         openTrades={trades.data}
         regime={regime.data}
+        dailyPerf={dailyPerf.data}
+        balance={balance.data}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

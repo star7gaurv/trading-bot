@@ -30,7 +30,7 @@ import {
 function pnlPct(t) {
   const raw = t.profit_pct ?? t.profit_ratio;
   if (raw == null) return null;
-  return Math.abs(raw) < 1 ? raw * 100 : raw;
+  return raw;
 }
 
 function PnlCell({ pct, abs }) {
@@ -85,8 +85,8 @@ function TradeDrawer({ trade, onClose }) {
     ["Opened", formatDateTime(trade.open_date)],
     ["Closed", trade.close_date ? formatDateTime(trade.close_date) : "Open"],
     ["Duration", trade.close_date
-      ? formatDuration((new Date(trade.close_date) - new Date(trade.open_date)) / 1000)
-      : formatDuration((Date.now() - new Date(trade.open_date)) / 1000)],
+      ? formatDuration((trade.close_timestamp - trade.open_timestamp) / 1000)
+      : formatDuration((Date.now() - trade.open_timestamp) / 1000)],
     ["Exit reason", trade.exit_reason || "—"],
     ["Stop loss", trade.stop_loss_abs != null ? formatPrice(trade.stop_loss_abs) : "—"],
     ["Initial SL", trade.initial_stop_loss_abs != null ? formatPrice(trade.initial_stop_loss_abs) : "—"],
@@ -186,7 +186,7 @@ function OpenTradesTable({ onSelectTrade }) {
       align: "right",
       mono: true,
       render: (r) =>
-        formatDuration((Date.now() - new Date(r.open_date).getTime()) / 1000),
+        formatDuration((Date.now() - r.open_timestamp) / 1000),
     },
     {
       key: "stake_amount",
