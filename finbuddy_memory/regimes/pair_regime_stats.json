@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-27T02:00:02.051769+00:00",
+  "updated": "2026-05-27T02:30:01.707736+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -241,13 +241,13 @@
         "avg_profit_pct": -0.59
       },
       "BEAR": {
-        "n": 1,
+        "n": 2,
         "wins": 0,
-        "losses": 1,
+        "losses": 2,
         "wr": 0.0,
         "pf": 0.0,
-        "profit_usdt": -0.71,
-        "avg_profit_pct": -1.05
+        "profit_usdt": -1.39,
+        "avg_profit_pct": -1.045
       }
     },
     "ZEC/USDT:USDT": {
