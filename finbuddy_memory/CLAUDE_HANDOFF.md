@@ -46,24 +46,26 @@ FINBUDDY_RECENT_WR=0.42
 
 ---
 
-## 🧠 Brain State (2026-05-27)
+## 🧠 Brain State (2026-05-27 — updated ~08:30 UTC)
 
 | Item | Value |
 |---|---|
 | Execution mode | **Single-group** — all 26 pairs in one backtest per experiment (~38 min) |
 | Cron | `*/15 * * * *` with `flock -n /tmp/finbuddy_brain_run.lock` |
-| Completed experiments | **339** (all z-scored; 268 legacy raw-% excluded from promotion) |
+| Completed experiments | **62 z-scored** (343 total in log; 281 legacy raw-% excluded from promotion) |
 | Failed experiments | **108** |
-| Queue pending | **140** (66 bear-window entries at front after regime-sort) |
+| Queue pending | **158** (63 bear-window entries at front — NOW ACTUALLY RUNNING FIRST) |
 | Promotions fired | **0** |
 | SEED thresholds | long=1.5, short=-0.8 |
 | Windows | bull_2024Q1, bull_2024Q2, bear_2025Q1, bull_2025Q4, bear_2026Q1 |
 | WR gate | ≥1 bull + ≥1 bear run must have WR ≥ 50% |
-| First promotion needs | ≥2 bull + ≥2 bear z-scored passing all gates |
+| First promotion needs | ≥2 bull + ≥2 bear z-scored passing all gates + MIN_TOTAL_TRADES=60 |
 | Queue sort | `prioritize_regime_windows()` auto-fires after every experiment (runner.py) |
-| Best config found | lt=3.25, st=-3.0, K_SL=2.0, K_TP=2.0, N=1 → WR 88.9%, Sharpe 1.38 |
-| **PROBLEM** | lt≥3.0 configs produce 0 trades on bear_2026Q1 (recent bear, lower amplitude) |
-| **Fix** | 16 new configs with lt=2.0-2.5 specifically on bear_2025Q1 + bear_2026Q1 at queue front |
+| Best z-scored configs | lt=3.25,ksl=2.0,ktp=2.25: 1 bull + 1 bear passing (closest to promotion) |
+| **BLOCKER** | bear_2026Q1 — lt≥3.0 configs fail (218 trades, WR=50.9%, sharpe=-5.87, PF=0.636) |
+| **Fix** | 63 bear-window experiments queued with lt=1.5-2.5 targeting bear_2026Q1 |
+| **NEW BUG FIXED** | runner.py was re-sorting queue by created_at → defeating all priority ordering |
+| **NEW BUG FIXED** | brain + WF containers got FINBUDDY_RECENT_WR=0.42 from .env → inflated effective threshold |
 
 **Brain hypothesis space (2026-05-27):**
 - `num_leaves`: [15, 31, 63, 127] — varied ✅
@@ -71,7 +73,8 @@ FINBUDDY_RECENT_WR=0.42
 - `n_estimators`: 100 (was 200; A/B gate in progress)
 - Two-tier scout active: ~15-min 6-pair pre-filter before full run
 - `btc_ls_ratio` feature: IMPLEMENTED in strategy (line ~1008)
-- `FREQAI_DISABLE_PAIR_REGIME_GATE=1` added to all brain+WF docker runs (prevents live rolling stats from contaminating backtests)
+- `FREQAI_DISABLE_PAIR_REGIME_GATE=1` added to all brain+WF docker runs
+- `FINBUDDY_RECENT_WR=0.55` now ALSO added to brain docker runs (prevents live WR from inflating thresholds)
 
 **New brain tools (2026-05-27):**
 ```bash
