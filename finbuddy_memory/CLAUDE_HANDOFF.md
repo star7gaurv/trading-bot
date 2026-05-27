@@ -1,8 +1,8 @@
 # 🤝 FinBuddy — Handoff Note for Claude Code
 
-**Last updated:** 2026-05-27 UTC (5 improvements: WF 0-trade fix, brain queue rate, analyst 0-trade pruning, scout BEAR calibration, n_estimators aligned)  
+**Last updated:** 2026-05-27 UTC (+3 critical brain bugs fixed: queue priority sort, WR contamination, log dedup)  
 **Branch:** `master`  
-**Latest commits:** `2c69b63` 5 improvements | `b3eb3a7` bear-configs + resort | `2c6c0b2` regime-seeding | `5639d98` 4 bug fixes
+**Latest commits:** `d2c86dc` 3 brain bugs | `2c69b63` 5 improvements | `b3eb3a7` bear-configs | `2c6c0b2` regime-seeding
 
 ---
 
