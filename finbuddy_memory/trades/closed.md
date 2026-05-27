@@ -277,3 +277,4 @@
 | 2026-05-27 13:38:17 | OP/USDT:USDT | LONG | 0h29m | -1.37% | -0.82 | stop_loss | BEAR | freqai_regression_v23_lo |
 | 2026-05-27 13:38:57 | LDO/USDT:USDT | LONG | 0h30m | -1.01% | -0.60 | stop_loss | BEAR | freqai_regression_v23_lo |
 | 2026-05-27 13:38:14 | 1000PEPE/USDT:USDT | LONG | 0h22m | -0.99% | -0.59 | stop_loss | BEAR | freqai_regression_v23_lo |
+| 2026-05-27 14:25:29 | LTC/USDT:USDT | LONG | 0h25m | -0.69% | -0.41 | stop_loss | BEAR | freqai_regression_v23_lo |
