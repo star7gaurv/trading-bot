@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-27T13:30:01.485513+00:00",
+  "updated": "2026-05-27T14:00:01.911306+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -221,13 +221,13 @@
         "avg_profit_pct": 0.457
       },
       "BEAR": {
-        "n": 4,
+        "n": 5,
         "wins": 1,
-        "losses": 3,
-        "wr": 0.25,
-        "pf": 1.813,
-        "profit_usdt": 1.74,
-        "avg_profit_pct": 0.643
+        "losses": 4,
+        "wr": 0.2,
+        "pf": 1.352,
+        "profit_usdt": 1.01,
+        "avg_profit_pct": 0.268
       }
     },
     "DOT/USDT:USDT": {
@@ -281,13 +281,13 @@
         "avg_profit_pct": 0.479
       },
       "BEAR": {
-        "n": 11,
+        "n": 12,
         "wins": 0,
-        "losses": 11,
+        "losses": 12,
         "wr": 0.0,
         "pf": 0.0,
-        "profit_usdt": -8.84,
-        "avg_profit_pct": -1.185
+        "profit_usdt": -9.66,
+        "avg_profit_pct": -1.201
       }
     },
     "TON/USDT:USDT": {
@@ -601,6 +601,15 @@
         "pf": 0.143,
         "profit_usdt": -1.44,
         "avg_profit_pct": -0.473
+      },
+      "BEAR": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.59,
+        "avg_profit_pct": -0.99
       }
     },
     "FET/USDT:USDT": {
@@ -636,13 +645,13 @@
         "avg_profit_pct": 0.745
       },
       "BEAR": {
-        "n": 1,
+        "n": 2,
         "wins": 0,
-        "losses": 1,
+        "losses": 2,
         "wr": 0.0,
         "pf": 0.0,
-        "profit_usdt": -1.63,
-        "avg_profit_pct": -1.63
+        "profit_usdt": -2.23,
+        "avg_profit_pct": -1.32
       }
     }
   },
@@ -650,8 +659,8 @@
     {
       "pair": "OP/USDT:USDT",
       "regime": "BEAR",
-      "reason": "WR=0% PF=0.00 n=11 profit=-8.84",
-      "n": 11,
+      "reason": "WR=0% PF=0.00 n=12 profit=-9.66",
+      "n": 12,
       "wr": 0.0,
       "pf": 0.0
     },
