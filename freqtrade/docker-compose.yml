@@ -54,6 +54,11 @@ services:
     volumes:
       - "./user_data:/freqtrade/user_data"
       - "/home/ubuntu/var/www/html/trade/finbuddy_memory:/freqtrade/finbuddy_memory:ro"
+      # WR feedback state dir — recent_wr.json at /home/ubuntu/.finbuddy/state/recent_wr.json
+      # Strategy reads this file via _load_recent_wr() to adjust thresholds dynamically.
+      # Without this mount the strategy silently falls back to wr=0.50 (WR feedback disabled).
+      # Added 2026-05-27 to re-enable the bidirectional threshold adjustment (Fix 8).
+      - "/home/ubuntu/.finbuddy:/home/ubuntu/.finbuddy:ro"
     # Expose api on port 8080 (localhost only)
     # Please read the https://www.freqtrade.io/en/stable/rest-api/ documentation
     # for more information.

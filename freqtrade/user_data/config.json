@@ -153,6 +153,7 @@
       ],
       "DI_threshold": 1.0,
       "use_SVM_to_remove_outliers": true,
+      "svm_params": {"nu": 0.05},
       "principal_component_analysis": false
     },
     "data_split_parameters": {
