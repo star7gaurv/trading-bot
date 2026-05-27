@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-27T00:30:01.325142+00:00",
+  "updated": "2026-05-27T01:00:01.465484+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -10,13 +10,13 @@
   "stats": {
     "BTC/USDT": {
       "NEUTRAL": {
-        "n": 3,
-        "wins": 2,
+        "n": 2,
+        "wins": 1,
         "losses": 1,
-        "wr": 0.6667,
-        "pf": 0.454,
-        "profit_usdt": -3.51,
-        "avg_profit_pct": -0.583
+        "wr": 0.5,
+        "pf": 0.143,
+        "profit_usdt": -5.51,
+        "avg_profit_pct": -1.375
       }
     },
     "DOGE/USDT:USDT": {
@@ -581,6 +581,15 @@
         "pf": null,
         "profit_usdt": 1.04,
         "avg_profit_pct": 0.525
+      },
+      "BEAR": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -1.48,
+        "avg_profit_pct": -2.25
       }
     },
     "1000PEPE/USDT:USDT": {
