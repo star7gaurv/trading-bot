@@ -272,3 +272,4 @@
 | 2026-05-27 06:45:46 | FIL/USDT:USDT | LONG | 1h15m | +3.81% | +3.75 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-27 12:30:21 | FIL/USDT:USDT | LONG | 5h00m | +3.53% | +3.48 | exit_signal | BEAR | freqai_regression_v23_lo |
 | 2026-05-27 13:09:32 | ETH/USDT:USDT | LONG | 0h39m | -0.68% | -0.44 | stop_loss | BEAR | freqai_regression_v23_lo |
+| 2026-05-27 13:28:05 | ADA/USDT:USDT | LONG | 0h27m | -0.78% | -0.51 | stop_loss | BEAR | freqai_regression_v23_lo |
