@@ -23,3 +23,4 @@
 *← [[FINBUDDY_PROJECT_MEMORY]]*
 | 2026-05-23 | BEAR → NEUTRAL | Confidence: 70.0% |
 | 2026-05-26 | NEUTRAL → BEAR | Confidence: 80.0% |
+| 2026-05-27 | BEAR → NEUTRAL | Confidence: 70.0% |

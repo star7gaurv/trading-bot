@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-27T03:30:02.019717+00:00",
+  "updated": "2026-05-27T04:00:01.202067+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -232,13 +232,13 @@
     },
     "DOT/USDT:USDT": {
       "NEUTRAL": {
-        "n": 4,
+        "n": 5,
         "wins": 1,
-        "losses": 3,
-        "wr": 0.25,
-        "pf": 0.431,
-        "profit_usdt": -1.74,
-        "avg_profit_pct": -0.59
+        "losses": 4,
+        "wr": 0.2,
+        "pf": 0.398,
+        "profit_usdt": -2.0,
+        "avg_profit_pct": -0.552
       },
       "BEAR": {
         "n": 2,
@@ -662,6 +662,14 @@
       "n": 5,
       "wr": 0.0,
       "pf": 0.0
+    },
+    {
+      "pair": "DOT/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=20% PF=0.40 n=5 profit=-2.00",
+      "n": 5,
+      "wr": 0.2,
+      "pf": 0.398
     },
     {
       "pair": "UNI/USDT:USDT",
