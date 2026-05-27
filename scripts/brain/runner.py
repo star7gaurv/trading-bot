@@ -343,6 +343,13 @@ def _build_env_args(cfg: dict, identifier: str) -> list[str]:
         # to 2026 live stats. Using live stats here contaminates results.
         # Same fix applied to walk_forward.py for the same reason.
         "-e", "FREQAI_DISABLE_PAIR_REGIME_GATE=1",
+        # Neutral WR override (2026-05-27): live .env has FINBUDDY_RECENT_WR=0.42
+        # (current bot is losing). docker-compose.yml forwards it to all containers.
+        # In BEAR+bad_WR, _compute_dynamic_thresholds applies 1.3×1.26=1.64× multiplier
+        # → effective_lt = e.g. 2.0×1.64=3.28 on a z-scored N(0,1) model → near 0 trades.
+        # Override to 0.55 (neutral) so the brain evaluates configs at their stated thresholds.
+        # Same root cause as the WF 0-trade fix in walk_forward.py.
+        "-e", "FINBUDDY_RECENT_WR=0.55",
     ]
     if arch == "v22":
         env_args += ["-e", f"FREQAI_ML_THRESHOLD={cfg.get('ml_threshold', 0.60)}"]
@@ -633,8 +640,14 @@ def run_next(max_runs: int = 1, status_only: bool = False) -> int:
                 print("[brain] queue empty ? nothing to run")
                 break
 
-            # FIFO ordering by created_at
-            queue.sort(key=lambda r: r.get("created_at", ""))
+            # Trust queue.jsonl FILE ORDER — it is maintained by prioritize_regime_windows()
+            # and prioritize_same_config() which rewrite the file with priority items first.
+            # Sorting by created_at here defeats that priority mechanism (2026-05-27 fix).
+            # Only filter to queued status (all entries should be queued, but defensive check).
+            queue = [e for e in queue if e.get("status") == "queued"]
+            if not queue:
+                print("[brain] queue empty — nothing to run")
+                break
             h = queue[0]
             started = datetime.now(timezone.utc).isoformat()
 
