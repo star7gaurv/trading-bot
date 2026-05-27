@@ -273,3 +273,7 @@
 | 2026-05-27 12:30:21 | FIL/USDT:USDT | LONG | 5h00m | +3.53% | +3.48 | exit_signal | BEAR | freqai_regression_v23_lo |
 | 2026-05-27 13:09:32 | ETH/USDT:USDT | LONG | 0h39m | -0.68% | -0.44 | stop_loss | BEAR | freqai_regression_v23_lo |
 | 2026-05-27 13:28:05 | ADA/USDT:USDT | LONG | 0h27m | -0.78% | -0.51 | stop_loss | BEAR | freqai_regression_v23_lo |
+| 2026-05-27 13:37:17 | ARB/USDT:USDT | LONG | 0h28m | -1.23% | -0.73 | stop_loss | BEAR | freqai_regression_v23_lo |
+| 2026-05-27 13:38:17 | OP/USDT:USDT | LONG | 0h29m | -1.37% | -0.82 | stop_loss | BEAR | freqai_regression_v23_lo |
+| 2026-05-27 13:38:57 | LDO/USDT:USDT | LONG | 0h30m | -1.01% | -0.60 | stop_loss | BEAR | freqai_regression_v23_lo |
+| 2026-05-27 13:38:14 | 1000PEPE/USDT:USDT | LONG | 0h22m | -0.99% | -0.59 | stop_loss | BEAR | freqai_regression_v23_lo |
