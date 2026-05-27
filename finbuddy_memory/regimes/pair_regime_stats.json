@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-27T15:00:02.104860+00:00",
+  "updated": "2026-05-27T15:30:01.847401+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -10,13 +10,13 @@
   "stats": {
     "BTC/USDT": {
       "NEUTRAL": {
-        "n": 2,
+        "n": 1,
         "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 0.143,
-        "profit_usdt": -5.51,
-        "avg_profit_pct": -1.375
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 0.92,
+        "avg_profit_pct": 0.46
       }
     },
     "DOGE/USDT:USDT": {
@@ -361,13 +361,13 @@
         "avg_profit_pct": 1.11
       },
       "BEAR": {
-        "n": 4,
-        "wins": 0,
+        "n": 5,
+        "wins": 1,
         "losses": 4,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -1.64,
-        "avg_profit_pct": -0.645
+        "wr": 0.2,
+        "pf": 0.244,
+        "profit_usdt": -1.24,
+        "avg_profit_pct": -0.38
       }
     },
     "LINK/USDT:USDT": {
@@ -472,13 +472,13 @@
     },
     "ADA/USDT:USDT": {
       "BEAR": {
-        "n": 3,
-        "wins": 0,
+        "n": 4,
+        "wins": 1,
         "losses": 3,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -1.51,
-        "avg_profit_pct": -0.77
+        "wr": 0.25,
+        "pf": 0.033,
+        "profit_usdt": -1.46,
+        "avg_profit_pct": -0.555
       },
       "NEUTRAL": {
         "n": 3,
@@ -671,6 +671,14 @@
       "n": 5,
       "wr": 0.0,
       "pf": 0.0
+    },
+    {
+      "pair": "LTC/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=20% PF=0.24 n=5 profit=-1.24",
+      "n": 5,
+      "wr": 0.2,
+      "pf": 0.244
     },
     {
       "pair": "DOT/USDT:USDT",
