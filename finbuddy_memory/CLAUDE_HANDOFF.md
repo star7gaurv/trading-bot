@@ -15,7 +15,7 @@
 | Model features | ~530 (3 funding-rate + 3 OI incl. btc_ls_ratio + macro + regime + OHLCV lags) |
 | **Pairs** | **26** (trimmed from 37 on 2026-05-24 — removed 11 zero/negative-edge pairs) |
 | Leverage | Confidence-based tiers 1×/2×/3× (FALLBACK = LOW = 1×) |
-| Regime | **BEAR (80% confidence)** since 2026-05-26 |
+| Regime | **NEUTRAL (70% confidence)** since 2026-05-27 04:00 UTC (was BEAR) |
 | Wallet | **1000 USDT** dry-run |
 | Bot status | ✅ Up |
 | live_retrain_hours | **12** |
