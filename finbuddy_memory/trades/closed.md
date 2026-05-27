@@ -266,3 +266,4 @@
 | 2026-05-26 15:53:11 | LDO/USDT:USDT | LONG | 0h07m | -1.63% | -1.63 | stop_loss | BEAR | freqai_regression_v23_lo |
 | 2026-05-26 17:30:19 | OP/USDT:USDT | LONG | 1h29m | -2.96% | -1.96 | stop_loss | BEAR | freqai_regression_v23_lo |
 | 2026-05-27 00:33:40 | FIL/USDT:USDT | SHORT | 5h03m | -2.25% | -1.48 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-05-27 02:03:15 | DOT/USDT:USDT | LONG | 0h32m | -1.04% | -0.68 | stop_loss | BEAR | freqai_regression_v23_lo |
