@@ -283,3 +283,6 @@
 | 2026-05-27 15:30:30 | LDO/USDT:USDT | LONG | 0h05m | +0.08% | +0.04 | exit_signal | BEAR | freqai_regression_v23_lo |
 | 2026-05-27 16:26:03 | ARB/USDT:USDT | LONG | 0h40m | +0.04% | +0.03 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-27 16:19:28 | LDO/USDT:USDT | LONG | 0h18m | -1.18% | -0.99 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-27 17:09:50 | LTC/USDT:USDT | LONG | 0h50m | -0.73% | -0.61 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-27 17:12:05 | LDO/USDT:USDT | LONG | 0h35m | -1.19% | -0.99 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-27 17:12:05 | ADA/USDT:USDT | LONG | 0h26m | -0.99% | -0.83 | stop_loss | NEUTRAL | freqai_regression_v23_lo |

@@ -1,26 +1,24 @@
 # FinBuddy — Master Context
-Last updated: 2026-05-27 17:00 UTC
+Last updated: 2026-05-27 17:15 UTC
 
 ## Current Regime
 Regime: **NEUTRAL** | Confidence: 70.0% | Since: 2026-05-27
 
 ## Market Sentiment
 Fear & Greed: 25 (Extreme Fear)
-BTC Dominance: 57.74%
+BTC Dominance: 57.76%
 News Sentiment: 94.4% bullish
 
 ## Bot Performance
-Total Trades: 429 | Win Rate: 37.1% | Total P&L: 5.95%
+Total Trades: 431 | Win Rate: 36.9% | Total P&L: 5.32%
 
-## Open Trades (8)
-- XRP/USDT:USDT: Entry 1.34 | Current 1.33 | P&L: -0.46%
-- TON/USDT:USDT: Entry 1.90 | Current 1.89 | P&L: 0.66%
-- UNI/USDT:USDT: Entry 3.29 | Current 3.28 | P&L: -0.40%
-- 1000PEPE/USDT:USDT: Entry 0.00 | Current 0.00 | P&L: -0.79%
-- LTC/USDT:USDT: Entry 52.38 | Current 52.43 | P&L: 0.11%
-- APT/USDT:USDT: Entry 0.98 | Current 0.98 | P&L: -0.28%
-- LDO/USDT:USDT: Entry 0.34 | Current 0.34 | P&L: 0.62%
-- ADA/USDT:USDT: Entry 0.24 | Current 0.24 | P&L: 0.17%
+## Open Trades (6)
+- XRP/USDT:USDT: Entry 1.34 | Current 1.32 | P&L: -1.27%
+- TON/USDT:USDT: Entry 1.90 | Current 1.88 | P&L: 1.17%
+- UNI/USDT:USDT: Entry 3.29 | Current 3.26 | P&L: -1.19%
+- APT/USDT:USDT: Entry 0.98 | Current 0.97 | P&L: -1.56%
+- ARB/USDT:USDT: Entry 0.11 | Current 0.11 | P&L: -0.50%
+- SOL/USDT:USDT: Entry 83.55 | Current 83.33 | P&L: -0.30%
 ## Risk Flags
 - None
 
