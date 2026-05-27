@@ -185,21 +185,32 @@ Listener: `*/2 * * * * flock -n /tmp/finbuddy_telegram_listener.lock telegram_li
 | Regime-aware scout | `runner.py` BEAR pool: FET + LDO replace BNB + LINK — better bear signal representation |
 | n_estimators aligned | `config.json` n=200→100; `hypothesis_gen.py` stamps n_estimators=100 in every new experiment config; `runner.py` adds n_estimators to lgbm_keys |
 
+## ⚙️ Changes from 2026-05-27 Bug Fix Session (commit `d2c86dc`)
+
+| Fix | What changed |
+|---|---|
+| **Queue sort bug** | `runner.py run_next()`: removed `queue.sort(created_at)` that was defeating all priority ordering — runner now uses queue.jsonl FILE ORDER (maintained by prioritize_regime_windows) |
+| **Brain WR contamination** | `runner.py _build_env_args()`: added `-e FINBUDDY_RECENT_WR=0.55` — live .env has 0.42, which raised effective_lt by ×1.26 in brain backtests. Same root cause as WF fix. |
+| **log.jsonl dedup** | Removed 16 duplicate hypothesis entries (concurrent writer race). 481 → 465 entries. |
+| **queue.jsonl cleanup** | Pruned 7 queued experiments for (config, window) pairs already completed in log. Saves ~4.5h CPU. |
+| **Regime update** | Regime changed BEAR→NEUTRAL at 04:00 UTC 2026-05-27. Queue still has bears at front (prioritized earlier). |
+
 ---
 
 ## ⏭️ Next Actions (priority order)
 
-1. **Brain promotion path** — 66 bear-window experiments at queue front. Expect first bear pass within 1-2 days as lt=2.0-2.5 configs run on bear windows.
-2. **Monitor brain tonight** — check if experiments complete without FAILED status:
+1. **Monitor bear experiments** — 63 bear experiments at queue front, now ACTUALLY running first. With WR contamination fixed, lt=2.0-2.5 configs should show real trades on bear_2026Q1.
    ```bash
-   tail -f ~/.finbuddy/logs/brain_run.log
+   tail -30 ~/.finbuddy/logs/brain_run.log
    ```
-3. **WF tonight 22:00 UTC** — daily WF fires (1 fold). Check by morning:
+2. **First bear_2026Q1 pass** — If any lt=2.0-2.5 config shows WR≥50%+profit>0 on bear_2026Q1, `queue_missing_windows()` auto-seeds bull windows → promotion scan fires within 24h.
+3. **WF tonight 22:00 UTC** — daily WF fires (1 fold). With FINBUDDY_RECENT_WR=0.55 fix, should produce real fold metrics:
    ```bash
    ls -t walkforward_results/ | head -1 | xargs -I{} cat walkforward_results/{}/summary.json
    ```
-4. **n_estimators A/B gate** — Day 2: compare n=100 vs n=200 cohort Sharpe.
-5. **June 7** — AVAX/ADA watch list review.
+4. **Deep WF fold 15** — actively training as of 07:14 UTC. Should complete by ~10:00 UTC. Check summary.json.
+5. **n_estimators A/B gate** — All 62 z-scored experiments used n=100. A/B vs 200 needs more n=100 experiments. Wait for 20+ more to compare.
+6. **June 7** — AVAX/ADA watch list review.
 
 ---
 
