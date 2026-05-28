@@ -16,7 +16,10 @@ export default function Table({
   onRowClick,
   maxHeight,
 }) {
-  const containerStyle = maxHeight ? { maxHeight, overflowY: "auto" } : {};
+  const containerStyle = {
+    ...(maxHeight ? { maxHeight, overflowY: "auto" } : {}),
+    overflowX: "auto",
+  };
 
   if (loading) {
     return (
@@ -30,8 +33,8 @@ export default function Table({
   }
 
   return (
-    <div style={containerStyle}>
-      <table>
+    <div style={containerStyle} className="w-full">
+      <table className="min-w-full">
         <thead>
           <tr>
             {columns.map((c) => (

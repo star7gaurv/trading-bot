@@ -142,6 +142,14 @@ export async function getStrategyConfig() {
   return request("/api/config");
 }
 
+// ─── Stats & diagnostics ───
+export async function getExitReasons() {
+  return request("/api/stats/exit-reasons");
+}
+export async function getRecentTrades(limit = 10) {
+  return request(`/api/trades/recent?limit=${limit}`);
+}
+
 // ─── WebSockets — same-origin, nginx already proxies /ws/ ───
 // Token must be passed as ?token= query param — WebSocket API has no
 // custom header support, so Bearer in Authorization is not possible.

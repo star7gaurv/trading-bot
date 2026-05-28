@@ -180,14 +180,15 @@ class FinBuddyFreqAI_v23(IStrategy):
         atr_pct = max(0.003, min(atr_pct, 0.025))
 
         sl_pct = self.K_SL * entry_atr_pct  # initial stop - FIXED at entry-time ATR
-        tp_pct = self.K_TP * atr_pct        # trail lock - live ATR (can widen with vol)
-        
+        tp_pct = self.K_TP * entry_atr_pct  # trail lock - also entry-anchored (live ATR caused moving goalposts)
+
         # Trail activation threshold: once profit exceeds 1.0 * tp_pct
         lock_threshold = tp_pct * 1.0
 
-        # Trail: once profit exceeds the lock threshold, lock stop at max(0.25 * tp_pct, 0.002) from entry.
+        # Trail: once profit exceeds the lock threshold, lock stop at max(0.5 * tp_pct, 0.005) from entry.
+        # Floor raised from 0.25→0.5 and 0.002→0.005 (0.25× was too tight, caused profit give-back).
         if current_profit > lock_threshold:
-            locked_stop = max(tp_pct * 0.25, 0.002)
+            locked_stop = max(tp_pct * 0.5, 0.005)
             trail_pct = stoploss_from_open(
                 locked_stop,
                 current_profit,
@@ -211,13 +212,13 @@ class FinBuddyFreqAI_v23(IStrategy):
 
     def custom_exit(self, pair: str, trade: "Trade", current_time: datetime,
                     current_rate: float, current_profit: float, **kwargs):
-        # Time-limit exit: close trade after label_period_candles=24 (timeframe-aware).
-        # Equals the model's prediction horizon — holding beyond 24 candles (6h on 15m TF)
-        # means the signal has fully expired. Was 72 (3× horizon) which let dead
-        # positions drift 18h on 15m TF — the 11 force_exit + 3 time_limit
-        # trades in the live log all averaged -0.83% at >12h open.
+        # Time-limit exit: close trade after label_period_candles candles (timeframe-aware).
+        # config.json label_period_candles=12 → 3h on 15m TF. Holding beyond the model's
+        # prediction horizon is undefined territory. FREQAI_LABEL_CANDLES env var lets
+        # brain tune this parameter (same as K_SL/K_TP). Default 12 matches config.
+        label_candles = int(os.environ.get("FREQAI_LABEL_CANDLES", "12"))
         candles_open = int((current_time - trade.open_date_utc).total_seconds() / timeframe_to_seconds(self.timeframe))
-        if candles_open >= 24:
+        if candles_open >= label_candles:
             return "time_limit_exit"
         return None
 

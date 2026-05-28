@@ -57,13 +57,34 @@ function DirectionBadge({ trade }) {
   );
 }
 
+const EXIT_LABELS = {
+  exit_signal: "Signal",
+  stop_loss: "Stop Loss",
+  trailing_stop_loss: "Trail Stop",
+  time_limit_exit: "Expired",
+  roi: "ROI",
+  force_sell: "Force Exit",
+  force_exit: "Force Exit",
+  liquidation: "Liquidation",
+};
+const EXIT_VARIANTS = {
+  exit_signal: "ok",
+  trailing_stop_loss: "ok",
+  roi: "ok",
+  stop_loss: "dead",
+  time_limit_exit: "unknown",
+  force_sell: "stale",
+  force_exit: "stale",
+  liquidation: "dead",
+};
+
 function ExitBadge({ reason }) {
   if (!reason) return <span className="text-text-muted">—</span>;
-  const r = reason.toLowerCase();
-  const variant = r.includes("stop") ? "stale" : r.includes("signal") ? "ok" : "unknown";
+  const label = EXIT_LABELS[reason] || reason.replace(/_/g, " ");
+  const variant = EXIT_VARIANTS[reason] || "unknown";
   return (
     <Badge variant={variant} size="xs">
-      {reason.replace(/_/g, " ")}
+      {label}
     </Badge>
   );
 }
@@ -196,6 +217,19 @@ function OpenTradesTable({ onSelectTrade }) {
       render: (r) =>
         r.stake_amount != null ? `${r.stake_amount.toFixed(1)}` : "—",
     },
+    {
+      key: "sl_dist",
+      label: "SL Dist",
+      align: "right",
+      mono: true,
+      render: (r) => {
+        const dist = r.stoploss_current_dist_ratio;
+        if (dist == null) return "—";
+        const pct = Math.abs(dist * 100);
+        const cls = pct < 0.5 ? "text-loss font-semibold" : pct < 1.5 ? "text-warn" : "text-text-muted";
+        return <span className={cls}>{pct.toFixed(2)}%</span>;
+      },
+    },
   ];
 
   return (
@@ -285,6 +319,19 @@ function ClosedTradesTable({ onSelectTrade }) {
       key: "exit_reason",
       label: "Exit",
       render: (r) => <ExitBadge reason={r.exit_reason} />,
+    },
+    {
+      key: "duration",
+      label: "Dur",
+      align: "right",
+      mono: true,
+      render: (r) => {
+        if (!r.close_timestamp || !r.open_timestamp) return "—";
+        const secs = (r.close_timestamp - r.open_timestamp) / 1000;
+        const h = Math.floor(secs / 3600);
+        const m = Math.floor((secs % 3600) / 60);
+        return h === 0 ? `${m}m` : `${h}h${m}m`;
+      },
     },
     {
       key: "close_date",
@@ -465,7 +512,7 @@ export default function Trades() {
   const [selectedTrade, setSelectedTrade] = useState(null);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <OpenTradesTable onSelectTrade={setSelectedTrade} />
       <ClosedTradesTable onSelectTrade={setSelectedTrade} />
       <PairPerformanceTable />

@@ -101,7 +101,7 @@ app = FastAPI(title="FinBuddy Dashboard Streamer")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://trade.star7gaurav.in", "http://localhost:5173", "http://REDACTED-SERVER_IP:5173"],
+    allow_origins=["https://trade.star7gaurav.in", "http://localhost:5173", "http://localhost:8502", "http://REDACTED-SERVER_IP:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -374,57 +374,76 @@ async def wf_latest(_: dict = Depends(require_auth)):
 
 
 
+def _parse_fold_result(path: Path) -> Optional[dict]:
+    """Read a fold_N_result.json and return normalised dict."""
+    try:
+        with open(path) as f:
+            d = json.load(f)
+        # Normalise key aliases across walk_forward versions
+        return {
+            "fold": d.get("fold") or d.get("fold_num"),
+            "period_start": d.get("period_start") or d.get("test_start"),
+            "period_end": d.get("period_end") or d.get("test_end"),
+            "trade_count": int(d.get("trade_count") or d.get("trades") or 0),
+            "win_rate": float(d.get("win_rate") or d.get("wr") or 0.0),
+            "profit_factor": float(d.get("profit_factor") or d.get("pf") or 0.0),
+            "sharpe": float(d.get("sharpe") or 0.0),
+            "max_drawdown": float(d.get("max_drawdown") or d.get("dd") or 0.0),
+            "total_profit_abs": float(d.get("total_profit_abs") or d.get("profit_abs") or 0.0),
+        }
+    except Exception:
+        return None
+
+
+def _aggregate_folds(folds: list[dict]) -> dict:
+    """Compute weighted aggregates from fold dicts."""
+    total_trades = sum(f["trade_count"] for f in folds)
+    if total_trades == 0:
+        return {}
+
+    def weighted(key: str) -> float:
+        return sum(f[key] * f["trade_count"] for f in folds) / total_trades
+
+    return {
+        "total_trades": total_trades,
+        "total_profit_abs": sum(f["total_profit_abs"] for f in folds),
+        "weighted_win_rate": weighted("win_rate"),
+        "weighted_profit_factor": weighted("profit_factor"),
+        "weighted_sharpe": weighted("sharpe"),
+        "worst_drawdown": min(f["max_drawdown"] for f in folds),
+        "fold_count": len(folds),
+    }
+
+
 @app.get("/api/wf/running-folds")
 async def wf_running_folds(_: dict = Depends(require_auth)):
+    """Return live fold metrics for the currently-running WF (if any)."""
     runs = _wf_runs_sorted()
     active_run = None
     for run in runs:
         if not (run / "summary.json").exists():
-            age_s = __import__('time').time() - run.stat().st_mtime
+            age_s = time.time() - run.stat().st_mtime
             if age_s < ACTIVE_STALE_S:
                 active_run = run
                 break
-                
+
     if not active_run:
         return {"available": False}
-        
-    folds_data = []
-    fold_results = []
-    
+
+    folds_data: list[dict] = []
     for f in sorted(active_run.glob("fold_*_result.json")):
-        parts = f.name.split('_')
-        if len(parts) >= 2 and parts[1].isdigit():
-            fold_num = int(parts[1])
-            log_files = list(active_run.glob(f"fold_{fold_num:02d}_*.log"))
-            if not log_files:
-                continue
-            
-            try:
-                log_name = log_files[0].stem
-                dates = log_name.split('_')[-1]
-                ts_str, te_str = dates.split('-')
-                from datetime import datetime
-                test_start = datetime.strptime(ts_str, "%Y%m%d")
-                test_end = datetime.strptime(te_str, "%Y%m%d")
-                
-                fr = parse_fold(f, fold_num, test_start, test_end)
-                if fr:
-                    fold_results.append(fr)
-                    from dataclasses import asdict
-                    folds_data.append(asdict(fr))
-            except Exception as e:
-                print(f"Error parsing running fold {f.name}: {e}")
-                
-    if not fold_results:
-        return {"available": False, "active_run_name": active_run.name}
-        
-    agg = aggregate(fold_results)
-    
+        fd = _parse_fold_result(f)
+        if fd:
+            folds_data.append(fd)
+
+    if not folds_data:
+        return {"available": True, "name": active_run.name, "folds": [], "aggregate": {}}
+
     return {
         "available": True,
         "name": active_run.name,
         "folds": folds_data,
-        "aggregate": agg
+        "aggregate": _aggregate_folds(folds_data),
     }
 
 
@@ -748,6 +767,73 @@ async def get_config(_: dict = Depends(require_auth)):
         },
         "env_vars": env_vars,
     }
+
+
+# ───────────────────── Exit reasons + Recent trades ─────────────────────
+
+@app.get("/api/stats/exit-reasons")
+async def exit_reasons_stats(_: dict = Depends(require_auth)):
+    """Aggregate closed trades by exit reason — diagnostic tool for stop-loss analysis."""
+    async def compute():
+        result = await ft_get("/trades", params={"limit": 1000, "offset": 0})
+        all_trades = result.get("trades", []) if isinstance(result, dict) else []
+        closed = [t for t in all_trades if t.get("exit_reason") and t.get("close_timestamp")]
+
+        reasons: dict[str, dict] = {}
+        for t in closed:
+            r = t.get("exit_reason") or "unknown"
+            if r not in reasons:
+                reasons[r] = {"count": 0, "wins": 0, "losses": 0, "profit": 0.0}
+            reasons[r]["count"] += 1
+            p = float(t.get("profit_abs") or 0.0)
+            reasons[r]["profit"] += p
+            if p > 0:
+                reasons[r]["wins"] += 1
+            else:
+                reasons[r]["losses"] += 1
+
+        items = [
+            {
+                "reason": k,
+                "count": v["count"],
+                "wins": v["wins"],
+                "losses": v["losses"],
+                "profit": round(v["profit"], 4),
+                "wr": round(v["wins"] / v["count"], 4) if v["count"] else 0.0,
+            }
+            for k, v in reasons.items()
+        ]
+        items.sort(key=lambda x: x["count"], reverse=True)
+        return {"items": items}
+
+    return await cached_async("exit_reasons", 60.0, compute)
+
+
+@app.get("/api/trades/recent")
+async def trades_recent(
+    limit: int = Query(10, ge=1, le=50), _: dict = Depends(require_auth)
+):
+    """Return last N closed trades — fast path for Overview recent-trades panel."""
+    result = await ft_get("/trades", params={"limit": limit, "offset": 0, "order_by_id": "false"})
+    trades = result.get("trades", []) if isinstance(result, dict) else []
+    out = []
+    for t in trades:
+        if not t.get("close_timestamp"):
+            continue
+        ot = t.get("open_timestamp") or 0
+        ct = t.get("close_timestamp") or 0
+        out.append({
+            "trade_id": t.get("trade_id"),
+            "pair": t.get("pair"),
+            "is_short": t.get("is_short"),
+            "profit_abs": t.get("close_profit_abs") or t.get("profit_abs"),
+            "profit_ratio": t.get("close_profit") or t.get("profit_ratio"),
+            "close_reason": t.get("exit_reason"),  # FreqTrade uses exit_reason
+            "open_date": t.get("open_date"),
+            "close_date": t.get("close_date"),
+            "duration_seconds": (ct - ot) / 1000 if ot and ct else None,
+        })
+    return out
 
 
 # ───────────────────── WebSockets ─────────────────────

@@ -50,6 +50,8 @@ services:
       - FREQAI_LEV_HIGH=${FREQAI_LEV_HIGH:-3.0}
       # Circuit breaker — stop new trades when daily loss exceeds limit (added 2026-05-23)
       - FREQAI_DAILY_LOSS_LIMIT=${FREQAI_DAILY_LOSS_LIMIT:-10}
+      # Time-limit exit: candle count = model's label_period_candles horizon (added 2026-05-28)
+      - FREQAI_LABEL_CANDLES=${FREQAI_LABEL_CANDLES:-12}
       - FREQTRADE__FREQAI__IDENTIFIER=${FREQTRADE__FREQAI__IDENTIFIER:-}
     volumes:
       - "./user_data:/freqtrade/user_data"
