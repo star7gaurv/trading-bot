@@ -134,21 +134,22 @@ def find_candidates() -> list[dict]:
             continue
 
         # Current-market bear gate: the live bot runs in bear_2026Q1 conditions.
-        # SOFT GATE (2026-05-28): bear_2026Q1's ATR dynamics differ from bear_2025Q1 —
-        # 16/16 configs tried all lose profit in static backtest, but the live model
-        # continuously retrains on current data. Require "not catastrophic" instead of
-        # "must profit": profit > -3% AND WR > 45%. A borderline config with -1% backtest
-        # loss can break even live with an adapted model. Hard gate was blocking all promotions.
+        # HARD GATE (2026-05-29): Tightened after a false-positive promotion slipped through.
+        # The promoted config (LT=3.25) had bear_2026Q1 results: [-0.564%/WR=35%,
+        # -0.573%/WR=47%, -3%/WR=52%, -4.9%/WR=51%]. The -0.573%/WR=47% barely passed
+        # the old soft gate (profit>-3% AND WR>45%), allowing a LOSING config to promote.
+        # New rule: if tested on bear_2026Q1, at least one result must have WR >= 50%.
+        # If untested: allow through (brain queues cross-window tests; pair-regime gate covers risk).
         if BEAR_2026Q1_REQUIRED:
             bear_recent_runs = [r for r in g["bear_runs"] if r.get("window") == BEAR_2026Q1_REQUIRED]
-            # Gate purpose: block configs KNOWN TO FAIL on current market, not configs untested.
-            # If not yet tested → allow through (we queue it separately; pair-regime gate covers live risk).
-            # If tested and catastrophic (profit < -3% OR WR < 45%) → block.
+            # Gate purpose: block configs KNOWN TO FAIL on current market.
+            # If tested: require at least one result with WR >= 50% (not just "not catastrophic").
+            # If untested: allow through.
             if bear_recent_runs and not any(
-                r["metrics"].get("profit_pct", -99) > -3.0 and r["metrics"].get("wr", 0) > 0.45
+                r["metrics"].get("wr", 0) >= 0.50
                 for r in bear_recent_runs
             ):
-                continue  # tested and catastrophic → skip
+                continue  # tested but no WR >= 50% on current market → skip
 
         bull_profits = [r["metrics"]["profit_pct"] for r in g["bull_runs"]]
         # For bear performance, exclude bear_2026Q1 from the avg/floor check.

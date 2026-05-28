@@ -1272,12 +1272,20 @@ class FinBuddyFreqAI_v23(IStrategy):
 
         volatility_ok = dataframe["atr_ratio"] > 0.003
 
+        # Hard regime gate: no longs in BEAR/CRASH, no shorts in BULL/EUPHORIA.
+        # Dynamic threshold (×1.3 in BEAR) is insufficient — std_factor can reduce
+        # effective threshold to 1.6σ, still allowing longs when market is trending down.
+        # Result was 8 longs in 80% BEAR → 170 stop losses at 0% WR (-207 USDT).
+        is_long_regime  = dataframe["regime"].isin(["NEUTRAL", "BULL", "EUPHORIA"])
+        is_short_regime = dataframe["regime"].isin(["NEUTRAL", "BEAR", "CRASH"])
+
         # Long: price above EMA-50 (uptrend context), not overbought, not at BB top
         ta_long = (
             (dataframe["close"] > dataframe["ema_50"])
             & (dataframe["rsi_14"] < 68)
             & (dataframe["bb_pct"] < 0.90)
             & (dataframe["volume"] > 0)
+            & is_long_regime
         )
         # OB veto REMOVED (2026-05-22): ob_long_ok = close < bearish_ob * 0.99 was
         # blocking 100% of longs. In ranging/trending markets close is always near or
@@ -1319,6 +1327,7 @@ class FinBuddyFreqAI_v23(IStrategy):
             (dataframe["close"] < dataframe["ema_50"])
             & (dataframe["rsi_14"] > 32)   # symmetric mirror of long's "rsi_14 < 68"
             & (dataframe["bb_pct"] > 0.10)
+            & is_short_regime
             & (dataframe["volume"] > 0)
         )
         # OB veto REMOVED (2026-05-22): ob_short_ok = close > bullish_ob * 1.01 was
