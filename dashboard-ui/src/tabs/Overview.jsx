@@ -57,7 +57,7 @@ function trades7dPnl(profit) {
 
 // ─── Sub-panels ───
 function StatStrip({ profit, openTrades, regime, dailyPerf, balance }) {
-  const dailyArr = dailyPerf?.data || [];
+  const dailyArr = Array.isArray(dailyPerf) ? dailyPerf : (dailyPerf?.data || []);
   const todayEntry = dailyArr.length > 0 ? dailyArr[0] : null;
   const isActuallyToday = todayEntry && todayEntry.date === new Date().toISOString().split("T")[0];
   const today = isActuallyToday ? todayEntry.abs_profit : 0;

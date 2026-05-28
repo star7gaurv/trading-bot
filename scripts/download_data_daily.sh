@@ -28,4 +28,7 @@ docker-compose run --rm freqtrade download-data \
 
 EXIT=$?
 echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] === daily download done (exit=$EXIT) ===" >> "$LOG"
+# Also print to stdout so the cron redirect file (download_data_daily.log) gets its mtime
+# updated — cron_status.py uses that mtime for the staleness check.
+echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] daily download done (exit=$EXIT)"
 exit $EXIT

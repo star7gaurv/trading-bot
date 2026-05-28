@@ -136,6 +136,7 @@ function ExperimentsTable({ data, error, loading, lastUpdated }) {
         Each experiment runs a cheap <span className="font-mono text-accent">SCOUT</span> on 6 pairs first (~15 min).
         If profit &gt; 0, Sharpe &gt; 0, trades ≥ 2 → <span className="font-mono text-profit">full run</span> on all 26 pairs (~60 min) → Telegram notification.
         <span className="font-mono text-info"> SCOUT_FAILED</span> = filtered silently (no Telegram). Only full runs send notifications.
+        {" "}Cron fires every 10 min but <span className="font-mono">flock</span> ensures only 1 experiment runs at a time — notifications arrive at experiment pace (~1/hour for full runs), not cron pace.
       </div>
       <div className="mb-3">
         <input
