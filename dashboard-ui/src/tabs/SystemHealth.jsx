@@ -93,7 +93,10 @@ function TopStats({ sys }) {
 function CronRow({ job }) {
   const [expanded, setExpanded] = useState(false);
   const variant =
-    job.status === "ok" ? "ok" : job.status === "stale" ? "stale" : "unknown";
+    job.status === "ok" ? "ok"
+    : job.status === "running" ? "info"
+    : job.status === "stale" ? "stale"
+    : "unknown";
   const tail = Array.isArray(job.tail) ? job.tail : [];
   const lines = tail.map((t) => ({ text: t, level: "default" }));
 
@@ -162,15 +165,16 @@ function CronTable({ data, error, lastUpdated, loading }) {
   const summary = safe(data, "summary", {}) || {};
   const jobs = safe(data, "jobs", []) || [];
 
-  // Sort: stale first, then ok, then unknown — within group keep insertion order
+  // Sort: stale first, then running, then ok, then unknown
   const sorted = [...jobs].sort((a, b) => {
-    const rank = { stale: 0, unknown: 1, ok: 2 };
-    return (rank[a.status] ?? 3) - (rank[b.status] ?? 3);
+    const rank = { stale: 0, running: 1, ok: 2, unknown: 3 };
+    return (rank[a.status] ?? 4) - (rank[b.status] ?? 4);
   });
 
+  const running = summary.running || 0;
   const subtitle = `${jobs.length} jobs · ${summary.stale || 0} stale · ${
-    summary.ok || 0
-  } ok`;
+    running > 0 ? `${running} running · ` : ""
+  }${summary.ok || 0} ok`;
 
   return (
     <Card title="Cron Jobs" subtitle={subtitle} lastUpdated={lastUpdated}>

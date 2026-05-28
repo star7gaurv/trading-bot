@@ -99,6 +99,22 @@ def _tail_log(path: str, n: int = 5) -> list[str]:
         return []
 
 
+_BRAIN_LOCK = "/tmp/finbuddy_brain_run.lock"
+_WF_LOCK    = "/tmp/walkforward_deep.lock"
+
+
+def _lock_is_held(lock_path: str) -> bool:
+    """Return True if a flock lock file is currently held by another process."""
+    try:
+        r = subprocess.run(
+            ["flock", "-n", lock_path, "true"],
+            capture_output=True, timeout=2,
+        )
+        return r.returncode != 0
+    except Exception:
+        return False
+
+
 def _classify_status(last_run_age_s: Optional[int], expected_interval_s: Optional[int]) -> str:
     if last_run_age_s is None:
         return "unknown"
@@ -164,6 +180,17 @@ def parse_crontab() -> list[dict]:
         expected = _expected_interval_seconds(schedule)
         status = _classify_status(last_run_age, expected)
 
+        # Long-running jobs: if the experiment lock is held the job IS running —
+        # the log goes quiet during the run so mtime-based staleness is a false
+        # positive. Override to "running" so the dashboard shows the correct state.
+        if status == "stale":
+            if "brain_cli" in name and " run" in command:
+                if _lock_is_held(_BRAIN_LOCK):
+                    status = "running"
+            elif "walkforward" in name or "walk_forward" in name:
+                if _lock_is_held(_WF_LOCK) or _lock_is_held("/tmp/walkforward_daily.lock"):
+                    status = "running"
+
         jobs.append({
             "name": display_name,
             "schedule": schedule,
@@ -181,12 +208,14 @@ def parse_crontab() -> list[dict]:
 
 def summarize(jobs: list[dict]) -> dict:
     total = len(jobs)
-    ok = sum(1 for j in jobs if j["status"] == "ok")
-    stale = sum(1 for j in jobs if j["status"] == "stale")
+    ok      = sum(1 for j in jobs if j["status"] == "ok")
+    running = sum(1 for j in jobs if j["status"] == "running")
+    stale   = sum(1 for j in jobs if j["status"] == "stale")
     unknown = sum(1 for j in jobs if j["status"] == "unknown")
     return {
         "total": total,
         "ok": ok,
+        "running": running,
         "stale": stale,
         "unknown": unknown,
         "overall": "ok" if stale == 0 else ("warn" if stale <= 2 else "critical"),
