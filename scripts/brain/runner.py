@@ -501,14 +501,22 @@ def _run_scout(h: dict) -> tuple[bool, dict]:
 
     trades = _run_hypothesis_group(scout_h, filtered_scout, "scout", timeout_s=SCOUT_TIMEOUT_S)
 
+    lt = h.get("config", {}).get("long_threshold", 1.5)
+
     if not trades:
+        # High-threshold configs (lt >= 2.5) concentrate signals in non-scout pairs.
+        # The 6 scout pairs are calibrated for regime (e.g. BTC/ETH/SOL/XRP for BEAR)
+        # but at lt=3.25+ the model's strongest signals often live in other alts.
+        # Result: 0 trades on scout but 15-30 trades on the full 26-pair run.
+        # Bypass the scout → pass through to full run so these are not silently rejected.
+        if lt >= 2.5:
+            print(f"[brain] scout 0-trade bypass (lt={lt} >= 2.5) — passing to full run")
+            return True, {}
         return False, {"trades": 0, "profit_pct": 0.0, "sharpe": 0.0}
 
     m = _compute_metrics_from_raw_trades(trades)
-    # High-threshold configs (lt >= 2.0) naturally generate few trades on 6 scout pairs.
-    # At lt=3.25 on 6/26 pairs over 3 months ≈ 3-4 trades — lowering min to 2 avoids
-    # incorrectly scout-failing bear_2026Q1 targeted experiments before they get a full run.
-    lt = h.get("config", {}).get("long_threshold", 1.5)
+    # High-threshold configs naturally generate fewer trades on 6 scout pairs.
+    # At lt >= 2.0: require trades >= 2 instead of 5.
     min_trades = 2 if lt >= 2.0 else 5
     passed = (
         m.get("profit_pct", -1) > 0

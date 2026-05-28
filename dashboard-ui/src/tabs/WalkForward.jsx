@@ -144,9 +144,9 @@ function LatestRun({ data, error, loading, lastUpdated }) {
                     {totalPnl != null ? (totalPnl >= 0 ? "+" : "") + totalPnl.toFixed(2) : "—"}
                   </div>
                 </div>
-                {data.target_folds && (
+                {data.target_folds != null && (
                   <div className="bg-elevated border border-border rounded px-3 py-2">
-                    <div className="text-xxs uppercase tracking-wider text-text-tertiary">Target Folds</div>
+                    <div className="text-xxs uppercase tracking-wider text-text-tertiary">Folds</div>
                     <div className="text-base font-mono text-text-primary mt-0.5">
                       {data.target_folds}
                     </div>
@@ -334,7 +334,7 @@ function HistoryRow({ run }) {
           {run.name}
           {isRunning && run.completed_folds != null && (
             <span className="text-xxs text-text-tertiary ml-2">
-              ({run.completed_folds}/21 folds)
+              ({run.completed_folds} folds done)
             </span>
           )}
         </td>

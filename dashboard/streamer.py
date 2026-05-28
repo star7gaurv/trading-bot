@@ -348,17 +348,23 @@ async def wf_latest(_: dict = Depends(require_auth)):
         try:
             with open(summary_path) as f:
                 data = json.load(f)
-            max_fold = 21
             active_run = None
             if active_run_name:
                 active_run = next((r for r in runs if r.name == active_run_name), None)
+            # Derive target_folds from the summary itself (not hardcoded).
+            # The summary "folds" list has the actual completed folds for this run.
+            folds_list = data.get("folds", [])
+            target_folds = len(folds_list) if folds_list else 0
+            # Also check log files in case folds list is empty (run still in progress)
             try:
-                logs = list(active_run.glob("fold_*.log")) if active_run else list(latest.glob("fold_*.log"))
+                log_dir = active_run or latest
+                logs = list(log_dir.glob("fold_*.log"))
                 if logs:
-                    max_fold = max([int(p.stem.split('_')[1]) for p in logs if p.stem.split('_')[1].isdigit()], default=21)
+                    log_max = max([int(p.stem.split('_')[1]) for p in logs if p.stem.split('_')[1].isdigit()], default=0)
+                    target_folds = max(target_folds, log_max)
             except Exception:
                 pass
-            return {"available": True, "name": latest.name, "summary": data, "active_run_name": active_run_name, "target_folds": max_fold}
+            return {"available": True, "name": latest.name, "summary": data, "active_run_name": active_run_name, "target_folds": target_folds}
         except (OSError, json.JSONDecodeError):
             continue
     

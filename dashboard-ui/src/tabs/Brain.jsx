@@ -25,6 +25,7 @@ function QueueStrip({ data }) {
   const running = byStatus.running ?? 0;
   const completed = byStatus.completed ?? 0;
   const failed = byStatus.failed ?? 0;
+  const scoutFailed = byStatus.scout_failed ?? 0;
   const total = data?.total ?? 0;
   const oldestTs = data?.oldest_queued_ts;
   const oldestAge = oldestTs ? (Date.now() / 1000 - oldestTs) : null;
@@ -32,18 +33,12 @@ function QueueStrip({ data }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
       <Stat label="Total" value={total} />
-      <Stat
-        label="Queued"
-        value={queued}
-        tone={queued > 0 ? "warn" : "default"}
-      />
+      <Stat label="Queued" value={queued} tone={queued > 0 ? "warn" : "default"} />
       <Stat label="Running" value={running} tone={running > 0 ? "profit" : "default"} />
       <Stat label="Completed" value={completed} tone="profit" />
+      <Stat label="Scout Filtered" value={scoutFailed} tone="default"
+        unit="" />
       <Stat label="Failed" value={failed} tone={failed > 0 ? "loss" : "default"} />
-      <Stat
-        label="Oldest Queued"
-        value={oldestAge != null ? formatDuration(oldestAge) : "—"}
-      />
     </div>
   );
 }
@@ -56,6 +51,7 @@ function statusVariant(status) {
   if (s === "completed" || s === "done") return "ok";
   if (s === "running") return "stale";
   if (s === "failed" || s === "error") return "dead";
+  if (s === "scout_failed") return "info";   // blue — filtered before full run
   return "unknown";
 }
 
@@ -135,6 +131,12 @@ function ExperimentsTable({ data, error, loading, lastUpdated }) {
       subtitle={`${rows.length} results`}
       lastUpdated={lastUpdated}
     >
+      <div className="mb-2 px-1 text-xxs text-text-muted leading-relaxed">
+        <span className="text-text-tertiary font-semibold">How it works: </span>
+        Each experiment runs a cheap <span className="font-mono text-accent">SCOUT</span> on 6 pairs first (~15 min).
+        If profit &gt; 0, Sharpe &gt; 0, trades ≥ 2 → <span className="font-mono text-profit">full run</span> on all 26 pairs (~60 min) → Telegram notification.
+        <span className="font-mono text-info"> SCOUT_FAILED</span> = filtered silently (no Telegram). Only full runs send notifications.
+      </div>
       <div className="mb-3">
         <input
           type="text"
