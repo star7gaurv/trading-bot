@@ -279,7 +279,11 @@ function periodColumns(labelKey, labelTitle) {
 }
 
 function PeriodTable({ title, data, error, loading, lastUpdated, labelKey, labelTitle }) {
-  const rows = Array.isArray(data) ? [...data].reverse() : [];
+  // Sort newest-first regardless of API return order (FreqTrade returns desc but
+  // we sort explicitly so the table is stable even if the API order ever changes).
+  const rows = Array.isArray(data)
+    ? [...data].sort((a, b) => new Date(b.date) - new Date(a.date))
+    : [];
   const cols = periodColumns(labelKey, labelTitle);
 
   return (
