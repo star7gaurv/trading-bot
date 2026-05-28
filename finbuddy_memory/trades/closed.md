@@ -291,3 +291,4 @@
 | 2026-05-28 01:29:29 | FET/USDT:USDT | LONG | 1h29m | -2.76% | -1.61 | stop_loss | BEAR | freqai_regression_v23_lo |
 | 2026-05-28 11:30:52 | TON/USDT:USDT | SHORT | 1h45m | +2.08% | +1.21 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-05-28 16:45:50 | ADA/USDT:USDT | LONG | 0h45m | +0.69% | +0.40 | exit_signal | BEAR | freqai_regression_v23_lo |
+| 2026-05-28 17:15:21 | FET/USDT:USDT | LONG | 0h14m | +1.28% | +0.75 | exit_signal | BEAR | freqai_regression_v23_lo |
