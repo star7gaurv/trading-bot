@@ -516,7 +516,57 @@ async def performance_monthly(months: int = Query(6, ge=1, le=24), _: dict = Dep
 
 @app.get("/api/performance/pair")
 async def performance_pair(_: dict = Depends(require_auth)):
-    return await ft_get("/performance")
+    """Compute per-pair stats (WR, PF, P&L, avg duration) from closed trades.
+
+    FreqTrade's /performance only returns profit_abs+count — no win_ratio,
+    profit_factor or duration_avg. We compute everything from /trades instead.
+    """
+    # Fetch up to 1000 closed trades (single request covers most bots)
+    result = await ft_get("/trades", params={"limit": 1000, "offset": 0, "order_by_id": "false"})
+    all_trades = result.get("trades", []) if isinstance(result, dict) else []
+
+    # Only closed trades (have a close_timestamp)
+    closed = [t for t in all_trades if t.get("close_timestamp") and t.get("close_timestamp", 0) > 0]
+
+    # Group by pair
+    by_pair: dict[str, list] = {}
+    for t in closed:
+        by_pair.setdefault(t.get("pair", "unknown"), []).append(t)
+
+    rows = []
+    for pair, ptrades in by_pair.items():
+        profits = [t.get("profit_abs") or 0.0 for t in ptrades]
+        wins = [p for p in profits if p > 0]
+        losses = [p for p in profits if p <= 0]
+
+        total_profit = sum(profits)
+        win_ratio = len(wins) / len(ptrades) if ptrades else 0.0
+        gross_profit = sum(wins)
+        gross_loss = abs(sum(losses))
+        profit_factor = (gross_profit / gross_loss) if gross_loss > 0 else None
+
+        durations = []
+        for t in ptrades:
+            ct = t.get("close_timestamp") or 0
+            ot = t.get("open_timestamp") or 0
+            if ct > 0 and ot > 0:
+                durations.append((ct - ot) / 1000 / 60)  # seconds→minutes
+        duration_avg = sum(durations) / len(durations) if durations else None
+
+        rows.append({
+            "key": pair,
+            "pair": pair,
+            "count": len(ptrades),
+            "win_ratio": win_ratio,
+            "profit_factor": profit_factor,
+            "profit_all_coin": total_profit,
+            "profit_abs": total_profit,
+            "duration_avg": duration_avg,  # minutes
+        })
+
+    # Sort best P&L first
+    rows.sort(key=lambda r: r["profit_all_coin"], reverse=True)
+    return rows
 
 
 @app.get("/api/profit")
