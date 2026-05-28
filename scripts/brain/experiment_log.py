@@ -253,10 +253,16 @@ def queue_missing_windows(completed_hypothesis: dict, windows: dict[str, str]) -
     config = completed_hypothesis.get("config", {})
     this_sig = _config_signature(config)
 
-    # Collect all windows already covered (queued or completed) for this config
+    # Collect windows already covered: queued (pending) OR completed successfully.
+    # IMPORTANT: "failed" experiments do NOT count as covered — failed = no data
+    # collected, must retry. A timed-out bull experiment should be re-queued.
     covered: set[str] = set()
-    for entry in read_queue() + read_log():
+    for entry in read_queue():
         if _config_signature(entry.get("config", {})) == this_sig:
+            covered.add(entry.get("window", ""))
+    for entry in read_log():
+        if (_config_signature(entry.get("config", {})) == this_sig
+                and entry.get("status") == "completed"):
             covered.add(entry.get("window", ""))
 
     added = 0

@@ -467,6 +467,43 @@ def inject_targeted(findings: dict, dry_run: bool = False) -> list[str]:
             )
             actions.append(f"Queued ×{n} expansion to untested window {w}")
 
+    # ── Fix 4: Dead TFs + promising bear with no bull success ─────────────
+    # When non-15m TFs are marked dead AND we have a great bear config that
+    # hasn't succeeded on any bull window, cross-validate it on bull windows.
+    # This fixes the gap where inject_targeted detected dead_tfs but did nothing.
+    bull_windows  = [w for w in WINDOWS if "bull" in w]
+    bear_windows  = [w for w in WINDOWS if "bear" in w]
+    if findings.get("dead_timeframes") and best_bear:
+        bear_cfg_sig = json.dumps(
+            {k: best_bear["config"].get(k) for k in sorted(best_bear["config"])},
+            sort_keys=True
+        )
+        # Check if this bear config has ANY completed bull run
+        log_all = read_log()
+        bear_bull_runs = [
+            r for r in log_all
+            if r.get("status") == "completed"
+            and r.get("window", "") in bull_windows
+            and json.dumps(
+                {k: r.get("config", {}).get(k) for k in sorted(best_bear["config"])},
+                sort_keys=True
+            ) == bear_cfg_sig
+        ]
+        if not bear_bull_runs:
+            parent_id = best_bear.get("hypothesis_id", "?")
+            n = _queue_targeted(
+                best_bear["config"], "aggressive",
+                f"analyst: dead-TF cross-validate — best bear config has 0 bull results; "
+                f"queue on bull windows (parent={parent_id[:6]}, "
+                f"bear WR={best_bear['metrics'].get('wr',0)*100:.0f}% "
+                f"PF={best_bear['metrics'].get('pf',0):.2f})",
+                windows=bull_windows,
+            )
+            actions.append(
+                f"Queued ×{n} dead-TF cross-validate: best bear config on bull windows "
+                f"(WR={best_bear['metrics'].get('wr',0)*100:.0f}% PF={best_bear['metrics'].get('pf',0):.2f})"
+            )
+
     return actions
 
 
