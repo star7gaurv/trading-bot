@@ -74,17 +74,28 @@ def save_state(s: dict) -> None:
 
 
 def find_latest_wf_run() -> tuple[str, dict] | tuple[None, None]:
-    """Return (run_name, summary_dict) for the most recently completed WF run."""
+    """Return (run_name, summary_dict) for the most recently completed WF run.
+
+    Skips summaries with total_trades == 0 (failed/incomplete WF runs that wrote
+    an empty aggregate). Those runs are touched to disk after completion but carry
+    no useful metrics — picking them would render Sharpe/WR/PF as None every day.
+    Uses file mtime as the sort key; most-recent non-empty run wins.
+    """
     summaries = list(WF_RESULTS_DIR.glob("*/summary.json"))
     if not summaries:
         return None, None
-    latest = max(summaries, key=lambda p: p.stat().st_mtime)
-    try:
-        summary = json.loads(latest.read_text())
-        return latest.parent.name, summary
-    except Exception as e:
-        print(f"WARN: Could not read {latest}: {e}", file=sys.stderr)
-        return None, None
+    summaries.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    for path in summaries:
+        try:
+            summary = json.loads(path.read_text())
+            total = summary.get("aggregate", {}).get("total_trades", 0) or 0
+            if total == 0:
+                print(f"SKIP empty summary (0 trades): {path.parent.name}", file=sys.stderr)
+                continue
+            return path.parent.name, summary
+        except Exception as e:
+            print(f"WARN: Could not read {path}: {e}", file=sys.stderr)
+    return None, None
 
 
 def get_live_identifier() -> str:

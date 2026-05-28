@@ -328,9 +328,14 @@ def _generate_aggressive_v22(n: int) -> list[dict]:
 
 
 def _top_k_results(k: int = 3, min_trades: int = 20) -> list[dict]:
-    """Return top-K experiments by profit_pct (filtered by min trade count)."""
+    """Return top-K zscore experiments by profit_pct (filtered by min trade count).
+
+    Restricted to target_version='zscore' only — the 268 legacy raw-% experiments
+    have incompatible label distributions and must not seed guided exploration.
+    """
     log = [r for r in read_log()
            if r.get("status") == "completed"
+           and r.get("config", {}).get("target_version") == "zscore"
            and r.get("metrics", {}).get("trades", 0) >= min_trades]
     if not log:
         return []
@@ -367,6 +372,14 @@ def _generate_guided_aggressive(n: int) -> list[dict]:
                 v[param] = random.choice(opts)
         if arch == "v23":
             v["short_threshold"] = -abs(v["short_threshold"])
+            # Drop guided mutations that land on a dead/blacklisted timeframe.
+            # _generate_aggressive_v23 already filters via _available_timeframes(),
+            # but guided exploration mutates params one-by-one and can step from
+            # '15m' into '5m' or '30m' which the analyst has flagged as dead.
+            allowed_tfs = _available_timeframes(AGGRESSIVE_CHOICES_V23["timeframe"])
+            if v["timeframe"] not in allowed_tfs:
+                attempts += 1
+                continue
             v["arch"]        = "v23"
             v["strategy"]    = "FinBuddyFreqAI_v23"
             v["freqaimodel"] = "LightGBMRegressor"
@@ -413,10 +426,15 @@ def generate_aggressive_band(n: int = 12) -> list[dict]:
 # ── Helpers ───────────────────────────────────────────────────────────────
 
 def _current_best_config(arch: str | None = None) -> dict | None:
-    """Current best-by-profit overall (or restricted to one architecture)."""
+    """Current best-by-profit overall (or restricted to one architecture).
+
+    Restricted to target_version='zscore' — the 268 legacy raw-% experiments
+    have incompatible label distributions and must not seed the safe band.
+    """
     from experiment_log import read_log
     log = [r for r in read_log()
            if r.get("status") == "completed"
+           and r.get("config", {}).get("target_version") == "zscore"
            and r.get("metrics", {}).get("trades", 0) >= 20]
     if arch is not None:
         log = [r for r in log if (r.get("config", {}).get("arch") == arch
@@ -489,6 +507,11 @@ def generate_and_queue(safe_n: int = 6, aggressive_n: int = 6, windows: list[str
     """
     One brain cycle: generate safe + aggressive variants for BOTH architectures,
     queue on each window. Returns count of newly queued hypotheses.
+
+    bear_2026Q1 gets double weighting — it is the promotion gating constraint
+    (BEAR_2026Q1_REQUIRED in promote.py) and the hardest window to crack.
+    Every variant that would be queued on all 5 windows also gets an extra
+    bear_2026Q1 entry so the brain puts 2× as many experiments there.
     """
     from experiment_log import read_queue as _rq
     target_windows = windows or list(WINDOWS.keys())
@@ -504,9 +527,18 @@ def generate_and_queue(safe_n: int = 6, aggressive_n: int = 6, windows: list[str
     }
 
     queued = 0
-    for v in all_variants:
+    # bear_2026Q1 is the promotion gate — give it 2× representation.
+    # For variants already destined for bear_2026Q1 via target_windows we add a
+    # second aggressive-band pass specifically on that window.
+    extra_bear_variants = generate_aggressive_band(n=aggressive_n) if "bear_2026Q1" in target_windows else []
+
+    for v in all_variants + extra_bear_variants:
         cfg = _stamp_target_version(v["config"])
-        for win_name in target_windows:
+        # Extra bear variants only run on bear_2026Q1; normal variants run on all windows.
+        windows_for_this = ["bear_2026Q1"] if v in extra_bear_variants else target_windows
+        for win_name in windows_for_this:
+            if win_name not in WINDOWS:
+                continue
             if (_ch(cfg), win_name) in already_queued:
                 continue  # Fix 13: skip already-queued (config, window) pairs
             queue_hypothesis(

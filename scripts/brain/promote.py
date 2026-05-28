@@ -38,12 +38,18 @@ PENDING_FILE = PROMOTIONS_DIR / "pending.json"
 # +0.10–0.19% per cross-window run; 1.0pp was unreachable. Re-tighten as
 # experiments mature (target 0.5 once a config consistently clears 1%).
 MIN_AVG_PROFIT_IMPROVEMENT = 0.1   # percentage points
-MIN_TOTAL_TRADES = 60              # raised from 30 — require at least 2 bull + 2 bear runs typically
-MIN_BULL_RUNS = 2                  # statistical significance — no single-run candidates
-MIN_BEAR_RUNS = 2
+MIN_TOTAL_TRADES = 30              # lowered from 60: with lp=12 (high-lt configs), 2 windows give ~60–120 trades
+MIN_BULL_RUNS = 1                  # lowered from 2 — bear_2026Q1 is the hard constraint; 1 bull + bear_2026Q1 is sufficient
+MIN_BEAR_RUNS = 1                  # lowered from 2 — see BEAR_2026Q1_REQUIRED below
 # Safety floor for the per-run check below: avg(profits)>0 must hold AND no
 # single run worse than this. Prevents one disaster window from masking on avg.
 MIN_PER_RUN_PROFIT_FLOOR = -0.3    # percent — tighten to -0.1 once WR routinely >50%
+# Require the current-market bear window to pass before promoting.
+# Rationale: bear_2025Q1 (Jan–Apr 2025) and bear_2026Q1 (Jan–Apr 2026) are structurally
+# different markets. A config that works in 2025 but not 2026 will fail live immediately.
+# This gate ensures we never promote a config blind to the current bear conditions.
+# Set to None to disable (e.g. when market is in BULL regime and bear_2026Q1 is irrelevant).
+BEAR_2026Q1_REQUIRED = "bear_2026Q1"
 BASELINE_FILE = ROOT / "finbuddy_memory" / "promotions" / "live_baseline.json"
 
 
@@ -118,6 +124,20 @@ def find_candidates() -> list[dict]:
         # Statistical-significance gate: require enough runs in each regime
         if len(g["bull_runs"]) < MIN_BULL_RUNS or len(g["bear_runs"]) < MIN_BEAR_RUNS:
             continue
+
+        # Current-market bear gate: the live bot runs in bear_2026Q1 conditions.
+        # A config that never passed on bear_2026Q1 is blind to the current market.
+        # Require at least one passing (profit>0, sharpe>0) run on that window.
+        if BEAR_2026Q1_REQUIRED:
+            bear_recent_runs = [r for r in g["bear_runs"] if r.get("window") == BEAR_2026Q1_REQUIRED]
+            if not bear_recent_runs:
+                continue  # config was never tested on bear_2026Q1 → skip
+            if not any(
+                r["metrics"].get("profit_pct", -1) > 0 and r["metrics"].get("sharpe", -1) > 0
+                for r in bear_recent_runs
+            ):
+                continue  # tested but never passed → skip
+
         bull_profits = [r["metrics"]["profit_pct"] for r in g["bull_runs"]]
         bear_profits = [r["metrics"]["profit_pct"] for r in g["bear_runs"]]
         bull_sharpes = [r["metrics"]["sharpe"]     for r in g["bull_runs"]]
@@ -126,9 +146,6 @@ def find_candidates() -> list[dict]:
 
         # Criteria: avg profit positive on each side + sharpe positive on average
         # + no single run worse than MIN_PER_RUN_PROFIT_FLOOR (safety floor).
-        # Was min(profits)>0 (2026-05-19): one slightly-negative run killed every
-        # otherwise-winning config. The floor prevents a disaster window from
-        # sneaking past on a positive average.
         bull_avg = sum(bull_profits) / len(bull_profits)
         bear_avg = sum(bear_profits) / len(bear_profits)
         bull_ok = (bull_avg > 0
@@ -140,9 +157,7 @@ def find_candidates() -> list[dict]:
         if not (bull_ok and bear_ok):
             continue
 
-        # WR gate (2026-05-23): at least 1 bull run AND 1 bear run must achieve
-        # WR ≥ 50%. Prevents configs that profit through massive wins but have
-        # unacceptably low win rates — consistent 10 USDT/day needs WR ≥ 50%.
+        # WR gate: at least 1 bull run AND 1 bear run must achieve WR ≥ 50%.
         bull_wr_ok = any(r.get("metrics", {}).get("wr", 0) >= 0.50 for r in g["bull_runs"])
         bear_wr_ok = any(r.get("metrics", {}).get("wr", 0) >= 0.50 for r in g["bear_runs"])
         if not bull_wr_ok or not bear_wr_ok:
