@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-28T18:00:01.653626+00:00",
+  "updated": "2026-05-28T18:30:01.672252+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -281,13 +281,13 @@
         "avg_profit_pct": 0.479
       },
       "BEAR": {
-        "n": 12,
+        "n": 13,
         "wins": 0,
-        "losses": 12,
+        "losses": 13,
         "wr": 0.0,
         "pf": 0.0,
-        "profit_usdt": -9.66,
-        "avg_profit_pct": -1.201
+        "profit_usdt": -9.68,
+        "avg_profit_pct": -1.112
       }
     },
     "TON/USDT:USDT": {
@@ -623,13 +623,13 @@
         "avg_profit_pct": -0.54
       },
       "BEAR": {
-        "n": 2,
+        "n": 3,
         "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 0.466,
-        "profit_usdt": -0.86,
-        "avg_profit_pct": -0.74
+        "losses": 2,
+        "wr": 0.3333,
+        "pf": 0.439,
+        "profit_usdt": -0.96,
+        "avg_profit_pct": -0.55
       }
     },
     "RENDER/USDT:USDT": {
@@ -668,8 +668,8 @@
     {
       "pair": "OP/USDT:USDT",
       "regime": "BEAR",
-      "reason": "WR=0% PF=0.00 n=12 profit=-9.66",
-      "n": 12,
+      "reason": "WR=0% PF=0.00 n=13 profit=-9.68",
+      "n": 13,
       "wr": 0.0,
       "pf": 0.0
     },
