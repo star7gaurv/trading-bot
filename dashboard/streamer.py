@@ -243,11 +243,28 @@ async def brain_queue(_: dict = Depends(require_auth)):
         except OSError:
             pass
 
+    # Detect live running experiment: try to take the flock non-blockingly.
+    # If it fails (rc != 0), the brain runner holds it → 1 experiment is running.
+    brain_running = 0
+    try:
+        probe = subprocess.run(
+            ["flock", "-n", "/tmp/finbuddy_brain_run.lock", "true"],
+            capture_output=True, timeout=2,
+        )
+        if probe.returncode != 0:
+            brain_running = 1
+            # Don't double-count: the running item is currently "queued" in queue.jsonl
+            statuses["running"] = statuses.get("running", 0) + 1
+            statuses["queued"] = max(0, statuses.get("queued", 0) - 1)
+    except Exception:
+        pass
+
     return {
         "total": sum(statuses.values()),
         "by_status": statuses,
         "oldest_queued_ts": oldest_queued_ts,
         "recent": recent[-30:],
+        "brain_running": brain_running,
     }
 
 
