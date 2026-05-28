@@ -46,18 +46,26 @@ function miniPath(values, w, h, color) {
 
 // ─── Cumulative P&L Line Chart ───────────────────────────────────────────────
 
+// FreqTrade field-name helper — newer versions use abs_profit, older used profit_all_coin
+function absProfit(d) {
+  return d.abs_profit ?? d.profit_all_coin ?? d.profit_fiat ?? null;
+}
+function relProfit(d) {
+  return d.rel_profit ?? d.profit_all_percent ?? d.profit_percent ?? null;
+}
+
 function CumulativePnlChart({ data }) {
   const days = useMemo(() => {
     if (!Array.isArray(data)) return [];
     return [...data]
       .sort((a, b) => new Date(a.date) - new Date(b.date))
-      .filter((d) => d.profit_all_coin != null);
+      .filter((d) => absProfit(d) != null);
   }, [data]);
 
   const cumulative = useMemo(() => {
     let sum = 0;
     return days.map((d) => {
-      sum += d.profit_all_coin ?? 0;
+      sum += absProfit(d) ?? 0;
       return { date: d.date, value: sum };
     });
   }, [days]);
@@ -217,11 +225,11 @@ function periodColumns(labelKey, labelTitle) {
   return [
     { key: labelKey, label: labelTitle, mono: true },
     {
-      key: "profit_all_coin",
+      key: "abs_profit",
       label: "P&L (USDT)",
       align: "right",
       render: (r) => {
-        const v = r.profit_all_coin ?? r.profit_fiat;
+        const v = absProfit(r);
         if (v == null) return <span className="text-text-muted font-mono">—</span>;
         const cls = v >= 0 ? "text-profit" : "text-loss";
         return (
@@ -233,17 +241,19 @@ function periodColumns(labelKey, labelTitle) {
       },
     },
     {
-      key: "profit_all_percent",
+      key: "rel_profit",
       label: "P&L %",
       align: "right",
       render: (r) => {
-        const v = r.profit_all_percent ?? r.profit_percent;
+        const v = relProfit(r);
         if (v == null) return <span className="text-text-muted font-mono">—</span>;
         const cls = v >= 0 ? "text-profit" : "text-loss";
+        // rel_profit is already a ratio (0.05 = 5%) in newer FreqTrade versions
+        const pct = Math.abs(v) < 1 ? v * 100 : v;
         return (
           <span className={`font-mono ${cls}`}>
             {v >= 0 ? "+" : ""}
-            {(v * 100).toFixed(2)}%
+            {pct.toFixed(2)}%
           </span>
         );
       },
@@ -295,7 +305,7 @@ function PairBarChart({ data }) {
   const pairs = useMemo(() => {
     if (!Array.isArray(data)) return [];
     return [...data]
-      .sort((a, b) => (b.profit_all_coin ?? 0) - (a.profit_all_coin ?? 0))
+      .sort((a, b) => (absProfit(b) ?? 0) - (absProfit(a) ?? 0))
       .slice(0, 20);
   }, [data]);
 
@@ -305,12 +315,12 @@ function PairBarChart({ data }) {
     );
   }
 
-  const absMax = Math.max(...pairs.map((p) => Math.abs(p.profit_all_coin ?? 0)), 0.01);
+  const absMax = Math.max(...pairs.map((p) => Math.abs(absProfit(p) ?? 0)), 0.01);
 
   return (
     <div className="space-y-1.5 py-1">
       {pairs.map((p) => {
-        const v = p.profit_all_coin ?? 0;
+        const v = absProfit(p) ?? 0;
         const pct = (Math.abs(v) / absMax) * 100;
         const isPos = v >= 0;
         return (

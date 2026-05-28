@@ -83,7 +83,7 @@ function TradeDrawer({ trade, onClose }) {
     ["P&L %", pnlPct(trade) != null ? `${pnlPct(trade).toFixed(3)}%` : "—"],
     ["P&L USDT", trade.profit_abs != null ? `${trade.profit_abs.toFixed(4)} USDT` : "—"],
     ["Opened", formatDateTime(trade.open_date)],
-    ["Closed", trade.close_date ? formatDateTime(trade.close_date) : "Open"],
+    ["Closed", trade.close_date ? formatDateTime(trade.close_date.replace(" ", "T") + "Z") : "Open"],
     ["Duration", trade.close_date
       ? formatDuration((trade.close_timestamp - trade.open_timestamp) / 1000)
       : formatDuration((Date.now() - trade.open_timestamp) / 1000)],
@@ -291,7 +291,10 @@ function ClosedTradesTable({ onSelectTrade }) {
       label: "Closed",
       align: "right",
       mono: true,
-      render: (r) => formatRelative(r.close_date),
+      // FreqTrade returns "2026-05-28 03:30:00" (space, no TZ) — add T+Z so
+      // all browsers parse it as UTC, not local time.
+      render: (r) =>
+        formatRelative(r.close_date ? r.close_date.replace(" ", "T") + "Z" : null),
     },
   ];
 

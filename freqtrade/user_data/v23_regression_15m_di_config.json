@@ -91,7 +91,7 @@
     "train_period_days": 90,
     "backtest_period_days": 7,
     "live_retrain_hours": 4,
-    "identifier": "finbuddy_v23_relstr_regul_1779710422",
+    "identifier": "finbuddy_v23_lp12_1779783141",
     "feature_parameters": {
       "include_timeframes": [
         "1h",
@@ -100,7 +100,7 @@
       "include_corr_pairlist": [
         "BTC/USDT:USDT"
       ],
-      "label_period_candles": 24,
+      "label_period_candles": 12,
       "include_shifted_candles": 2,
       "indicator_periods_candles": [
         10,
@@ -114,7 +114,7 @@
       "test_size": 0.15
     },
     "model_training_parameters": {
-      "n_estimators": 200,
+      "n_estimators": 100,
       "learning_rate": 0.03,
       "num_threads": 2,
       "min_child_samples": 50,

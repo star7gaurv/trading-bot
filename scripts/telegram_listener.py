@@ -248,8 +248,13 @@ def main() -> int:
             state["last_update_id"] = max(state.get("last_update_id", 0), uid)
 
         _save_state(state)
+        # Always print so log file mtime updates every cron tick.
+        # Without this, the health dashboard shows STALE whenever no buttons are pressed.
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
         if updates:
-            print(f"Processed {len(updates)} updates")
+            print(f"[{now}] Processed {len(updates)} updates")
+        else:
+            print(f"[{now}] checked — 0 updates")
         return 0
     finally:
         LOCK_FILE.unlink(missing_ok=True)

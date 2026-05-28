@@ -57,8 +57,10 @@ function trades7dPnl(profit) {
 
 // ─── Sub-panels ───
 function StatStrip({ profit, openTrades, regime, dailyPerf, balance }) {
-  const todayEntry = Array.isArray(dailyPerf) && dailyPerf.length > 0 ? dailyPerf[dailyPerf.length - 1] : null;
-  const today = todayEntry ? (todayEntry.profit_all_coin ?? todayEntry.profit_fiat) : null;
+  const dailyArr = dailyPerf?.data || [];
+  const todayEntry = dailyArr.length > 0 ? dailyArr[0] : null;
+  const isActuallyToday = todayEntry && todayEntry.date === new Date().toISOString().split("T")[0];
+  const today = isActuallyToday ? todayEntry.abs_profit : 0;
   const all = safe(profit, "profit_closed_coin");
   const winning = safe(profit, "winning_trades", 0) || 0;
   const losing = safe(profit, "losing_trades", 0) || 0;
@@ -360,20 +362,14 @@ function WfPanel({ data, error, lastUpdated }) {
   const available = safe(data, "available", false);
   const name = safe(data, "name", "");
   const summary = safe(data, "summary") || {};
-  const agg = summary.aggregate || summary.summary || {};
+  const agg = summary.aggregate || {};
   const passed = !!summary.pass;
 
-  const wr = agg.win_rate;
-  const sharpe = agg.weighted_sharpe ?? agg.sharpe;
-  const dd = agg.max_drawdown;
-  const pf = agg.profit_factor;
-
-  // Gate thresholds: WR>50%, Sharpe>0.5, DD<20%, PF>1.2
   const gates = [
-    { label: "WR", value: wr, fmt: (v) => `${(v * 100).toFixed(1)}%`, ok: wr != null && wr > 0.5 },
-    { label: "Sharpe", value: sharpe, fmt: (v) => v.toFixed(2), ok: sharpe != null && sharpe > 0.5 },
-    { label: "DD", value: dd, fmt: (v) => `${(v * 100).toFixed(1)}%`, ok: dd != null && Math.abs(dd) < 0.2 },
-    { label: "PF", value: pf, fmt: (v) => v.toFixed(2), ok: pf != null && pf > 1.2 },
+    { label: "WR", value: agg.weighted_win_rate, ok: agg.weighted_win_rate > 0.5, fmt: formatPct },
+    { label: "Sharpe", value: agg.weighted_sharpe || agg.sharpe, ok: (agg.weighted_sharpe || agg.sharpe) > 0.5, fmt: (v) => v.toFixed(3) },
+    { label: "DD", value: agg.worst_drawdown, ok: Math.abs(agg.worst_drawdown || 0) < 0.2, fmt: (v) => formatPct(Math.abs(v)) },
+    { label: "PF", value: agg.weighted_profit_factor, ok: agg.weighted_profit_factor > 1.2, fmt: (v) => v.toFixed(2) },
   ];
 
   return (

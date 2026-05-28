@@ -61,16 +61,17 @@ CONTEXT_FILE = REPO_ROOT / "finbuddy_memory/CONTEXT.md"
 REGIME_CURRENT = REPO_ROOT / "finbuddy_memory/regimes/current.json"
 PAIR_REGIME_STATS = REPO_ROOT / "finbuddy_memory/regimes/pair_regime_stats.json"
 QUEUE_FILE = REPO_ROOT / "finbuddy_memory/experiments/queue.jsonl"
+EXP_LOG_FILE = REPO_ROOT / "finbuddy_memory/experiments/log.jsonl"
 BRAIN_RUN_LOG = Path("/home/ubuntu/.finbuddy/logs/brain_run.log")
 WF_RESULTS_DIR = REPO_ROOT / "walkforward_results"
 CONFIG_JSON = REPO_ROOT / "freqtrade/user_data/config.json"
-WF_RUN_PATTERN = re.compile(r"^.+_\d{8}T\d{6}$")
+WF_RUN_PATTERN = re.compile(r"^[A-Za-z0-9_-]+_\d{8}T\d{6}$")
 ACTIVE_STALE_S = 12 * 3600
 
 # FreqTrade API
 FT_BASE = "http://127.0.0.1:8080/api/v1"
-FT_USER = "bot"
-FT_PASS = "REDACTED-FREQTRADE__API_SERVER__PASSWORD"
+FT_USER = os.environ.get("FT_USER", "bot")
+FT_PASS = os.environ.get("FT_PASS", "REDACTED-FREQTRADE__API_SERVER__PASSWORD")
 FT_AUTH = "Basic " + base64.b64encode(f"{FT_USER}:{FT_PASS}".encode()).decode()
 
 
@@ -82,6 +83,8 @@ def _preflight():
         missing.append("DASHBOARD_PASSWORD")
     if not os.environ.get("DASHBOARD_SECRET_KEY"):
         missing.append("DASHBOARD_SECRET_KEY")
+    if not os.environ.get("FT_USER") or not os.environ.get("FT_PASS"):
+        pass # Optional fallback
     if missing:
         print(f"FATAL: required env vars missing: {missing}", file=sys.stderr)
         print(
@@ -97,7 +100,7 @@ app = FastAPI(title="FinBuddy Dashboard Streamer")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://trade.star7gaurav.in", "http://localhost:5173", "http://REDACTED-SERVER_IP:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -191,38 +194,54 @@ async def system_health(_: dict = Depends(require_auth)):
 # ───────────────────── Brain ─────────────────────
 @app.get("/api/brain/queue")
 async def brain_queue(_: dict = Depends(require_auth)):
-    if not QUEUE_FILE.exists():
-        return {"total": 0, "by_status": {}, "recent": []}
-
     statuses: dict[str, int] = {}
     recent: list[dict] = []
     oldest_queued_ts: Optional[int] = None
 
-    try:
-        with open(QUEUE_FILE) as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    row = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                status = str(row.get("status", "unknown"))
-                statuses[status] = statuses.get(status, 0) + 1
-                if status == "queued":
-                    ts = row.get("created_at_ts") or row.get("ts")
-                    if isinstance(ts, (int, float)):
-                        if oldest_queued_ts is None or ts < oldest_queued_ts:
-                            oldest_queued_ts = int(ts)
-                recent.append({
-                    "hypothesis_id": row.get("hypothesis_id"),
-                    "status": status,
-                    "ts": row.get("ts") or row.get("created_at_ts"),
-                    "band": row.get("band") or row.get("kind"),
-                })
-    except OSError:
-        return {"error": "queue file unreadable"}
+    # Read queue.jsonl — pending/queued experiments
+    if QUEUE_FILE.exists():
+        try:
+            with open(QUEUE_FILE) as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        row = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    status = str(row.get("status", "queued"))
+                    statuses[status] = statuses.get(status, 0) + 1
+                    if status == "queued":
+                        ts = row.get("created_at_ts") or row.get("ts")
+                        if isinstance(ts, (int, float)):
+                            if oldest_queued_ts is None or ts < oldest_queued_ts:
+                                oldest_queued_ts = int(ts)
+                    recent.append({
+                        "hypothesis_id": row.get("hypothesis_id"),
+                        "status": status,
+                        "ts": row.get("ts") or row.get("created_at_ts"),
+                        "band": row.get("band") or row.get("kind"),
+                    })
+        except OSError:
+            pass
+
+    # Read log.jsonl — completed/failed experiments (ground truth for run counts)
+    if EXP_LOG_FILE.exists():
+        try:
+            with open(EXP_LOG_FILE) as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        row = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    status = str(row.get("status", "unknown"))
+                    statuses[status] = statuses.get(status, 0) + 1
+        except OSError:
+            pass
 
     return {
         "total": sum(statuses.values()),
@@ -232,42 +251,48 @@ async def brain_queue(_: dict = Depends(require_auth)):
     }
 
 
-_BRAIN_LOG_RE = re.compile(
-    r"\[brain\]\s+(\w+)\s+(\S+)\s+\[(\w+)\]\s*\?\s*(.*)"
-)
-
-
 @app.get("/api/brain/experiments")
 async def brain_experiments(
     limit: int = Query(50, ge=1, le=200), _: dict = Depends(require_auth)
 ):
-    if not BRAIN_RUN_LOG.exists():
+    """Return recent brain experiments from log.jsonl (ground truth with window + timestamps)."""
+    if not EXP_LOG_FILE.exists():
         return {"items": []}
-    out = subprocess.run(
-        ["tail", "-n", "2000", str(BRAIN_RUN_LOG)],
-        capture_output=True, text=True, timeout=5,
-    )
+
     items: list[dict] = []
-    for line in out.stdout.splitlines():
-        m = _BRAIN_LOG_RE.search(line)
-        if not m:
-            continue
-        verdict, hid, version, rest = m.group(1), m.group(2), m.group(3), m.group(4)
-        # Parse trailing "profit=X% WR=Y%" style fragments
-        kvs: dict[str, str] = {}
-        for kv in re.finditer(r"(\w+)=([^\s]+)", rest):
-            kvs[kv.group(1)] = kv.group(2)
-        # Timestamp prefix
-        ts_match = re.match(r"^(\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2})", line)
-        items.append({
-            "verdict": verdict,
-            "hypothesis_id": hid,
-            "version": version,
-            "raw": line.strip(),
-            "kvs": kvs,
-            "ts": ts_match.group(1) if ts_match else None,
-        })
-    items.reverse()
+    try:
+        with open(EXP_LOG_FILE) as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                m = row.get("metrics") or {}
+                cfg = row.get("config") or {}
+                # Extract profit_pct — log stores as decimal (0.052 = 5.2%), convert to %
+                profit_pct = m.get("profit_pct")
+                wr = m.get("wr")
+                items.append({
+                    "verdict": row.get("status", "unknown"),
+                    "hypothesis_id": row.get("hypothesis_id", ""),
+                    "window": row.get("window", ""),
+                    "version": cfg.get("target_version", "v23"),
+                    "ts": row.get("completed_at") or row.get("created_at"),
+                    "kvs": {
+                        "profit": f"{profit_pct * 100:.2f}" if profit_pct is not None else "",
+                        "WR": f"{wr * 100:.1f}" if wr is not None else "",
+                        "sharpe": f"{m.get('sharpe', ''):.3f}" if m.get("sharpe") is not None else "",
+                        "trades": str(m.get("trades", "")),
+                    },
+                })
+    except OSError:
+        return {"items": []}
+
+    # Most recent first (sort by completed_at descending)
+    items.sort(key=lambda x: x.get("ts") or "", reverse=True)
     return {"items": items[:limit]}
 
 
@@ -305,13 +330,78 @@ async def wf_latest(_: dict = Depends(require_auth)):
         try:
             with open(summary_path) as f:
                 data = json.load(f)
+            max_fold = 21
+            active_run = None
+            if active_run_name:
+                active_run = next((r for r in runs if r.name == active_run_name), None)
+            try:
+                logs = list(active_run.glob("fold_*.log")) if active_run else list(latest.glob("fold_*.log"))
+                if logs:
+                    max_fold = max([int(p.stem.split('_')[1]) for p in logs if p.stem.split('_')[1].isdigit()], default=21)
+            except Exception:
+                pass
+            return {"available": True, "name": latest.name, "summary": data, "active_run_name": active_run_name, "target_folds": max_fold}
         except (OSError, json.JSONDecodeError):
             continue
-        return {"available": True, "name": latest.name, "summary": data, "active_run_name": active_run_name}
     
     # No run with a valid summary found
     return {"available": False, "name": runs[0].name if runs else "", "active_run_name": active_run_name}
 
+
+
+
+@app.get("/api/wf/running-folds")
+async def wf_running_folds(_: dict = Depends(require_auth)):
+    runs = _wf_runs_sorted()
+    active_run = None
+    for run in runs:
+        if not (run / "summary.json").exists():
+            age_s = __import__('time').time() - run.stat().st_mtime
+            if age_s < ACTIVE_STALE_S:
+                active_run = run
+                break
+                
+    if not active_run:
+        return {"available": False}
+        
+    folds_data = []
+    fold_results = []
+    
+    for f in sorted(active_run.glob("fold_*_result.json")):
+        parts = f.name.split('_')
+        if len(parts) >= 2 and parts[1].isdigit():
+            fold_num = int(parts[1])
+            log_files = list(active_run.glob(f"fold_{fold_num:02d}_*.log"))
+            if not log_files:
+                continue
+            
+            try:
+                log_name = log_files[0].stem
+                dates = log_name.split('_')[-1]
+                ts_str, te_str = dates.split('-')
+                from datetime import datetime
+                test_start = datetime.strptime(ts_str, "%Y%m%d")
+                test_end = datetime.strptime(te_str, "%Y%m%d")
+                
+                fr = parse_fold(f, fold_num, test_start, test_end)
+                if fr:
+                    fold_results.append(fr)
+                    from dataclasses import asdict
+                    folds_data.append(asdict(fr))
+            except Exception as e:
+                print(f"Error parsing running fold {f.name}: {e}")
+                
+    if not fold_results:
+        return {"available": False, "active_run_name": active_run.name}
+        
+    agg = aggregate(fold_results)
+    
+    return {
+        "available": True,
+        "name": active_run.name,
+        "folds": folds_data,
+        "aggregate": agg
+    }
 
 
 @app.get("/api/wf/history")
@@ -385,22 +475,26 @@ async def trades_closed(
     offset: int = Query(0, ge=0),
     _: dict = Depends(require_auth),
 ):
-    return await ft_get("/trades", params={"limit": limit, "offset": offset})
+    return await ft_get("/trades", params={"limit": limit, "offset": offset, "order_by_id": "false"})
 
 
 @app.get("/api/performance/daily")
 async def performance_daily(days: int = Query(30, ge=1, le=365), _: dict = Depends(require_auth)):
-    return await ft_get("/daily", params={"timescale": days})
+    # FreqTrade wraps the list as {"data": [...], "stake_currency": "USDT"}
+    result = await ft_get("/daily", params={"timescale": days})
+    return result.get("data", result) if isinstance(result, dict) else result
 
 
 @app.get("/api/performance/weekly")
 async def performance_weekly(weeks: int = Query(12, ge=1, le=52), _: dict = Depends(require_auth)):
-    return await ft_get("/weekly", params={"timescale": weeks})
+    result = await ft_get("/weekly", params={"timescale": weeks})
+    return result.get("data", result) if isinstance(result, dict) else result
 
 
 @app.get("/api/performance/monthly")
 async def performance_monthly(months: int = Query(6, ge=1, le=24), _: dict = Depends(require_auth)):
-    return await ft_get("/monthly", params={"timescale": months})
+    result = await ft_get("/monthly", params={"timescale": months})
+    return result.get("data", result) if isinstance(result, dict) else result
 
 
 @app.get("/api/performance/pair")
@@ -453,7 +547,10 @@ async def get_config(_: dict = Depends(require_auth)):
 
 # ───────────────────── WebSockets (legacy preserved) ─────────────────────
 @app.websocket("/ws/brain")
-async def websocket_brain(websocket: WebSocket):
+async def websocket_brain(websocket: WebSocket, token: str = Query(None)):
+    if not token or not verify_token(token):
+        await websocket.close(code=1008)
+        return
     await websocket.accept()
     try:
         tail_output = subprocess.check_output(
@@ -484,7 +581,10 @@ async def websocket_brain(websocket: WebSocket):
 
 
 @app.websocket("/ws/memory")
-async def websocket_memory(websocket: WebSocket):
+async def websocket_memory(websocket: WebSocket, token: str = Query(None)):
+    if not token or not verify_token(token):
+        await websocket.close(code=1008)
+        return
     await websocket.accept()
     last_mtime = 0.0
     try:

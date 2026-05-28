@@ -96,6 +96,10 @@ export async function getWfHistory(limit = 20) {
   return request(`/api/wf/history?limit=${limit}`);
 }
 
+export async function getRunningFolds() {
+  return request("/api/wf/running-folds");
+}
+
 // ─── Regime ───
 export async function getRegimeCurrent() {
   return request("/api/regime/current");
