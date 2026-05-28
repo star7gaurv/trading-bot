@@ -37,6 +37,7 @@ import re
 import subprocess
 import sys
 import time
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Optional
 
@@ -495,23 +496,90 @@ async def trades_closed(
     return await ft_get("/trades", params={"limit": limit, "offset": offset, "order_by_id": "false"})
 
 
+async def _trade_wl_buckets() -> dict[str, dict]:
+    """Return {date_key: {wins, losses}} for all three bucket types.
+
+    FreqTrade daily/weekly/monthly endpoints omit win/loss breakdown.
+    We compute it here from closed trades so the UI can show "W / L".
+    Returns {"day": {"2026-05-28": {"wins":3,"losses":2}},
+             "week": {"2026-05-25": ...},
+             "month": {"2026-05-01": ...}}
+    """
+    try:
+        result = await ft_get("/trades", params={"limit": 1000, "offset": 0})
+        trades = result.get("trades", []) if isinstance(result, dict) else []
+    except Exception:
+        return {"day": {}, "week": {}, "month": {}}
+
+    day_b: dict[str, dict] = {}
+    week_b: dict[str, dict] = {}
+    month_b: dict[str, dict] = {}
+
+    for t in trades:
+        cd = t.get("close_date") or ""
+        if not cd or len(cd) < 10:
+            continue
+        profit = t.get("profit_abs") or 0.0
+
+        day_key = str(cd)[:10]
+        try:
+            d = datetime.strptime(day_key, "%Y-%m-%d")
+            monday = d - timedelta(days=d.weekday())
+            week_key = monday.strftime("%Y-%m-%d")
+            month_key = day_key[:7] + "-01"
+        except ValueError:
+            continue
+
+        for bucket, key in ((day_b, day_key), (week_b, week_key), (month_b, month_key)):
+            if key not in bucket:
+                bucket[key] = {"wins": 0, "losses": 0}
+            if profit > 0:
+                bucket[key]["wins"] += 1
+            else:
+                bucket[key]["losses"] += 1
+
+    return {"day": day_b, "week": week_b, "month": month_b}
+
+
+def _enrich_wl(data: list, bucket: dict) -> list:
+    """Add winning_trades / losing_trades to each period row."""
+    for row in data:
+        key = str(row.get("date", ""))[:10]
+        if key in bucket:
+            row["winning_trades"] = bucket[key]["wins"]
+            row["losing_trades"] = bucket[key]["losses"]
+    return data
+
+
 @app.get("/api/performance/daily")
 async def performance_daily(days: int = Query(30, ge=1, le=365), _: dict = Depends(require_auth)):
-    # FreqTrade wraps the list as {"data": [...], "stake_currency": "USDT"}
-    result = await ft_get("/daily", params={"timescale": days})
-    return result.get("data", result) if isinstance(result, dict) else result
+    # Fetch FreqTrade data and W/L buckets in parallel
+    ft_result, wl = await asyncio.gather(
+        ft_get("/daily", params={"timescale": days}),
+        _trade_wl_buckets(),
+    )
+    data = ft_result.get("data", ft_result) if isinstance(ft_result, dict) else ft_result
+    return _enrich_wl(data, wl["day"]) if isinstance(data, list) else data
 
 
 @app.get("/api/performance/weekly")
 async def performance_weekly(weeks: int = Query(12, ge=1, le=52), _: dict = Depends(require_auth)):
-    result = await ft_get("/weekly", params={"timescale": weeks})
-    return result.get("data", result) if isinstance(result, dict) else result
+    ft_result, wl = await asyncio.gather(
+        ft_get("/weekly", params={"timescale": weeks}),
+        _trade_wl_buckets(),
+    )
+    data = ft_result.get("data", ft_result) if isinstance(ft_result, dict) else ft_result
+    return _enrich_wl(data, wl["week"]) if isinstance(data, list) else data
 
 
 @app.get("/api/performance/monthly")
 async def performance_monthly(months: int = Query(6, ge=1, le=24), _: dict = Depends(require_auth)):
-    result = await ft_get("/monthly", params={"timescale": months})
-    return result.get("data", result) if isinstance(result, dict) else result
+    ft_result, wl = await asyncio.gather(
+        ft_get("/monthly", params={"timescale": months}),
+        _trade_wl_buckets(),
+    )
+    data = ft_result.get("data", ft_result) if isinstance(ft_result, dict) else ft_result
+    return _enrich_wl(data, wl["month"]) if isinstance(data, list) else data
 
 
 @app.get("/api/performance/pair")
@@ -584,9 +652,37 @@ async def whitelist(_: dict = Depends(require_auth)):
     return await ft_get("/whitelist")
 
 
+_ENV_FILE = REPO_ROOT / "freqtrade" / ".env"
+_STRATEGY_FILE = REPO_ROOT / "freqtrade/user_data/strategies/FinBuddyFreqAI_v23.py"
+
+
+def _read_env_file(path: Path) -> dict[str, str]:
+    """Parse a KEY=VALUE .env file, skip comments and blanks."""
+    result: dict[str, str] = {}
+    try:
+        for line in path.read_text().splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            k, _, v = line.partition("=")
+            result[k.strip()] = v.strip()
+    except OSError:
+        pass
+    return result
+
+
+def _extract_startup_candles(path: Path) -> Optional[int]:
+    """Grep strategy file for startup_candle_count = N."""
+    try:
+        m = re.search(r"startup_candle_count\s*[=:]\s*(\d+)", path.read_text())
+        return int(m.group(1)) if m else None
+    except OSError:
+        return None
+
+
 @app.get("/api/config")
 async def get_config(_: dict = Depends(require_auth)):
-    # Pull the relevant slice of config.json — strategy, identifier, thresholds, pairs
+    """Return live config with nested freqai/exchange/env_vars for the Settings tab."""
     if not CONFIG_JSON.exists():
         return {"available": False}
     try:
@@ -596,7 +692,31 @@ async def get_config(_: dict = Depends(require_auth)):
         return {"available": False, "error": "unreadable"}
 
     freqai = cfg.get("freqai", {}) or {}
+    fp = freqai.get("feature_parameters", {}) or {}
+    exchange_cfg = cfg.get("exchange", {}) or {}
+
+    # Read live env vars from .env file (what's actually injected into the container)
+    env_vars_raw = _read_env_file(_ENV_FILE)
+    env_vars = {
+        k: env_vars_raw.get(k)
+        for k in (
+            "FREQAI_LONG_THRESHOLD", "FREQAI_SHORT_THRESHOLD",
+            "FREQAI_K_TP", "FREQAI_K_SL",
+            "FREQAI_STABILITY_N", "FREQAI_DAILY_LOSS_LIMIT",
+            "FREQAI_FEATURE_SET", "FREQAI_ML_THRESHOLD",
+            "FREQAI_LEV_HIGH", "FREQAI_LEV_MED", "FREQAI_LEV_LOW",
+        )
+        if env_vars_raw.get(k) is not None
+    }
+
+    startup_cc = (
+        fp.get("startup_candle_count")
+        or cfg.get("startup_candle_count")
+        or _extract_startup_candles(_STRATEGY_FILE)
+    )
+
     return {
+        # Flat fields (backwards compat)
         "strategy": cfg.get("strategy"),
         "max_open_trades": cfg.get("max_open_trades"),
         "stake_currency": cfg.get("stake_currency"),
@@ -607,40 +727,58 @@ async def get_config(_: dict = Depends(require_auth)):
         "trailing_stop": cfg.get("trailing_stop"),
         "freqai_identifier": freqai.get("identifier"),
         "live_retrain_hours": freqai.get("live_retrain_hours"),
-        "pair_whitelist": (cfg.get("exchange") or {}).get("pair_whitelist", []),
-        "pair_blacklist": (cfg.get("exchange") or {}).get("pair_blacklist", []),
+        "startup_candle_count": startup_cc,
+        "pair_whitelist": exchange_cfg.get("pair_whitelist", []),
+        "pair_blacklist": exchange_cfg.get("pair_blacklist", []),
+        # Nested structure for Settings.jsx
+        "freqai": {
+            "identifier": freqai.get("identifier"),
+            "live_retrain_hours": freqai.get("live_retrain_hours"),
+            "startup_candle_count": startup_cc,
+        },
+        "exchange": {
+            "name": exchange_cfg.get("name"),
+            "futures_mode": exchange_cfg.get("futures_mode", "isolated"),
+        },
+        "env_vars": env_vars,
     }
 
 
-# ───────────────────── WebSockets (legacy preserved) ─────────────────────
+# ───────────────────── WebSockets ─────────────────────
 @app.websocket("/ws/brain")
 async def websocket_brain(websocket: WebSocket, token: str = Query(None)):
+    """Stream brain experiment log (brain_run.log) to the dashboard."""
     if not token or not verify_token(token):
         await websocket.close(code=1008)
         return
     await websocket.accept()
-    try:
-        tail_output = subprocess.check_output(
-            ["tail", "-n", "5000", str(LOG_FILE)], timeout=5
-        ).decode("utf-8", errors="replace")
-        hist_lines = [l.strip() for l in tail_output.split("\n") if "FinBuddyLLMModel" in l and "[" in l]
-        for line in hist_lines[-50:]:
-            await websocket.send_json({"type": "brain_log", "log": line})
-    except (subprocess.SubprocessError, FileNotFoundError, OSError) as e:
-        print(f"Error fetching history: {e}", file=sys.stderr)
 
+    # Send last 100 lines of brain_run.log as history
+    if BRAIN_RUN_LOG.exists():
+        try:
+            hist = subprocess.check_output(
+                ["tail", "-n", "100", str(BRAIN_RUN_LOG)], timeout=5
+            ).decode("utf-8", errors="replace")
+            for line in hist.splitlines():
+                if line.strip():
+                    await websocket.send_json({"type": "brain_log", "log": line.strip()})
+        except (subprocess.SubprocessError, FileNotFoundError, OSError) as e:
+            print(f"WS brain history error: {e}", file=sys.stderr)
+
+    # Tail for new lines
+    log_path = BRAIN_RUN_LOG if BRAIN_RUN_LOG.exists() else LOG_FILE
     try:
-        async with aiofiles.open(LOG_FILE, "r") as f:
+        async with aiofiles.open(log_path, "r") as f:
             await f.seek(0, os.SEEK_END)
             while True:
                 line = await f.readline()
                 if not line:
-                    await asyncio.sleep(0.5)
+                    await asyncio.sleep(1.0)
                     continue
-                if "FinBuddyLLMModel" in line and "[" in line:
+                if line.strip():
                     await websocket.send_json({"type": "brain_log", "log": line.strip()})
     except Exception as e:
-        print(f"Error in brain streamer: {e}", file=sys.stderr)
+        print(f"WS brain stream error: {e}", file=sys.stderr)
         try:
             await websocket.close()
         except RuntimeError:

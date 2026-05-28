@@ -143,11 +143,15 @@ export async function getStrategyConfig() {
 }
 
 // ─── WebSockets — same-origin, nginx already proxies /ws/ ───
+// Token must be passed as ?token= query param — WebSocket API has no
+// custom header support, so Bearer in Authorization is not possible.
 export function brainLogSocket() {
   const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
-  return new WebSocket(`${proto}//${window.location.host}/ws/brain`);
+  const token = encodeURIComponent(getToken() || "");
+  return new WebSocket(`${proto}//${window.location.host}/ws/brain?token=${token}`);
 }
 export function memorySocket() {
   const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
-  return new WebSocket(`${proto}//${window.location.host}/ws/memory`);
+  const token = encodeURIComponent(getToken() || "");
+  return new WebSocket(`${proto}//${window.location.host}/ws/memory?token=${token}`);
 }
