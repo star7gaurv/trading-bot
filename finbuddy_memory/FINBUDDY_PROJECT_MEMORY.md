@@ -317,18 +317,18 @@ An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 keep in mind no matter what we have to make it self aware, self evolving, conscious brain. and when say self aware it means dynamically can changes parameters to adjust tuning itself. so that. it can run on long, short both by detecting trend time. as we have made plan already. and it must have wide range it stored so that it can have broader perspective , reference and data to analyze. but keep also in mind the code you do make it achieve should not be make it worse than current system.
 
 <!-- AUTO-SYNC-START -->
-> 🤖 *Auto-synced by `scripts/sync_context.py` at 2026-05-28 16:00 UTC*
+> 🤖 *Auto-synced by `scripts/sync_context.py` at 2026-05-28 20:00 UTC*
 
 ## 🚀 Live System State (Auto-Synced)
 
 | Component | Status | Notes |
 |---|---|---|
 | **FreqTrade** | ✅ Running, dry-run | Strategy v16.2, Binance USDT-M, isolated margin, port 8080 |
-| **FreqAI identifier** | `finbuddy_v23_ls_1779815877` | Active model key |
+| **FreqAI identifier** | `finbuddy_v23_promoted_1779997908` | Active model key |
 | **Whitelist** | 26 pairs | Binance USDT-M perpetuals |
 | **Regime** | 🐻 BEAR | From HMM (updates every 4h) |
-| **Open trades** | 0 (0L / 0S) | Live positions |
-| **Closed trades** | 433 | All-time P&L: 51.36 USDT |
+| **Open trades** | 8 (8L / 0S) | Live positions |
+| **Closed trades** | 450 | All-time P&L: 50.27 USDT |
 | **Last training** | unknown | Age of most recent 'Done training' log event |
 | **Walk-forward** | ❌ FAIL — WR 0.0%, Sharpe 0.00, DD 0.0%, PF 0.00 (0 trades, run `FinBuddyFreqAI_v23_2025-10-01_2026-05-01_20260524T220002`) | OOS validator — gates Phase 10 |
 
