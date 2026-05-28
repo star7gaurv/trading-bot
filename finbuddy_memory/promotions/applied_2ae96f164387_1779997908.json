@@ -22,5 +22,8 @@
     "total_trades": 226,
     "improvement": 0.282
   },
-  "approval_command": "python scripts/brain/promote.py --apply 2ae96f164387"
+  "approval_command": "python scripts/brain/promote.py --apply 2ae96f164387",
+  "applied_at": 1779997908,
+  "backup": "/home/ubuntu/var/www/html/trade/freqtrade/user_data/config.json.bak-1779997908",
+  "restart_ok": true
 }

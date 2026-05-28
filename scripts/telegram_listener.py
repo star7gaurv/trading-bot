@@ -174,16 +174,28 @@ def dispatch_callback(update: dict, state: dict) -> None:
 
     if verb == "apply":
         ok, info = handle_apply(arg)
-        answer_callback(cq_id, ("✅ applied" if ok else f"❌ {info}"), show_alert=not ok)
+        label = "✅ APPLIED" if ok else "❌ APPLY FAILED"
+        # answer_callback clears the loading spinner — may fail if >30s since tap,
+        # but the action already ran so we still send the confirmation below.
+        answer_callback(cq_id, ("✅ Applied — check Telegram for confirmation" if ok else f"❌ {info[:150]}"), show_alert=True)
         if message_id and chat_id:
-            label = "✅ APPLIED" if ok else "❌ APPLY FAILED"
             edit_message(message_id, chat_id,
                          f"<b>{label}</b> · hash <code>{arg}</code>\n<i>{info[:300]}</i>")
+        # Always send a fresh message — visible even if answer_callback expired.
+        # Parse key fields from the apply output for a rich summary.
+        identifier = next((l.split("→")[-1].strip() for l in info.split("\n") if "→" in l and "identifier" in l.lower()), "")
+        new_thresh = next((l.split("updated:")[-1].strip() for l in info.split("\n") if ".env updated" in l), "")
         send(
             subsystem=Subsystem.BRAIN_PROMOTION,
             status=Status.OK if ok else Status.FAIL,
-            title=f"apply tapped — {label.lower()}",
-            fields={"Hash": f"<code>{arg}</code>", "Detail": info[:200]},
+            title=f"🎉 PROMOTED TO LIVE" if ok else f"❌ Promotion failed",
+            fields={
+                "Status": "✅ Config live — bot restarted" if ok else f"❌ {info[:100]}",
+                "Hash": f"<code>{arg}</code>",
+                "Identifier": identifier or "see logs",
+                "Updated": new_thresh or ".env written",
+            },
+            context="Pair-regime stats reset. New model training now." if ok else "",
         )
 
     elif verb == "skip":
@@ -236,7 +248,10 @@ def main() -> int:
     try:
         state = _load_state()
         offset = int(state.get("last_update_id", 0)) + 1
-        updates = get_updates(offset=offset, timeout_s=0)
+        # Long-poll: hold connection open for 55s waiting for updates.
+        # This means button taps are picked up within seconds rather than
+        # up to 2 minutes (the cron interval). 55s < 60s cron so no overlap.
+        updates = get_updates(offset=offset, timeout_s=55)
 
         for update in updates:
             uid = update.get("update_id", 0)

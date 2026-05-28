@@ -323,8 +323,15 @@ def apply_promotion(config_hash: str) -> int:
     # Apply timeframe + label_period from promoted config
     if "timeframe" in new_cfg:
         live["timeframe"] = new_cfg["timeframe"]
+    feat = live.setdefault("freqai", {}).setdefault("feature_parameters", {})
     if "label_period_candles" in new_cfg:
-        live.setdefault("freqai", {}).setdefault("feature_parameters", {})["label_period_candles"] = new_cfg["label_period_candles"]
+        feat["label_period_candles"] = new_cfg["label_period_candles"]
+    # Apply DI / SVM settings from promoted config so live matches what was validated.
+    # filter_di=False → DI_threshold=0 (disabled); filter_di=True → DI_threshold=1.0.
+    if "filter_di" in new_cfg:
+        feat["DI_threshold"] = 0 if not new_cfg["filter_di"] else 1.0
+    if "filter_svm" in new_cfg:
+        feat["use_SVM_to_remove_outliers"] = bool(new_cfg["filter_svm"])
     live.setdefault("freqai", {})["identifier"] = new_identifier
     with LIVE_CONFIG.open("w") as f:
         json.dump(live, f, indent=4)
@@ -375,10 +382,20 @@ def apply_promotion(config_hash: str) -> int:
     try:
         if pair_regime_path.exists():
             data = json.loads(pair_regime_path.read_text())
-            for pair in data:
-                data[pair] = {r: {"n": 0, "wr": 0.5, "pf": 1.0} for r in data[pair]}
+            # Structure: data["stats"][pair][regime] = {...stats...}
+            # Top level also has metadata keys: updated, lookback_days, block_rule, blocked.
+            # Must NOT iterate data directly — only reset data["stats"].
+            stats = data.get("stats", {})
+            neutral = {"n": 0, "wins": 0, "losses": 0, "wr": 0.5, "pf": 1.0,
+                       "profit_usdt": 0.0, "avg_profit_pct": 0.0}
+            for pair in stats:
+                stats[pair] = {regime: dict(neutral) for regime in stats[pair]}
+            data["stats"] = stats
+            data["blocked"] = {}   # clear blocked list so no pair starts pre-blocked
+            from datetime import datetime, timezone as _tz
+            data["updated"] = datetime.now(_tz.utc).isoformat()
             pair_regime_path.write_text(json.dumps(data, indent=2))
-            print(f"pair_regime_stats.json reset ({len(data)} pairs) for new identifier")
+            print(f"pair_regime_stats.json reset ({len(stats)} pairs) for new identifier")
         else:
             print("pair_regime_stats.json not found — skipping reset (will be created fresh)")
     except Exception as e:
