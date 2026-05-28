@@ -335,7 +335,11 @@ def _build_env_args(cfg: dict, identifier: str) -> list[str]:
         "-e", f"FREQAI_K_TP={cfg.get('k_tp', 2.0)}",
         "-e", "FREQTRADE__DRY_RUN_WALLET=10000",
         "-e", f"FREQTRADE__FREQAI__IDENTIFIER={identifier}",
-        "-e", f"FREQTRADE__FREQAI__FEATURE_PARAMETERS__LABEL_PERIOD_CANDLES={cfg.get('label_period_candles', 24)}",
+        # Only pass label_period_candles when explicitly set to an integer.
+        # If null/None → omit env var so FreqTrade uses the config file default (12).
+        # Passing "None" as a string causes FreqTrade schema validation to crash.
+        *(["-e", f"FREQTRADE__FREQAI__FEATURE_PARAMETERS__LABEL_PERIOD_CANDLES={cfg['label_period_candles']}"]
+          if cfg.get('label_period_candles') is not None else []),
         # Bypass the pair-regime gate in brain backtests (2026-05-26).
         # The gate uses LIVE rolling trade stats (last 30d) which are irrelevant
         # to historical test windows. e.g. OP blocked in BEAR because it has a
