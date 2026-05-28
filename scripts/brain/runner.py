@@ -476,7 +476,9 @@ def _run_scout(h: dict) -> tuple[bool, dict]:
     Uses the same config and env vars as the full run — only the pair list shrinks.
     Returns (passed, scout_metrics).
 
-    Pass gate: profit_pct > 0 AND sharpe > 0 AND trades >= 5.
+    Pass gate: profit_pct > 0 AND sharpe > 0 AND trades >= min_trades.
+    min_trades = 2 for high-threshold configs (lt >= 2.0) since 6/26 pairs naturally
+    generate few signals; min_trades = 5 for normal configs.
     Fail means the hypothesis is very unlikely to pass the full 26-pair run.
 
     Note: train_period_days=90 requires the full 3-month timerange — we can't shorten
@@ -503,10 +505,15 @@ def _run_scout(h: dict) -> tuple[bool, dict]:
         return False, {"trades": 0, "profit_pct": 0.0, "sharpe": 0.0}
 
     m = _compute_metrics_from_raw_trades(trades)
+    # High-threshold configs (lt >= 2.0) naturally generate few trades on 6 scout pairs.
+    # At lt=3.25 on 6/26 pairs over 3 months ≈ 3-4 trades — lowering min to 2 avoids
+    # incorrectly scout-failing bear_2026Q1 targeted experiments before they get a full run.
+    lt = h.get("config", {}).get("long_threshold", 1.5)
+    min_trades = 2 if lt >= 2.0 else 5
     passed = (
         m.get("profit_pct", -1) > 0
         and m.get("sharpe", -1) > 0
-        and m.get("trades", 0) >= 5
+        and m.get("trades", 0) >= min_trades
     )
     return passed, m
 
