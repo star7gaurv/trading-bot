@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-28T11:30:02.018003+00:00",
+  "updated": "2026-05-28T12:00:01.970375+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -301,13 +301,13 @@
         "avg_profit_pct": 1.34
       },
       "BEAR": {
-        "n": 4,
-        "wins": 0,
+        "n": 5,
+        "wins": 1,
         "losses": 4,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -5.53,
-        "avg_profit_pct": -2.118
+        "wr": 0.2,
+        "pf": 0.219,
+        "profit_usdt": -4.32,
+        "avg_profit_pct": -1.278
       }
     },
     "ONDO/USDT:USDT": {
@@ -680,6 +680,14 @@
       "n": 5,
       "wr": 0.0,
       "pf": 0.0
+    },
+    {
+      "pair": "TON/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=20% PF=0.22 n=5 profit=-4.32",
+      "n": 5,
+      "wr": 0.2,
+      "pf": 0.219
     },
     {
       "pair": "LTC/USDT:USDT",
