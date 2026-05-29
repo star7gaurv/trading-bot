@@ -710,13 +710,16 @@ def run_next(max_runs: int = 1, status_only: bool = False) -> int:
             # 2. Auto-add any windows not yet queued or tested — so a promising config
             #    gets tested on ALL 5 windows without waiting for random re-discovery.
             if metrics.get("profit_pct", -1) > 0 and metrics.get("sharpe", -1) > 0:
-                from hypothesis_gen import WINDOWS
+                from hypothesis_gen import WINDOWS, PAIRED_WINDOWS
+                # Use PAIRED_WINDOWS order so cross-window queuing preserves
+                # the bull→bear interleaving: bull_2024Q2 queued before bear_2025Q1, etc.
+                paired_windows_dict = {w: WINDOWS[w] for w in PAIRED_WINDOWS if w in WINDOWS}
                 # Attach metrics to h so queue_missing_windows can log them in rationale
                 h_with_metrics = {**h, "metrics": metrics}
                 promoted = prioritize_same_config(h)
                 if promoted:
                     print(f"[brain] PRIORITY: moved {promoted} queued windows for {h['hypothesis_id'][:8]} to front")
-                added = queue_missing_windows(h_with_metrics, WINDOWS)
+                added = queue_missing_windows(h_with_metrics, paired_windows_dict)
                 if added:
                     print(f"[brain] CROSS-WINDOW: queued {added} new windows for {h['hypothesis_id'][:8]} (not yet tested)")
 

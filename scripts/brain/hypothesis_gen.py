@@ -96,6 +96,19 @@ WINDOWS = {
     "bear_2026Q1": "20260101-20260401",   # BTC declining Jan-Apr 2026 (renamed from recent_2026Q1)
 }
 
+# Window order for queue generation: bull→bear pairs so the runner tests
+# each config on one bull AND one bear back-to-back (~3h to both results).
+# bull_2024Q2 first (historically strongest bull signal), bear_2025Q1 second
+# (best WR/PF on bear), bear_2026Q1 at position 4 (promotion gate window),
+# bull_2024Q1 last (hardest bull, least informative for initial validation).
+PAIRED_WINDOWS = [
+    "bull_2024Q2",
+    "bear_2025Q1",
+    "bull_2025Q4",
+    "bear_2026Q1",
+    "bull_2024Q1",
+]
+
 # Target version tag — added to every new queued experiment so promote.py can
 # exclude the 268 legacy raw-% experiments (which have no target_version field).
 TARGET_VERSION = "zscore"
@@ -508,13 +521,26 @@ def generate_and_queue(safe_n: int = 6, aggressive_n: int = 6, windows: list[str
     One brain cycle: generate safe + aggressive variants for BOTH architectures,
     queue on each window. Returns count of newly queued hypotheses.
 
-    bear_2026Q1 gets double weighting — it is the promotion gating constraint
-    (BEAR_2026Q1_REQUIRED in promote.py) and the hardest window to crack.
-    Every variant that would be queued on all 5 windows also gets an extra
-    bear_2026Q1 entry so the brain puts 2× as many experiments there.
+    Window order matters for speed-to-promotion: each variant is queued as
+    (bull_2024Q2, bear_2025Q1, bull_2025Q4, bear_2026Q1, bull_2024Q1) so that
+    the runner always processes one bull → one bear back-to-back for every config.
+    This means a promising config gets BOTH a bull and a bear result within ~3h
+    instead of waiting for the entire bull backlog to drain first.
+
+    PAIRED_WINDOWS order: best historical bull first, its matching bear second.
+    bear_2026Q1 is the promotion gate (BEAR_2026Q1_REQUIRED) — included at position 4.
+    bull_2024Q1 is the hardest bull and least informative early — placed last.
     """
     from experiment_log import read_queue as _rq
-    target_windows = windows or list(WINDOWS.keys())
+    # Paired window order: bull, bear, bull, bear, bull — tested back-to-back per config.
+    PAIRED_WINDOWS = [
+        "bull_2024Q2",  # primary bull validation (strongest bull signal historically)
+        "bear_2025Q1",  # primary bear validation (best PF/WR on bear)
+        "bull_2025Q4",  # secondary bull (recent, pre-2026-crash)
+        "bear_2026Q1",  # promotion gate window (must pass WR≥50%)
+        "bull_2024Q1",  # tertiary bull (earliest, hardest — placed last)
+    ]
+    target_windows = windows or PAIRED_WINDOWS
     safe = generate_safe_band_both(n_per_arch=safe_n // 2 + safe_n % 2)
     aggr = generate_aggressive_band(n=aggressive_n)
     all_variants = safe + aggr
@@ -527,16 +553,9 @@ def generate_and_queue(safe_n: int = 6, aggressive_n: int = 6, windows: list[str
     }
 
     queued = 0
-    # bear_2026Q1 is the promotion gate — give it 2× representation.
-    # For variants already destined for bear_2026Q1 via target_windows we add a
-    # second aggressive-band pass specifically on that window.
-    extra_bear_variants = generate_aggressive_band(n=aggressive_n) if "bear_2026Q1" in target_windows else []
-
-    for v in all_variants + extra_bear_variants:
+    for v in all_variants:
         cfg = _stamp_target_version(v["config"])
-        # Extra bear variants only run on bear_2026Q1; normal variants run on all windows.
-        windows_for_this = ["bear_2026Q1"] if v in extra_bear_variants else target_windows
-        for win_name in windows_for_this:
+        for win_name in target_windows:
             if win_name not in WINDOWS:
                 continue
             if (_ch(cfg), win_name) in already_queued:
