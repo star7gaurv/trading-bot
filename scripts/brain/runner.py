@@ -723,16 +723,13 @@ def run_next(max_runs: int = 1, status_only: bool = False) -> int:
                 if added:
                     print(f"[brain] CROSS-WINDOW: queued {added} new windows for {h['hypothesis_id'][:8]} (not yet tested)")
 
-            # After every completion, keep queue sorted so current-regime windows
-            # stay at the front. This is a lightweight rewrite (queue is small).
-            try:
-                import json as _json
-                _regime_file = ROOT / "finbuddy_memory" / "regimes" / "current.json"
-                _regime = _json.load(_regime_file.open()).get("regime", "NEUTRAL")
-                if _regime in ("BEAR", "BULL"):
-                    prioritize_regime_windows(_regime)
-            except Exception:
-                pass  # never crash the experiment loop on a queue-sort failure
+            # NOTE: prioritize_regime_windows() intentionally NOT called here.
+            # It moves ALL bear (or bull) entries to the front which destroys
+            # the paired bull+bear ordering that enables fast promotion.
+            # Queue order is maintained by PAIRED_WINDOWS in generate_and_queue()
+            # and the initial reorder at queue-build time. Manual regime seeding
+            # via `brain_cli.py seed-regime` can still be used for explicit
+            # regime-targeting sessions.
 
             # Telegram via unified template ? silent for per-experiment results
             # (avoid spamming the user; only promotion candidates make a sound)
