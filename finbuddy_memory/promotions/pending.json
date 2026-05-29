@@ -1,0 +1,26 @@
+{
+  "proposed_at": "2026-05-29T07:00:02.012291+00:00",
+  "config_hash": "2ae96f164387",
+  "config": {
+    "strategy": "FinBuddyFreqAI_v23",
+    "freqaimodel": "LightGBMRegressor",
+    "config_file": "v23_regression_15m_di_config.json",
+    "timeframe": "15m",
+    "long_threshold": 3.25,
+    "short_threshold": -3.0,
+    "k_sl": 2.0,
+    "k_tp": 2.25,
+    "stability_n": 2,
+    "label_period_candles": 12,
+    "filter_di": false,
+    "filter_svm": true,
+    "arch": "v23"
+  },
+  "metrics_summary": {
+    "avg_profit": 0.282,
+    "avg_sharpe": 3.817,
+    "total_trades": 226,
+    "improvement": 0.282
+  },
+  "approval_command": "python scripts/brain/promote.py --apply 2ae96f164387"
+}
