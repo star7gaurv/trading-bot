@@ -116,14 +116,14 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ### FreqTrade
 - Running **`FinBuddyFreqAI_v23.py` (v23)** in dry-run mode on **Binance Futures USDT-M** — long+short
-- FreqAI identifier: **`finbuddy_v23_no_median_1779447827`** (bumped 2026-05-22 evening, commit `3deeafc` — per-pair median offset removed, z-score already centers predictions)
+- FreqAI identifier: **`finbuddy_v23_promoted_1779997908`** (bumped 2026-05-28 on first brain promotion — hash `2ae96f164387`, LT=3.25 config)
 - FreqAI model: **LightGBMRegressor** (predicts z-scored `&-future_return`, N(0,1) distribution). DI=1.0 + SVM outlier removal active.
 - **1000 USDT** virtual wallet, max 8 open trades
 - **Confidence-based leverage** (commit `60d4fb4`): 1x / 2x / 3x tiers based on `predicted_return / threshold` ratio (no median subtraction — Fix 7). Fallback LOW (1x).
 - API: `http://localhost:8080/api/v1` — user: `bot`, pass: `REDACTED-FREQTRADE__API_SERVER__PASSWORD`
 - Whitelist: **26 pairs** (trimmed from 37 on 2026-05-24 — removed DASH/ZEC/BCH/DOGE/AAVE/TRX/1000SHIB/BNB/INJ/HBAR/ATOM), **15m timeframe** (each pair has 5 TFs of historical data: 15m + 30m + 1h + 4h + 1d)
 - **Per-pair-per-regime gate active** — `pair_regime_stats.json` blocks pair-regime combos with rolling 30d (n≥5, WR<40%, PF<0.7)
-- Strategy env vars (live): K_TP=2.0, K_SL=2.0, **LONG_THRESHOLD=0.8, SHORT_THRESHOLD=-0.8, STABILITY_N=1** (thresholds ±0.8 for z-scored N(0,1) predictions — verified from .env 2026-05-26)
+- Strategy env vars (live): K_TP=2.25, K_SL=2.0, **LONG_THRESHOLD=1.5, SHORT_THRESHOLD=-1.5, STABILITY_N=2** (thresholds reset 2026-05-30 from ±3.25/3.0 — LT=3.25 caused mathematical deadlock: effective threshold 4.23σ, P(entry)≈0% per day)
 
 ### Model features (~530 total after Bug D removed `%-recent_wr` 2026-05-20)
 Standard layer 4 features include 3 funding-rate features (`%-funding_rate`, `%-funding_rate_z30d`, `%-funding_rate_chg`) from BTC perp data, plus fear_greed, btc_strength, news_sentiment, regime_numeric. Daily refresh of historical funding parquet at 01:25 UTC. `%-recent_wr` DROPPED 2026-05-20 (training-serving skew: live read 0.34, brain/WF defaulted 0.50).
@@ -712,6 +712,31 @@ from parallel WF + brain processes running simultaneously).
 - Brain will generate new experiments with z-scored target + recent 2025Q4/2026Q1 windows
 - Daily WF at 22:00 UTC will run with OB veto removed — first meaningful WF result expected tomorrow
 - Next promotion: wait for brain to accumulate ≥2 bull + ≥2 bear z-scored experiments passing criteria
+
+### May 30, 2026 — 3-Bug Critical Fix: Trading Deadlock Broken (commit `bd46828`)
+
+**Root cause: LT=3.25 promotion created a self-sealing mathematical deadlock.**
+The first brain promotion (2026-05-28 19:51 UTC, hash `2ae96f164387`) applied LT=3.25 / ST=-3.0.
+Combined with WR=0.40 (recent WR feedback), the effective threshold became 4.23σ — mathematically
+impossible for the N(0,1) model to breach. Result: zero live trades since 2026-05-28, WF
+producing "no trades across all folds" on both daily and deep runs. Promotion gate completely blind.
+
+**3 fixes in commit `bd46828`:**
+1. **LT reset**: `FREQAI_LONG_THRESHOLD` 3.25→1.5, `FREQAI_SHORT_THRESHOLD` -3.0→-1.5 in `.env`.
+   Container recreated (`docker-compose up -d`). Effective threshold now 1.95σ → ~1.6 trades/day.
+   The WR feedback deadlock is broken: trades will accumulate → WR rises → wr_adj shrinks → healthy.
+2. **promote.py dedup**: `find_candidates()` now loads `applied.jsonl` and skips already-live hashes.
+   The daily 07:00 scan was re-sending "APPLY REQUIRED" Telegram for already-applied config every
+   morning. Now silent when current config is best (correct behavior).
+3. **Stale `historic_predictions.pkl` flushed**: Renamed to `.pre_promotion.pkl`. The file had
+   dtype=O all-zero values (stale from pre-promotion identifier) — confusing monitoring scripts.
+   FreqAI rebuilds it automatically from identifier-specific sub-train models.
+
+**State after fixes:**
+- LT=1.5 / ST=-1.5, K_TP=2.25, K_SL=2.0, N=2 — live in container (verified `docker exec env`)
+- Identifier unchanged: `finbuddy_v23_promoted_1779997908` (no model retraining triggered)
+- Brain continues exploring LT=3.25 range (where best result +1.14% WR=64% was found)
+- WF tonight at 22:00 UTC should produce ≥1 fold with trades and real Sharpe/WR metrics
 
 ### May 26, 2026 — UI and Security Fixes (Conscious Brain Update)
 1. **P&L Today Fix**: `Overview.jsx` was checking `Array.isArray(dailyPerf)` but FreqTrade wraps it in `{"data": [...]}`. It also read `profit_all_coin` instead of `abs_profit`, and read the oldest entry instead of the newest. Fixed all 3 bugs to render P&L Today correctly.
