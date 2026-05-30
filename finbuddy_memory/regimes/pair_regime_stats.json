@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-30T18:00:01.535573+00:00",
+  "updated": "2026-05-30T18:30:02.063388+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,17 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "BTC/USDT": {
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 1,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 0.92,
-        "avg_profit_pct": 0.46
-      }
-    },
     "DOGE/USDT:USDT": {
       "NEUTRAL": {
         "n": 6,
@@ -441,13 +430,13 @@
         "avg_profit_pct": -0.461
       },
       "NEUTRAL": {
-        "n": 5,
-        "wins": 3,
+        "n": 6,
+        "wins": 4,
         "losses": 2,
-        "wr": 0.6,
-        "pf": 6.429,
-        "profit_usdt": 2.66,
-        "avg_profit_pct": 0.54
+        "wr": 0.6667,
+        "pf": 7.184,
+        "profit_usdt": 3.03,
+        "avg_profit_pct": 0.525
       }
     },
     "SUI/USDT:USDT": {
