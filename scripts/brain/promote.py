@@ -112,6 +112,19 @@ def find_candidates() -> list[dict]:
         or (r.get("completed_at") or "") >= ZSCORE_CUTOFF
     ]
 
+    # Load already-applied hashes — never re-propose a config that is currently live.
+    # Root cause: the daily 07:00 scan kept re-finding hash 2ae96f164387 (applied 2026-05-28)
+    # and sending a duplicate "APPLY REQUIRED" Telegram every morning. Fix (2026-05-30).
+    applied_hashes: set[str] = set()
+    applied_log = PROMOTIONS_DIR / "applied.jsonl"
+    if applied_log.exists():
+        for line in applied_log.read_text().splitlines():
+            if line.strip():
+                try:
+                    applied_hashes.add(json.loads(line)["config_hash"])
+                except Exception:
+                    pass
+
     groups: dict[str, dict] = defaultdict(lambda: {
         "config": None, "runs": [], "bull_runs": [], "bear_runs": []
     })
@@ -129,6 +142,9 @@ def find_candidates() -> list[dict]:
     baseline = get_live_baseline_profit_pct()
     candidates = []
     for h, g in groups.items():
+        # Skip configs that are already live — no point re-proposing what's already applied.
+        if h in applied_hashes:
+            continue
         # Statistical-significance gate: require enough runs in each regime
         if len(g["bull_runs"]) < MIN_BULL_RUNS or len(g["bear_runs"]) < MIN_BEAR_RUNS:
             continue
