@@ -227,3 +227,4 @@ um_threads=2** added to both config.json and 23_regression_15m_di_config.json. 
 - **2026-05-28 20:00 UTC** — FreqAI identifier changed: finbuddy_v23_ls_1779815877 → finbuddy_v23_promoted_1779997908
 - **2026-05-29 00:00 UTC** — Regime changed: BEAR → NEUTRAL
 - **2026-05-29 00:00 UTC** — Walk-forward status: ❌ FAIL — WR 0.0%, Sharpe 0.00, DD 0.0%, PF 0.00 (0 trades, run `FinBuddyFreqAI_v23_2025-12-01_2026-05-01_20260528T220002`)
+- **2026-05-30 00:00 UTC** — Walk-forward status: ❌ FAIL — WR 0.0%, Sharpe 0.00, DD 0.0%, PF 0.00 (0 trades, run `FinBuddyFreqAI_v23_2025-12-01_2026-05-01_20260529T220002`)
