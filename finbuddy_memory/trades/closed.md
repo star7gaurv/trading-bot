@@ -298,3 +298,4 @@
 | 2026-05-28 19:44:55 | FET/USDT:USDT | LONG | 0h29m | +0.53% | +0.31 | trailing_stop_loss | BEAR | freqai_regression_v23_lo |
 | 2026-05-28 20:04:31 | LDO/USDT:USDT | LONG | 0h19m | -1.25% | -0.73 | stop_loss | BEAR | freqai_regression_v23_lo |
 | 2026-05-30 13:21:09 | ADA/USDT:USDT | LONG | 2h21m | +0.34% | +0.28 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-30 14:03:42 | UNI/USDT:USDT | LONG | 2h18m | +0.12% | +0.10 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
