@@ -257,6 +257,56 @@ def prune_queue(findings: dict, dry_run: bool = False) -> int:
                   f"(blacklisted (lt,window) pairs: {len(zero_trade_blacklist)})")
     zscore_pruned += zero_trade_pruned
 
+    # ── Phase 0.75: prune (window, LT) pairs with ≥8 runs and 0 profitable ──
+    # Bug 6 fix (2026-05-30): Phase 0.5 only catches zero-trade (<5 trades) configs.
+    # But LT=3.25 on bear_2026Q1 generates 14-46 trades, all losing (0 profitable).
+    # These never get pruned by Phase 0.5 → 107 experiments queued for a combo
+    # that is structurally unprofitable. Detect and prune them.
+    # Threshold: ≥8 completed runs, 0 profitable runs → blacklist (window, lt) for queue.
+    # Keep safe-band experiments (they target current best, not known-dead combos).
+    UNPROFITABLE_RUN_THRESHOLD = 8
+    wlt_stats: dict[tuple, dict] = {}
+    all_log2 = read_log()
+    for r in all_log2:
+        if r.get("status") != "completed":
+            continue
+        m = r.get("metrics") or {}
+        lt = r.get("config", {}).get("long_threshold")
+        win = r.get("window", "")
+        if lt is None or not win:
+            continue
+        key = (win, lt)
+        if key not in wlt_stats:
+            wlt_stats[key] = {"n": 0, "profitable": 0}
+        wlt_stats[key]["n"] += 1
+        if (m.get("profit_pct") or 0) > 0:
+            wlt_stats[key]["profitable"] += 1
+
+    unprofitable_combos = {
+        k for k, v in wlt_stats.items()
+        if v["n"] >= UNPROFITABLE_RUN_THRESHOLD and v["profitable"] == 0
+    }
+    unprofitable_pruned = 0
+    if unprofitable_combos:
+        _q3 = read_queue()
+        prune_ids3 = []
+        for h in _q3:
+            if h.get("band") == "safe":
+                continue  # always keep safe-band refinements
+            lt3 = h.get("config", {}).get("long_threshold")
+            win3 = h.get("window", "")
+            if (win3, lt3) in unprofitable_combos:
+                prune_ids3.append(h["hypothesis_id"])
+        if prune_ids3:
+            if not dry_run:
+                for hid in prune_ids3:
+                    _remove_from_queue(hid)
+            unprofitable_pruned = len(prune_ids3)
+            combo_sample = list(unprofitable_combos)[:5]
+            print(f"[analyst] pruned {unprofitable_pruned} experiments from unprofitable (win,LT) combos "
+                  f"(≥{UNPROFITABLE_RUN_THRESHOLD} runs, 0 profitable): {combo_sample}")
+    zscore_pruned += unprofitable_pruned
+
     # ── Phase 1: timeframe-based pruning ──
     dead_tfs  = set(findings.get("dead_timeframes", []))
     noisy_tfs = set(findings.get("noisy_timeframes", []))

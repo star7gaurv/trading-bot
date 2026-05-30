@@ -92,13 +92,33 @@ def send_wf_message(run_id: str, summary: dict) -> bool:
     no_data = not agg  # aggregate is empty — all folds timed out / no trades
 
     if no_data:
+        # Bug 5 fix (2026-05-30): show the ACTUAL effective LT so the reason is
+        # immediately actionable instead of the stale canned message.
+        try:
+            import os as _os
+            from pathlib import Path as _Path
+            _env_path = _Path("/home/ubuntu/var/www/html/trade/freqtrade/.env")
+            _lt = 1.5
+            for _line in _env_path.read_text().splitlines():
+                if _line.startswith("FREQAI_LONG_THRESHOLD="):
+                    _lt = float(_line.split("=", 1)[1].strip())
+            # WF forces RECENT_WR=0.55 (neutral) so wr_adj=1.0
+            _eff_lt = _lt * 1.0
+            _no_trade_reason = (
+                f"No trades in any fold — LT={_lt:.2f} (eff_LT={_eff_lt:.2f}σ in WF, "
+                f"RECENT_WR forced neutral). {'⚠️ LT may be too high for recent market.' if _eff_lt > 2.0 else '✅ LT looks reasonable — may be a data coverage issue.'}"
+            )
+            _ctx = f"Effective LT in WF={_eff_lt:.2f}σ (WR forced neutral). Prediction must exceed {_eff_lt:.2f}σ AND STABILITY_N consecutive candles."
+        except Exception:
+            _no_trade_reason = verdict_str or "all folds produced no trades"
+            _ctx = "All folds produced no trades — check FREQAI_LONG_THRESHOLD in .env"
         fields = {
             "Verdict":  "FAIL — keep iterating",
             "Run":      display_id,
-            "Reason":   verdict_str or "all folds produced no trades",
+            "Reason":   _no_trade_reason,
             "Folds":    "0 with data",
         }
-        ctx = "All folds timed out or produced no trades — fold timeout was just increased to 6h"
+        ctx = _ctx
     else:
         n_folds  = agg.get("folds", "?")
         n_trades = agg.get("total_trades", "?")

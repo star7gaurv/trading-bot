@@ -85,13 +85,40 @@ def find_latest_wf_run() -> tuple[str, dict] | tuple[None, None]:
     if not summaries:
         return None, None
     summaries.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    # Count how many consecutive 0-trade summaries we skip (Bug 10 fix, 2026-05-30)
+    skipped_empty = 0
     for path in summaries:
         try:
             summary = json.loads(path.read_text())
             total = summary.get("aggregate", {}).get("total_trades", 0) or 0
             if total == 0:
                 print(f"SKIP empty summary (0 trades): {path.parent.name}", file=sys.stderr)
+                skipped_empty += 1
                 continue
+            # Bug 10 fix: if we skipped ≥3 empty summaries before finding a valid one,
+            # the valid one is stale (≥3 days of WF failures). Alert once, then return
+            # None so this run becomes a no-op rather than silently using stale data.
+            if skipped_empty >= 3:
+                run_time = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
+                age_days = (datetime.now(timezone.utc) - run_time).total_seconds() / 86400
+                print(f"WARN: {skipped_empty} consecutive 0-trade WF runs — "
+                      f"most recent valid run is {age_days:.1f}d old ({path.parent.name})",
+                      file=sys.stderr)
+                try:
+                    _tg_send(
+                        subsystem=Subsystem.WALK_FORWARD,
+                        status=Status.WARN,
+                        title=f"Walk-forward has produced NO valid results for {skipped_empty} consecutive runs",
+                        fields={
+                            "Last valid run": f"{path.parent.name} ({age_days:.0f}d ago)",
+                            "Action": "Check FREQAI_LONG_THRESHOLD — may be too high for current market",
+                        },
+                        context=f"All recent WF folds returned 0 trades. "
+                                f"LT may still be above model prediction range.",
+                    )
+                except Exception:
+                    pass
+                return None, None
             return path.parent.name, summary
         except Exception as e:
             print(f"WARN: Could not read {path}: {e}", file=sys.stderr)

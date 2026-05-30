@@ -192,6 +192,12 @@ def _clamp(v: dict, param: str) -> dict:
         v[param] = max(0.45, min(0.85, v[param]))
     elif param.startswith("k_"):
         v[param] = max(0.5, min(4.0, v[param]))
+    elif param == "stability_n":
+        # Bug 4 fix (2026-05-30): clamp to [1, 4]. stability_n=-1 was being
+        # queued (perturbation -1 from base=1), which the strategy silently
+        # corrects to 1 via max(1,n) — but the config_hash stores -1, causing
+        # confusion in logs and any future promotion. Min=1 is the valid floor.
+        v[param] = max(1, min(4, int(v[param])))
     return v
 
 

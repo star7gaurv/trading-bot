@@ -245,6 +245,33 @@ def main() -> int:
     maybe_recover(state, "container",
                   f"✅ FinBuddy recovered — container `{CONTAINER}` is running again.")
 
+    # 1b. container uptime — alert if bot restarted unexpectedly in last 30 min
+    # Bug 8 fix (2026-05-30): after a container restart FreqAI takes ~30 min to
+    # stabilise predictions. Undetected restarts look like "no trades" or bad WR.
+    try:
+        _inspect = subprocess.run(
+            ["docker", "inspect", "--format", "{{.State.StartedAt}}", CONTAINER],
+            capture_output=True, text=True, timeout=10,
+        )
+        if _inspect.returncode == 0:
+            _started_str = _inspect.stdout.strip()
+            from datetime import datetime as _dt
+            # Docker returns RFC3339 like "2026-05-30T10:57:27.123456789Z"
+            _started = _dt.fromisoformat(_started_str.replace("Z", "+00:00")).replace(tzinfo=None)
+            _uptime_min = (now_utc() - _started).total_seconds() / 60
+            if _uptime_min < 30:
+                maybe_alert(
+                    state, "container_restart",
+                    f"⚠️ *FreqTrade restarted* — container has only been up {_uptime_min:.0f}m. "
+                    f"FreqAI predictions are unstable for ~30min after restart. "
+                    f"No trades during warmup is expected.",
+                )
+            else:
+                maybe_recover(state, "container_restart",
+                              f"✅ FreqTrade uptime stable ({_uptime_min:.0f}m since last start).")
+    except Exception:
+        pass  # non-critical
+
     # 2. recent training event
     # use_file_fallback=True: if Docker's buffer is evicted by error spam,
     # fall back to the on-disk freqtrade.log so we don't false-alert.

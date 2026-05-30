@@ -461,7 +461,39 @@ def main() -> int:
 
     candidates = find_candidates()
     if not candidates:
-        print("No promotion candidates yet — need bull+bear positive results.")
+        # Bug 2 fix (2026-05-30): delete stale pending.json when no new candidates.
+        # Without this, an old Telegram Apply button remains functional and could
+        # re-apply an already-live config, bumping the identifier unnecessarily.
+        if PENDING_FILE.exists():
+            PENDING_FILE.unlink()
+            print("Cleared stale pending.json (already-applied config was best; no new winner yet)")
+
+        # Bug 3 fix (2026-05-30): log WHY — applied vs need-more-data breakdown.
+        from experiment_log import read_log as _read_log
+        from collections import defaultdict as _dd
+        _log = _read_log()
+        _completed = [r for r in _log if r.get("status") == "completed" and r.get("metrics")]
+        _groups: dict = _dd(lambda: {"bull_runs": [], "bear_runs": []})
+        for r in _completed:
+            h = _config_hash(r["config"])
+            if "bull" in r.get("window", ""):
+                _groups[h]["bull_runs"].append(r)
+            elif "bear" in r.get("window", ""):
+                _groups[h]["bear_runs"].append(r)
+        _applied = set()
+        if (PROMOTIONS_DIR / "applied.jsonl").exists():
+            for line in (PROMOTIONS_DIR / "applied.jsonl").read_text().splitlines():
+                if line.strip():
+                    try: _applied.add(json.loads(line)["config_hash"])
+                    except Exception: pass
+        n_applied      = sum(1 for h in _groups if h in _applied)
+        n_need_data    = sum(1 for h, g in _groups.items()
+                            if h not in _applied
+                            and (len(g["bull_runs"]) < MIN_BULL_RUNS or len(g["bear_runs"]) < MIN_BEAR_RUNS))
+        n_failed_gates = len(_groups) - n_applied - n_need_data
+        print(f"No new promotion candidates. Groups: total={len(_groups)}, "
+              f"already_applied={n_applied}, need_more_data={n_need_data}, "
+              f"failed_quality_gates={n_failed_gates}")
         return 0
     print(f"Found {len(candidates)} promotion candidate(s):")
     for c in candidates[:5]:
