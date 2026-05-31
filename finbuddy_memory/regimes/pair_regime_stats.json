@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-31T01:30:01.767133+00:00",
+  "updated": "2026-05-31T02:00:01.307957+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -430,13 +430,13 @@
         "avg_profit_pct": -0.461
       },
       "NEUTRAL": {
-        "n": 7,
+        "n": 8,
         "wins": 5,
-        "losses": 2,
-        "wr": 0.7143,
-        "pf": 7.776,
-        "profit_usdt": 3.32,
-        "avg_profit_pct": 0.5
+        "losses": 3,
+        "wr": 0.625,
+        "pf": 3.123,
+        "profit_usdt": 2.59,
+        "avg_profit_pct": 0.326
       }
     },
     "SUI/USDT:USDT": {
