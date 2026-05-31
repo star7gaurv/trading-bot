@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-31T07:00:01.987447+00:00",
+  "updated": "2026-05-31T07:30:01.967664+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -430,13 +430,13 @@
         "avg_profit_pct": -0.461
       },
       "NEUTRAL": {
-        "n": 8,
+        "n": 9,
         "wins": 5,
-        "losses": 3,
-        "wr": 0.625,
-        "pf": 3.123,
-        "profit_usdt": 2.59,
-        "avg_profit_pct": 0.326
+        "losses": 4,
+        "wr": 0.5556,
+        "pf": 2.458,
+        "profit_usdt": 2.26,
+        "avg_profit_pct": 0.239
       }
     },
     "SUI/USDT:USDT": {
@@ -481,13 +481,13 @@
     },
     "APT/USDT:USDT": {
       "NEUTRAL": {
-        "n": 6,
+        "n": 7,
         "wins": 2,
-        "losses": 4,
-        "wr": 0.3333,
-        "pf": 1.976,
-        "profit_usdt": 2.89,
-        "avg_profit_pct": 0.445
+        "losses": 5,
+        "wr": 0.2857,
+        "pf": 1.676,
+        "profit_usdt": 2.36,
+        "avg_profit_pct": 0.29
       },
       "BEAR": {
         "n": 1,
