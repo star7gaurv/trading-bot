@@ -310,3 +310,4 @@
 | 2026-05-31 02:35:05 | APT/USDT:USDT | LONG | 0h09m | -0.89% | -0.74 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-31 07:00:26 | APT/USDT:USDT | LONG | 3h05m | -0.64% | -0.53 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-05-31 07:07:57 | UNI/USDT:USDT | LONG | 3h07m | -0.46% | -0.33 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-05-31 09:41:36 | FET/USDT:USDT | SHORT | 0h46m | -2.59% | -2.14 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
