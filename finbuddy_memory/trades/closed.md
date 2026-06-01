@@ -321,3 +321,4 @@
 | 2026-06-01 04:25:22 | AVAX/USDT:USDT | LONG | 0h24m | -1.03% | -0.83 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-06-01 04:24:12 | UNI/USDT:USDT | LONG | 0h23m | -1.03% | -0.84 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-06-01 18:11:33 | FET/USDT:USDT | SHORT | 0h56m | -3.63% | -2.11 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-01 21:30:52 | UNI/USDT:USDT | LONG | 3h15m | -0.38% | -0.21 | time_limit_exit | BEAR | freqai_regression_v23_lo |
