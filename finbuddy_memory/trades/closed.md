@@ -320,3 +320,4 @@
 | 2026-06-01 04:16:22 | ADA/USDT:USDT | LONG | 1h46m | +0.51% | +0.42 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-06-01 04:25:22 | AVAX/USDT:USDT | LONG | 0h24m | -1.03% | -0.83 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-06-01 04:24:12 | UNI/USDT:USDT | LONG | 0h23m | -1.03% | -0.84 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-06-01 18:11:33 | FET/USDT:USDT | SHORT | 0h56m | -3.63% | -2.11 | stop_loss | BEAR | freqai_regression_v23_sh |
