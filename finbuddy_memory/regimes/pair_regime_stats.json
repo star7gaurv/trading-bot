@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-01T18:00:01.761330+00:00",
+  "updated": "2026-06-01T18:30:02.333275+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -612,13 +612,13 @@
         "avg_profit_pct": -1.223
       },
       "BEAR": {
-        "n": 5,
+        "n": 6,
         "wins": 2,
-        "losses": 3,
-        "wr": 0.4,
-        "pf": 0.328,
-        "profit_usdt": -2.17,
-        "avg_profit_pct": -0.742
+        "losses": 4,
+        "wr": 0.3333,
+        "pf": 0.199,
+        "profit_usdt": -4.28,
+        "avg_profit_pct": -1.223
       }
     },
     "RENDER/USDT:USDT": {
@@ -717,6 +717,14 @@
       "n": 6,
       "wr": 0.3333,
       "pf": 0.067
+    },
+    {
+      "pair": "FET/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=33% PF=0.20 n=6 profit=-4.28",
+      "n": 6,
+      "wr": 0.3333,
+      "pf": 0.199
     },
     {
       "pair": "ZEC/USDT:USDT",
