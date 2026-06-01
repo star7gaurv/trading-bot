@@ -241,6 +241,47 @@ def prioritize_regime_windows(regime: str) -> int:
     return len(front)
 
 
+def next_alternating(last_window_type: str | None) -> dict | None:
+    """Return the next queued hypothesis, enforcing strict bear/bull alternation.
+
+    If last_window_type is 'bear', returns the first bull entry in the queue.
+    If last_window_type is 'bull', returns the first bear entry in the queue.
+    If None (first ever run) or no opposite-type entry exists, returns queue[0].
+
+    This is the root-level fix for queue drift: no matter how generate_and_queue()
+    or queue_missing_windows() appends new entries, the runner always picks the
+    opposite type of the last completed experiment — guaranteed interleaving.
+    Does NOT modify the queue file; caller still pops via mark_completed/failed.
+    """
+    queue = [e for e in read_queue() if e.get("status") == "queued"]
+    if not queue:
+        return None
+    if last_window_type is None:
+        return queue[0]
+    want_type = "bear" if last_window_type == "bull" else "bull"
+    for entry in queue:
+        if want_type in entry.get("window", "").lower():
+            return entry
+    return queue[0]  # fallback: no opposite type queued yet
+
+
+def last_completed_window_type() -> str | None:
+    """Return 'bear' or 'bull' based on the most recently completed experiment.
+
+    Reads the last line of log.jsonl that has status=completed.
+    Returns None if log is empty or no completed entries exist.
+    """
+    log = read_log()
+    for entry in reversed(log):
+        if entry.get("status") == "completed":
+            win = entry.get("window", "")
+            if "bear" in win:
+                return "bear"
+            if "bull" in win:
+                return "bull"
+    return None
+
+
 def queue_missing_windows(completed_hypothesis: dict, windows: dict[str, str]) -> int:
     """After a passing run, auto-queue any windows not yet tested or queued for this config.
 

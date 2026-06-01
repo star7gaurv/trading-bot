@@ -39,8 +39,8 @@ PENDING_FILE = PROMOTIONS_DIR / "pending.json"
 # experiments mature (target 0.5 once a config consistently clears 1%).
 MIN_AVG_PROFIT_IMPROVEMENT = 0.1   # percentage points
 MIN_TOTAL_TRADES = 30              # lowered from 60: with lp=12 (high-lt configs), 2 windows give ~60–120 trades
-MIN_BULL_RUNS = 1                  # lowered from 2 — bear_2026Q1 is the hard constraint; 1 bull + bear_2026Q1 is sufficient
-MIN_BEAR_RUNS = 1                  # lowered from 2 — see BEAR_2026Q1_REQUIRED below
+MIN_BULL_RUNS = 2                  # 2 independent bull windows required (2026-06-01: raised from 1 on user instruction)
+MIN_BEAR_RUNS = 1                  # 1 bear window sufficient (bear_2026Q1 gate provides the extra safety check)
 # Safety floor for the per-run check below: avg(profits)>0 must hold AND no
 # single run worse than this. Prevents one disaster window from masking on avg.
 MIN_PER_RUN_PROFIT_FLOOR = -0.3    # percent — tighten to -0.1 once WR routinely >50%

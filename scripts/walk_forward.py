@@ -163,10 +163,11 @@ def run_backtest(
     cmd = [
         "docker-compose", "run", "--rm",
     ]
-    # Docker-native nice equivalent: yield CPU to live bot + brain under contention,
-    # use full CPU when system is idle. Works inside containers (unlike host nice).
-    if cpu_shares is not None:
-        cmd += ["--cpu-shares", str(cpu_shares)]
+    # NOTE: --cpu-shares is NOT supported by docker-compose run (only by docker run).
+    # Passing it caused "unknown flag: --cpu-shares" → all folds crashed → 0 WF results
+    # for 5 consecutive days (2026-05-27 → 2026-06-01). Removed. CPU prioritisation is
+    # handled at the docker-compose.yml level or via cron scheduling (deep WF at midnight IST).
+    # cpu_shares param kept in signature for backwards compat but intentionally ignored.
     # Mount FreqAI models dir in RAM to eliminate SSD write latency during training.
     # Safety guard: skip if available RAM < 6 GB so we never OOM the live bot.
     if _psutil is not None and _psutil.virtual_memory().available > 6_000_000_000:

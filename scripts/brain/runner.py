@@ -36,6 +36,7 @@ from experiment_log import (
     experiments_today_count, summary_stats,
     prioritize_same_config, queue_missing_windows,
     prioritize_regime_windows,
+    next_alternating, last_completed_window_type,
 )
 from telegram_template import send as tg_send, Subsystem, Status
 
@@ -659,15 +660,24 @@ def run_next(max_runs: int = 1, status_only: bool = False) -> int:
                 print("[brain] queue empty ? nothing to run")
                 break
 
-            # Trust queue.jsonl FILE ORDER — it is maintained by prioritize_regime_windows()
-            # and prioritize_same_config() which rewrite the file with priority items first.
-            # Sorting by created_at here defeats that priority mechanism (2026-05-27 fix).
-            # Only filter to queued status (all entries should be queued, but defensive check).
+            # Strict bear/bull alternation: always pick the opposite window type of
+            # the last completed experiment. This is the root-level fix for queue drift —
+            # no matter how generate_and_queue() or queue_missing_windows() appends entries,
+            # the runner enforces interleaving. Replaces the one-shot prioritize_regime_windows()
+            # sort which only worked until the next batch was appended (2026-06-01 fix).
             queue = [e for e in queue if e.get("status") == "queued"]
             if not queue:
                 print("[brain] queue empty — nothing to run")
                 break
-            h = queue[0]
+            last_type = last_completed_window_type()
+            h = next_alternating(last_type)
+            if h is None:
+                print("[brain] queue empty — nothing to run")
+                break
+            want_type = ("bear" if last_type == "bull" else "bull") if last_type else "any"
+            actual_type = "bear" if "bear" in h.get("window", "") else "bull"
+            if last_type and actual_type != want_type:
+                print(f"[brain] alternation: no {want_type} entries queued, falling back to {actual_type}")
             started = datetime.now(timezone.utc).isoformat()
 
             print(f"[brain] running {h['hypothesis_id']} ({h['band']}) on {h['window']}: {h['rationale']}")
