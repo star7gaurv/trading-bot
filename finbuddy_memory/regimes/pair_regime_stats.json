@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-01T04:30:01.635176+00:00",
+  "updated": "2026-06-01T05:00:02.177401+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -121,13 +121,13 @@
     },
     "AVAX/USDT:USDT": {
       "NEUTRAL": {
-        "n": 4,
+        "n": 5,
         "wins": 0,
-        "losses": 4,
+        "losses": 5,
         "wr": 0.0,
         "pf": 0.0,
-        "profit_usdt": -7.33,
-        "avg_profit_pct": -1.153
+        "profit_usdt": -8.16,
+        "avg_profit_pct": -1.128
       },
       "BEAR": {
         "n": 2,
@@ -430,13 +430,13 @@
         "avg_profit_pct": -0.461
       },
       "NEUTRAL": {
-        "n": 9,
+        "n": 10,
         "wins": 5,
-        "losses": 4,
-        "wr": 0.5556,
-        "pf": 2.458,
-        "profit_usdt": 2.26,
-        "avg_profit_pct": 0.239
+        "losses": 5,
+        "wr": 0.5,
+        "pf": 1.594,
+        "profit_usdt": 1.42,
+        "avg_profit_pct": 0.112
       }
     },
     "SUI/USDT:USDT": {
@@ -470,13 +470,13 @@
         "avg_profit_pct": -0.306
       },
       "NEUTRAL": {
-        "n": 8,
-        "wins": 4,
+        "n": 9,
+        "wins": 5,
         "losses": 4,
-        "wr": 0.5,
-        "pf": 0.409,
-        "profit_usdt": -1.94,
-        "avg_profit_pct": -0.263
+        "wr": 0.5556,
+        "pf": 0.537,
+        "profit_usdt": -1.52,
+        "avg_profit_pct": -0.177
       }
     },
     "APT/USDT:USDT": {
@@ -654,6 +654,14 @@
     }
   },
   "blocked": [
+    {
+      "pair": "AVAX/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=0% PF=0.00 n=5 profit=-8.16",
+      "n": 5,
+      "wr": 0.0,
+      "pf": 0.0
+    },
     {
       "pair": "OP/USDT:USDT",
       "regime": "BEAR",
