@@ -317,3 +317,6 @@
 | 2026-06-01 01:08:15 | ADA/USDT:USDT | LONG | 1h23m | +0.52% | +0.42 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-06-01 02:01:10 | ADA/USDT:USDT | LONG | 0h46m | -1.10% | -0.91 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-06-01 03:54:35 | 1000PEPE/USDT:USDT | LONG | 1h39m | +0.56% | +0.46 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-06-01 04:16:22 | ADA/USDT:USDT | LONG | 1h46m | +0.51% | +0.42 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-06-01 04:25:22 | AVAX/USDT:USDT | LONG | 0h24m | -1.03% | -0.83 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-06-01 04:24:12 | UNI/USDT:USDT | LONG | 0h23m | -1.03% | -0.84 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
