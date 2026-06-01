@@ -1,8 +1,8 @@
 # 🤝 FinBuddy — Handoff Note for Claude Code
 
-**Last updated:** 2026-05-27 UTC (+3 critical brain bugs fixed: queue priority sort, WR contamination, log dedup)  
-**Branch:** `master`  
-**Latest commits:** `d2c86dc` 3 brain bugs | `2c69b63` 5 improvements | `b3eb3a7` bear-configs | `2c6c0b2` regime-seeding
+**Last updated:** 2026-06-01 UTC (4 root-cause bugs fixed: WF cpu-shares crash, queue drift, LT deadlock, promotion unblocked)
+**Branch:** `master`
+**Latest commits:** `4162899` 4-bug fix | `a4d1a68` auto-sync | `b1c94c2` memory
 
 ---
 
@@ -11,94 +11,84 @@
 | Item | Value |
 |---|---|
 | Live strategy | `FinBuddyFreqAI_v23.py` (15m TF, LightGBMRegressor, z-scored target) |
-| FreqAI identifier | `finbuddy_v23_no_median_1779447827` |
+| FreqAI identifier | `finbuddy_v23_promoted_1779997908` |
 | Model features | ~530 (3 funding-rate + 3 OI incl. btc_ls_ratio + macro + regime + OHLCV lags) |
-| **Pairs** | **26** (trimmed from 37 on 2026-05-24 — removed 11 zero/negative-edge pairs) |
+| **Pairs** | **26** (trimmed 2026-05-24 — removed 11 zero/negative-edge pairs) |
 | Leverage | Confidence-based tiers 1×/2×/3× (FALLBACK = LOW = 1×) |
-| Regime | **NEUTRAL (70% confidence)** since 2026-05-27 04:00 UTC (was BEAR) |
+| Regime | **BEAR (80% confidence)** |
 | Wallet | **1000 USDT** dry-run |
-| Bot status | ✅ Up |
-| live_retrain_hours | **12** |
-| Per-pair-per-regime gate | ✅ Active. 3 blocks: OP/BEAR, LINK/NEUTRAL, UNI/BEAR |
-| DI / SVM | DI_threshold=1.0, use_SVM_to_remove_outliers=true |
+| Bot status | ✅ Up (restarted 2026-06-01 08:48 UTC for strategy threshold cap) |
+| Per-pair-per-regime gate | ✅ Active. 3 blocks: OP/BEAR, LINK/NEUTRAL, DOT/NEUTRAL, AVAX/NEUTRAL |
+| DI / SVM | DI_threshold=1.0, use_SVM_to_remove_outliers=true, svm_nu=0.05 |
 | Daily circuit breaker | ✅ ACTIVE — FREQAI_DAILY_LOSS_LIMIT=10 |
+| MAX_EFFECTIVE_THRESHOLD | **2.5σ** — hard cap on dynamic threshold (NEW 2026-06-01) |
 
 **26 active pairs:** 1000PEPE, ADA, APT, ARB, AVAX, BTC, DOT, ENA, ETH, FET, FIL, LDO, LINK, LTC, NEAR, ONDO, OP, POL, RENDER, SOL, SUI, TAO, TON, UNI, WIF, XRP
 
-**Live env vars (in `freqtrade/.env` AND `docker-compose.yml` environment block):**
+**Live env vars (`freqtrade/.env`):**
 ```
-FREQAI_K_TP=2.0
+FREQAI_K_TP=2.25
 FREQAI_K_SL=2.0
-FREQAI_LONG_THRESHOLD=1.2
-FREQAI_SHORT_THRESHOLD=-0.8
+FREQAI_LONG_THRESHOLD=1.5
+FREQAI_SHORT_THRESHOLD=-1.5
 FREQAI_STABILITY_N=1
 FREQAI_DAILY_LOSS_LIMIT=10
-FREQAI_LEV_LOW_CONF_RATIO=1.0
-FREQAI_LEV_MED_CONF_RATIO=1.5
-FREQAI_LEV_HIGH_CONF_RATIO=2.0
-FREQAI_LEV_LOW=1.0
-FREQAI_LEV_MED=2.0
-FREQAI_LEV_HIGH=3.0
-FINBUDDY_RECENT_WR=0.42
+FINBUDDY_RECENT_WR=0.4
 ```
 
 ⚠️ **IMPORTANT:** `docker-compose.yml` has an explicit `environment:` block — every new `.env` var MUST also be added there, or the container never sees it. `docker-compose restart` does NOT reload `.env` — always use `docker-compose up -d freqtrade`.
 
 ---
 
-## 🧠 Brain State (2026-05-27 — updated ~08:30 UTC)
+## 📊 Live Performance (2026-06-01)
 
-| Item | Value |
-|---|---|
-| Execution mode | **Single-group** — all 26 pairs in one backtest per experiment (~38 min) |
-| Cron | `*/15 * * * *` with `flock -n /tmp/finbuddy_brain_run.lock` |
-| Completed experiments | **62 z-scored** (343 total in log; 281 legacy raw-% excluded from promotion) |
-| Failed experiments | **108** |
-| Queue pending | **158** (63 bear-window entries at front — NOW ACTUALLY RUNNING FIRST) |
-| Promotions fired | **0** |
-| SEED thresholds | long=1.5, short=-0.8 |
-| Windows | bull_2024Q1, bull_2024Q2, bear_2025Q1, bull_2025Q4, bear_2026Q1 |
-| WR gate | ≥1 bull + ≥1 bear run must have WR ≥ 50% |
-| First promotion needs | ≥2 bull + ≥2 bear z-scored passing all gates + MIN_TOTAL_TRADES=60 |
-| Queue sort | `prioritize_regime_windows()` auto-fires after every experiment (runner.py) |
-| Best z-scored configs | lt=3.25,ksl=2.0,ktp=2.25: 1 bull + 1 bear passing (closest to promotion) |
-| **BLOCKER** | bear_2026Q1 — lt≥3.0 configs fail (218 trades, WR=50.9%, sharpe=-5.87, PF=0.636) |
-| **Fix** | 63 bear-window experiments queued with lt=1.5-2.5 targeting bear_2026Q1 |
-| **NEW BUG FIXED** | runner.py was re-sorting queue by created_at → defeating all priority ordering |
-| **NEW BUG FIXED** | brain + WF containers got FINBUDDY_RECENT_WR=0.42 from .env → inflated effective threshold |
-
-**Brain hypothesis space (2026-05-27):**
-- `num_leaves`: [15, 31, 63, 127] — varied ✅
-- `learning_rate`: [0.01, 0.03, 0.05] — varied ✅
-- `n_estimators`: 100 (was 200; A/B gate in progress)
-- Two-tier scout active: ~15-min 6-pair pre-filter before full run
-- `btc_ls_ratio` feature: IMPLEMENTED in strategy (line ~1008)
-- `FREQAI_DISABLE_PAIR_REGIME_GATE=1` added to all brain+WF docker runs
-- `FINBUDDY_RECENT_WR=0.55` now ALSO added to brain docker runs (prevents live WR from inflating thresholds)
-
-**New brain tools (2026-05-27):**
-```bash
-# Regime-targeted seeding — finds top-N configs, cross-seeds missing windows, sorts queue
-python3 scripts/brain/brain_cli.py seed-regime --dry-run   # preview
-python3 scripts/brain/brain_cli.py seed-regime             # apply
-
-# Manual requeue — force cross-window coverage for specific configs
-python3 scripts/brain/brain_cli.py requeue <hash> [<hash> ...] [--target 2]
-```
+| Metric | Value | Target |
+|---|---|---|
+| Closed trades | 475 | — |
+| Win rate | 37.9% | > 50% ❌ |
+| Total P&L | +43.14 USDT | — |
+| Current strategy WR (since 2026-05-28) | 44% (25 trades) | > 50% ❌ |
 
 ---
 
-## 📊 Walk-Forward State (2026-05-27)
+## 🧠 Brain State (2026-06-01)
 
-| Run | Schedule | Folds | Window | Workers | CPU |
-|---|---|---|---|---|---|
-| Daily | 22:00 UTC | **1** | 4mo train + 1mo test | 1 (sequential) | 512 shares |
-| Deep | 18:30 UTC every 4 days | **7** | **18mo** (train=6mo, test=1mo, slide=2mo) | 1 | **256 shares** |
+| Item | Value |
+|---|---|
+| Execution mode | **Single-group** — all 26 pairs in one backtest (~38 min) |
+| Cron | `*/10 * * * *` with `flock -n /tmp/finbuddy_brain_run.lock` |
+| Completed experiments | **380** total (102 z-scored, 278 legacy raw-%) |
+| Failed | **115** |
+| Scout-failed | **259** |
+| Queue pending | **261** |
+| Z-score profitable | **12** |
+| Promotions fired | **1** (2026-05-28, now reverted to LT=1.5; applied.jsonl cleared 2026-06-01) |
+| SEED thresholds | ±1.5 |
+| Windows | bull_2024Q1, bull_2024Q2, bear_2025Q1, bull_2025Q4, bear_2026Q1 |
+| **Queue interleaving** | ✅ FIXED 2026-06-01 — `next_alternating()` in runner.py enforces bear/bull alternation |
+| **Promotion gates** | MIN_BULL=**2**, MIN_BEAR=1, BEAR_2026Q1_REQUIRED (WR≥50%) |
+| **Promotion candidate** | lt=3.25, st=-3.0, k_sl=2.0, k_tp=2.25 (avg_profit=0.282%, Sharpe=3.82, 226 trades) |
+| **Gate blocking promotion** | bear_2026Q1 never tested for this config — brain will test it next (alternating ensures bear next) |
+| Best z-scored configs | lt=4.0 WR=69.2% Sharpe=7.38 (bear_2025Q1) / lt=3.25 WR=61.4% Sharpe=5.99 (bear_2025Q1) |
 
-**Daily WF:** Regression detector only. Completes by ~03:30 UTC.  
-**Deep WF:** Reduced 2026-05-26 from 27mo/21 folds → 18mo/7 folds. Covers 2024 bull + 2025 bear + recovery. Still sufficient for promotion decisions. ~35h per run.  
-**Gate for Phase 10:** WR > 50%, Sharpe > 0.5, DD < 20%, PF > 1.2 across ≥3 folds (deep WF).  
-**CPU shares:** Docker-native cgroup weights (256/512 vs 1024 default) — replaces `nice`/`ionice` which DON'T propagate into containers.
+**Key fixes shipped 2026-06-01 (commit `4162899`):**
+1. **WF cpu-shares crash** — `docker-compose run` rejects `--cpu-shares`; removed from walk_forward.py. WF was silently failing all folds for 5 days.
+2. **Queue bear/bull drift** — added `next_alternating()` + `last_completed_window_type()` to experiment_log.py; runner.py now picks opposite type of last completed run. Permanent fix.
+3. **LT=3.25 deadlock** — added `MAX_EFFECTIVE_THRESHOLD=2.5` cap to `_compute_dynamic_thresholds()`. Previous `clip(upper=2.0)` capped the multiplier only; LT=3.25×2.0=6.5σ was still impossible. Now any promoted LT is safe.
+4. **Promotion unblocked** — cleared `applied.jsonl` (was marking best config as "already live" when live bot had been reset to LT=1.5). Brain scan immediately found candidate; Telegram sent.
+
+---
+
+## 📊 Walk-Forward State (2026-06-01)
+
+| Run | Schedule | Folds | Window | Workers |
+|---|---|---|---|---|
+| Daily | 22:00 UTC | 1 | 4mo train + 1mo test | 1 (sequential) |
+| Deep | 18:30 UTC every 4 days | 7 | 18mo (train=6mo, test=1mo, slide=2mo) | 1 |
+
+**CRITICAL: WF has been returning 0 folds since 2026-05-27.** Root cause: `--cpu-shares 512/256` passed to `docker-compose run` which rejects the flag → fold crashes with "unknown flag: --cpu-shares". Fixed today (2026-06-01). Tonight's WF at 22:00 UTC will be the first real result in 5 days.
+
+**Gate for Phase 10:** WR > 50%, Sharpe > 0.5, DD < 20%, PF > 1.2 across ≥3 deep WF folds.
 
 ---
 
@@ -113,26 +103,27 @@ Listener: `*/2 * * * * flock -n /tmp/finbuddy_telegram_listener.lock telegram_li
 
 ---
 
-## 🗓️ Live Crontab (verified 2026-05-27)
+## 🗓️ Live Crontab (verified 2026-06-01)
 
 ```
 0 * * * *        auto_commit.sh                         # vault git commit
 */15 * * * *     fetch_all_external.py                  # Phase 2 external data
 0 */4 * * *      hmm_regime_detector.py                 # Phase 3 HMM
 */15 * * * *     memory_writer.py && git_commit.sh      # Phase 4 memory
-*/30 * * * *     watchdog.py                            # CPU+container+training alerts
+*/30 * * * *     watchdog.py                            # CPU+container+training alerts (CRIT≥6.0, WARN≥4.0)
 */15 * * * *     trade_postmortem.py                    # closed-trade ledger
 0 8 * * *        daily_summary.py                       # morning Telegram digest
-0 8 * * *        digest.py                              # brain digest
+0 8 * * *        digest.py                              # brain daily digest
 0 */4 * * *      sync_context.py                        # context refresh
 */30 * * * *     walkforward_notify.py (flock)          # WF PASS/FAIL Telegram
 30 4 * * *       download_data_daily.sh                 # forward-increment data
-*/15 * * * *     brain_cli.py run --max 1 (flock)       # brain: one experiment
-0 */6 * * *      brain_cli.py generate --safe 1 --aggr 1 # brain hypothesis gen
+*/10 * * * *     brain_cli.py run --max 1 (flock)       # brain: one experiment every 10min
+0 */6 * * *      brain_cli.py generate --safe 3 --aggr 6 # brain hypothesis gen (36/day)
 30 */6 * * *     brain_cli.py analyse                   # brain self-diagnose + prune
 0 7 * * *        brain_cli.py scan                      # promotion scan → Telegram
 */2 * * * *      telegram_listener.py (flock)           # Apply/Skip handler
-0 4 * * *        brain_cleanup.py + auto_promote.py     # WF Sharpe vs baseline
+0 4 * * *        brain_cleanup.py                       # daily pruning
+0 4 * * *        auto_promote.py                        # WF Sharpe vs baseline alert
 */30 * * * *     pair_regime_performance.py --quiet     # per-pair gate rolling update
 15 1 * * *       build_historical_macro.py
 20 1 * * *       build_historical_regime.py
@@ -140,7 +131,6 @@ Listener: `*/2 * * * * flock -n /tmp/finbuddy_telegram_listener.lock telegram_li
 30 1 * * *       build_historical_oi.py
 0 22 * * *       walkforward_daily.sh                   # daily WF (1 fold, ~3.5h)
 30 18 */4 * *    walkforward_deep.sh                    # deep WF (7 folds, 18mo, ~35h)
-0 4 * * *        auto_promote.py                        # WF Sharpe alert
 ```
 
 ---
@@ -156,61 +146,38 @@ Listener: `*/2 * * * * flock -n /tmp/finbuddy_telegram_listener.lock telegram_li
 | `%-recent_wr` feature | Removed 2026-05-20 — training-serving skew |
 | `class_weight=balanced` | No-op for regressor — removed |
 | `scripts/run_promotion.sh` | Removed from cron 2026-05-19 |
-| `executor_wrapper.sh` + `executor.py` + `freqtrade_bridge.py` | **Deleted 2026-05-24** |
+| `executor_wrapper.sh` + `executor.py` | **Deleted 2026-05-24** |
 | OpenClaw container | **Killed 2026-05-24** |
 | N8N pipeline | Permanently disabled |
 | Phase 6 TradingView | Abandoned |
-| Brain parallel pair-group split | **Reverted 2026-05-24** — doubled CPU |
-| REMOVED PAIRS | DASH, ZEC, BCH, DOGE, AAVE, TRX, 1000SHIB, BNB, INJ, HBAR, ATOM — do NOT re-add without 3+ weeks clean data |
+| REMOVED PAIRS | DASH, ZEC, BCH, DOGE, AAVE, TRX, 1000SHIB, BNB, INJ, HBAR, ATOM |
+| `--cpu-shares` in WF scripts | Removed 2026-06-01 — docker-compose run does not support this flag |
 
 ---
 
 ## ⬜ Open Strategic Issues — Deferred
 
-1. **AVAX/ADA watch** — 2-week probation until June 7. If still negative edge, remove.
-2. **Per-pair prediction percentile thresholds** — scales effective threshold by pair's own prediction std. `_compute_dynamic_thresholds()` in strategy. 2-3h effort, no retrain.
-3. **HMM confidence-gated stake sizing** — `custom_stake_amount()` already reads `current.json`. Wire `confidence` field into stake multiplier. 1h effort.
-4. **Phase 10 (live capital)** — BLOCKED until WF passes all 4 gates OR 6-month dry-run track record.
-5. **Historical parquets for live-only features** — market_cap_change_24h, news_sentiment, btc_dominance need historical parquets before they can be model features (currently constant in training = harmful if added).
-
----
-
-## ⚙️ Changes from 2026-05-27 Improvement Session (commit `2c69b63`)
-
-| Fix | What changed |
-|---|---|
-| WF 0-trade root cause | `walk_forward.py` no longer forwards `FINBUDDY_RECENT_WR` to WF containers — overrides with neutral 0.55 so effective threshold stays at base level |
-| Brain generate rate | Crontab: `--safe 1 --aggr 1` → `--safe 3 --aggr 6` (8 → 36 hypotheses/day; prevents queue starvation) |
-| Analyst 0-trade pruning | `analyst.py` Phase 0.5: reads log for (lt, bear_window) combos with <5 trades → blacklists + prunes from queue automatically |
-| Regime-aware scout | `runner.py` BEAR pool: FET + LDO replace BNB + LINK — better bear signal representation |
-| n_estimators aligned | `config.json` n=200→100; `hypothesis_gen.py` stamps n_estimators=100 in every new experiment config; `runner.py` adds n_estimators to lgbm_keys |
-
-## ⚙️ Changes from 2026-05-27 Bug Fix Session (commit `d2c86dc`)
-
-| Fix | What changed |
-|---|---|
-| **Queue sort bug** | `runner.py run_next()`: removed `queue.sort(created_at)` that was defeating all priority ordering — runner now uses queue.jsonl FILE ORDER (maintained by prioritize_regime_windows) |
-| **Brain WR contamination** | `runner.py _build_env_args()`: added `-e FINBUDDY_RECENT_WR=0.55` — live .env has 0.42, which raised effective_lt by ×1.26 in brain backtests. Same root cause as WF fix. |
-| **log.jsonl dedup** | Removed 16 duplicate hypothesis entries (concurrent writer race). 481 → 465 entries. |
-| **queue.jsonl cleanup** | Pruned 7 queued experiments for (config, window) pairs already completed in log. Saves ~4.5h CPU. |
-| **Regime update** | Regime changed BEAR→NEUTRAL at 04:00 UTC 2026-05-27. Queue still has bears at front (prioritized earlier). |
+1. **Promotion candidate bear_2026Q1 validation** — Brain's next experiment will be a bear window (queue fixed). If lt=3.25 config passes bear_2026Q1 WR≥50%, promotion fires automatically at 07:00 UTC.
+2. **WF tonight 22:00 UTC** — First real fold result in 5 days. Watch for trades in test window.
+3. **Per-pair prediction percentile thresholds** — already implemented in `_compute_dynamic_thresholds()`. Scales effective threshold by pair's own prediction std. No further action needed.
+4. **HMM confidence-gated stake sizing** — `custom_stake_amount()` already reads `current.json`. Wire `confidence` field into stake multiplier. ~1h effort.
+5. **Phase 10 (live capital)** — BLOCKED until WF passes all 4 gates OR 6-month dry-run track record.
+6. **Historical parquets** — market_cap_change_24h, news_sentiment, btc_dominance need historical parquets before they can be model features.
 
 ---
 
 ## ⏭️ Next Actions (priority order)
 
-1. **Monitor bear experiments** — 63 bear experiments at queue front, now ACTUALLY running first. With WR contamination fixed, lt=2.0-2.5 configs should show real trades on bear_2026Q1.
+1. **Tonight 22:00 UTC** — Watch daily WF result. Should produce ≥1 fold with real trades now that cpu-shares bug is fixed.
    ```bash
-   tail -30 ~/.finbuddy/logs/brain_run.log
+   cat $(ls -t walkforward_results/*/summary.json | head -1)
    ```
-2. **First bear_2026Q1 pass** — If any lt=2.0-2.5 config shows WR≥50%+profit>0 on bear_2026Q1, `queue_missing_windows()` auto-seeds bull windows → promotion scan fires within 24h.
-3. **WF tonight 22:00 UTC** — daily WF fires (1 fold). With FINBUDDY_RECENT_WR=0.55 fix, should produce real fold metrics:
+2. **Brain next experiment** — Will be a bear window (bear_2025Q1 at lt=3.25). If it passes → cross-window auto-queue fires → promotion bar met. Watch:
    ```bash
-   ls -t walkforward_results/ | head -1 | xargs -I{} cat walkforward_results/{}/summary.json
+   tail -20 ~/.finbuddy/logs/brain_run.log
    ```
-4. **Deep WF fold 15** — actively training as of 07:14 UTC. Should complete by ~10:00 UTC. Check summary.json.
-5. **n_estimators A/B gate** — All 62 z-scored experiments used n=100. A/B vs 200 needs more n=100 experiments. Wait for 20+ more to compare.
-6. **June 7** — AVAX/ADA watch list review.
+3. **If Telegram "APPLY REQUIRED" arrives** — The promotion candidate (lt=3.25, k_tp=2.25, k_sl=2.0) has avg_profit=0.282%, Sharpe=3.82. LT=3.25 deadlock is now impossible (2.5σ cap). SAFE TO APPLY.
+4. **Deep WF** — Next run 2026-06-03 18:30 UTC (4-day cycle). Will be the first complete 7-fold run with cpu-shares fix.
 
 ---
 
@@ -221,5 +188,4 @@ Listener: `*/2 * * * * flock -n /tmp/finbuddy_telegram_listener.lock telegram_li
 - [[CLAUDE]] — deep project background
 - [[tasks/TASKS.md]] — master phase index
 - [[tasks/phase-1-freqai-brain.md]] — strategy details + live config
-- [[tasks/pair_addition_runbook]] — 9-step pair-addition recipe
 - `scripts/brain/README.md` — brain operator cheatsheet
