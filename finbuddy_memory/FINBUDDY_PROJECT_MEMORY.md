@@ -4,8 +4,39 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status**: 🟢 v23 LIVE · LT=1.2/ST=-0.8 · BEAR 80% · 339 completed experiments · 140 queued (66 bear at front) · 0 promotions · brain cron */15 + flock  
-**Last Updated**: 2026-05-27 UTC (regime-seeding, queue prioritization, queue pruned, all memory updated)
+**Status**: 🟢 v23 LIVE · LT=1.5/ST=-1.5 · BEAR 80% · 380 completed experiments · 261 queued · 1 promotion candidate (pending bear_2026Q1) · brain cron */10 + flock  
+**Last Updated**: 2026-06-01 UTC (4 root-cause bugs fixed: WF cpu-shares, queue drift, LT deadlock cap, promotion unblocked)
+
+### 2026-06-01 — 4 Root-Cause Bugs Fixed (commit `4162899`)
+
+**Context:** Investigation triggered by user noticing brain queue was 100% bull experiments and no trades were being promoted. Full audit found 4 root-cause bugs blocking both promotion and WF.
+
+**Bug 1: WF broken for 5 consecutive days (May 27–31)**
+- Root cause: `--cpu-shares 512` added to `walkforward_daily.sh` on 2026-05-26, passed to `docker-compose run` which rejects the flag. Every fold crashed with "unknown flag: --cpu-shares" → 0 fold results.
+- Fix: Removed `--cpu-shares` flag from `walk_forward.py` command assembly. `docker-compose run` doesn't support it (only `docker run` does).
+- Impact: Daily WF tonight (22:00 UTC) will be first real result since May 26.
+
+**Bug 2: Queue drift — bear entries permanently at back**
+- Root cause: `prioritize_regime_windows()` was a one-shot sort. Each `generate_and_queue` batch (runs every 6h, generates 28-45 new entries) appended in PAIRED_WINDOWS order to the END of the queue. After the 66 bear-sorted entries were consumed, new ones went to positions 64-284 (back of 286-item queue).
+- Fix: Added `next_alternating(last_completed_window_type())` to `experiment_log.py`. Runner.py now always picks the first entry of opposite type to last completed run. Permanent structural fix — can never drift again.
+- Added functions: `next_alternating()` + `last_completed_window_type()` in experiment_log.py.
+
+**Bug 3: LT=3.25 deadlock would recur on any future promotion**
+- Root cause: `combined.clip(upper=2.0)` capped the multiplier, but `LT=3.25 × 2.0 = 6.5σ` was still impossible. The May 30 deadlock (reset LT from 3.25→1.5) would have happened again on any future LT>2.5 promotion.
+- Fix: Added `MAX_EFFECTIVE_THRESHOLD = 2.5` hard cap on FINAL computed threshold in `_compute_dynamic_thresholds()`. Any promoted LT → live threshold ≤ 2.5σ → always tradeable.
+
+**Bug 4: Promotion scan blocked by stale applied.jsonl**
+- Root cause: `applied.jsonl` had hash `2ae96f164387` (lt=3.25, k_tp=2.25) marked as "currently live." Live bot was reset to LT=1.5 on 2026-05-30 but applied.jsonl still showed LT=3.25. `find_candidates()` skipped it → "No promotion candidates" for 2+ days.
+- Fix: Cleared `applied.jsonl`. Brain scan immediately found candidate (avg_profit=0.282%, Sharpe=3.82, 226 trades). Telegram sent.
+- MIN_BULL_RUNS raised 1→2 per user instruction.
+
+**Live state after session:**
+- Strategy: v23, identifier `finbuddy_v23_promoted_1779997908`, restarted at 08:48 UTC
+- Thresholds: LT=1.5, ST=-1.5, K_TP=2.25, K_SL=2.0, STAB=1
+- MAX_EFFECTIVE_THRESHOLD=2.5 cap now active (prevents deadlock permanently)
+- Brain queue: 261 entries, strict bear/bull alternation enforced
+- Promotion candidate: lt=3.25, st=-3.0, k_sl=2.0, k_tp=2.25 — brain next run will be bear window
+- WF fix: tonight's 22:00 UTC run is first real test
 
 ### 2026-05-27 — Regime-Targeted Brain Seeding + Queue Prioritization (commits `5639d98`, `2c6c0b2`, `b3eb3a7`)
 
