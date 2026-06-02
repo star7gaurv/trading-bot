@@ -1,5 +1,5 @@
 # FinBuddy — Master Context
-Last updated: 2026-06-02 04:45 UTC
+Last updated: 2026-06-02 05:00 UTC
 
 ## Current Regime
 Regime: **BEAR** | Confidence: 80.0% | Since: 2026-06-02
