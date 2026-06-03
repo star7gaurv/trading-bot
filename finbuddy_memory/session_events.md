@@ -233,3 +233,4 @@ um_threads=2** added to both config.json and 23_regression_15m_di_config.json. 
 - **2026-06-01 08:00 UTC** — Regime changed: NEUTRAL → BEAR
 - **2026-06-02 00:00 UTC** — Walk-forward status: ❌ FAIL — WR 0.0%, Sharpe 0.00, DD 0.0%, PF 0.00 (0 trades, run `FinBuddyFreqAI_v23_2026-01-01_2026-06-01_20260601T220001`)
 - **2026-06-02 20:00 UTC** — Regime changed: BEAR → CRASH
+- **2026-06-03 00:00 UTC** — Walk-forward status: ❌ FAIL — WR 0.0%, Sharpe 0.00, DD 0.0%, PF 0.00 (0 trades, run `FinBuddyFreqAI_v23_2026-01-01_2026-06-01_20260602T220001`)
