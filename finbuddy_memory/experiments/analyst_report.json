@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-03T00:30:02.022324+00:00",
+  "generated_at": "2026-06-03T06:30:02.307315+00:00",
   "findings": {
     "dead_timeframes": [
       "1h",
@@ -202,7 +202,7 @@
       }
     }
   },
-  "pruned": 30,
+  "pruned": 21,
   "actions": [
     "Queued \u00d73 dead-TF cross-validate: best bear config on bull windows (WR=64% PF=3.60)"
   ],
