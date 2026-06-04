@@ -24,6 +24,20 @@ from typing import Any
 
 from experiment_log import queue_hypothesis, read_log, best_by_metric
 
+# Bayesian optimisation via Optuna TPE. Graceful fallback if not installed.
+try:
+    import optuna
+    import optuna.trial as _optuna_trial
+    from optuna.distributions import (
+        CategoricalDistribution as _Cat,
+        FloatDistribution as _Float,
+        IntDistribution as _Int,
+    )
+    optuna.logging.set_verbosity(optuna.logging.WARNING)
+    _OPTUNA_AVAILABLE = True
+except ImportError:
+    _OPTUNA_AVAILABLE = False
+
 # ──────────────────────────────────────────────────────────────────────────
 # Architecture flags (2026-05-19): live bot moved to v23. v22 code kept on
 # disk for history (same pattern as AiGuardrailStrategy / FinBuddyLLMModel)
@@ -421,26 +435,266 @@ def _generate_guided_aggressive(n: int) -> list[dict]:
     return out
 
 
+# ── BAYESIAN BAND ─────────────────────────────────────────────────────────
+
+# Minimum completed-experiment count before Bayesian activates.
+# TPESampler needs this many "startup" random trials before its surrogate
+# model is reliable; below this it behaves like random search anyway.
+_BAYES_MIN_TRIALS = 30
+
+
+def _bayes_score(metrics: dict) -> float:
+    """Composite score for the Optuna objective (higher = better).
+
+    Sharpe is the primary axis (risk-adjusted).  A trade-count confidence
+    weight shrinks configs with fewer than 30 trades toward 0 so the TPE
+    doesn't over-fit on noisy small samples.  Positive profit adds a small
+    bonus; negative profit is not double-penalised (Sharpe already captures it).
+    """
+    trades = metrics.get("trades", 0)
+    if trades < 10:
+        return -2.0  # tell TPE to avoid this region
+    sharpe = float(metrics.get("sharpe") or -2.0)
+    profit = float(metrics.get("profit_pct") or -2.0)
+    conf   = min(trades / 30.0, 1.0)          # full confidence at 30+ trades
+    bonus  = 1.0 + max(0.0, profit) / 100.0   # small upside for profitability
+    return sharpe * conf * bonus
+
+
+def _make_distributions(allowed_tfs: list[str]) -> dict:
+    """Optuna distributions that mirror AGGRESSIVE_CHOICES_V23.
+
+    short_threshold is stored as a positive absolute value ('short_threshold_abs')
+    and negated when the config dict is assembled — Optuna only handles bounded
+    numerical ranges cleanly with positive numbers.
+    """
+    if not _OPTUNA_AVAILABLE:
+        return {}
+    return {
+        "long_threshold":       _Float(0.25, 3.0,  step=0.25),
+        "short_threshold_abs":  _Float(0.25, 3.0,  step=0.25),
+        "k_sl":                 _Float(0.5,  4.0,  step=0.25),
+        "k_tp":                 _Float(1.0,  4.0,  step=0.25),
+        "stability_n":          _Int(1, 4),
+        "label_period_candles": _Cat([12, 24, 48, 72, 144]),
+        "filter_di":            _Cat([True, False]),
+        "filter_svm":           _Cat([True, False]),
+        "num_leaves":           _Cat([15, 31, 63, 127]),
+        "learning_rate":        _Cat([0.01, 0.03, 0.05]),
+        "feature_set":          _Cat(["all", "no_regime"]),
+        "timeframe":            _Cat(allowed_tfs),
+    }
+
+
+def _snap(value: object, dist: object) -> object | None:
+    """Coerce a legacy param value to the nearest valid point in a distribution.
+
+    Returns None if the value is outside the distribution's range/choices,
+    which causes the caller to skip that past experiment (rather than crash).
+    """
+    if not _OPTUNA_AVAILABLE:
+        return None
+    if isinstance(dist, _Cat):
+        return value if value in dist.choices else None
+    if isinstance(dist, _Float):
+        v = float(value)
+        if dist.step:
+            lo, step = dist.low, dist.step
+            snapped = round(round((v - lo) / step) * step + lo, 8)
+            snapped = round(max(dist.low, min(dist.high, snapped)), 6)
+            return snapped
+        return max(dist.low, min(dist.high, v))
+    if isinstance(dist, _Int):
+        return max(dist.low, min(dist.high, int(value)))
+    return None
+
+
+def _build_study(completed: list[dict], distributions: dict):
+    """Reconstruct an in-memory Optuna study from past experiment results.
+
+    Each completed experiment becomes a FrozenTrial so TPE's surrogate model
+    is initialised with all ~380 real results instead of starting cold.
+    Returns (study, n_loaded) where n_loaded is how many trials were imported.
+    """
+    study = optuna.create_study(
+        direction="maximize",
+        sampler=optuna.samplers.TPESampler(
+            seed=42,
+            n_startup_trials=_BAYES_MIN_TRIALS,
+        ),
+    )
+    n_loaded = 0
+    for exp in completed:
+        cfg     = exp.get("config", {})
+        metrics = exp.get("metrics") or {}
+        score   = _bayes_score(metrics)
+        try:
+            raw = {
+                "long_threshold":       cfg.get("long_threshold",      1.5),
+                "short_threshold_abs":  abs(float(cfg.get("short_threshold", -1.5))),
+                "k_sl":                 cfg.get("k_sl",                2.0),
+                "k_tp":                 cfg.get("k_tp",                2.0),
+                "stability_n":          cfg.get("stability_n",         2),
+                "label_period_candles": cfg.get("label_period_candles",12),
+                "filter_di":            cfg.get("filter_di",           True),
+                "filter_svm":           cfg.get("filter_svm",          True),
+                "num_leaves":           cfg.get("num_leaves",          31),
+                "learning_rate":        cfg.get("learning_rate",       0.03),
+                "feature_set":          cfg.get("feature_set",         "all"),
+                "timeframe":            cfg.get("timeframe",           "15m"),
+            }
+            params = {}
+            valid  = True
+            for k, dist in distributions.items():
+                snapped = _snap(raw[k], dist)
+                if snapped is None:
+                    valid = False
+                    break
+                params[k] = snapped
+            if not valid:
+                continue
+            trial = _optuna_trial.create_trial(
+                params=params,
+                distributions=distributions,
+                value=score,
+            )
+            study.add_trial(trial)
+            n_loaded += 1
+        except Exception:
+            continue
+    return study, n_loaded
+
+
+def generate_bayesian(n: int, allowed_tfs: list[str] | None = None) -> list[dict]:
+    """Generate n hypotheses using Optuna TPE Bayesian optimisation.
+
+    Workflow:
+      1. Load all completed zscore experiments from log.jsonl as Optuna trials.
+      2. Ask TPE to suggest the next n most-promising parameter sets.
+      3. Return them formatted as hypothesis dicts (same shape as safe/aggressive).
+
+    Falls back to [] if:
+      - optuna is not installed
+      - fewer than _BAYES_MIN_TRIALS (30) completed results exist (TPE is just
+        random search below this; random band already handles that case)
+
+    Called every 6h from generate_aggressive_band() once the brain has enough
+    data.  The study is rebuilt from disk each call — no persistent DB needed.
+    """
+    if not _OPTUNA_AVAILABLE:
+        return []
+
+    if allowed_tfs is None:
+        allowed_tfs = _available_timeframes(AGGRESSIVE_CHOICES_V23["timeframe"])
+    if not allowed_tfs:
+        allowed_tfs = [SEED_CONFIG_V23["timeframe"]]
+
+    completed = [
+        r for r in read_log()
+        if r.get("status") == "completed"
+        and r.get("config", {}).get("target_version") == "zscore"
+        and r.get("metrics") is not None
+    ]
+    if len(completed) < _BAYES_MIN_TRIALS:
+        return []
+
+    distributions = _make_distributions(allowed_tfs)
+    study, n_loaded = _build_study(completed, distributions)
+
+    out: list[dict] = []
+    seen: set[tuple] = set()
+    attempts = 0
+
+    while len(out) < n and attempts < n * 6:
+        attempts += 1
+        trial = study.ask(fixed_distributions=distributions)
+        p     = trial.params
+
+        tf = p["timeframe"]
+        v  = {
+            "arch":                  "v23",
+            "strategy":              "FinBuddyFreqAI_v23",
+            "freqaimodel":           "LightGBMRegressor",
+            "config_file":           TF_CONFIG_MAP_V23.get(tf, "v23_regression_15m_di_config.json"),
+            "timeframe":             tf,
+            "long_threshold":        p["long_threshold"],
+            "short_threshold":      -p["short_threshold_abs"],
+            "k_sl":                  p["k_sl"],
+            "k_tp":                  p["k_tp"],
+            "stability_n":           p["stability_n"],
+            "label_period_candles":  p["label_period_candles"],
+            "filter_di":             p["filter_di"],
+            "filter_svm":            p["filter_svm"],
+            "num_leaves":            p["num_leaves"],
+            "learning_rate":         p["learning_rate"],
+            "feature_set":           p["feature_set"],
+            "n_estimators":          100,
+        }
+        key = tuple(sorted(v.items()))
+        if key in seen:
+            # Duplicate — tell study with neutral score and skip
+            study.tell(trial, 0.0)
+            continue
+        seen.add(key)
+
+        # Tell the study a placeholder score so TPE diversifies subsequent asks.
+        # Using 0.0 (break-even Sharpe) is deliberately neutral — we don't want
+        # to reward or punish the suggestion before we've actually run it.
+        study.tell(trial, 0.0)
+
+        rationale = (
+            f"bayes [v23]: lt={v['long_threshold']:+.2f} st={v['short_threshold']:+.2f} "
+            f"ksl={v['k_sl']} ktp={v['k_tp']} N={v['stability_n']} "
+            f"lp={v['label_period_candles']} tf={tf} "
+            f"leaves={v['num_leaves']} lr={v['learning_rate']} "
+            f"({n_loaded} past trials)"
+        )
+        out.append({"band": "aggressive", "rationale": rationale, "config": v})
+
+    return out
+
+
 def generate_aggressive_band(n: int = 12) -> list[dict]:
+    """Mix of three search strategies in a 1/3 : 1/3 : 1/3 split:
+
+      GUIDED  (1/3) — medium perturbations around top-K known results.
+                      Local refinement; finds the bottom of a known valley fast.
+      BAYESIAN (1/3) — Optuna TPE global search informed by all past results.
+                       Learns which parameter *combinations* work; directs budget
+                       toward high-Sharpe regions the random search would miss.
+                       Activates once ≥30 completed experiments exist; below that
+                       its budget falls through to RANDOM (cold-start safe).
+      RANDOM  (1/3) — pure-random sweep across full param space.
+                      Exploration insurance so the brain never gets trapped in a
+                      local optimum discovered by the other two strategies.
+
+    All three strategies use the same output schema so the runner, queue, and
+    promotion pipeline see no difference.
     """
-    Mix:
-      - 50% guided (perturbations around top-3 known results) — focus on promising regions
-      - 50% pure-random (across full param space) — keeps exploring
-    If no completed experiments yet, falls back to 100% pure-random.
-    """
-    n_guided = n // 2
-    n_random = n - n_guided
-    guided = _generate_guided_aggressive(n_guided)
-    # If log is empty, guided returns []; use that budget for more random
+    n_each   = n // 3
+    n_guided = n_each
+    n_bayes  = n_each
+    n_random = n - n_guided - n_bayes   # absorbs rounding remainder
+
+    guided  = _generate_guided_aggressive(n_guided)
+    # If no log yet, guided returns []; roll its budget into random
     if not guided:
-        n_random = n
+        n_random += n_guided
+
+    allowed_tfs = _available_timeframes(AGGRESSIVE_CHOICES_V23["timeframe"])
+    bayes   = generate_bayesian(n_bayes, allowed_tfs=allowed_tfs)
+    # If Bayesian returns [] (cold start / optuna missing), roll into random
+    if not bayes:
+        n_random += n_bayes
+
     if V22_ENABLED:
         n_v23 = n_random // 2 + n_random % 2
         n_v22 = n_random // 2
         random_pool = _generate_aggressive_v23(n_v23) + _generate_aggressive_v22(n_v22)
     else:
         random_pool = _generate_aggressive_v23(n_random)
-    return guided + random_pool
+
+    return guided + bayes + random_pool
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────
