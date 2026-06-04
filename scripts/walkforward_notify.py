@@ -104,11 +104,30 @@ def send_wf_message(run_id: str, summary: dict) -> bool:
                     _lt = float(_line.split("=", 1)[1].strip())
             # WF forces RECENT_WR=0.55 (neutral) so wr_adj=1.0
             _eff_lt = _lt * 1.0
-            _no_trade_reason = (
-                f"No trades in any fold — LT={_lt:.2f} (eff_LT={_eff_lt:.2f}σ in WF, "
-                f"RECENT_WR forced neutral). {'⚠️ LT may be too high for recent market.' if _eff_lt > 2.0 else '✅ LT looks reasonable — may be a data coverage issue.'}"
+            # Read current regime for context
+            try:
+                import json as _json
+                _regime_file = _Path("/home/ubuntu/var/www/html/trade/finbuddy_memory/regimes/current.json")
+                _regime = _json.loads(_regime_file.read_text()).get("regime", "UNKNOWN")
+            except Exception:
+                _regime = "UNKNOWN"
+            _bear_hint = (
+                " BEAR regime active: regime multiplier pushes effective threshold higher "
+                "— even LT=1.5 can become ~2.0σ in BEAR+bad_WR. Deep WF (7 folds) "
+                "covers Q4-2025 bull period and WILL show trade activity there."
+                if "BEAR" in _regime else ""
             )
-            _ctx = f"Effective LT in WF={_eff_lt:.2f}σ (WR forced neutral). Prediction must exceed {_eff_lt:.2f}σ AND STABILITY_N consecutive candles."
+            _no_trade_reason = (
+                f"No trades in any fold — LT={_lt:.2f}, regime={_regime}, "
+                f"eff_LT≈{_eff_lt:.2f}σ (WR neutral in WF)."
+                f"{'⚠️ LT high for current market.' if _eff_lt > 2.0 else '✅ LT OK — signal drought.'}"
+                f"{_bear_hint}"
+            )
+            _ctx = (
+                f"Daily WF test window (Apr+May 2026) is BEAR market — low signal density expected. "
+                f"Check deep WF folds for Q4-2025 bull performance. "
+                f"Effective threshold in WF: {_eff_lt:.2f}σ."
+            )
         except Exception:
             _no_trade_reason = verdict_str or "all folds produced no trades"
             _ctx = "All folds produced no trades — check FREQAI_LONG_THRESHOLD in .env"

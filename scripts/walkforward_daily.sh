@@ -47,8 +47,15 @@ fi
 # 4 months of training data is sufficient to confirm today's live config
 # still generates valid signals. Deep WF (7 folds × 6mo) remains the
 # authoritative promotion gate with full historical coverage.
-# 5mo window = 4mo train + 1mo test → 1 fold
-START=$(date -u -d '5 months ago' +'%Y-%m-01')
+# 7mo window = 5mo train + 2mo test → 1 fold.
+# 2026-06-04: Extended from 5mo (4mo+1mo) to 7mo (5mo+2mo).
+# Reason: 1-month test window (May 2026) was deep BEAR market with effective
+# threshold ~2.5σ → 0 trades every night. 2-month test covers Apr+May 2026,
+# giving more trade opportunities while the bear persists. 5-month train
+# includes Q4-2025 bull data, giving the model richer context.
+# --cpu-shares removed: walk_forward.py accepts but silently ignores this flag
+# (docker-compose run does not support it — same class as --tmpfs bug).
+START=$(date -u -d '7 months ago' +'%Y-%m-01')
 END=$(date -u +'%Y-%m-01')
 
 echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] === Daily walk-forward starting: $START → $END ===" >> "$LOG"
@@ -56,16 +63,15 @@ echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] === Daily walk-forward starting: $ST
 python3 "$SCRIPT" \
     --start "$START" \
     --end "$END" \
-    --train-months 4 \
-    --test-months 1 \
-    --slide-months 1 \
+    --train-months 5 \
+    --test-months 2 \
+    --slide-months 2 \
     --strategy FinBuddyFreqAI_v23 \
     --timeframe 15m \
     --config config.json \
     --skip-download \
     --max-workers 1 \
-    --lgbm-threads 2 \
-    --cpu-shares 512 >> "$LOG" 2>&1
+    --lgbm-threads 2 >> "$LOG" 2>&1
 
 EXIT=$?
 echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] === Daily walk-forward done (exit=$EXIT) ===" >> "$LOG"

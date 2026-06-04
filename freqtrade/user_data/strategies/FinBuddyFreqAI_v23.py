@@ -237,16 +237,18 @@ class FinBuddyFreqAI_v23(IStrategy):
     _REGIME_FILE = "/freqtrade/finbuddy_memory/regimes/current.json"
     _HISTORICAL_REGIME_FILE = "/freqtrade/finbuddy_memory/regimes/historical_regime.parquet"
     _HISTORICAL_MACRO_FILE  = "/freqtrade/finbuddy_memory/historical/macro_features.parquet"
-    _HISTORICAL_FUNDING_FILE = "/freqtrade/finbuddy_memory/historical/funding_rate.parquet"
-    _HISTORICAL_OI_FILE      = "/freqtrade/finbuddy_memory/historical/open_interest.parquet"
+    _HISTORICAL_FUNDING_FILE         = "/freqtrade/finbuddy_memory/historical/funding_rate.parquet"
+    _HISTORICAL_FUNDING_PERPAIR_FILE = "/freqtrade/finbuddy_memory/historical/funding_perpair.parquet"
+    _HISTORICAL_OI_FILE              = "/freqtrade/finbuddy_memory/historical/open_interest.parquet"
     _COMBINED_CTX_FILE = "/freqtrade/user_data/data/external/combined_context.json"
     _PAIR_REGIME_FILE  = "/freqtrade/finbuddy_memory/regimes/pair_regime_stats.json"
 
     # Class-level caches: loaded once, shared across all strategy instances.
     _historical_regime_df  = None
     _historical_macro_df   = None
-    _historical_funding_df = None
-    _historical_oi_df      = None
+    _historical_funding_df         = None
+    _historical_funding_perpair    = None   # dict[symbol -> DataFrame] after first load
+    _historical_oi_df              = None
     # Pair-regime block cache: refreshed when JSON mtime changes (every 30 min via cron).
     _pair_regime_blocks       = None    # dict[pair] -> set[regime]
     _pair_regime_blocks_mtime = 0.0
@@ -510,6 +512,65 @@ class FinBuddyFreqAI_v23(IStrategy):
             "funding_rate":      pd.Series(merged["funding_rate"].fillna(0.0).values,      index=dataframe.index),
             "funding_rate_z30d": pd.Series(merged["funding_rate_z30d"].fillna(0.0).values, index=dataframe.index),
             "funding_rate_chg":  pd.Series(merged["funding_rate_chg"].fillna(0.0).values,  index=dataframe.index),
+        }
+
+    def _load_historical_funding_perpair(self) -> dict:
+        """Load per-pair funding rate parquet into a dict[symbol → DataFrame].
+
+        Built by scripts/build_historical_funding_perpair.py, refreshed daily.
+        Falls back to empty dict (features default to 0.0) if parquet missing.
+        """
+        if FinBuddyFreqAI_v23._historical_funding_perpair is not None:
+            return FinBuddyFreqAI_v23._historical_funding_perpair
+        try:
+            df = pd.read_parquet(self._HISTORICAL_FUNDING_PERPAIR_FILE)
+            df["date"] = pd.to_datetime(df["date"], utc=True).astype("datetime64[ns, UTC]")
+            df = df.sort_values(["symbol", "date"]).reset_index(drop=True)
+            by_sym = {sym: grp.reset_index(drop=True) for sym, grp in df.groupby("symbol")}
+            FinBuddyFreqAI_v23._historical_funding_perpair = by_sym
+            max_date = df["date"].max()
+            gap_days = (pd.Timestamp.now(tz="UTC") - max_date).days
+            logger.info(
+                f"[FundingPP] Loaded {len(df)} rows across {len(by_sym)} symbols "
+                f"(gap={gap_days}d)"
+            )
+            if gap_days > 3:
+                logger.warning(
+                    f"[FundingPP] STALE: funding_perpair.parquet is {gap_days}d behind — "
+                    f"re-run scripts/build_historical_funding_perpair.py"
+                )
+            return by_sym
+        except Exception as e:
+            logger.warning(f"[FundingPP] Could not load ({e}) — per-pair funding defaulting to 0")
+            FinBuddyFreqAI_v23._historical_funding_perpair = {}
+            return {}
+
+    def _get_pair_funding_series(self, dataframe: "DataFrame", pair: str) -> dict:
+        """Return per-candle funding_rate/z30d/chg for the given pair.
+
+        Converts FreqTrade pair format ('ETH/USDT:USDT') to Binance symbol
+        ('ETHUSDT'), looks up in the per-pair cache, and merges backward.
+        Defaults to 0.0 if the symbol is missing from the parquet.
+        """
+        n   = len(dataframe)
+        sym = pair.replace("/", "").replace(":USDT", "")
+        by_sym = self._load_historical_funding_perpair()
+        hist   = by_sym.get(sym)
+        if hist is None or hist.empty:
+            return {
+                "pair_funding_rate":      pd.Series([0.0] * n, index=dataframe.index),
+                "pair_funding_rate_z30d": pd.Series([0.0] * n, index=dataframe.index),
+                "pair_funding_rate_chg":  pd.Series([0.0] * n, index=dataframe.index),
+            }
+        dates = pd.to_datetime(dataframe["date"], utc=True).astype("datetime64[ns, UTC]")
+        df_join = pd.DataFrame({"date": dates}).sort_values("date").reset_index()
+        merged  = pd.merge_asof(df_join, hist[["date","funding_rate","funding_rate_z30d","funding_rate_chg"]],
+                                on="date", direction="backward")
+        merged  = merged.sort_values("index").reset_index(drop=True)
+        return {
+            "pair_funding_rate":      pd.Series(merged["funding_rate"].fillna(0.0).values,      index=dataframe.index),
+            "pair_funding_rate_z30d": pd.Series(merged["funding_rate_z30d"].fillna(0.0).values, index=dataframe.index),
+            "pair_funding_rate_chg":  pd.Series(merged["funding_rate_chg"].fillna(0.0).values,  index=dataframe.index),
         }
 
     def _load_historical_oi(self):
@@ -1001,6 +1062,15 @@ class FinBuddyFreqAI_v23(IStrategy):
             dataframe["%-funding_rate"]      = funding["funding_rate"]
             dataframe["%-funding_rate_z30d"] = funding["funding_rate_z30d"]
             dataframe["%-funding_rate_chg"]  = funding["funding_rate_chg"]
+
+            # Per-pair funding rate (added 2026-06-04): pair's own crowding signal.
+            # BTC funding is market-wide; each pair has independent positioning dynamics.
+            # ETH at -0.02% (longs paid) vs BTC at +0.03% (longs paying) = totally different
+            # setups. 3 features: raw rate, z30d extremeness, momentum (chg).
+            pair_funding = self._get_pair_funding_series(dataframe, metadata.get("pair", ""))
+            dataframe["%-pair_funding_rate"]      = pair_funding["pair_funding_rate"]
+            dataframe["%-pair_funding_rate_z30d"] = pair_funding["pair_funding_rate_z30d"]
+            dataframe["%-pair_funding_rate_chg"]  = pair_funding["pair_funding_rate_chg"]
 
             # Open Interest Delta (added 2026-05-23): global proxy for market leverage
             oi = self._get_oi_series(dataframe)

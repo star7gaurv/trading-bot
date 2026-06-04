@@ -51,8 +51,7 @@ python3 "$SCRIPT" \
     --config config.json \
     --skip-download \
     --max-workers 2 \
-    --lgbm-threads 2 \
-    --cpu-shares 256 >> "$LOG" 2>&1
+    --lgbm-threads 2 >> "$LOG" 2>&1
 
 EXIT=$?
 echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] === 4-day deep walk-forward done (exit=$EXIT) ===" >> "$LOG"
