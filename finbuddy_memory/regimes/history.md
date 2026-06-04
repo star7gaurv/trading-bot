@@ -31,3 +31,4 @@
 | 2026-06-01 | NEUTRAL → BEAR | Confidence: 80.0% |
 | 2026-06-02 | BEAR → CRASH | Confidence: 95.0% |
 | 2026-06-03 | CRASH → BEAR | Confidence: 80.0% |
+| 2026-06-04 | BEAR → CRASH | Confidence: 95.0% |
