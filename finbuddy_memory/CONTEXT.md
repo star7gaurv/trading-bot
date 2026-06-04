@@ -1,5 +1,5 @@
 # FinBuddy — Master Context
-Last updated: 2026-06-04 15:00 UTC
+Last updated: 2026-06-04 15:15 UTC
 
 ## Current Regime
 Regime: **CRASH** | Confidence: 95.0% | Since: 2026-06-04
