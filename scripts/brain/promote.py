@@ -176,7 +176,9 @@ def find_candidates() -> list[dict]:
         # The live pair-regime gate provides the real-time safety net for 2026 conditions.
         bear_perf_runs = [r for r in g["bear_runs"] if r.get("window") != BEAR_2026Q1_REQUIRED]
         if not bear_perf_runs:
-            # Only has bear_2026Q1 — can't evaluate bear performance properly
+            # Only has bear_2026Q1 — can't evaluate bear performance (it always loses there).
+            # Need bear_2025Q1 results. cross-window auto-queue should have scheduled it.
+            print(f"[promote] {h[:12]} — skip: no bear_2025Q1 results yet (only {BEAR_2026Q1_REQUIRED})")
             continue
         bear_profits = [r["metrics"]["profit_pct"] for r in bear_perf_runs]
         bull_sharpes = [r["metrics"]["sharpe"]     for r in g["bull_runs"]]

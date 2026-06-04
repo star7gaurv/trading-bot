@@ -40,12 +40,26 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+# 30-second TTL caches for read_log / read_queue.
+# Eliminates redundant full-file parses within a single runner invocation
+# (last_completed_window_type + experiments_today_count both call read_log;
+#  runner loop + next_alternating both call read_queue). Invalidated on write.
+_log_cache:   tuple[float, list] | None = None
+_queue_cache: tuple[float, list] | None = None
+_CACHE_TTL = 30.0  # seconds
+
+
 def _atomic_append(path: Path, record: dict) -> None:
     """JSONL append. Single-writer assumption (cron-driven so safe)."""
+    global _log_cache, _queue_cache
     path.parent.mkdir(parents=True, exist_ok=True)
     line = json.dumps(record, separators=(",", ":")) + "\n"
     with path.open("a") as f:
         f.write(line)
+    if path == LOG_FILE:
+        _log_cache = None
+    elif path == QUEUE_FILE:
+        _queue_cache = None
 
 
 # ── Hypothesis lifecycle ───────────────────────────────────────────────────
@@ -82,7 +96,11 @@ def queue_hypothesis(
 
 
 def read_queue() -> list[dict]:
-    """Read all queued hypotheses."""
+    """Read all queued hypotheses (30s TTL cached)."""
+    global _queue_cache
+    now = time.time()
+    if _queue_cache is not None and now - _queue_cache[0] < _CACHE_TTL:
+        return _queue_cache[1]
     if not QUEUE_FILE.exists():
         return []
     out = []
@@ -95,11 +113,16 @@ def read_queue() -> list[dict]:
                 out.append(json.loads(line))
             except json.JSONDecodeError:
                 continue
+    _queue_cache = (now, out)
     return out
 
 
 def read_log() -> list[dict]:
-    """Read all completed experiment results."""
+    """Read all experiment log entries (30s TTL cached)."""
+    global _log_cache
+    now = time.time()
+    if _log_cache is not None and now - _log_cache[0] < _CACHE_TTL:
+        return _log_cache[1]
     if not LOG_FILE.exists():
         return []
     out = []
@@ -112,6 +135,7 @@ def read_log() -> list[dict]:
                 out.append(json.loads(line))
             except json.JSONDecodeError:
                 continue
+    _log_cache = (now, out)
     return out
 
 
@@ -162,6 +186,7 @@ def experiments_today_count() -> int:
 
 def _remove_from_queue(hypothesis_id: str) -> None:
     """Rewrite queue.jsonl without the given hypothesis. O(n) but n is small."""
+    global _queue_cache
     if not QUEUE_FILE.exists():
         return
     keep = [r for r in read_queue() if r.get("hypothesis_id") != hypothesis_id]
@@ -170,6 +195,7 @@ def _remove_from_queue(hypothesis_id: str) -> None:
         for r in keep:
             f.write(json.dumps(r, separators=(",", ":")) + "\n")
     tmp.replace(QUEUE_FILE)
+    _queue_cache = None
 
 
 def _config_signature(config: dict) -> str:
@@ -274,7 +300,7 @@ def last_completed_window_type() -> str | None:
     log = read_log()
     for entry in reversed(log):
         if entry.get("status") == "completed":
-            win = entry.get("window", "")
+            win = entry.get("window", "").lower()
             if "bear" in win:
                 return "bear"
             if "bull" in win:

@@ -674,10 +674,11 @@ def run_next(max_runs: int = 1, status_only: bool = False) -> int:
             if h is None:
                 print("[brain] queue empty — nothing to run")
                 break
-            want_type = ("bear" if last_type == "bull" else "bull") if last_type else "any"
-            actual_type = "bear" if "bear" in h.get("window", "") else "bull"
-            if last_type and actual_type != want_type:
-                print(f"[brain] alternation: no {want_type} entries queued, falling back to {actual_type}")
+            if last_type:
+                want_type = "bear" if last_type == "bull" else "bull"
+                actual_type = "bear" if "bear" in h.get("window", "").lower() else "bull"
+                if actual_type != want_type:
+                    print(f"[brain] alternation: no {want_type} entries queued, falling back to {actual_type}")
             started = datetime.now(timezone.utc).isoformat()
 
             print(f"[brain] running {h['hypothesis_id']} ({h['band']}) on {h['window']}: {h['rationale']}")

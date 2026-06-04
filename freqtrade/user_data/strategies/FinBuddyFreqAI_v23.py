@@ -1197,7 +1197,7 @@ class FinBuddyFreqAI_v23(IStrategy):
         #   LT=3.25, BEAR(×1.3), bad_WR(×1.3) = 6.5σ → capped to 2.5σ ✓
         #   LT=1.5,  BEAR(×1.3), bad_WR(×1.3) = 2.535σ → capped to 2.5σ ✓
         #   LT=1.5,  BULL(×0.7), good_WR(×0.7) = 0.735σ → not capped ✓
-        MAX_EFFECTIVE_THRESHOLD = 2.5
+        MAX_EFFECTIVE_THRESHOLD = float(os.getenv("FREQAI_MAX_EFFECTIVE_THRESHOLD", "2.5"))
         dataframe["dynamic_long_threshold"]  = dataframe["dynamic_long_threshold"].clip(upper=MAX_EFFECTIVE_THRESHOLD)
         dataframe["dynamic_short_threshold"] = dataframe["dynamic_short_threshold"].clip(lower=-MAX_EFFECTIVE_THRESHOLD)
         return dataframe

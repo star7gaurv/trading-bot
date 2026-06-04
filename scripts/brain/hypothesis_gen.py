@@ -106,7 +106,8 @@ PAIRED_WINDOWS = [
     "bear_2025Q1",
     "bull_2025Q4",
     "bear_2026Q1",
-    "bull_2024Q1",
+    # bull_2024Q1 removed 2026-06-04: caused 3:2 bull:bear enqueue ratio →
+    # bear queue exhausted 50% faster → alternation collapsed to pure-bull.
 ]
 
 # Target version tag — added to every new queued experiment so promote.py can
@@ -544,7 +545,9 @@ def generate_and_queue(safe_n: int = 6, aggressive_n: int = 6, windows: list[str
         "bear_2025Q1",  # primary bear validation (best PF/WR on bear)
         "bull_2025Q4",  # secondary bull (recent, pre-2026-crash)
         "bear_2026Q1",  # promotion gate window (must pass WR≥50%)
-        "bull_2024Q1",  # tertiary bull (earliest, hardest — placed last)
+        # bull_2024Q1 removed: was 3rd bull causing 3:2 bull:bear ratio → bear queue
+        # exhausted 50% faster than replenished → alternation collapsed to pure-bull.
+        # 2:2 balance ensures next_alternating() always finds a bear entry. (2026-06-04)
     ]
     target_windows = windows or PAIRED_WINDOWS
     safe = generate_safe_band_both(n_per_arch=safe_n // 2 + safe_n % 2)

@@ -163,15 +163,11 @@ def run_backtest(
     cmd = [
         "docker-compose", "run", "--rm",
     ]
-    # NOTE: --cpu-shares is NOT supported by docker-compose run (only by docker run).
-    # Passing it caused "unknown flag: --cpu-shares" → all folds crashed → 0 WF results
-    # for 5 consecutive days (2026-05-27 → 2026-06-01). Removed. CPU prioritisation is
-    # handled at the docker-compose.yml level or via cron scheduling (deep WF at midnight IST).
-    # cpu_shares param kept in signature for backwards compat but intentionally ignored.
-    # Mount FreqAI models dir in RAM to eliminate SSD write latency during training.
-    # Safety guard: skip if available RAM < 6 GB so we never OOM the live bot.
-    if _psutil is not None and _psutil.virtual_memory().available > 6_000_000_000:
-        cmd += ["--tmpfs", "/freqtrade/user_data/models:rw,size=4g"]
+    # NOTE: --cpu-shares and --tmpfs are NOT supported by docker-compose run (only docker run).
+    # --cpu-shares caused "unknown flag" → 0 WF results for 5 days (2026-05-27→2026-06-01).
+    # --tmpfs had the same failure: all folds crashed (2026-06-01→2026-06-04).
+    # Both removed. cpu_shares param kept in signature for backwards compat but ignored.
+    # CPU priority handled via cron scheduling (deep WF at midnight IST).
     cmd += [
         # Large wallet so stake depletion never silences a test window
         "-e", "FREQTRADE__DRY_RUN_WALLET=10000",
