@@ -1,15 +1,15 @@
 ---
 regime: CRASH
 confidence: 0.95
-since: 2026-06-05
-updated: 2026-06-05T20:00:01.987855+00:00
+since: 2026-06-06
+updated: 2026-06-06T00:00:01.312801+00:00
 ---
 # Current Market Regime: CRASH
 
 **Confidence:** 95.0%
-**Active since:** 2026-06-05
+**Active since:** 2026-06-06
 **Previous regime:** CRASH
-**Last updated:** 2026-06-05T20:00:01.987855+00:00
+**Last updated:** 2026-06-06T00:00:01.312801+00:00
 
 ## Regime Reference
 | Regime | Brain Behavior |
