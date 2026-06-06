@@ -5,8 +5,8 @@ brain_cleanup.py — Reclaim disk space by purging old brain artifacts.
 Cron: 0 4 * * *  (daily 4am, after most overnight backtests finish)
 
 What it removes:
-1. Brain FreqAI model dirs older than --max-age-days (default 7)
-   (each is ~1.7-3MB but with 30+ experiments/day → ~70MB/day)
+1. Brain FreqAI model dirs (brain_* and wf_*) older than --max-age-days (default 2)
+   (brain_scout_* alone generates ~15–20 GB/week; must prune aggressively)
 2. Backtest result zips older than --max-age-days (default 14)
 3. Brain log files older than --max-age-days (default 14)
 
@@ -15,14 +15,16 @@ What it preserves:
 - finbuddy_memory/experiments/queue.jsonl  (pending hypotheses)
 - finbuddy_memory/promotions/             (proposal/apply history)
 - backtest zips referenced in pending promotions
-- live (non-brain) freqai models
+- live (non-brain) freqai models (sub-train-* dirs)
 
 Safe to run — never touches the live FreqTrade container's active model.
+Uses sudo rm -rf for dirs owned by Docker root (ubuntu has passwordless sudo).
 """
 from __future__ import annotations
 
 import argparse
 import shutil
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -67,10 +69,21 @@ def _top_k_protected_dirs(keep_k: int) -> set[str]:
     return protected
 
 
-def cleanup_brain_models(max_age_days: int, keep_top_k: int, dry_run: bool = False) -> tuple[int, int]:
-    """Remove brain_<hash>_<ts> model dirs older than threshold.
+def _rmtree_sudo(d: Path) -> None:
+    """Remove a directory tree, falling back to sudo rm -rf for Docker-owned (root) files."""
+    try:
+        shutil.rmtree(d)
+    except PermissionError:
+        subprocess.run(["sudo", "rm", "-rf", str(d)], check=True)
 
-    Preserves top-K best-profit experiment models indefinitely (set via --keep-top-k).
+
+def cleanup_brain_models(max_age_days: int, keep_top_k: int, dry_run: bool = False) -> tuple[int, int]:
+    """Remove brain_* and wf_* model dirs older than threshold.
+
+    Covers both brain experiment dirs (brain_<hash>_*, brain_scout_<hash>_*) and
+    walk-forward experiment dirs (wf_*). Both are created by Docker containers running
+    as root, so falls back to sudo rm -rf when shutil.rmtree is denied.
+    Preserves top-K best-profit experiment models indefinitely.
     Returns (count, bytes_freed).
     """
     cutoff = time.time() - max_age_days * 86400
@@ -79,27 +92,29 @@ def cleanup_brain_models(max_age_days: int, keep_top_k: int, dry_run: bool = Fal
         print(f"  preserving top-{keep_top_k} model dirs (by profit_pct): {len(protected)} dirs protected")
     count = 0
     freed = 0
-    for d in MODELS_DIR.glob("brain_*"):
-        if not d.is_dir():
-            continue
-        if d.name in protected:
-            continue  # analyzable reference — keep
-        try:
-            mtime = d.stat().st_mtime
-        except FileNotFoundError:
-            continue
-        if mtime > cutoff:
-            continue
-        size = _dir_size(d)
-        if dry_run:
-            print(f"  [DRY-RUN] would remove {d.name} ({size/1024/1024:.1f}MB)")
-        else:
+    patterns = ["brain_*", "wf_*"]
+    for pattern in patterns:
+        for d in MODELS_DIR.glob(pattern):
+            if not d.is_dir():
+                continue
+            if d.name in protected:
+                continue
             try:
-                shutil.rmtree(d)
-                count += 1
-                freed += size
-            except Exception as e:
-                print(f"  WARN: failed to remove {d.name}: {e}", file=sys.stderr)
+                mtime = d.stat().st_mtime
+            except FileNotFoundError:
+                continue
+            if mtime > cutoff:
+                continue
+            size = _dir_size(d)
+            if dry_run:
+                print(f"  [DRY-RUN] would remove {d.name} ({size/1024/1024:.1f}MB)")
+            else:
+                try:
+                    _rmtree_sudo(d)
+                    count += 1
+                    freed += size
+                except Exception as e:
+                    print(f"  WARN: failed to remove {d.name}: {e}", file=sys.stderr)
     return count, freed
 
 
@@ -178,7 +193,7 @@ def disk_usage_pct() -> int:
 
 def main() -> int:
     p = argparse.ArgumentParser(description="FinBuddy brain disk cleanup")
-    p.add_argument("--max-age-days",     type=int, default=7,  help="brain model age threshold")
+    p.add_argument("--max-age-days",     type=int, default=2,  help="brain/wf model dir age threshold (default 2 days — brain_scout alone generates ~15GB/week)")
     p.add_argument("--zip-max-age-days", type=int, default=14, help="backtest zip age threshold")
     p.add_argument("--log-max-age-days", type=int, default=14, help="brain log age threshold")
     p.add_argument("--keep-top-k",       type=int, default=10, help="preserve top-K best-profit model dirs indefinitely (analyzable history)")

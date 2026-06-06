@@ -783,10 +783,10 @@ class FinBuddyFreqAI_v23(IStrategy):
                 return min(self._LEV_MED, max_leverage)
             last = df.iloc[-1]
             pred = float(last.get("&-future_return", 0.0))
-            # Fix 7 (2026-05-22): per-pair median offset removed. Target is now z-scored
-            # (mean~0 by construction), so subtracting the rolling median was double-correcting
-            # and producing inconsistent centering vs populate_entry_trend's rolling() median.
-            centered = pred
+            # Serve-time recentering (2026-06-06): same rolling-100 median as entry/exit.
+            # tail(100).median() == last value of rolling(100, min_periods=10).median().
+            rolling_median = df["&-future_return"].tail(100).median()
+            centered = pred - rolling_median
 
             if side == "long":
                 thresh = float(last.get("dynamic_long_threshold", 1.0))
@@ -818,7 +818,7 @@ class FinBuddyFreqAI_v23(IStrategy):
 
             final = min(lev, max_leverage)
             logger.info(
-                f"[Leverage] {pair} {side}: pred={pred:+.3f} (z-scored, no median offset) "
+                f"[Leverage] {pair} {side}: pred={pred:+.3f} centered={centered:+.3f} (median={rolling_median:+.3f}) "
                 f"thresh={thresh:+.3f} ratio={ratio:+.2f} "
                 f"→ tier={tier} lev={final:.1f}x (cap={max_leverage:.0f}x)"
             )
@@ -1329,15 +1329,14 @@ class FinBuddyFreqAI_v23(IStrategy):
             pd.Series(0.0, index=dataframe.index)
         )
 
-        # Fix 7 (2026-05-22): per-pair median offset REMOVED.
-        # Original purpose (2026-05-20): raw-% predictions had +1 to +8% long-bias from
-        # bull training. Solution: subtract rolling-100 median to center predictions at 0.
-        # Now invalid: target is z-scored in set_freqai_targets (mean=0, std=1 by construction)
-        # so the per-pair rolling median is already ≈0 for a well-trained model. Subtracting
-        # it again added noise and — critically — produced a different centering from the
-        # leverage() callback (which used tail(100) instead of rolling(100)), creating
-        # inconsistent threshold comparisons between entry and leverage decisions.
-        centered_pred = predicted_return  # z-scored target → no offset needed
+        # Serve-time recentering (2026-06-06): subtract rolling-100 median to remove the
+        # ~+0.6σ positive bias observed in live predictions after the 2026-06-04 promotion.
+        # z-scored training has mean≈0, but serve-time distribution drifts positive when
+        # recent market candles differ from the training window. The rolling median tracks
+        # this drift without look-ahead. Consistent with exit and leverage() below — all
+        # three use rolling(100, min_periods=10) so threshold comparisons are coherent.
+        rolling_median = predicted_return.rolling(100, min_periods=10).median()
+        centered_pred = predicted_return - rolling_median
 
         long_thresh  = dataframe["dynamic_long_threshold"]
         short_thresh = dataframe["dynamic_short_threshold"]
@@ -1449,8 +1448,9 @@ class FinBuddyFreqAI_v23(IStrategy):
             "&-future_return",
             pd.Series(0.0, index=dataframe.index)
         )
-        # Fix 7 (2026-05-22): per-pair median offset removed — target is z-scored.
-        centered_pred = predicted_return
+        # Serve-time recentering (2026-06-06): same rolling-100 median as populate_entry_trend.
+        rolling_median = predicted_return.rolling(100, min_periods=10).median()
+        centered_pred = predicted_return - rolling_median
 
         # Regime-aware exit flip thresholds (half the entry threshold)
         long_thresh  = dataframe["dynamic_long_threshold"]
