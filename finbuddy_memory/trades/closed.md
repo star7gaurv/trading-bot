@@ -328,3 +328,4 @@
 | 2026-06-06 18:10:41 | ARB/USDT:USDT | SHORT | 2h55m | +1.18% | +0.68 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_sh |
 | 2026-06-06 18:30:21 | APT/USDT:USDT | SHORT | 3h00m | -0.05% | -0.03 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-06-06 18:46:09 | FIL/USDT:USDT | SHORT | 3h00m | -0.18% | -0.10 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-06-06 20:02:05 | ARB/USDT:USDT | SHORT | 1h46m | +0.34% | +0.28 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
