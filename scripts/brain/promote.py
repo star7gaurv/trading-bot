@@ -80,13 +80,42 @@ def record_new_baseline(avg_profit_pct: float, config_hash: str) -> None:
 # ── Aggregate experiments by config hash ──────────────────────────────────
 
 def _config_hash(cfg: dict) -> str:
-    """Deterministic hash of a config dict (for grouping bull/bear runs).
+    """Full deterministic hash of a config dict.
 
-    Uses json.dumps(sort_keys=True) to guarantee stable ordering regardless of
-    how the config dict was constructed (dict-literal vs JSON-parse insertion order).
+    Used for queue deduplication (experiment_log.py) — keeps different training
+    variants (num_leaves, learning_rate, feature_set) as separate queue entries.
+    Do NOT use for promotion grouping — see _promotion_key() below.
     """
     import hashlib, json as _json
     payload = _json.dumps(cfg, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode()).hexdigest()[:12]
+
+
+# Fields that actually change live bot behaviour when promoted.
+# Excludes brain-internal params (arch, freqaimodel, config_file, target_version)
+# and LightGBM hyperparams (n_estimators, num_leaves, learning_rate) that are NOT
+# written to live config/env during apply_promotion().
+# Rationale: two experiments with identical strategy params but different num_leaves
+# test the SAME strategy — pooling them counts toward the same promotion gate.
+# The best-performing training variant is selected as the representative config.
+PROMOTION_KEY_FIELDS = frozenset({
+    "timeframe", "long_threshold", "short_threshold",
+    "k_sl", "k_tp", "stability_n", "label_period_candles",
+    "filter_di", "filter_svm", "feature_set",
+})
+
+
+def _promotion_key(cfg: dict) -> str:
+    """Hash of only the fields written to live config on promotion.
+
+    Prevents fragmentation from brain-internal exploration params (num_leaves,
+    learning_rate, n_estimators, target_version, arch) that don't affect the
+    strategy's live behaviour. Two experiments with the same strategy params but
+    different training hyperparams vote toward the SAME promotion candidate.
+    """
+    import hashlib, json as _json
+    key_cfg = {k: v for k, v in cfg.items() if k in PROMOTION_KEY_FIELDS}
+    payload = _json.dumps(key_cfg, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(payload.encode()).hexdigest()[:12]
 
 
@@ -115,23 +144,38 @@ def find_candidates() -> list[dict]:
     # Load already-applied hashes — never re-propose a config that is currently live.
     # Root cause: the daily 07:00 scan kept re-finding hash 2ae96f164387 (applied 2026-05-28)
     # and sending a duplicate "APPLY REQUIRED" Telegram every morning. Fix (2026-05-30).
+    # Load applied promotion keys (both full hash and promo_key) for dedup.
+    # Using promo_key prevents re-proposing a strategy-param set that was already
+    # promoted under a different training hyperparam variant (e.g. num_leaves=31
+    # was applied, num_leaves=63 variant should not re-propose same strategy).
     applied_hashes: set[str] = set()
+    applied_promo_keys: set[str] = set()
     applied_log = PROMOTIONS_DIR / "applied.jsonl"
     if applied_log.exists():
         for line in applied_log.read_text().splitlines():
             if line.strip():
                 try:
-                    applied_hashes.add(json.loads(line)["config_hash"])
+                    rec = json.loads(line)
+                    applied_hashes.add(rec["config_hash"])
+                    # promotion_key stored since 2026-06-06; compute from config for older records
+                    pk = rec.get("promotion_key") or _promotion_key(rec.get("config", {}))
+                    applied_promo_keys.add(pk)
                 except Exception:
                     pass
 
+    # Group by promotion key (not full config hash) so training hyperparam variants
+    # (num_leaves, learning_rate, n_estimators) vote toward the same candidate.
+    # Representative config = the experiment with highest profit in the group.
     groups: dict[str, dict] = defaultdict(lambda: {
-        "config": None, "runs": [], "bull_runs": [], "bear_runs": []
+        "config": None, "_best_profit": -1e9, "runs": [], "bull_runs": [], "bear_runs": []
     })
     for r in completed:
-        h = _config_hash(r["config"])
+        h = _promotion_key(r["config"])
         g = groups[h]
-        g["config"] = r["config"]
+        run_profit = (r.get("metrics") or {}).get("profit_pct", -1e9)
+        if g["config"] is None or run_profit > g["_best_profit"]:
+            g["config"] = r["config"]   # keep config from best-performing experiment
+            g["_best_profit"] = run_profit
         g["runs"].append(r)
         win = r.get("window", "")
         if "bull" in win:
@@ -142,8 +186,8 @@ def find_candidates() -> list[dict]:
     baseline = get_live_baseline_profit_pct()
     candidates = []
     for h, g in groups.items():
-        # Skip configs that are already live — no point re-proposing what's already applied.
-        if h in applied_hashes:
+        # Skip strategy-param sets already promoted (check promo key, not full hash).
+        if h in applied_promo_keys:
             continue
         # Statistical-significance gate: require enough runs in each regime
         if len(g["bull_runs"]) < MIN_BULL_RUNS or len(g["bear_runs"]) < MIN_BEAR_RUNS:
@@ -363,6 +407,8 @@ def apply_promotion(config_hash: str) -> int:
         "FREQAI_LONG_THRESHOLD":  new_cfg.get("long_threshold"),
         "FREQAI_SHORT_THRESHOLD": new_cfg.get("short_threshold"),
         "FREQAI_STABILITY_N":     new_cfg.get("stability_n"),
+        # feature_set: write to env so live uses the same feature set validated in backtest
+        "FREQAI_FEATURE_SET":     new_cfg.get("feature_set"),
     }
     env_keys = {k: v for k, v in env_keys.items() if v is not None}
     if env_keys:
@@ -447,7 +493,15 @@ def apply_promotion(config_hash: str) -> int:
     # Append to applied.jsonl for history
     applied_log = PROMOTIONS_DIR / "applied.jsonl"
     with applied_log.open("a") as f:
-        f.write(json.dumps({"applied_at": ts, "config_hash": config_hash, "config": new_cfg, "identifier": new_identifier, "backup": str(backup), "restart_ok": restart_ok}) + "\n")
+        f.write(json.dumps({
+            "applied_at":    ts,
+            "config_hash":   config_hash,
+            "promotion_key": _promotion_key(new_cfg),  # for future promo-key dedup
+            "config":        new_cfg,
+            "identifier":    new_identifier,
+            "backup":        str(backup),
+            "restart_ok":    restart_ok,
+        }) + "\n")
     print(f"archived → {archive}")
     return 0 if restart_ok else 2
 
