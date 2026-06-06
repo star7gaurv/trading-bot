@@ -323,3 +323,4 @@
 | 2026-06-01 18:11:33 | FET/USDT:USDT | SHORT | 0h56m | -3.63% | -2.11 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-01 21:30:52 | UNI/USDT:USDT | LONG | 3h15m | -0.38% | -0.21 | time_limit_exit | BEAR | freqai_regression_v23_lo |
 | 2026-06-02 01:31:26 | UNI/USDT:USDT | LONG | 2h31m | -1.12% | -0.63 | trailing_stop_loss | BEAR | freqai_regression_v23_lo |
+| 2026-06-06 10:45:45 | FIL/USDT:USDT | SHORT | 3h00m | +1.72% | +1.00 | time_limit_exit | BEAR | freqai_regression_v23_sh |
