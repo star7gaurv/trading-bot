@@ -202,7 +202,9 @@ def _clamp(v: dict, param: str) -> dict:
         if param == "short_threshold":
             v[param] = max(-3.0, min(-0.25, v[param]))   # was -6.0; z-score ±3σ is extreme enough
         else:
-            v[param] = max(0.25, min(3.0, v[param]))     # was 6.0; ±3.0 already covers tail
+            # Cap at 2.0 (was 3.0): LT > 1.8 → effective threshold > 0.9σ with z-scored
+            # predictions (std≈0.3, std_factor floor=0.5). P > 0.9 < 0.3% → 0 longs.
+            v[param] = max(0.25, min(2.0, v[param]))
     elif param == "ml_threshold":
         v[param] = max(0.45, min(0.85, v[param]))
     elif param.startswith("k_"):
@@ -222,6 +224,16 @@ def generate_safe_band(seed: dict | None = None, n: int = 8) -> list[dict]:
     # Older log entries don't have 'arch' — infer from strategy name
     if "arch" not in base:
         base["arch"] = "v22" if base.get("strategy") == "FinBuddyFreqAI" else "v23"
+
+    # P2 fix 2026-06-06: With std_factor floor=0.5, LT > 1.8 → effective threshold > 0.9σ.
+    # Model predictions have std≈0.3 → P(pred > 0.9) < 0.3% → essentially 0 longs on any
+    # bull window. The brain's best bear result (LT=3.25 +1.14% WR=64%) produced ONLY shorts;
+    # LT was irrelevant there. Safe-band anchoring at LT=3.25 means every safe-band variant
+    # inherits a bull-dead threshold. Override to the seed LT (1.5) as the perturbation base.
+    if base.get("arch", "v23") == "v23" and base.get("long_threshold", 1.5) > 1.8:
+        base = dict(base)
+        base["long_threshold"] = SEED_CONFIG_V23["long_threshold"]  # 1.5
+
     perturbations = PERTURB_V22 if base["arch"] == "v22" else PERTURB_V23
 
     random.shuffle(perturbations)
@@ -266,7 +278,9 @@ def generate_safe_band_both(n_per_arch: int = 4) -> list[dict]:
 
 AGGRESSIVE_CHOICES_V23 = {
     "timeframe":          ["5m", "15m", "30m", "1h", "4h"],
-    "long_threshold":     [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0],
+    # LT > 2.0 → effective threshold > 1.0σ with std_factor floor=0.5. P(N(0,0.3) > 1.0) < 0.04%
+    # → essentially 0 longs on any bull window → wasted compute. Cap at 2.0.
+    "long_threshold":     [0.5, 1.0, 1.5, 2.0],
     "short_threshold":    [-0.5, -1.0, -1.5, -2.0, -2.5, -3.0, -4.0],
     "k_sl":               [1.0, 1.5, 2.0, 2.5, 3.0],
     "k_tp":               [1.5, 2.0, 2.5, 3.0],
@@ -471,7 +485,7 @@ def _make_distributions(allowed_tfs: list[str]) -> dict:
     if not _OPTUNA_AVAILABLE:
         return {}
     return {
-        "long_threshold":       _Float(0.25, 3.0,  step=0.25),
+        "long_threshold":       _Float(0.25, 2.0,  step=0.25),  # cap 3.0→2.0: LT>1.8 → 0 longs with z-scored predictions
         "short_threshold_abs":  _Float(0.25, 3.0,  step=0.25),
         "k_sl":                 _Float(0.5,  4.0,  step=0.25),
         "k_tp":                 _Float(1.0,  4.0,  step=0.25),
