@@ -242,3 +242,4 @@ um_threads=2** added to both config.json and 23_regression_15m_di_config.json. 
 - **2026-06-05 16:00 UTC** — Regime changed: BEAR → CRASH
 - **2026-06-06 04:00 UTC** — Regime changed: CRASH → BEAR
 - **2026-06-06 08:00 UTC** — FreqAI identifier changed: finbuddy_v23_perpair_funding_1780574683 → finbuddy_v23_nosvm_1780729988
+- **2026-06-06 16:00 UTC** — Regime changed: BEAR → NEUTRAL
