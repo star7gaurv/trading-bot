@@ -330,7 +330,7 @@ function PairBarChart({ data }) {
         return (
           <div key={p.key} className="flex items-center gap-2 min-h-[22px]">
             <div className="w-20 text-xxs font-mono text-text-secondary truncate shrink-0 text-right">
-              {(p.key ?? "").replace("/USDT:USDT", "")}
+              {(p.key ?? "").replace("/USDT:USDT", "").replace("/USDT", "")}
             </div>
             <div className="flex-1 flex items-center gap-1.5">
               <div

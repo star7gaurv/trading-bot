@@ -621,10 +621,15 @@ async def performance_pair(_: dict = Depends(require_auth)):
     # Only closed trades (have a close_timestamp)
     closed = [t for t in all_trades if t.get("close_timestamp") and t.get("close_timestamp", 0) > 0]
 
-    # Group by pair
+    def _norm_pair(p: str) -> str:
+        """Normalize pair name: strip futures settlement suffix.
+        BTC/USDT:USDT → BTC/USDT  (groups old spot + futures trades together)"""
+        return p.split(":")[0] if ":" in p else p
+
+    # Group by normalized pair (merges e.g. BTC/USDT and BTC/USDT:USDT)
     by_pair: dict[str, list] = {}
     for t in closed:
-        by_pair.setdefault(t.get("pair", "unknown"), []).append(t)
+        by_pair.setdefault(_norm_pair(t.get("pair", "unknown")), []).append(t)
 
     rows = []
     for pair, ptrades in by_pair.items():
