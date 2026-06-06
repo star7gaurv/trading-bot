@@ -116,7 +116,7 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ### FreqTrade
 - Running **`FinBuddyFreqAI_v23.py` (v23)** in dry-run mode on **Binance Futures USDT-M** — long+short
-- FreqAI identifier: **`finbuddy_v23_promoted_1779997908`** (bumped 2026-05-28 on first brain promotion — hash `2ae96f164387`, LT=3.25 config)
+- FreqAI identifier: **`finbuddy_v23_nosvm_1780729988`** (bumped 2026-06-06 — SVM disabled to fix do_predict=0 bug; previous: `finbuddy_v23_perpair_funding_1780574683` from 2026-06-04 brain promotion)
 - FreqAI model: **LightGBMRegressor** (predicts z-scored `&-future_return`, N(0,1) distribution). DI=1.0 + SVM outlier removal active.
 - **1000 USDT** virtual wallet, max 8 open trades
 - **Confidence-based leverage** (commit `60d4fb4`): 1x / 2x / 3x tiers based on `predicted_return / threshold` ratio (no median subtraction — Fix 7). Fallback LOW (1x).
@@ -737,6 +737,30 @@ producing "no trades across all folds" on both daily and deep runs. Promotion ga
 - Identifier unchanged: `finbuddy_v23_promoted_1779997908` (no model retraining triggered)
 - Brain continues exploring LT=3.25 range (where best result +1.14% WR=64% was found)
 - WF tonight at 22:00 UTC should produce ≥1 fold with trades and real Sharpe/WR metrics
+
+### June 6, 2026 — P0+P1+P3: Zero-Trade Double-Deadlock Fixed + Disk Recovered (commit `b4e59cec`)
+
+**Context:** Zero trades since 2026-06-01. Investigated live `historic_predictions.pkl` (not just Telegram logs) and found two independent blockers, each sufficient to kill all entries.
+
+**P0 — do_predict=0 on 100% of live candles (primary killer):**
+- After 2026-06-04 brain promotion (identifier → `finbuddy_v23_perpair_funding_1780574683`), `use_SVM_to_remove_outliers: true` was active. The SVM was flagging every current candle as an outlier (training-serving distribution skew — recent market doesn't match training window).
+- `populate_entry_trend` requires `do_predict==1` — with 100% zeros, no long or short could ever fire.
+- Fix: `use_SVM_to_remove_outliers: false` in `config.json`. Identifier bumped → `finbuddy_v23_nosvm_1780729988`. Flushed stale `historic_predictions.pkl` + `pair_dictionary.json`. Container force-recreated.
+
+**P1 — Positive prediction bias → short deadlock in BEAR (second independent blocker):**
+- Live predictions: BTC mean +0.64σ (min +0.33, never negative), ETH +0.76, SOL +0.94.
+- BEAR regime hard-blocks longs. Shorts need `centered_pred < ~-0.9σ`. Model never reaches it. Result: regime blocks longs, model can't short → deadlock.
+- Root cause: Fix 7 (2026-05-22) removed serve-time rolling-median recentering on the assumption "z-scored training ⇒ serve-time centered at 0". Live data proved false — serving distribution drifts positive when market conditions differ from training window.
+- Fix: re-added `rolling(100, min_periods=10).median()` subtraction consistently in all 3 locations (entry, exit, leverage) — resolving the original inconsistency (rolling vs tail) that motivated Fix 7.
+
+**P3 — Disk 81% unresolved by hourly watchdog cleanup:**
+- `brain_cleanup.py` only freed 16 MB: `wf_*` dirs not covered by `brain_*` glob; Docker-owned files fail `shutil.rmtree` silently (PermissionError not caught).
+- Fix: added `wf_*` pattern; `_rmtree_sudo()` fallback using `subprocess.run(["sudo","rm","-rf"])`; default max-age 7d → 2d.
+- One-time manual sudo prune: 544 dirs removed → disk 73% (freed ~5 GB).
+
+**What to watch:**
+- After retrain (~12h): `do_predict` ratio should recover to >40%; first SHORT entry in BEAR should fire.
+- Brain bull-window 0-longs: deferred. Suspected `_get_regime_series` fallback to live regime; needs one verification backtest.
 
 ### May 26, 2026 — UI and Security Fixes (Conscious Brain Update)
 1. **P&L Today Fix**: `Overview.jsx` was checking `Array.isArray(dailyPerf)` but FreqTrade wraps it in `{"data": [...]}`. It also read `profit_all_coin` instead of `abs_profit`, and read the oldest entry instead of the newest. Fixed all 3 bugs to render P&L Today correctly.
