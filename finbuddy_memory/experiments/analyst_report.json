@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-07T12:30:02.270467+00:00",
+  "generated_at": "2026-06-07T18:30:01.974252+00:00",
   "findings": {
     "dead_timeframes": [
       "30m",
@@ -153,9 +153,9 @@
         "avg_pf": 0.482
       },
       "bull_2024Q2": {
-        "n": 87,
-        "avg_wr": 0.425,
-        "avg_pf": 0.769
+        "n": 88,
+        "avg_wr": 0.426,
+        "avg_pf": 0.772
       },
       "bear_2026Q1": {
         "n": 45,
@@ -170,10 +170,10 @@
     },
     "tf_stats": {
       "15m": {
-        "n": 344,
-        "avg_pf": 0.66,
-        "avg_wr": 0.385,
-        "avg_trades_day": 4.27
+        "n": 345,
+        "avg_pf": 0.661,
+        "avg_wr": 0.386,
+        "avg_trades_day": 4.26
       },
       "1h": {
         "n": 25,
@@ -201,7 +201,7 @@
       }
     }
   },
-  "pruned": 16,
+  "pruned": 15,
   "actions": [
     "Queued \u00d73 dead-TF cross-validate: best bear config on bull windows (WR=64% PF=3.60)"
   ],
