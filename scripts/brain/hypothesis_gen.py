@@ -143,7 +143,7 @@ SEED_CONFIG_V23 = {
     "long_threshold":     1.5,    # was 3.0 — z-scored N(0,1) predictions: ±3.0 hits 0.27% of candles
     "short_threshold":    -0.8,   # was -1.5 — tighter SHORT bar guides brain to explore better SHORT WR (2026-05-23)
     "k_sl":               2.0,
-    "k_tp":               2.0,
+    "k_tp":               3.0,   # raised from 2.0 — WF shows WR=61% but PF=0.77 (exits too early)
     "stability_n":        2,
     "label_period_candles": 12,
     "filter_di":          True,
