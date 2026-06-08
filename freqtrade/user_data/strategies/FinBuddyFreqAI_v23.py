@@ -1237,13 +1237,18 @@ class FinBuddyFreqAI_v23(IStrategy):
         #
         # Clip: min 0.5× (never collapse threshold below half-base for noisy pairs)
         #       max 3.0× (never push threshold above 3× for very stable pairs)
-        # ⚠️ COUPLING WARNING (2026-06-06): _GLOBAL_STD=0.95 is stale — it was calibrated
-        # for the old raw-% prediction era. After z-scoring (2026-05-22), model predictions
-        # have std≈0.3, so std_factor = 0.3/0.95 = 0.32 → ALWAYS floors at 0.5.
-        # The live LT=1.5 threshold DEPENDS on this floor: effective = 1.5 × 0.5 = 0.75σ.
-        # DO NOT "fix" this to 0.3 without also halving all LT values (live config + brain
-        # SEED + hypothesis_gen.py AGGRESSIVE_CHOICES cap = 2.0). Fix together or not at all.
-        _GLOBAL_STD = 0.95
+        # FIXED 2026-06-08: _GLOBAL_STD updated from 0.95 (raw-% era) → 0.30 (z-score era).
+        # After z-scoring (2026-05-22), model predictions have std≈0.30. With old 0.95:
+        #   std_factor = 0.13/0.95 = 0.14 → floored to 0.5 always → threshold = 1.5×1.3×0.5 = 0.975
+        #   max centered_pred across all 26 pairs = 0.535 (OP) → ZERO entries ever (no-trade deadlock)
+        # With 0.30: std_factor = 0.13/0.30 = 0.43 → floored to 0.5 for immature model,
+        #   scales to 1.0 when model pred_std reaches 0.30 (mature). LT was halved to 0.5
+        #   simultaneously (.env FREQAI_LONG_THRESHOLD=0.5, SHORT=-0.5).
+        # Effective threshold in NEUTRAL+bad_WR: 0.5×1.3×0.5 = 0.325 (immature) → 0.65 (mature).
+        # ⚠️ COUPLING: if you change _GLOBAL_STD again, you MUST also update:
+        #   .env FREQAI_LONG_THRESHOLD + FREQAI_SHORT_THRESHOLD,
+        #   hypothesis_gen.py SEED_CONFIG_V23 LT/ST + AGGRESSIVE_CHOICES + _clamp bounds.
+        _GLOBAL_STD = 0.30
         if "%-future_return" in dataframe.columns:
             pair_pred_std = (
                 dataframe["%-future_return"]

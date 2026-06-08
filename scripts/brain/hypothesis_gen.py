@@ -140,8 +140,10 @@ SEED_CONFIG_V23 = {
     "freqaimodel":        "LightGBMRegressor",
     "config_file":        "v23_regression_15m_di_config.json",
     "timeframe":          "15m",
-    "long_threshold":     1.5,    # was 3.0 — z-scored N(0,1) predictions: ±3.0 hits 0.27% of candles
-    "short_threshold":    -0.8,   # was -1.5 — tighter SHORT bar guides brain to explore better SHORT WR (2026-05-23)
+    "long_threshold":     0.5,    # FIXED 2026-06-08: _GLOBAL_STD 0.95→0.30 (z-score era). With std=0.30,
+                                  # effective threshold = 0.5×1.3×0.5 = 0.325 (immature model, std_factor floored)
+                                  # → 0.65 (mature model, std_factor=1.0). Old LT=1.5 → effective=0.975 → deadlock.
+    "short_threshold":    -0.5,   # Symmetric with LT. Old value was -0.8 (tighter shorts); now scaled to match new LT.
     "k_sl":               2.0,
     "k_tp":               3.0,   # raised from 2.0 — WF shows WR=61% but PF=0.77 (exits too early)
     "stability_n":        2,
@@ -200,11 +202,11 @@ def _clamp(v: dict, param: str) -> dict:
     """Clamp a perturbed param to a sane range."""
     if "threshold" == param.split("_")[-1] and param != "ml_threshold":
         if param == "short_threshold":
-            v[param] = max(-3.0, min(-0.25, v[param]))   # was -6.0; z-score ±3σ is extreme enough
+            # FIXED 2026-06-08: _GLOBAL_STD=0.30; max useful ST=-1.0 (effective -0.65σ in mature model)
+            v[param] = max(-1.0, min(-0.1, v[param]))
         else:
-            # Cap at 2.0 (was 3.0): LT > 1.8 → effective threshold > 0.9σ with z-scored
-            # predictions (std≈0.3, std_factor floor=0.5). P > 0.9 < 0.3% → 0 longs.
-            v[param] = max(0.25, min(2.0, v[param]))
+            # FIXED 2026-06-08: max useful LT=0.8 (effective 0.52 in immature, 1.04 in mature model)
+            v[param] = max(0.1, min(0.8, v[param]))
     elif param == "ml_threshold":
         v[param] = max(0.45, min(0.85, v[param]))
     elif param.startswith("k_"):
@@ -225,14 +227,12 @@ def generate_safe_band(seed: dict | None = None, n: int = 8) -> list[dict]:
     if "arch" not in base:
         base["arch"] = "v22" if base.get("strategy") == "FinBuddyFreqAI" else "v23"
 
-    # P2 fix 2026-06-06: With std_factor floor=0.5, LT > 1.8 → effective threshold > 0.9σ.
-    # Model predictions have std≈0.3 → P(pred > 0.9) < 0.3% → essentially 0 longs on any
-    # bull window. The brain's best bear result (LT=3.25 +1.14% WR=64%) produced ONLY shorts;
-    # LT was irrelevant there. Safe-band anchoring at LT=3.25 means every safe-band variant
-    # inherits a bull-dead threshold. Override to the seed LT (1.5) as the perturbation base.
-    if base.get("arch", "v23") == "v23" and base.get("long_threshold", 1.5) > 1.8:
+    # FIXED 2026-06-08: With _GLOBAL_STD=0.30, max useful LT=0.8. Any config with LT>0.8
+    # will produce near-zero longs (effective threshold > 1.04 in mature model).
+    # Override to seed LT (0.5) when anchoring on stale high-LT configs.
+    if base.get("arch", "v23") == "v23" and base.get("long_threshold", 0.5) > 0.8:
         base = dict(base)
-        base["long_threshold"] = SEED_CONFIG_V23["long_threshold"]  # 1.5
+        base["long_threshold"] = SEED_CONFIG_V23["long_threshold"]  # 0.5
 
     perturbations = PERTURB_V22 if base["arch"] == "v22" else PERTURB_V23
 
@@ -278,10 +278,12 @@ def generate_safe_band_both(n_per_arch: int = 4) -> list[dict]:
 
 AGGRESSIVE_CHOICES_V23 = {
     "timeframe":          ["5m", "15m", "30m", "1h", "4h"],
-    # LT > 2.0 → effective threshold > 1.0σ with std_factor floor=0.5. P(N(0,0.3) > 1.0) < 0.04%
-    # → essentially 0 longs on any bull window → wasted compute. Cap at 2.0.
-    "long_threshold":     [0.5, 1.0, 1.5, 2.0],
-    "short_threshold":    [-0.5, -1.0, -1.5, -2.0, -2.5, -3.0, -4.0],
+    # FIXED 2026-06-08: _GLOBAL_STD=0.30 (z-score era). Effective threshold = LT × combined × std_factor.
+    # With std_factor=0.5 (immature model, pred_std < 0.30): effective = LT × 1.3 × 0.5.
+    # With std_factor=1.0 (mature model, pred_std=0.30): effective = LT × 1.3 × 1.0.
+    # Max useful LT = 0.7 → effective = 0.91 (2-3% of candles per pair). LT > 0.8 rarely fires.
+    "long_threshold":     [0.2, 0.3, 0.5, 0.7],
+    "short_threshold":    [-0.2, -0.3, -0.5, -0.7, -1.0],
     "k_sl":               [1.0, 1.5, 2.0, 2.5, 3.0],
     "k_tp":               [1.5, 2.0, 2.5, 3.0],
     "stability_n":        [1, 2, 3, 4],
@@ -485,8 +487,8 @@ def _make_distributions(allowed_tfs: list[str]) -> dict:
     if not _OPTUNA_AVAILABLE:
         return {}
     return {
-        "long_threshold":       _Float(0.25, 2.0,  step=0.25),  # cap 3.0→2.0: LT>1.8 → 0 longs with z-scored predictions
-        "short_threshold_abs":  _Float(0.25, 3.0,  step=0.25),
+        "long_threshold":       _Float(0.1, 0.8, step=0.1),   # FIXED 2026-06-08: _GLOBAL_STD=0.30, max useful LT=0.8
+        "short_threshold_abs":  _Float(0.1, 1.0, step=0.1),   # symmetric with LT scale
         "k_sl":                 _Float(0.5,  4.0,  step=0.25),
         "k_tp":                 _Float(1.0,  4.0,  step=0.25),
         "stability_n":          _Int(1, 4),
