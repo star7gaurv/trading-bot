@@ -1265,7 +1265,10 @@ class FinBuddyFreqAI_v23(IStrategy):
             )
         else:
             pair_pred_std = pd.Series(_GLOBAL_STD, index=dataframe.index)
-        std_factor = (pair_pred_std / _GLOBAL_STD).clip(lower=0.5, upper=3.0)
+        # Cap at 1.0 (not 3.0): std_factor > 1.0 means a pair with HIGHER prediction variance
+        # gets a HARDER threshold — backwards. High pred_std = better model discrimination,
+        # not more noise. Only degenerate pairs (pred_std << 0.30) should be penalized (floor=0.5).
+        std_factor = (pair_pred_std / _GLOBAL_STD).clip(lower=0.5, upper=1.0)
 
         dataframe["regime"] = regime_series
         dataframe["dynamic_long_threshold"]  = base_long  * combined_long  * std_factor

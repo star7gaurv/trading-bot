@@ -140,10 +140,10 @@ SEED_CONFIG_V23 = {
     "freqaimodel":        "LightGBMRegressor",
     "config_file":        "v23_regression_15m_di_config.json",
     "timeframe":          "15m",
-    "long_threshold":     0.5,    # FIXED 2026-06-08: _GLOBAL_STD 0.95→0.30 (z-score era). With std=0.30,
-                                  # effective threshold = 0.5×1.3×0.5 = 0.325 (immature model, std_factor floored)
-                                  # → 0.65 (mature model, std_factor=1.0). Old LT=1.5 → effective=0.975 → deadlock.
-    "short_threshold":    -0.5,   # Symmetric with LT. Old value was -0.8 (tighter shorts); now scaled to match new LT.
+    "long_threshold":     0.3,    # FIXED 2026-06-08: _GLOBAL_STD=0.30, std_factor capped at 1.0.
+                                  # effective = 0.3×1.3×0.5=0.195 (degenerate pairs) → 0.3×1.3×1.0=0.39 (normal).
+                                  # ETH (std=0.33, centered=0.538): fires long at 0.390. LT=0.5 → threshold 0.65 → blocked.
+    "short_threshold":    -0.3,   # Symmetric with LT.
     "k_sl":               2.0,
     "k_tp":               3.0,   # raised from 2.0 — WF shows WR=61% but PF=0.77 (exits too early)
     "stability_n":        2,
@@ -230,7 +230,7 @@ def generate_safe_band(seed: dict | None = None, n: int = 8) -> list[dict]:
     # FIXED 2026-06-08: With _GLOBAL_STD=0.30, max useful LT=0.8. Any config with LT>0.8
     # will produce near-zero longs (effective threshold > 1.04 in mature model).
     # Override to seed LT (0.5) when anchoring on stale high-LT configs.
-    if base.get("arch", "v23") == "v23" and base.get("long_threshold", 0.5) > 0.8:
+    if base.get("arch", "v23") == "v23" and base.get("long_threshold", 0.3) > 0.8:
         base = dict(base)
         base["long_threshold"] = SEED_CONFIG_V23["long_threshold"]  # 0.5
 
