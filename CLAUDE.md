@@ -112,18 +112,20 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ---
 
-## What Is Live and Working Right Now (verified 2026-05-23 UTC by Claude Code — post 21-bug-fix audit)
+## What Is Live and Working Right Now (verified 2026-06-08 UTC by Claude Code — two-layer threshold deadlock fixed)
 
 ### FreqTrade
 - Running **`FinBuddyFreqAI_v23.py` (v23)** in dry-run mode on **Binance Futures USDT-M** — long+short
 - FreqAI identifier: **`finbuddy_v23_nosvm_1780729988`** (bumped 2026-06-06 — SVM disabled to fix do_predict=0 bug; previous: `finbuddy_v23_perpair_funding_1780574683` from 2026-06-04 brain promotion)
-- FreqAI model: **LightGBMRegressor** (predicts z-scored `&-future_return`, N(0,1) distribution). DI=1.0 + SVM outlier removal active.
+- FreqAI model: **LightGBMRegressor** (predicts z-scored `&-future_return`, N(0,1) distribution). DI=1.0. **SVM disabled** (was flagging all live candles as outliers).
 - **1000 USDT** virtual wallet, max 8 open trades
-- **Confidence-based leverage** (commit `60d4fb4`): 1x / 2x / 3x tiers based on `predicted_return / threshold` ratio (no median subtraction — Fix 7). Fallback LOW (1x).
+- **Confidence-based leverage** (commit `60d4fb4`): 1x / 2x / 3x tiers based on `centered_pred / threshold` ratio. Fallback LOW (1x).
 - API: `http://localhost:8080/api/v1` — user: `bot`, pass: `REDACTED-FREQTRADE__API_SERVER__PASSWORD`
 - Whitelist: **26 pairs** (trimmed from 37 on 2026-05-24 — removed DASH/ZEC/BCH/DOGE/AAVE/TRX/1000SHIB/BNB/INJ/HBAR/ATOM), **15m timeframe** (each pair has 5 TFs of historical data: 15m + 30m + 1h + 4h + 1d)
 - **Per-pair-per-regime gate active** — `pair_regime_stats.json` blocks pair-regime combos with rolling 30d (n≥5, WR<40%, PF<0.7)
-- Strategy env vars (live): K_TP=2.25, K_SL=2.0, **LONG_THRESHOLD=1.5, SHORT_THRESHOLD=-1.5, STABILITY_N=2** (thresholds reset 2026-05-30 from ±3.25/3.0 — LT=3.25 caused mathematical deadlock: effective threshold 4.23σ, P(entry)≈0% per day)
+- Strategy env vars (live): K_TP=3.0, K_SL=2.0, **LONG_THRESHOLD=0.3, SHORT_THRESHOLD=-0.3, STABILITY_N=1** (FIXED 2026-06-08: LT reset from 1.5 — two-layer deadlock fixed; see session note below)
+- **`_GLOBAL_STD = 0.30`** in strategy (FIXED 2026-06-08: was 0.95 from raw-% era; z-score model has std≈0.13–0.30)
+- **`std_factor = (pair_pred_std / 0.30).clip(lower=0.5, upper=1.0)`** (FIXED: cap was 3.0 — was penalizing pairs with better prediction variance, making their threshold harder)
 
 ### Model features (~530 total after Bug D removed `%-recent_wr` 2026-05-20)
 Standard layer 4 features include 3 funding-rate features (`%-funding_rate`, `%-funding_rate_z30d`, `%-funding_rate_chg`) from BTC perp data, plus fear_greed, btc_strength, news_sentiment, regime_numeric. Daily refresh of historical funding parquet at 01:25 UTC. `%-recent_wr` DROPPED 2026-05-20 (training-serving skew: live read 0.34, brain/WF defaulted 0.50).
@@ -761,6 +763,37 @@ producing "no trades across all folds" on both daily and deep runs. Promotion ga
 **What to watch:**
 - After retrain (~12h): `do_predict` ratio should recover to >40%; first SHORT entry in BEAR should fire.
 - Brain bull-window 0-longs: deferred. Suspected `_get_regime_series` fallback to live regime; needs one verification backtest.
+
+### June 8, 2026 — Two-Layer Threshold Deadlock Fixed (commits `513170f4`, `d0d596a4`)
+
+**Root cause: `_GLOBAL_STD=0.95` was a relic from the raw-% prediction era. After z-scoring (2026-05-22), live model predictions have std≈0.13–0.30. This caused a two-layer deadlock.**
+
+**Layer 1 — `_GLOBAL_STD` mismatch (`513170f4`):**
+- `std_factor = pair_pred_std / 0.95 = 0.13/0.95 = 0.14` → always floored to 0.5
+- Effective threshold: `LT(1.5) × combined(1.3) × std_factor(0.5) = 0.975`
+- Max centered_pred across all 26 pairs = 0.535
+- `0.535 < 0.975` → **zero entries mathematically impossible for any pair**
+- Fix: `_GLOBAL_STD = 0.95` → `0.30` in strategy. `LT = 1.5` → `0.5` in .env. Updated hypothesis_gen.py SEED/AGGRESSIVE_CHOICES/_clamp/Optuna. Removed 106 stale LT>0.9 queue entries.
+
+**Layer 2 — `std_factor` cap backwards (`d0d596a4`):**
+- With fixed `_GLOBAL_STD=0.30`, ETH pred_std=0.33 → `std_factor=0.33/0.30=1.096` (above cap of 3.0 → not clipped)
+- ETH: threshold=`0.5 × 1.3 × 1.096 = 0.712`. ETH centered=0.538 < 0.712 → still blocked
+- The cap being `3.0` was BACKWARDS: higher pred_std means better model discrimination, not more noise — shouldn't penalize with harder threshold
+- Fix: `std_factor = (pair_pred_std / 0.30).clip(lower=0.5, upper=1.0)` — cap at 1.0. Also `LT 0.5 → 0.3`.
+- With fix: ETH threshold = `0.3 × 1.3 × 1.0 = 0.390`. ETH centered=0.538 > 0.390 → **FIRES LONG**.
+
+**Result: UNI SHORT opened at 10:00 UTC 2026-06-08 (+0.112 USDT). ETH LONG expected on next 15m candle.**
+
+**Coupling rule for `_GLOBAL_STD` (CRITICAL — added to strategy comment):**
+If `_GLOBAL_STD` ever changes again, MUST update all 5 places together:
+1. `_GLOBAL_STD` constant in `FinBuddyFreqAI_v23.py`
+2. `.env` `FREQAI_LONG_THRESHOLD` + `FREQAI_SHORT_THRESHOLD`
+3. `hypothesis_gen.py` SEED_CONFIG_V23 LT/ST values
+4. `hypothesis_gen.py` AGGRESSIVE_CHOICES_V23 + `_clamp` bounds + Optuna ranges + safe-band check
+5. `queue.jsonl` — prune stale LT entries outside new valid range
+
+**Brain queue updated:** 106 old LT>0.9 entries removed. 15 new experiments added: LT=0.2/0.3/0.5 × 5 windows.
+**Brain SEED/CHOICES/clamp/Optuna all updated** to new scale [0.1–0.8] for LT, [-1.0 to -0.1] for ST.
 
 ### May 26, 2026 — UI and Security Fixes (Conscious Brain Update)
 1. **P&L Today Fix**: `Overview.jsx` was checking `Array.isArray(dailyPerf)` but FreqTrade wraps it in `{"data": [...]}`. It also read `profit_all_coin` instead of `abs_profit`, and read the oldest entry instead of the newest. Fixed all 3 bugs to render P&L Today correctly.
