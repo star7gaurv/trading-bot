@@ -790,6 +790,7 @@ async def get_config(_: dict = Depends(require_auth)):
         "strategy": cfg.get("strategy"),
         "max_open_trades": cfg.get("max_open_trades"),
         "stake_currency": cfg.get("stake_currency"),
+        "stake_amount": cfg.get("stake_amount"),
         "dry_run": cfg.get("dry_run"),
         "dry_run_wallet": cfg.get("dry_run_wallet"),
         "timeframe": cfg.get("timeframe"),
