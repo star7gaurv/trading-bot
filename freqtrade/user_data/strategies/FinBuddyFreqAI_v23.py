@@ -658,6 +658,17 @@ class FinBuddyFreqAI_v23(IStrategy):
 
         For LIVE trading where historical regime hasn't been built yet, falls
         back to repeating the live regime across all rows.
+
+        FIXED 2026-06-08 — stale-parquet deadlock. historical_regime.parquet is rebuilt
+        by a DAILY cron (build_historical_regime.py) and lags real time by up to ~36h.
+        merge_asof(direction=backward) forward-fills the parquet's LAST value onto every
+        live candle past its coverage. When that last value is a restrictive regime
+        (CRASH/BEAR), it blocks ALL longs on live candles even though the live HMM
+        (current.json) reports something else — a total no-trade deadlock (observed
+        2026-06-08: parquet ended CRASH @ 2026-06-07 while live HMM = NEUTRAL → 0 trades).
+        Fix: for candles BEYOND the parquet's coverage (i.e. live "now" candles), use the
+        FRESH live regime from current.json instead of the stale forward-filled value.
+        Backtest is unaffected — all its candles fall within parquet coverage.
         """
         hist = self._load_historical_regime()
         if hist.empty:
@@ -669,6 +680,17 @@ class FinBuddyFreqAI_v23(IStrategy):
         merged = pd.merge_asof(df_for_join, hist[["date", "regime"]], on="date", direction="backward")
         merged = merged.sort_values("index").reset_index(drop=True)
         result = pd.Series(merged["regime"].fillna("NEUTRAL").values, index=dataframe.index)
+
+        # Override live candles past the parquet's coverage with the fresh live regime.
+        hist_max = hist["date"].max()
+        beyond = (dates > hist_max).values
+        if beyond.any():
+            live_regime = self._get_current_regime()
+            result.loc[beyond] = live_regime
+            logger.info(
+                f"[Regime] {int(beyond.sum())} live candles past parquet coverage "
+                f"({hist_max}) set to live regime '{live_regime}' (current.json)"
+            )
         return result
 
     def _get_combined_context(self) -> dict:
