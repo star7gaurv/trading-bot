@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-08T20:00:01.892328+00:00",
+  "updated": "2026-06-08T20:30:01.693814+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "TAO/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 4,
-        "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 1.276,
-        "profit_usdt": 0.81,
-        "avg_profit_pct": -0.082
-      },
-      "BEAR": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -0.64,
-        "avg_profit_pct": -1.03
-      }
-    },
     "XRP/USDT:USDT": {
       "NEUTRAL": {
         "n": 4,
@@ -117,6 +97,26 @@
         "pf": 1.097,
         "profit_usdt": 0.09,
         "avg_profit_pct": 0.033
+      }
+    },
+    "TAO/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 3,
+        "wins": 2,
+        "losses": 1,
+        "wr": 0.6667,
+        "pf": 3.169,
+        "profit_usdt": 2.56,
+        "avg_profit_pct": 0.28
+      },
+      "BEAR": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.64,
+        "avg_profit_pct": -1.03
       }
     },
     "BTC/USDT:USDT": {
