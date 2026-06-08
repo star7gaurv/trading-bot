@@ -253,6 +253,38 @@ class FinBuddyFreqAI_v23(IStrategy):
     _pair_regime_blocks       = None    # dict[pair] -> set[regime]
     _pair_regime_blocks_mtime = 0.0
 
+    # ---------------------------------------------------------------------- #
+    # Serve-time prediction centering window (FIXED 2026-06-08).             #
+    # ---------------------------------------------------------------------- #
+    # The model's raw z-scored predictions are DIRECTIONAL: ~69-72% positive
+    # in the current up-market (verified from historic_predictions.pkl). This
+    # is the alpha — the model correctly leans long when the market rises.
+    #
+    # We subtract a slow trailing-median baseline to remove ONLY the
+    # training-serving distribution drift (the model is trained on older data;
+    # at serve time the prediction mean drifts, which previously caused the
+    # 2026-06-06 BEAR deadlock where raw preds never went negative → 0 shorts).
+    #
+    # BUG (until 2026-06-08): the window was rolling(100) = 25 HOURS on 15m.
+    # A 25h median tracks the price TREND itself, so subtracting it stripped out
+    # the directional signal — centered preds collapsed to ~46-49% positive
+    # (forced 50/50 long/short regardless of trend). This caused:
+    #   • brain: 60 zscore experiments with 0 longs in BULL windows
+    #   • live : 37.7% WR — model forced to short into uptrends (mean-reversion)
+    #
+    # FIX: window = 1920 candles = 20 DAYS. Empirically (historic_predictions):
+    #   raw 69% → centered 69% (BTC), 72% → 69% (ETH) — DIRECTION PRESERVED,
+    #   and ~31% of preds stay negative so BEAR shorts still fire (no deadlock).
+    #   1920 < startup_candle_count (2400) so the window is fully populated and
+    #   IDENTICAL in live and backtest. min_periods=200 matches the z-score
+    #   normalization warmup (ROLLING=2880, min_periods=200 in set_freqai_targets).
+    #
+    # ⚠️ COUPLING: this window MUST be the same in all 3 centering sites —
+    #   leverage(), populate_entry_trend(), populate_exit_trend() — so the
+    #   threshold comparison is coherent across sizing, entry, and exit.
+    _CENTERING_WINDOW      = 1920   # 20 days on 15m TF
+    _CENTERING_MIN_PERIODS = 200
+
     _HISTORICAL_BTC_15M_FILE = "/freqtrade/user_data/data/binance/futures/BTC_USDT_USDT-15m-futures.feather"
     _btc_15m_df = None  # class-level cache for BTC 15m OHLCV (for rel-strength feature)
 
@@ -783,9 +815,11 @@ class FinBuddyFreqAI_v23(IStrategy):
                 return min(self._LEV_MED, max_leverage)
             last = df.iloc[-1]
             pred = float(last.get("&-future_return", 0.0))
-            # Serve-time recentering (2026-06-06): same rolling-100 median as entry/exit.
-            # tail(100).median() == last value of rolling(100, min_periods=10).median().
-            rolling_median = df["&-future_return"].tail(100).median()
+            # Serve-time recentering: same slow trailing median as entry/exit.
+            # tail(N).median() == last value of rolling(N, min_periods=..).median().
+            # FIXED 2026-06-08: window 100 (25h) → _CENTERING_WINDOW (20d) so the
+            # directional signal is preserved (see _CENTERING_WINDOW docstring).
+            rolling_median = df["&-future_return"].tail(self._CENTERING_WINDOW).median()
             centered = pred - rolling_median
 
             if side == "long":
@@ -1343,13 +1377,17 @@ class FinBuddyFreqAI_v23(IStrategy):
             pd.Series(0.0, index=dataframe.index)
         )
 
-        # Serve-time recentering (2026-06-06): subtract rolling-100 median to remove the
-        # ~+0.6σ positive bias observed in live predictions after the 2026-06-04 promotion.
-        # z-scored training has mean≈0, but serve-time distribution drifts positive when
-        # recent market candles differ from the training window. The rolling median tracks
-        # this drift without look-ahead. Consistent with exit and leverage() below — all
-        # three use rolling(100, min_periods=10) so threshold comparisons are coherent.
-        rolling_median = predicted_return.rolling(100, min_periods=10).median()
+        # Serve-time recentering: subtract a SLOW trailing median to remove only the
+        # training-serving distribution drift (the ~+0.6σ positive bias that caused the
+        # 2026-06-06 BEAR deadlock), WITHOUT eating the directional signal.
+        # FIXED 2026-06-08: window 100 (25h) → _CENTERING_WINDOW (1920 = 20d). A 25h median
+        # tracked the price trend itself and stripped the alpha (preds forced to 50/50
+        # long/short → 0-longs brain bug + 37.7% live WR). A 20d median preserves the
+        # model's directional lean (~69% positive stays ~69%) while still removing drift.
+        # Consistent with exit and leverage() — all three use _CENTERING_WINDOW.
+        rolling_median = predicted_return.rolling(
+            self._CENTERING_WINDOW, min_periods=self._CENTERING_MIN_PERIODS
+        ).median()
         centered_pred = predicted_return - rolling_median
 
         long_thresh  = dataframe["dynamic_long_threshold"]
@@ -1462,8 +1500,11 @@ class FinBuddyFreqAI_v23(IStrategy):
             "&-future_return",
             pd.Series(0.0, index=dataframe.index)
         )
-        # Serve-time recentering (2026-06-06): same rolling-100 median as populate_entry_trend.
-        rolling_median = predicted_return.rolling(100, min_periods=10).median()
+        # Serve-time recentering: same slow _CENTERING_WINDOW median as populate_entry_trend.
+        # FIXED 2026-06-08: window 100 → _CENTERING_WINDOW (see entry/docstring).
+        rolling_median = predicted_return.rolling(
+            self._CENTERING_WINDOW, min_periods=self._CENTERING_MIN_PERIODS
+        ).median()
         centered_pred = predicted_return - rolling_median
 
         # Regime-aware exit flip thresholds (half the entry threshold)
