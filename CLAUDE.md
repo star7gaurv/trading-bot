@@ -777,7 +777,13 @@ Result: `/` now **193GB, 18% used, 160GB free**. Online resize, no reboot, no da
 
 **4. Honest brain assessment** (no action, recorded for context): scout_failed (45%) is NOT waste — it's the brain cheaply pre-filtering bad configs via 6-pair scout before full 26-pair runs (working as designed). Brain IS self-evolving in the narrow sense (hill-climb + evolutionary mutation of top performers + Optuna TPE + experiment memory), but NOT self-aware/conscious — it tunes dials inside a human-defined search space (`AGGRESSIVE_CHOICES_V23`); it cannot invent new features/strategy logic. Real next frontier = LLM-driven FEATURE/STRATEGY generation (not just param tuning). Open limitation: `bear_2026Q1` promotion gate DISABLED 2026-06-07 (45/45 failed); should be re-enabled once the centering fix lets configs pass it.
 
-**5. SYSTEM FROZEN to measure the centering fix.** No further trading-logic/model changes until ≥1 week of clean data + tonight's WF. Do not tune thresholds, prune features, or re-enable gates during this window — the centering fix must be measured in isolation.
+**5. Brain-side improvements (safe during freeze — zero live-model impact):**
+- `promote.py`: **re-enabled bear_2026Q1 gate** (`BEAR_2026Q1_REQUIRED="bear_2026Q1"`) — precondition "_GLOBAL_STD fixed" met today. Blocks promoting configs known to fail on recent bear.
+- `hypothesis_gen.py` + `analyst.py`: added **`bull_2021`** (euphoria, classified BULL) + **`crash_2022`** (LUNA/FTX black-swan STRESS window — neither bull/bear, excluded from promotion averages, used as survival gate). Enabled by the 2020 backfill; ~12/26 pairs have data this far back.
+- `runner.py`: **surface backtest failure reason** — was `if returncode!=0: return []` (silent). Diagnosed the 170 "failures": only 3 were timeouts, **167 failed fast (real errors)** — so raising timeout would NOT help (corrected my earlier suggestion). Now logs the error tail to brain_run.log.
+- `queue.jsonl`: pruned **25 stale out-of-scale entries** (leftover st<-1.0 / lt>0.8). Queued 3 crash_2022/bull_2021 stress experiments. Backup: `queue.jsonl.bak_20260608`.
+
+**6. SYSTEM FROZEN to measure the centering fix.** No further **trading-logic/model** changes until ≥1 week of clean data + tonight's WF. Specifically: do NOT tune thresholds, prune features (530→~80 is deferred BECAUSE it changes the live model and would contaminate the measurement), or change the strategy. Brain-side changes above are safe — they don't touch the live model's predictions.
 
 ### June 8, 2026 (PM) — Centering Window Fix: Directional Signal Restored (commit `5aff4cd3`)
 
