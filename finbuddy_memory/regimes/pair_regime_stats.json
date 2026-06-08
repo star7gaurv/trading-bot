@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-08T22:00:01.335497+00:00",
+  "updated": "2026-06-08T22:30:01.334336+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -390,13 +390,13 @@
         "avg_profit_pct": -0.012
       },
       "NEUTRAL": {
-        "n": 5,
-        "wins": 2,
+        "n": 6,
+        "wins": 3,
         "losses": 3,
-        "wr": 0.4,
-        "pf": 3.877,
-        "profit_usdt": 9.81,
-        "avg_profit_pct": 2.104
+        "wr": 0.5,
+        "pf": 4.1,
+        "profit_usdt": 10.57,
+        "avg_profit_pct": 1.93
       }
     },
     "UNI/USDT:USDT": {
