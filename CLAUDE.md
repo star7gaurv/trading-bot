@@ -764,6 +764,21 @@ producing "no trades across all folds" on both daily and deep runs. Promotion ga
 - After retrain (~12h): `do_predict` ratio should recover to >40%; first SHORT entry in BEAR should fire.
 - Brain bull-window 0-longs: deferred. Suspected `_get_regime_series` fallback to live regime; needs one verification backtest.
 
+### June 8, 2026 (Evening) — Infra: Disk 47→200GB, Deep Data Backfill, n8n stopped
+
+**1. Boot volume expanded 47GB → 200GB (in-place).** Was at 77% (disk-pressure alerts). User resized the boot volume in OCI console; I ran the server-side expansion:
+`echo 1 | sudo tee /sys/class/block/sda/device/rescan` → `sudo growpart /dev/sda 1` → `sudo resize2fs /dev/sda1`.
+Result: `/` now **193GB, 18% used, 160GB free**. Online resize, no reboot, no data moved, no second volume.
+
+**2. Deep historical backfill** (`scripts/backfill_historical_data.sh`, commit `…`). One-time `--prepend` download from **2020-01-01** for all 26 pairs × 5 TFs. Extends the brain's perspective to regimes it had never seen: 2020 COVID crash, 2021 euphoria, 2022 LUNA/FTX crash. BTC/ETH now 6.4yr coverage; alts backfill to listing date. Non-destructive (prepend only). Runs in background. NOTE: `docker-compose run` does NOT accept `--cpu-shares` (caused 2026-06-01 WF crash — do not add it).
+- Data sizing verdict: **6.4yr for BTC/ETH is ideal** (one full cycle + extremes). More ≠ better (pre-2020 market is structurally different). Live model only trains on rolling 90d (`train_period_days`); deep history benefits brain backtests + HMM regime detector, NOT the live model's training window.
+
+**3. n8n container STOPPED (not removed).** Was idle (310MB RAM, 0% CPU) — N8N permanently disabled for weeks. `docker update --restart=no n8n && docker stop n8n`. Container preserved; restart with `docker start n8n`.
+
+**4. Honest brain assessment** (no action, recorded for context): scout_failed (45%) is NOT waste — it's the brain cheaply pre-filtering bad configs via 6-pair scout before full 26-pair runs (working as designed). Brain IS self-evolving in the narrow sense (hill-climb + evolutionary mutation of top performers + Optuna TPE + experiment memory), but NOT self-aware/conscious — it tunes dials inside a human-defined search space (`AGGRESSIVE_CHOICES_V23`); it cannot invent new features/strategy logic. Real next frontier = LLM-driven FEATURE/STRATEGY generation (not just param tuning). Open limitation: `bear_2026Q1` promotion gate DISABLED 2026-06-07 (45/45 failed); should be re-enabled once the centering fix lets configs pass it.
+
+**5. SYSTEM FROZEN to measure the centering fix.** No further trading-logic/model changes until ≥1 week of clean data + tonight's WF. Do not tune thresholds, prune features, or re-enable gates during this window — the centering fix must be measured in isolation.
+
 ### June 8, 2026 (PM) — Centering Window Fix: Directional Signal Restored (commit `5aff4cd3`)
 
 **Root cause of BOTH the brain 0-longs-in-bull bug AND the 37.7% live WR.**
