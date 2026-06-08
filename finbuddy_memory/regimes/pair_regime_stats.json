@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-08T01:30:01.459654+00:00",
+  "updated": "2026-06-08T02:00:01.682018+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "BCH/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 0,
-        "losses": 2,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -1.41,
-        "avg_profit_pct": -0.445
-      },
-      "BEAR": {
-        "n": 3,
-        "wins": 0,
-        "losses": 3,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -0.71,
-        "avg_profit_pct": -0.377
-      }
-    },
     "DASH/USDT:USDT": {
       "NEUTRAL": {
         "n": 3,
@@ -257,6 +237,26 @@
         "pf": 5.712,
         "profit_usdt": 9.66,
         "avg_profit_pct": 2.21
+      }
+    },
+    "BCH/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.41,
+        "avg_profit_pct": -0.22
+      },
+      "BEAR": {
+        "n": 3,
+        "wins": 0,
+        "losses": 3,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.71,
+        "avg_profit_pct": -0.377
       }
     },
     "OP/USDT:USDT": {
