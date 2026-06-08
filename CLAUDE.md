@@ -764,6 +764,30 @@ producing "no trades across all folds" on both daily and deep runs. Promotion ga
 - After retrain (~12h): `do_predict` ratio should recover to >40%; first SHORT entry in BEAR should fire.
 - Brain bull-window 0-longs: deferred. Suspected `_get_regime_series` fallback to live regime; needs one verification backtest.
 
+### June 8, 2026 (Late Eve) — TRADE-BLOCKING BUG: stale-regime-parquet deadlock fixed
+
+**Symptom:** zero trades for ~4h (user asked "why no trades"). Investigation (not theory): the
+live analyzed dataframe showed SUI with `do_predict=1`, `centered_pred=0.81 >> long_thr=0.47`
+(strong long signal), yet `enter_long=None`. The `regime` column for live candles read **CRASH**.
+
+**Root cause:** `historical_regime.parquet` is rebuilt by a DAILY cron and lagged ~35h (ended
+2026-06-07 08:00). `_get_regime_series` uses `merge_asof(backward)` → forward-fills the parquet's
+LAST value (CRASH) onto every live candle past coverage. CRASH blocks all longs; price had
+recovered above EMA-50 so `ta_short` blocked all shorts → **total deadlock**. Meanwhile the live
+HMM (`current.json`) said NEUTRAL — the two regime detectors disagree.
+
+**Fix (commit after `5aff4cd3` chain):** in `_get_regime_series`, candles BEYOND the parquet's
+coverage now use the fresh live regime (`current.json`) instead of the stale forward-filled value.
+Backtest unaffected (its candles are within coverage). Also ran `build_historical_regime.py` to
+refresh the parquet (now to 2026-06-08 08:00, using 2020-backfilled BTC history).
+**Verified:** after restart, SUI `enter_long=1` on all recent closed candles; log shows
+"45 live candles past parquet coverage set to live regime 'NEUTRAL'". First long opens next candle.
+
+**⚠️ Deeper open issue:** the two regime systems DISAGREE — `build_historical_regime.py` (parquet)
+HMM said BEAR/CRASH for 2026-06-07/08 while `hmm_regime_detector.py` (current.json) said NEUTRAL.
+They should use identical logic. Reconcile later. Also: parquet staleness should be reduced
+(make the cron more frequent or have the live path always prefer current.json — partly done now).
+
 ### June 8, 2026 (Evening) — Infra: Disk 47→200GB, Deep Data Backfill, n8n stopped
 
 **1. Boot volume expanded 47GB → 200GB (in-place).** Was at 77% (disk-pressure alerts). User resized the boot volume in OCI console; I ran the server-side expansion:
