@@ -429,6 +429,20 @@ def _run_hypothesis_group(
         tmp_path.unlink(missing_ok=True)
 
     if proc.returncode != 0:
+        # 2026-06-08: surface WHY it failed. Previously this returned [] silently, so all
+        # 167 fast-failing experiments logged only "returned None" with no diagnosable cause.
+        # Capture the tail of the backtest log (contains the real traceback / freqtrade error)
+        # so brain_run.log shows the actual reason. Pure observability — no behaviour change.
+        try:
+            tail = log_file.read_text(errors="replace").splitlines()[-15:]
+            reason = " | ".join(t.strip() for t in tail if t.strip())[-500:]
+        except Exception:
+            reason = "(could not read log)"
+        print(
+            f"[brain] group {group_suffix} FAILED (exit={proc.returncode}) "
+            f"for {h['hypothesis_id']}: {reason}",
+            file=sys.stderr,
+        )
         return []
 
     after    = set(RESULTS_DIR.glob("backtest-result-*.zip"))

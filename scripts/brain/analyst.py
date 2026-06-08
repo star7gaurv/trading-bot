@@ -68,6 +68,7 @@ NOISE_TRADES_PER_DAY = 5.5    # avg trades/day above this = too noisy on that TF
 WINDOW_DAYS = {
     "bull_2024Q1": 91, "bull_2024Q2": 91, "bear_2025Q1": 90,
     "bull_2025Q4": 92, "bear_2026Q1": 90,   # Fix 5 (2026-05-22): added new windows
+    "bull_2021": 90, "crash_2022": 245,     # 2026-06-08: deep-history stress windows (crash_2022 ~8mo)
 }
 
 

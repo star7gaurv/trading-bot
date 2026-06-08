@@ -108,6 +108,14 @@ WINDOWS = {
     "bear_2025Q1": "20250101-20250401",   # BTC -28% — bear leg Q1 2025
     "bull_2025Q4": "20251001-20260101",   # BTC recovery Oct-Dec 2025 (renamed from recent_2025Q4)
     "bear_2026Q1": "20260101-20260401",   # BTC declining Jan-Apr 2026 (renamed from recent_2026Q1)
+    # 2026-06-08: deep-history windows enabled by the 2020→present backfill. ~12 of 26 pairs
+    # (the majors: BTC/ETH/SOL/XRP/LINK/ADA/DOT/LTC/AVAX/NEAR/FIL...) have data this far back —
+    # FreqTrade backtest silently skips pairs without data, so these run on the majors.
+    "bull_2021":   "20210101-20210401",   # 2021 parabolic euphoria — extreme bull (classified BULL)
+    "crash_2022":  "20220501-20221231",   # LUNA (May) + FTX (Nov) — black-swan STRESS TEST.
+                                          # Name intentionally has neither "bull" nor "bear":
+                                          # promote.py ignores it for normal promotion averages;
+                                          # it is a survival/drawdown gate, inspected separately.
 }
 
 # Window order for queue generation: bull→bear pairs so the runner tests

@@ -44,13 +44,19 @@ MIN_BEAR_RUNS = 1                  # 1 bear window sufficient
 # Safety floor for the per-run check below: avg(profits)>0 must hold AND no
 # single run worse than this. Prevents one disaster window from masking on avg.
 MIN_PER_RUN_PROFIT_FLOOR = -0.3    # percent — tighten to -0.1 once WR routinely >50%
-# DISABLED 2026-06-07: 45/45 experiments on bear_2026Q1 failed (best WR=37.5%, all negative
-# profit). The gate is mathematically unreachable for any current config — not because configs
-# are bad, but because lt=3.25 produces <16 trades (compressed predictions in 2026 market).
-# WR=61% confirmed on this same period via daily WF (live config lt=1.5). The pair-regime
-# gate + daily circuit breaker + dry-run mode provide the real safety net. Re-enable when
-# brain routinely generates 30+ trades on bear_2026Q1 (i.e. after _GLOBAL_STD is fixed).
-BEAR_2026Q1_REQUIRED = None
+# RE-ENABLED 2026-06-08: the precondition stated below ("after _GLOBAL_STD is fixed") was met
+# today — _GLOBAL_STD 0.95→0.30 (513170f4) AND the centering window 100→1920 (5aff4cd3) fix
+# restored directional signal, so the brain can now generate 30+ directional trades on
+# bear_2026Q1 instead of the compressed <16 it produced under the broken centering.
+# Gate purpose (HARD): if a config was tested on bear_2026Q1, at least one result must have
+# WR >= 50% — blocks promoting configs KNOWN to fail on the most recent bear market.
+# Configs not yet tested on bear_2026Q1 pass through (cross-window auto-queue schedules them;
+# pair-regime gate + circuit breaker + dry-run are the live safety net).
+#
+# History — why it was disabled 2026-06-07: 45/45 experiments on bear_2026Q1 failed (best
+# WR=37.5%) because lt=3.25 + broken centering produced <16 mean-reversion trades. That was a
+# SYMPTOM of the centering bug, not a bad market. Now fixed → gate restored to its safety role.
+BEAR_2026Q1_REQUIRED = "bear_2026Q1"
 BASELINE_FILE = ROOT / "finbuddy_memory" / "promotions" / "live_baseline.json"
 
 
