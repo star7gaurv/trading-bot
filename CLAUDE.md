@@ -764,6 +764,30 @@ producing "no trades across all folds" on both daily and deep runs. Promotion ga
 - After retrain (~12h): `do_predict` ratio should recover to >40%; first SHORT entry in BEAR should fire.
 - Brain bull-window 0-longs: deferred. Suspected `_get_regime_series` fallback to live regime; needs one verification backtest.
 
+### June 8, 2026 (PM) — Centering Window Fix: Directional Signal Restored (commit `5aff4cd3`)
+
+**Root cause of BOTH the brain 0-longs-in-bull bug AND the 37.7% live WR.**
+
+The serve-time prediction centering subtracted `rolling(100).median()` = only **25 HOURS** on 15m. A 25h median tracks the price trend itself, so subtracting it stripped the model's directional signal:
+- **Raw predictions: 69–72% positive** (model correctly leans long in the up-market — this is the alpha)
+- **Centered (r100): 46–49% positive** (forced 50/50 → pure mean-reversion)
+
+This converted a directional model into a mean-reversion model. Symptoms:
+- Brain: 60 z-score experiments with **0 longs in BULL windows** (e.g. `bull_2024Q2` LT=1.0 → L/S=**0/38**, all shorts in a bull quarter)
+- Live: **37.7% WR** — model forced to short into uptrends
+
+**Fix:** added class constant `_CENTERING_WINDOW = 1920` (20 days), `_CENTERING_MIN_PERIODS = 200`. Applied to all 3 centering sites (leverage line ~820, entry ~1386, exit ~1504).
+- Empirically (historic_predictions.pkl): raw 69% → centered **69%** (BTC), 72% → 69% (ETH) — **direction preserved**.
+- Simulated entries at threshold≈0.39: BTC long 14%→**33%**, SUI 17%→**53%**, UNI 13%→**55%**, DOT 18%→**59%**.
+- Shorts still fire on weak pairs (FET 24%, RENDER 27%) — **no BEAR deadlock reintroduced**.
+- `1920 < startup_candle_count (2400)` so the window is fully populated and **identical in live and backtest**. `min_periods=200` matches the z-score normalization warmup (`ROLLING=2880, min_periods=200`).
+
+**No retrain** — serve-time transform on existing predictions. Identifier unchanged (`finbuddy_v23_nosvm_1780729988`). Container restarted (strategy is a mounted volume → reloads on restart). The brain auto-benefits: it runs the same strategy file, so future experiments will explore longs in bull windows.
+
+**Coupling rule:** if `_CENTERING_WINDOW` changes, it MUST stay identical across all 3 sites (leverage/entry/exit) so threshold comparisons are coherent, and stay `< startup_candle_count` so live==backtest.
+
+**Validation pending:** daily WF tonight (22:00 UTC) and next brain bull-window runs are the natural gates — both should now show non-zero longs and (hopefully) improved WR.
+
 ### June 8, 2026 — Two-Layer Threshold Deadlock Fixed (commits `513170f4`, `d0d596a4`)
 
 **Root cause: `_GLOBAL_STD=0.95` was a relic from the raw-% prediction era. After z-scoring (2026-05-22), live model predictions have std≈0.13–0.30. This caused a two-layer deadlock.**
