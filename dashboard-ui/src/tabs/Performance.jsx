@@ -358,6 +358,25 @@ function PairBarChart({ data }) {
 
 // ─── Summary stat strip ───────────────────────────────────────────────────────
 
+// Parse FreqTrade's avg_duration string → hours.
+// Formats seen: "3:25:46", "0:42:10", "1 day, 2:30:00", "12 days, 5:00:00".
+function parseDurationHours(s) {
+  if (s == null) return null;
+  if (typeof s === "number") return s / 60; // legacy numeric (minutes) fallback
+  if (typeof s !== "string") return null;
+  let days = 0;
+  let rest = s.trim();
+  const dayMatch = rest.match(/(\d+)\s*day/i);
+  if (dayMatch) {
+    days = parseInt(dayMatch[1], 10);
+    rest = rest.split(",").pop().trim();
+  }
+  const parts = rest.split(":").map((p) => parseInt(p, 10));
+  if (parts.some((n) => Number.isNaN(n))) return days ? days * 24 : null;
+  const [h = 0, m = 0, sec = 0] = parts;
+  return days * 24 + h + m / 60 + sec / 3600;
+}
+
 function SummaryStrip({ data }) {
   if (!data) return null;
 
@@ -366,7 +385,9 @@ function SummaryStrip({ data }) {
       ? (data.winning_trades / (data.winning_trades + data.losing_trades)) * 100
       : null;
 
-  const avgDur = data.holding_avg ?? data.avg_duration_mins;
+  // FreqTrade /profit returns `avg_duration` as a string ("3:25:46"), not the
+  // `holding_avg`/`avg_duration_mins` this used to read — so Avg Hold was always "—".
+  const avgHours = parseDurationHours(data.avg_duration);
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-3">
@@ -394,8 +415,8 @@ function SummaryStrip({ data }) {
       />
       <Stat
         label="Avg Hold"
-        value={avgDur != null ? (avgDur / 60).toFixed(1) : "—"}
-        unit={avgDur != null ? "h" : ""}
+        value={avgHours != null ? avgHours.toFixed(1) : "—"}
+        unit={avgHours != null ? "h" : ""}
       />
       <Stat
         label="Profit Factor"

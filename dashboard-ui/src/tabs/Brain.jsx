@@ -205,10 +205,13 @@ function BrainLogStream() {
         if (unmounted) return;
         try {
           const payload = JSON.parse(ev.data);
+          // Backend (/ws/brain) sends {type:"brain_log", log:"..."}. Read `log`
+          // first — previously this only checked message/text, so every line
+          // fell through to JSON.stringify and rendered the raw envelope.
           const text =
             typeof payload === "string"
               ? payload
-              : payload.message ?? payload.text ?? JSON.stringify(payload);
+              : payload.log ?? payload.message ?? payload.text ?? JSON.stringify(payload);
           setLines((prev) => {
             const next = [...prev, { text, level: levelOf(text) }];
             return next.length > MAX_LOG_LINES ? next.slice(-MAX_LOG_LINES) : next;

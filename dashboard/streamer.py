@@ -63,6 +63,8 @@ REGIME_CURRENT = REPO_ROOT / "finbuddy_memory/regimes/current.json"
 PAIR_REGIME_STATS = REPO_ROOT / "finbuddy_memory/regimes/pair_regime_stats.json"
 QUEUE_FILE = REPO_ROOT / "finbuddy_memory/experiments/queue.jsonl"
 EXP_LOG_FILE = REPO_ROOT / "finbuddy_memory/experiments/log.jsonl"
+COMBINED_CTX_FILE = REPO_ROOT / "freqtrade/user_data/data/external/combined_context.json"
+FUNDING_CACHE_FILE = REPO_ROOT / "freqtrade/user_data/data/external/funding_rate_cache.json"
 BRAIN_RUN_LOG = Path("/home/ubuntu/.finbuddy/logs/brain_run.log")
 WF_RESULTS_DIR = REPO_ROOT / "walkforward_results"
 CONFIG_JSON = REPO_ROOT / "freqtrade/user_data/config.json"
@@ -213,15 +215,26 @@ async def brain_queue(_: dict = Depends(require_auth)):
                         continue
                     status = str(row.get("status", "queued"))
                     statuses[status] = statuses.get(status, 0) + 1
-                    if status == "queued":
-                        ts = row.get("created_at_ts") or row.get("ts")
-                        if isinstance(ts, (int, float)):
-                            if oldest_queued_ts is None or ts < oldest_queued_ts:
-                                oldest_queued_ts = int(ts)
+                    # Queue entries store `created_at` as an ISO-8601 string (not a
+                    # numeric `created_at_ts`/`ts`). Parse it to an epoch so the
+                    # "oldest queued" age renders instead of always being None.
+                    row_ts = row.get("created_at_ts") or row.get("ts")
+                    if row_ts is None:
+                        ca = row.get("created_at")
+                        if isinstance(ca, str):
+                            try:
+                                row_ts = datetime.fromisoformat(
+                                    ca.replace("Z", "+00:00")
+                                ).timestamp()
+                            except ValueError:
+                                row_ts = None
+                    if status == "queued" and isinstance(row_ts, (int, float)):
+                        if oldest_queued_ts is None or row_ts < oldest_queued_ts:
+                            oldest_queued_ts = int(row_ts)
                     recent.append({
                         "hypothesis_id": row.get("hypothesis_id"),
                         "status": status,
-                        "ts": row.get("ts") or row.get("created_at_ts"),
+                        "ts": int(row_ts) if isinstance(row_ts, (int, float)) else None,
                         "band": row.get("band") or row.get("kind"),
                     })
         except OSError:
@@ -490,9 +503,36 @@ async def regime_current(_: dict = Depends(require_auth)):
         return {"available": False}
     try:
         with open(REGIME_CURRENT) as f:
-            return json.load(f)
+            data = json.load(f)
     except (OSError, json.JSONDecodeError):
         return {"available": False, "error": "unreadable"}
+
+    # Enrich with external macro context (Fear & Greed, BTC dominance, news
+    # sentiment, market-cap change). Fixes the Overview StatStrip, which expected
+    # `fear_greed`/`btc_funding_rate` fields that current.json never contained —
+    # so Fear/Greed and Funding stats were permanently hidden. Best-effort: a
+    # missing/unreadable file just leaves the base regime data untouched.
+    try:
+        if COMBINED_CTX_FILE.exists():
+            ctx = json.loads(COMBINED_CTX_FILE.read_text())
+            data.setdefault("fear_greed", ctx.get("fear_greed"))
+            data["fear_greed_label"] = ctx.get("fear_greed_label")
+            data["btc_dominance"] = ctx.get("btc_dominance")
+            data["market_cap_change_24h_pct"] = ctx.get("market_cap_change_24h_pct")
+            data["news_sentiment_ratio"] = ctx.get("news_sentiment_ratio")
+            data["news_bullish_count"] = ctx.get("news_bullish_count")
+            data["news_bearish_count"] = ctx.get("news_bearish_count")
+            data["context_ts"] = ctx.get("timestamp")
+    except (OSError, json.JSONDecodeError):
+        pass
+    try:
+        if FUNDING_CACHE_FILE.exists():
+            fc = json.loads(FUNDING_CACHE_FILE.read_text())
+            data["btc_funding_rate"] = fc.get("funding_rate")
+    except (OSError, json.JSONDecodeError):
+        pass
+
+    return data
 
 
 @app.get("/api/regime/pair-stats")
