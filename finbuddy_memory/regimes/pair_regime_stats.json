@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-09T09:00:01.292464+00:00",
+  "updated": "2026-06-09T09:30:01.638049+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "AVAX/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 0,
-        "losses": 5,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -8.16,
-        "avg_profit_pct": -1.128
-      },
-      "BEAR": {
-        "n": 2,
-        "wins": 0,
-        "losses": 2,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -0.93,
-        "avg_profit_pct": -0.715
-      }
-    },
     "ATOM/USDT:USDT": {
       "NEUTRAL": {
         "n": 6,
@@ -137,6 +117,26 @@
         "pf": 0.641,
         "profit_usdt": -0.14,
         "avg_profit_pct": -0.11
+      }
+    },
+    "AVAX/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 4,
+        "wins": 0,
+        "losses": 4,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -7.71,
+        "avg_profit_pct": -1.347
+      },
+      "BEAR": {
+        "n": 2,
+        "wins": 0,
+        "losses": 2,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.93,
+        "avg_profit_pct": -0.715
       }
     },
     "ARB/USDT:USDT": {
@@ -654,14 +654,6 @@
     }
   },
   "blocked": [
-    {
-      "pair": "AVAX/USDT:USDT",
-      "regime": "NEUTRAL",
-      "reason": "WR=0% PF=0.00 n=5 profit=-8.16",
-      "n": 5,
-      "wr": 0.0,
-      "pf": 0.0
-    },
     {
       "pair": "OP/USDT:USDT",
       "regime": "BEAR",
