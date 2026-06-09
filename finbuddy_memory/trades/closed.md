@@ -337,3 +337,4 @@
 | 2026-06-08 23:30:31 | APT/USDT:USDT | SHORT | 1h30m | +1.60% | +1.16 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
 | 2026-06-09 00:00:45 | LTC/USDT:USDT | SHORT | 0h15m | +0.23% | +0.17 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
 | 2026-06-09 00:30:56 | APT/USDT:USDT | SHORT | 0h30m | +3.02% | +2.47 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
+| 2026-06-09 04:49:41 | ENA/USDT:USDT | SHORT | 0h34m | -2.44% | -2.01 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
