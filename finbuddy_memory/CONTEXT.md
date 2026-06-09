@@ -1,5 +1,5 @@
 # FinBuddy — Master Context
-Last updated: 2026-06-09 20:45 UTC
+Last updated: 2026-06-09 21:00 UTC
 
 ## Current Regime
 Regime: **BEAR** | Confidence: 80.0% | Since: 2026-06-09
@@ -10,10 +10,10 @@ BTC Dominance: 55.9%
 News Sentiment: 95.8% bullish
 
 ## Bot Performance
-Total Trades: 502 | Win Rate: 38.0% | Total P&L: 3.6%
+Total Trades: 502 | Win Rate: 38.0% | Total P&L: 3.58%
 
 ## Open Trades (1)
-- ENA/USDT:USDT: Entry 0.08 | Current 0.08 | P&L: -1.49%
+- ENA/USDT:USDT: Entry 0.08 | Current 0.08 | P&L: -1.86%
 ## Risk Flags
 - None
 
