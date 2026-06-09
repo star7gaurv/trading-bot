@@ -107,6 +107,9 @@ export async function getRegimeCurrent() {
 export async function getRegimePairStats() {
   return request("/api/regime/pair-stats");
 }
+export async function getSignals() {
+  return request("/api/signals");
+}
 
 // ─── Trades ───
 export async function getOpenTrades() {

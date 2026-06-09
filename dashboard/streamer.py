@@ -546,6 +546,122 @@ async def regime_pair_stats(_: dict = Depends(require_auth)):
         return {"available": False, "error": "unreadable"}
 
 
+# ───────────────────── Live Signal Monitor ─────────────────────
+_LONG_REGIMES = {"NEUTRAL", "BULL", "EUPHORIA"}
+_SHORT_REGIMES = {"NEUTRAL", "BEAR", "CRASH"}
+
+
+def _load_pair_regime_blocks_map() -> dict[str, set]:
+    """{pair: {blocked_regime, ...}} from pair_regime_stats.json 'blocked' list."""
+    out: dict[str, set] = {}
+    try:
+        d = json.loads(PAIR_REGIME_STATS.read_text())
+        for b in d.get("blocked", []):
+            p = b.get("pair")
+            r = b.get("regime")
+            if p and r:
+                out.setdefault(p, set()).add(r)
+    except (OSError, json.JSONDecodeError):
+        pass
+    return out
+
+
+def _direction_status(side: str, row: dict, regime: str, gated: bool,
+                      entering: bool) -> str:
+    """Why is this side (long/short) entering or not? Determined by elimination —
+    replicates FinBuddyFreqAI_v23.populate_entry_trend gate order exactly, so the
+    reason is authoritative without needing to recompute the centered prediction."""
+    if entering:
+        return "enter"
+    if (row.get("do_predict") or 0) != 1:
+        return "no_predict"
+    if gated:
+        return "gated"
+    close = row.get("close")
+    ema = row.get("ema_50")
+    rsi = row.get("rsi_14")
+    bb = row.get("bb_pct")
+    if side == "long":
+        if regime not in _LONG_REGIMES:
+            return "regime"
+        if close is not None and ema is not None and close <= ema:
+            return "ta_ema"      # price below EMA-50 (no long in downtrend)
+        if rsi is not None and rsi >= 68:
+            return "ta_rsi"      # overbought
+        if bb is not None and bb >= 0.90:
+            return "ta_bb"       # at upper band
+    else:  # short
+        if regime not in _SHORT_REGIMES:
+            return "regime"
+        if close is not None and ema is not None and close >= ema:
+            return "ta_ema"      # price above EMA-50 (no short in uptrend)
+        if rsi is not None and rsi <= 32:
+            return "ta_rsi"      # oversold
+        if bb is not None and bb <= 0.10:
+            return "ta_bb"       # at lower band
+    # All gates pass but no entry → model prediction did not cross the threshold.
+    return "threshold"
+
+
+@app.get("/api/signals")
+async def signals(_: dict = Depends(require_auth)):
+    """Live per-pair signal monitor: for every whitelisted pair, report the current
+    entry signal and the EXACT reason it is / isn't entering. Answers 'why no trades'
+    at a glance instead of digging through logs. Read-only (analysed dataframe only)."""
+    async def compute():
+        wl = await ft_get("/whitelist")
+        pairs = wl.get("whitelist", []) if isinstance(wl, dict) else (wl or [])
+        blocks = _load_pair_regime_blocks_map()
+
+        async def one(pair: str) -> Optional[dict]:
+            try:
+                cd = await ft_get("/pair_candles", params={
+                    "pair": pair, "timeframe": "15m", "limit": 3,
+                })
+            except Exception:
+                return None
+            cols = cd.get("columns", [])
+            data = cd.get("data", [])
+            if not cols or len(data) < 2:
+                return None
+            # Use the last CLOSED candle (row[-2]); row[-1] is the forming candle
+            # whose enter_long/short are still None.
+            row = dict(zip(cols, data[-2]))
+            regime = row.get("regime") or "—"
+            gated = regime in blocks.get(pair, set())
+            el = row.get("enter_long")
+            es = row.get("enter_short")
+            long_status = _direction_status("long", row, regime, gated, el == 1)
+            short_status = _direction_status("short", row, regime, gated, es == 1)
+            return {
+                "pair": pair,
+                "regime": regime,
+                "do_predict": int(row.get("do_predict") or 0),
+                "gated": gated,
+                "pred": row.get("&-future_return"),
+                "long_threshold": row.get("dynamic_long_threshold"),
+                "short_threshold": row.get("dynamic_short_threshold"),
+                "close": row.get("close"),
+                "ema_50": row.get("ema_50"),
+                "rsi_14": row.get("rsi_14"),
+                "long_status": long_status,
+                "short_status": short_status,
+                "entering": long_status == "enter" or short_status == "enter",
+            }
+
+        results = await asyncio.gather(*[one(p) for p in pairs])
+        rows = [r for r in results if r]
+        # Entering first, then by pair name
+        rows.sort(key=lambda r: (not r["entering"], r["pair"]))
+        return {
+            "pairs": rows,
+            "count": len(rows),
+            "entering_count": sum(1 for r in rows if r["entering"]),
+        }
+
+    return await cached_async("signals", 20.0, compute)
+
+
 # ───────────────────── FreqTrade proxies ─────────────────────
 @app.get("/api/trades/open")
 async def trades_open(_: dict = Depends(require_auth)):

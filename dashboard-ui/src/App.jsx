@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   TrendingUp,
+  Radar,
   LineChart,
   Brain as BrainIcon,
   Repeat,
@@ -15,6 +16,7 @@ import { getToken, whoami } from "./api/client";
 
 import Overview from "./tabs/Overview";
 import Trades from "./tabs/Trades";
+import Signals from "./tabs/Signals";
 import Performance from "./tabs/Performance";
 import Brain from "./tabs/Brain";
 import WalkForward from "./tabs/WalkForward";
@@ -24,6 +26,7 @@ import Settings from "./tabs/Settings";
 const TABS = [
   { id: "overview", label: "Overview", icon: LayoutDashboard, Component: Overview },
   { id: "trades", label: "Trades", icon: TrendingUp, Component: Trades },
+  { id: "signals", label: "Signals", icon: Radar, Component: Signals },
   { id: "performance", label: "Performance", icon: LineChart, Component: Performance },
   { id: "brain", label: "Brain", icon: BrainIcon, Component: Brain },
   { id: "wf", label: "Walk-Forward", icon: Repeat, Component: WalkForward },
