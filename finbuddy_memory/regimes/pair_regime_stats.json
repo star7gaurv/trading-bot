@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-09T05:30:01.863118+00:00",
+  "updated": "2026-06-09T06:00:01.594633+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,17 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "TRX/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 4,
-        "wins": 1,
-        "losses": 3,
-        "wr": 0.25,
-        "pf": 0.36,
-        "profit_usdt": -1.28,
-        "avg_profit_pct": -0.245
-      }
-    },
     "AVAX/USDT:USDT": {
       "NEUTRAL": {
         "n": 5,
@@ -57,6 +46,17 @@
         "pf": 0.564,
         "profit_usdt": -1.02,
         "avg_profit_pct": -0.415
+      }
+    },
+    "TRX/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 3,
+        "wins": 1,
+        "losses": 2,
+        "wr": 0.3333,
+        "pf": 1.125,
+        "profit_usdt": 0.08,
+        "avg_profit_pct": -0.083
       }
     },
     "ETH/USDT:USDT": {
