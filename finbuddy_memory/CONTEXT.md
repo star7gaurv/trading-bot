@@ -1,5 +1,5 @@
 # FinBuddy — Master Context
-Last updated: 2026-06-09 19:45 UTC
+Last updated: 2026-06-09 20:00 UTC
 
 ## Current Regime
 Regime: **BEAR** | Confidence: 80.0% | Since: 2026-06-09
@@ -13,7 +13,7 @@ News Sentiment: 95.8% bullish
 Total Trades: 502 | Win Rate: 38.0% | Total P&L: 3.67%
 
 ## Open Trades (1)
-- ENA/USDT:USDT: Entry 0.08 | Current 0.08 | P&L: -0.32%
+- ENA/USDT:USDT: Entry 0.08 | Current 0.08 | P&L: -0.39%
 ## Risk Flags
 - None
 
