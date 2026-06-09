@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-09T16:00:01.866177+00:00",
+  "updated": "2026-06-09T16:30:01.594266+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "ATOM/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 6,
-        "wins": 2,
-        "losses": 4,
-        "wr": 0.3333,
-        "pf": 1.327,
-        "profit_usdt": 1.78,
-        "avg_profit_pct": -0.318
-      },
-      "BEAR": {
-        "n": 4,
-        "wins": 1,
-        "losses": 3,
-        "wr": 0.25,
-        "pf": 0.564,
-        "profit_usdt": -1.02,
-        "avg_profit_pct": -0.415
-      }
-    },
     "TRX/USDT:USDT": {
       "NEUTRAL": {
         "n": 3,
@@ -479,6 +459,26 @@
         "avg_profit_pct": -0.177
       }
     },
+    "ATOM/USDT:USDT": {
+      "BEAR": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.564,
+        "profit_usdt": -1.02,
+        "avg_profit_pct": -0.415
+      },
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 1,
+        "losses": 4,
+        "wr": 0.2,
+        "pf": 0.004,
+        "profit_usdt": -5.43,
+        "avg_profit_pct": -1.16
+      }
+    },
     "APT/USDT:USDT": {
       "NEUTRAL": {
         "n": 13,
@@ -677,6 +677,14 @@
       "n": 11,
       "wr": 0.1818,
       "pf": 0.455
+    },
+    {
+      "pair": "ATOM/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=20% PF=0.00 n=5 profit=-5.43",
+      "n": 5,
+      "wr": 0.2,
+      "pf": 0.004
     },
     {
       "pair": "TON/USDT:USDT",
