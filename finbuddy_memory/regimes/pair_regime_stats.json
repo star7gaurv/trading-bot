@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-09T18:00:01.791101+00:00",
+  "updated": "2026-06-09T18:30:01.164310+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,17 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "TRX/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 3,
-        "wins": 1,
-        "losses": 2,
-        "wr": 0.3333,
-        "pf": 1.125,
-        "profit_usdt": 0.08,
-        "avg_profit_pct": -0.083
-      }
-    },
     "ETH/USDT:USDT": {
       "NEUTRAL": {
         "n": 5,
@@ -497,6 +486,17 @@
         "pf": null,
         "profit_usdt": 3.02,
         "avg_profit_pct": 4.44
+      }
+    },
+    "TRX/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 0,
+        "losses": 2,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.64,
+        "avg_profit_pct": -0.32
       }
     },
     "1000SHIB/USDT:USDT": {
