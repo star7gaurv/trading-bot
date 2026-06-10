@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-10T08:30:01.968085+00:00",
+  "updated": "2026-06-10T09:00:01.699376+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -430,13 +430,13 @@
     },
     "ADA/USDT:USDT": {
       "BEAR": {
-        "n": 5,
-        "wins": 2,
+        "n": 6,
+        "wins": 3,
         "losses": 3,
-        "wr": 0.4,
-        "pf": 0.298,
-        "profit_usdt": -1.06,
-        "avg_profit_pct": -0.306
+        "wr": 0.5,
+        "pf": 1.258,
+        "profit_usdt": 0.39,
+        "avg_profit_pct": 0.165
       },
       "NEUTRAL": {
         "n": 9,
@@ -479,13 +479,13 @@
         "avg_profit_pct": 0.262
       },
       "BEAR": {
-        "n": 4,
-        "wins": 2,
+        "n": 5,
+        "wins": 3,
         "losses": 2,
-        "wr": 0.5,
-        "pf": 4.645,
-        "profit_usdt": 2.77,
-        "avg_profit_pct": 1.003
+        "wr": 0.6,
+        "pf": 5.342,
+        "profit_usdt": 3.3,
+        "avg_profit_pct": 0.984
       }
     },
     "TRX/USDT:USDT": {

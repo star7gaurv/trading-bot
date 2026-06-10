@@ -346,3 +346,5 @@
 | 2026-06-10 00:30:37 | APT/USDT:USDT | SHORT | 3h00m | -1.14% | -0.66 | time_limit_exit | BEAR | freqai_regression_v23_sh |
 | 2026-06-10 02:45:32 | APT/USDT:USDT | SHORT | 2h00m | +0.88% | +0.51 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-10 08:00:31 | APT/USDT:USDT | SHORT | 3h00m | -0.17% | -0.10 | time_limit_exit | BEAR | freqai_regression_v23_sh |
+| 2026-06-10 08:55:32 | ADA/USDT:USDT | SHORT | 1h40m | +2.52% | +1.45 | exit_signal | BEAR | freqai_regression_v23_sh |
+| 2026-06-10 08:45:27 | APT/USDT:USDT | SHORT | 0h30m | +0.91% | +0.53 | exit_signal | BEAR | freqai_regression_v23_sh |
