@@ -353,3 +353,5 @@
 | 2026-06-10 13:30:08 | ONDO/USDT:USDT | SHORT | 0h14m | -2.10% | -1.21 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-10 15:31:13 | NEAR/USDT:USDT | SHORT | 0h16m | -3.33% | -1.92 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-10 17:03:58 | NEAR/USDT:USDT | SHORT | 1h18m | +2.58% | +1.47 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_sh |
+| 2026-06-10 17:30:28 | LTC/USDT:USDT | SHORT | 0h35m | +1.14% | +0.82 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
+| 2026-06-10 17:32:08 | ADA/USDT:USDT | SHORT | 0h36m | +0.64% | +0.46 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
