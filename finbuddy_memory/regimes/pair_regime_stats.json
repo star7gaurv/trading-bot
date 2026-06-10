@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-10T17:30:01.962103+00:00",
+  "updated": "2026-06-10T18:00:02.126127+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -270,13 +270,13 @@
     },
     "LTC/USDT:USDT": {
       "NEUTRAL": {
-        "n": 3,
-        "wins": 2,
+        "n": 4,
+        "wins": 3,
         "losses": 1,
-        "wr": 0.6667,
-        "pf": 3.656,
-        "profit_usdt": 1.62,
-        "avg_profit_pct": 0.203
+        "wr": 0.75,
+        "pf": 5.0,
+        "profit_usdt": 2.44,
+        "avg_profit_pct": 0.438
       },
       "BEAR": {
         "n": 5,
@@ -439,13 +439,13 @@
         "avg_profit_pct": -0.06
       },
       "NEUTRAL": {
-        "n": 9,
-        "wins": 5,
+        "n": 10,
+        "wins": 6,
         "losses": 4,
-        "wr": 0.5556,
-        "pf": 0.537,
-        "profit_usdt": -1.52,
-        "avg_profit_pct": -0.177
+        "wr": 0.6,
+        "pf": 0.677,
+        "profit_usdt": -1.06,
+        "avg_profit_pct": -0.095
       }
     },
     "ATOM/USDT:USDT": {
