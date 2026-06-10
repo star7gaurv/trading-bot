@@ -349,3 +349,4 @@
 | 2026-06-10 08:55:32 | ADA/USDT:USDT | SHORT | 1h40m | +2.52% | +1.45 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-10 08:45:27 | APT/USDT:USDT | SHORT | 0h30m | +0.91% | +0.53 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-10 11:30:21 | BTC/USDT:USDT | SHORT | 2h00m | +0.26% | +0.16 | exit_signal | BEAR | freqai_regression_v23_sh |
+| 2026-06-10 12:31:23 | ADA/USDT:USDT | SHORT | 2h46m | -1.41% | -0.82 | stop_loss | BEAR | freqai_regression_v23_sh |
