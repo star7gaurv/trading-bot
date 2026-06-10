@@ -343,3 +343,4 @@
 | 2026-06-09 14:30:28 | ONDO/USDT:USDT | SHORT | 1h45m | +1.50% | +0.87 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-09 19:06:03 | ENA/USDT:USDT | SHORT | 2h55m | -3.14% | -1.82 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-09 22:16:49 | ENA/USDT:USDT | SHORT | 3h01m | +0.04% | +0.02 | time_limit_exit | BEAR | freqai_regression_v23_sh |
+| 2026-06-10 00:30:37 | APT/USDT:USDT | SHORT | 3h00m | -1.14% | -0.66 | time_limit_exit | BEAR | freqai_regression_v23_sh |
