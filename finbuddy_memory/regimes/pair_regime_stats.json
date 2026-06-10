@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-10T19:00:01.340706+00:00",
+  "updated": "2026-06-10T19:30:02.037507+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "TAO/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 3,
-        "wins": 2,
-        "losses": 1,
-        "wr": 0.6667,
-        "pf": 3.169,
-        "profit_usdt": 2.56,
-        "avg_profit_pct": 0.28
-      },
-      "BEAR": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -0.64,
-        "avg_profit_pct": -1.03
-      }
-    },
     "BTC/USDT:USDT": {
       "NEUTRAL": {
         "n": 3,
@@ -426,6 +406,26 @@
         "pf": 0.0,
         "profit_usdt": -7.97,
         "avg_profit_pct": -3.85
+      }
+    },
+    "TAO/USDT:USDT": {
+      "BEAR": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.64,
+        "avg_profit_pct": -1.03
+      },
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 0.22,
+        "profit_usdt": -0.92,
+        "avg_profit_pct": -0.51
       }
     },
     "ADA/USDT:USDT": {
