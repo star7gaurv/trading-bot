@@ -345,3 +345,4 @@
 | 2026-06-09 22:16:49 | ENA/USDT:USDT | SHORT | 3h01m | +0.04% | +0.02 | time_limit_exit | BEAR | freqai_regression_v23_sh |
 | 2026-06-10 00:30:37 | APT/USDT:USDT | SHORT | 3h00m | -1.14% | -0.66 | time_limit_exit | BEAR | freqai_regression_v23_sh |
 | 2026-06-10 02:45:32 | APT/USDT:USDT | SHORT | 2h00m | +0.88% | +0.51 | exit_signal | BEAR | freqai_regression_v23_sh |
+| 2026-06-10 08:00:31 | APT/USDT:USDT | SHORT | 3h00m | -0.17% | -0.10 | time_limit_exit | BEAR | freqai_regression_v23_sh |
