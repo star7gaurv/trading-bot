@@ -1258,6 +1258,22 @@ class FinBuddyFreqAI_v23(IStrategy):
             # HMM regime encoding — per-candle historical regime (Fix 2026-05-17)
             regime_series = self._get_regime_series(dataframe)
             dataframe["%-regime_numeric"] = regime_series.map(lambda r: self._REGIME_NUMERIC.get(r, 0)).astype(float)
+
+            # Trend-horizon score (E3, 2026-06-11): -3..+3 multi-horizon trend
+            # agreement from historical_regime.parquet. Env-gated — enabling
+            # changes the feature set (identifier bump + pkl flush required).
+            if os.environ.get("FREQAI_TREND_HORIZON", "0") == "1":
+                hist = self._load_historical_regime()
+                if not hist.empty and "trend_horizon" in hist.columns:
+                    dates = pd.to_datetime(dataframe["date"], utc=True).astype("datetime64[ns, UTC]")
+                    dj = pd.DataFrame({"date": dates}).sort_values("date").reset_index()
+                    merged = pd.merge_asof(dj, hist[["date", "trend_horizon"]],
+                                           on="date", direction="backward")
+                    merged = merged.sort_values("index").reset_index(drop=True)
+                    dataframe["%-trend_horizon"] = pd.Series(
+                        merged["trend_horizon"].fillna(0.0).values, index=dataframe.index)
+                else:
+                    dataframe["%-trend_horizon"] = 0.0
         else:
             logger.info(f"[FeatureSet] mode={self.FEATURE_SET} — skipping regime_numeric")
 

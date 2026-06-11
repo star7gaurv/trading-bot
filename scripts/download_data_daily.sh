@@ -21,6 +21,31 @@ cd "$COMPOSE_DIR"
 
 echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] === daily data refresh ===" >> "$LOG"
 
+# E4 (2026-06-11): full backfill for NEW pairs. The 3-day incremental gives a
+# freshly whitelisted pair only 3 days of history → 4h NaN crash (2026-05-19
+# known gap). Detect pairs with no local 15m feather and backfill those first.
+NEW_PAIRS=$(python3 - <<'PYEOF'
+import json
+from pathlib import Path
+cfg = json.load(open("user_data/config.json"))
+data_dir = Path("user_data/data/binance/futures")
+missing = []
+for p in cfg["exchange"]["pair_whitelist"]:
+    fname = p.replace("/", "_").replace(":", "_") + "-15m-futures.feather"
+    if not (data_dir / fname).exists():
+        missing.append(p)
+print(" ".join(missing))
+PYEOF
+)
+if [ -n "$NEW_PAIRS" ]; then
+    echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] NEW pairs detected, full backfill: $NEW_PAIRS" >> "$LOG"
+    docker-compose run --rm freqtrade download-data \
+        --timeframe 15m 30m 1h 4h 1d \
+        --days 1200 \
+        --pairs $NEW_PAIRS \
+        --trading-mode futures >> "$LOG" 2>&1
+fi
+
 docker-compose run --rm freqtrade download-data \
     --timeframe 15m 30m 1h 4h 1d \
     --days 3 \

@@ -28,28 +28,10 @@ ROOT = Path("/home/ubuntu/var/www/html/trade")
 BTC_4H_FEATHER = ROOT / "freqtrade/user_data/data/binance/futures/BTC_USDT_USDT-4h-futures.feather"
 OUTPUT_PARQUET = ROOT / "finbuddy_memory/regimes/historical_regime.parquet"
 
-REGIME_NUMERIC = {"CRASH": -2, "BEAR": -1, "NEUTRAL": 0, "BULL": 1, "EUPHORIA": 2}
-
-
-def classify_row(close: float, ret_30d: float, drawdown_7d: float, sma_90d: float) -> tuple[str, float]:
-    """Classify single candle. Returns (regime, confidence)."""
-    if pd.isna(ret_30d) or pd.isna(drawdown_7d) or pd.isna(sma_90d):
-        return ("NEUTRAL", 0.5)
-
-    # CRASH — sharp recent move down or deep multi-week loss
-    if drawdown_7d < -0.15 or ret_30d < -0.25:
-        return ("CRASH", 0.95)
-    # EUPHORIA — strong multi-week up AND price stretched above its 90d trend
-    if ret_30d > 0.30 and close > sma_90d * 1.20:
-        return ("EUPHORIA", 0.90)
-    # BEAR — multi-week down AND below 90d trend
-    if ret_30d < -0.10 and close < sma_90d:
-        return ("BEAR", 0.80)
-    # BULL — multi-week up AND above 90d trend
-    if ret_30d > 0.10 and close > sma_90d:
-        return ("BULL", 0.85)
-    # NEUTRAL — mixed
-    return ("NEUTRAL", 0.70)
+# E3 (2026-06-11): classification logic moved to scripts/regime_core.py — the
+# single source of truth shared with the live detector (hmm_regime_detector.py).
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from regime_core import REGIME_NUMERIC, classify_row, compute_features  # noqa: E402
 
 
 def main() -> int:
@@ -61,14 +43,8 @@ def main() -> int:
     df = df.sort_values("date").reset_index(drop=True)
     print(f"Loaded {len(df)} BTC 4h candles: {df['date'].min()} → {df['date'].max()}")
 
-    # Rolling stats: 30d = 30*6 = 180 4h candles; 90d = 540; 7d = 42
-    candles_per_day = 6  # 4h × 6 = 24h
-    df["sma_90d"]      = df["close"].rolling(90 * candles_per_day).mean()
-    df["high_7d"]      = df["high"].rolling(7  * candles_per_day).max()
-    df["close_30d_ago"]= df["close"].shift(30 * candles_per_day)
-
-    df["ret_30d"]      = (df["close"] / df["close_30d_ago"]) - 1.0
-    df["drawdown_7d"]  = (df["close"] / df["high_7d"]) - 1.0
+    # Rolling stats (ret_30d / drawdown_7d / sma_90d) — shared regime_core logic
+    df = compute_features(df)
 
     regimes  = []
     confidences = []
@@ -77,11 +53,18 @@ def main() -> int:
         regimes.append(r)
         confidences.append(c)
 
+    # E3 (2026-06-11): trend-duration score (-3..+3) — how many lookback
+    # horizons agree with the short-term direction. Consumed by the strategy
+    # as %-trend_horizon (env-gated FREQAI_TREND_HORIZON).
+    from regime_core import trend_horizon
+    th = trend_horizon(df)
+
     out = pd.DataFrame({
         "date":           df["date"].dt.tz_convert("UTC") if df["date"].dt.tz else df["date"].dt.tz_localize("UTC"),
         "regime":         regimes,
         "regime_numeric": [REGIME_NUMERIC[r] for r in regimes],
         "confidence":     confidences,
+        "trend_horizon":  th.values,
     })
 
     OUTPUT_PARQUET.parent.mkdir(parents=True, exist_ok=True)

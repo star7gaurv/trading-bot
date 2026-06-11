@@ -15,55 +15,31 @@ CURRENT_JSON = REGIMES_DIR / "current.json"
 CURRENT_MD   = REGIMES_DIR / "current.md"
 HISTORY_MD   = REGIMES_DIR / "history.md"
 
-def fetch_btc_price():
-    """Fetch current BTC price from Binance."""
-    import urllib.request
-    try:
-        url = "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"
-        with urllib.request.urlopen(url, timeout=5) as r:
-            data = json.loads(r.read())
-        return float(data.get("price", 0))
-    except Exception as e:
-        print(f"Warning: Could not fetch BTC price: {e}")
-        return None
+# E3 (2026-06-11): the live detector previously classified on SENTIMENT
+# (fear/greed + market-cap change) while the backtest parquet classified on
+# BTC PRICE ACTION — they routinely disagreed (2026-06-08: parquet CRASH vs
+# live NEUTRAL → entry deadlock). Both now share scripts/regime_core.py.
+sys.path.insert(0, str(ROOT / "scripts"))
+from regime_core import classify_latest  # noqa: E402
 
-def load_combined_context():
-    """Load the combined external context."""
-    try:
-        with open(EXTERNAL / "combined_context.json") as f:
-            return json.load(f)
-    except Exception:
-        return {}
+BTC_4H_FEATHER = ROOT / "freqtrade/user_data/data/binance/futures/BTC_USDT_USDT-4h-futures.feather"
 
-def classify_regime(ctx):
+
+def classify_from_price_action():
+    """Classify the current regime from local BTC 4h candles (same data and
+    rules the historical parquet uses — live == backtest by construction).
+
+    Candle freshness: download_data_daily.sh refreshes at 04:30 UTC, so the
+    last candle can lag up to ~24h. The 30d/90d horizons these rules use make
+    that lag immaterial (vs. the old sentiment rules' 24h horizon).
     """
-    Classify regime based on simple statistical rules:
-    - CRASH: FG < 25 AND BTC dominance drop > 5% OR market cap change < -5%
-    - BEAR: FG < 45 AND market cap change < -1%
-    - NEUTRAL: FG 45-55 OR market cap change between -1% and +1%
-    - BULL: FG > 55 AND market cap change > +1%
-    - EUPHORIA: FG > 70 AND market cap change > +3%
-    """
-    fg = ctx.get("fear_greed", 50)
-    market_change = ctx.get("market_cap_change_24h_pct", 0)
-    btc_dom = ctx.get("btc_dominance", 50)
+    import pandas as pd
+    df = pd.read_feather(BTC_4H_FEATHER)
+    return classify_latest(df)
 
-    if fg < 25 and market_change < -5:
-        return "CRASH", 0.95
-    elif fg < 45 and market_change < -1:
-        return "BEAR", 0.80
-    elif 45 <= fg <= 55 or (-1 <= market_change <= 1):
-        return "NEUTRAL", 0.70
-    elif fg > 55 and market_change > 1:
-        return "BULL", 0.85
-    elif fg > 70 and market_change > 3:
-        return "EUPHORIA", 0.90
-    else:
-        return "NEUTRAL", 0.50
 
 def run():
-    ctx = load_combined_context()
-    regime, confidence = classify_regime(ctx)
+    regime, confidence = classify_from_price_action()
 
     # Load previous regime from JSON if exists
     prev_regime = "UNKNOWN"
