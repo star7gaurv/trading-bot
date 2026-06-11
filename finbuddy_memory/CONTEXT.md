@@ -1,8 +1,8 @@
 # FinBuddy — Master Context
-Last updated: 2026-06-11 18:30 UTC
+Last updated: 2026-06-11 18:45 UTC
 
 ## Current Regime
-Regime: **NEUTRAL** | Confidence: 70.0% | Since: 2026-06-11
+Regime: **BEAR** | Confidence: 80.0% | Since: 2026-06-11
 
 ## Market Sentiment
 Fear & Greed: 12 (Extreme Fear)
