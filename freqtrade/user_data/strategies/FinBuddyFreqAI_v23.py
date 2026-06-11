@@ -281,6 +281,7 @@ class FinBuddyFreqAI_v23(IStrategy):
     _HISTORICAL_FUNDING_FILE         = "/freqtrade/finbuddy_memory/historical/funding_rate.parquet"
     _HISTORICAL_FUNDING_PERPAIR_FILE = "/freqtrade/finbuddy_memory/historical/funding_perpair.parquet"
     _HISTORICAL_OI_FILE              = "/freqtrade/finbuddy_memory/historical/open_interest.parquet"
+    _HISTORICAL_OI_PERPAIR_FILE      = "/freqtrade/finbuddy_memory/historical/oi_perpair.parquet"
     _COMBINED_CTX_FILE = "/freqtrade/user_data/data/external/combined_context.json"
     _PAIR_REGIME_FILE  = "/freqtrade/finbuddy_memory/regimes/pair_regime_stats.json"
 
@@ -290,6 +291,7 @@ class FinBuddyFreqAI_v23(IStrategy):
     _historical_funding_df         = None
     _historical_funding_perpair    = None   # dict[symbol -> DataFrame] after first load
     _historical_oi_df              = None
+    _historical_oi_perpair         = None   # dict[symbol -> DataFrame] after first load
     # Pair-regime block cache: refreshed when JSON mtime changes (every 30 min via cron).
     _pair_regime_blocks       = None    # dict[pair] -> set[regime]
     _pair_regime_blocks_mtime = 0.0
@@ -644,6 +646,49 @@ class FinBuddyFreqAI_v23(IStrategy):
             "pair_funding_rate":      pd.Series(merged["funding_rate"].fillna(0.0).values,      index=dataframe.index),
             "pair_funding_rate_z30d": pd.Series(merged["funding_rate_z30d"].fillna(0.0).values, index=dataframe.index),
             "pair_funding_rate_chg":  pd.Series(merged["funding_rate_chg"].fillna(0.0).values,  index=dataframe.index),
+        }
+
+    def _load_historical_oi_perpair(self) -> dict:
+        """Load per-pair OI history as dict[symbol -> DataFrame]. Cached at class level."""
+        if FinBuddyFreqAI_v23._historical_oi_perpair is not None:
+            return FinBuddyFreqAI_v23._historical_oi_perpair
+        try:
+            df = pd.read_parquet(self._HISTORICAL_OI_PERPAIR_FILE)
+            df["date"] = pd.to_datetime(df["date"], utc=True).astype("datetime64[ns, UTC]")
+            by_sym = {
+                sym: g.sort_values("date").reset_index(drop=True)
+                for sym, g in df.groupby("symbol")
+            }
+            FinBuddyFreqAI_v23._historical_oi_perpair = by_sym
+            logger.info(f"[OI-perpair] Loaded {len(df)} rows for {len(by_sym)} symbols")
+            return by_sym
+        except Exception as e:
+            logger.warning(f"[OI-perpair] load failed ({e}) — features default to 0.0")
+            FinBuddyFreqAI_v23._historical_oi_perpair = {}
+            return {}
+
+    def _get_pair_oi_series(self, dataframe: "DataFrame", pair: str) -> dict:
+        """Per-candle OI z30d/chg for the given pair (C5, 2026-06-11).
+
+        Same merge_asof(backward) pattern as _get_pair_funding_series.
+        Defaults to 0.0 when the symbol is missing from the parquet.
+        """
+        n = len(dataframe)
+        sym = pair.replace("/", "").replace(":USDT", "")
+        hist = self._load_historical_oi_perpair().get(sym)
+        if hist is None or hist.empty:
+            return {
+                "pair_oi_z30d": pd.Series([0.0] * n, index=dataframe.index),
+                "pair_oi_chg":  pd.Series([0.0] * n, index=dataframe.index),
+            }
+        dates = pd.to_datetime(dataframe["date"], utc=True).astype("datetime64[ns, UTC]")
+        df_join = pd.DataFrame({"date": dates}).sort_values("date").reset_index()
+        merged = pd.merge_asof(df_join, hist[["date", "oi_z30d", "oi_chg"]],
+                               on="date", direction="backward")
+        merged = merged.sort_values("index").reset_index(drop=True)
+        return {
+            "pair_oi_z30d": pd.Series(merged["oi_z30d"].fillna(0.0).values, index=dataframe.index),
+            "pair_oi_chg":  pd.Series(merged["oi_chg"].fillna(0.0).values,  index=dataframe.index),
         }
 
     def _load_historical_oi(self):
@@ -1096,8 +1141,13 @@ class FinBuddyFreqAI_v23(IStrategy):
     ) -> DataFrame:
         dataframe["%-rsi-period"] = ta.RSI(dataframe, timeperiod=period)
         dataframe["%-adx-period"] = ta.ADX(dataframe, timeperiod=period)
-        dataframe["%-ema-period"] = ta.EMA(dataframe, timeperiod=period)
-        dataframe["%-sma-period"] = ta.SMA(dataframe, timeperiod=period)
+        # B1 pruning (2026-06-11): raw EMA/SMA are price-level (non-stationary)
+        # features — every one ranked in the dead tail of the importance report
+        # (finbuddy_memory/analytics/feature_importance.json). Env-gated: brain
+        # validates FREQAI_PRUNE_INDICATORS=1 before the live identifier bump.
+        if os.environ.get("FREQAI_PRUNE_INDICATORS", "0") != "1":
+            dataframe["%-ema-period"] = ta.EMA(dataframe, timeperiod=period)
+            dataframe["%-sma-period"] = ta.SMA(dataframe, timeperiod=period)
 
         bb = ta.BBANDS(dataframe, timeperiod=period)
         dataframe["%-bb_width-period"] = (
@@ -1192,6 +1242,15 @@ class FinBuddyFreqAI_v23(IStrategy):
             dataframe["%-btc_oi_z30d"]  = oi["btc_oi_z30d"]
             dataframe["%-btc_oi_chg"]   = oi["btc_oi_chg"]
             dataframe["%-btc_ls_ratio"] = oi["btc_ls_ratio"]  # L/S positioning ratio; high=crowded longs
+
+            # Per-pair Open Interest (C5, 2026-06-11). Env-gated: enabling changes
+            # the feature set → requires identifier bump + pkl flush on the live
+            # bot (feature-added recovery recipe). Brain validates with
+            # FREQAI_PERPAIR_OI=1 before any live flip.
+            if os.environ.get("FREQAI_PERPAIR_OI", "0") == "1":
+                pair_oi = self._get_pair_oi_series(dataframe, metadata.get("pair", ""))
+                dataframe["%-pair_oi_z30d"] = pair_oi["pair_oi_z30d"]
+                dataframe["%-pair_oi_chg"]  = pair_oi["pair_oi_chg"]
         else:
             logger.info(f"[FeatureSet] mode={self.FEATURE_SET} — skipping fear_greed/btc_strength/funding")
 

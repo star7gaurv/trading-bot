@@ -375,6 +375,11 @@ def _build_env_args(cfg: dict, identifier: str) -> list[str]:
             env_args += ["-e", f"FREQAI_ENTRY_QUANTILE={cfg['entry_quantile']}"]
         if cfg.get("bounce_guard") is not None:
             env_args += ["-e", f"FREQAI_BOUNCE_GUARD={'1' if cfg['bounce_guard'] else '0'}"]
+        # B1/C5 feature-set variants (2026-06-11)
+        if cfg.get("prune_indicators") is not None:
+            env_args += ["-e", f"FREQAI_PRUNE_INDICATORS={'1' if cfg['prune_indicators'] else '0'}"]
+        if cfg.get("perpair_oi") is not None:
+            env_args += ["-e", f"FREQAI_PERPAIR_OI={'1' if cfg['perpair_oi'] else '0'}"]
     return env_args
 
 

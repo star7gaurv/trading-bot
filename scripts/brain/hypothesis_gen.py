@@ -206,6 +206,49 @@ PERTURB_V22 = [
 ]
 
 
+# B2 (2026-06-11): exhausted-family gate. After this many unsuccessful runs of
+# the same (window, model-shape) family, param-only tweaks are refused there.
+EXHAUSTED_FAMILY_LIMIT = 40
+
+# Fields that change WHAT the model learns (vs. how the strategy trades it).
+# Two configs differing only outside this set are the same "family".
+_MODEL_SHAPE_KEYS = (
+    "arch", "strategy", "freqaimodel", "timeframe", "feature_set",
+    "label_period_candles", "filter_di", "filter_svm",
+    "prune_indicators", "perpair_oi", "target_version",
+    # entry_mode is mechanism, not parameter: quantile entries are a new search
+    # space and get their own failure budget separate from absolute thresholds.
+    "entry_mode",
+)
+
+
+def _family_key(cfg: dict, window: str) -> tuple:
+    return (window,) + tuple(repr(cfg.get(k)) for k in _MODEL_SHAPE_KEYS)
+
+
+def _notify_family_exhausted(cfg: dict, window: str, n_failures: int) -> None:
+    """One-line Telegram when a search family is declared exhausted (best-effort)."""
+    try:
+        import sys as _sys
+        from pathlib import Path as _Path
+        _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
+        from lib.telegram_template import Subsystem, Status, send
+        send(
+            Subsystem.BRAIN_CYCLE, Status.WARN,
+            f"Search family exhausted on {window}",
+            fields={
+                "Failures": n_failures,
+                "Timeframe": cfg.get("timeframe"),
+                "Feature set": cfg.get("feature_set"),
+            },
+            context="Param-only configs refused here. New experiments need a "
+                    "changed feature set, strategy, or timeframe.",
+            silent=True,
+        )
+    except Exception:
+        pass
+
+
 # Valid threshold scale for the z-score era (_GLOBAL_STD=0.30, fixed 2026-06-08).
 # Configs outside these bounds are from the retired raw-%/0.95-std scale and must
 # neither be queued nor used as parents for guided/bayes exploration.
@@ -869,6 +912,24 @@ def generate_and_queue(safe_n: int = 6, aggressive_n: int = 6, windows: list[str
         for r in _rq()
     }
 
+    # B2 (2026-06-11): refuse param-only experiments on exhausted families.
+    # A "family" is (window, model-shaping fields). Once a family has accumulated
+    # EXHAUSTED_FAMILY_LIMIT unsuccessful runs, more threshold/geometry tweaks
+    # inside it are statistically pointless — new experiments there require a
+    # changed feature set / strategy / timeframe. (420+ absolute-threshold
+    # experiments found nothing; this encodes that lesson.)
+    fail_counts: dict[tuple, int] = {}
+    for r in read_log():
+        st = r.get("status")
+        unsuccessful = st in ("scout_failed", "failed") or (
+            st == "completed"
+            and (r.get("metrics", {}).get("profit_pct") or 0) <= 0
+        )
+        if unsuccessful:
+            key = _family_key(r.get("config", {}), r.get("window", ""))
+            fail_counts[key] = fail_counts.get(key, 0) + 1
+    exhausted_notified: set[tuple] = set()
+
     queued = 0
     for v in all_variants:
         cfg = _stamp_target_version(v["config"])
@@ -877,6 +938,15 @@ def generate_and_queue(safe_n: int = 6, aggressive_n: int = 6, windows: list[str
                 continue
             if (_ch(cfg), win_name) in already_queued:
                 continue  # Fix 13: skip already-queued (config, window) pairs
+            fam = _family_key(cfg, win_name)
+            if fail_counts.get(fam, 0) >= EXHAUSTED_FAMILY_LIMIT:
+                if fam not in exhausted_notified:
+                    exhausted_notified.add(fam)
+                    print(f"[brain] family EXHAUSTED ({fail_counts[fam]} failures) on "
+                          f"{win_name}: tf={cfg.get('timeframe')} feat={cfg.get('feature_set')} "
+                          f"— refusing more param-only configs")
+                    _notify_family_exhausted(cfg, win_name, fail_counts[fam])
+                continue
             queue_hypothesis(
                 config=cfg,
                 band=v["band"],
