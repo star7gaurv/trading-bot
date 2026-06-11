@@ -214,6 +214,18 @@ def main() -> None:
         fields["Current Strategy"] = scoped_line
     fields["Lifetime"] = f"{total_trades} trades · {'%+.2f' % total_pnl} USDT"
 
+    # Funding farm paper ledger (Phase D, 2026-06-11) — best-effort line
+    try:
+        sys.path.insert(0, str(Path(__file__).parent / "funding_farm"))
+        from paper_executor import summary as ff_summary
+        ff = ff_summary()
+        fields["Funding Farm (paper)"] = (
+            f"7d {'%+.2f' % ff['net_7d']} USDT · {ff['open_positions']} open · "
+            f"lifetime {'%+.2f' % ff['realized_total']} USDT"
+        )
+    except Exception:
+        pass
+
     ok = tg_send(
         subsystem=Subsystem.DIGEST,
         status=Status.INFO,
