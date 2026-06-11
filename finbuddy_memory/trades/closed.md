@@ -365,3 +365,5 @@
 | 2026-06-11 03:47:02 | NEAR/USDT:USDT | SHORT | 2h01m | -1.28% | -1.05 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_sh |
 | 2026-06-11 12:30:26 | APT/USDT:USDT | SHORT | 0h15m | +1.02% | +0.74 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
 | 2026-06-11 13:19:56 | APT/USDT:USDT | SHORT | 0h34m | -1.38% | -1.00 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
+| 2026-06-11 13:55:20 | APT/USDT:USDT | SHORT | 0h24m | -1.95% | -1.41 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
+| 2026-06-11 13:54:00 | ETH/USDT:USDT | SHORT | 0h08m | -0.79% | -0.56 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
