@@ -360,3 +360,4 @@
 | 2026-06-10 21:05:08 | NEAR/USDT:USDT | SHORT | 2h04m | +5.63% | +4.06 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
 | 2026-06-10 23:15:22 | NEAR/USDT:USDT | SHORT | 1h30m | +0.77% | +0.62 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
 | 2026-06-11 00:17:48 | ENA/USDT:USDT | SHORT | 0h47m | -3.05% | -2.52 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_sh |
+| 2026-06-11 01:39:48 | LTC/USDT:USDT | SHORT | 2h09m | -1.15% | -0.95 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
