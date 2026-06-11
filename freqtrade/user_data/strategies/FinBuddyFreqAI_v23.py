@@ -1337,6 +1337,17 @@ class FinBuddyFreqAI_v23(IStrategy):
         combined_long  = (long_mult_series  * wr_adj).clip(upper=2.0)
         combined_short = (short_mult_series * wr_adj).clip(upper=2.0)
 
+        dataframe["regime"] = regime_series
+
+        # C1 (2026-06-11): quantile entry mode — threshold is a rolling quantile of
+        # the pair's own centered-prediction distribution, so it is attainable BY
+        # CONSTRUCTION. The "mathematically unreachable threshold" bug class
+        # (4 deadlocks: LT=3.25 promo 05-28, _GLOBAL_STD + std_factor 06-08 x2,
+        # stale-regime 06-08) cannot exist in this mode. Default remains "absolute"
+        # (legacy path below) until brain validation promotes quantile mode.
+        if os.environ.get("FREQAI_ENTRY_MODE", "absolute").lower() == "quantile":
+            return self._quantile_thresholds(dataframe, combined_long, combined_short)
+
         # Per-pair prediction percentile thresholds (Fix 4, 2026-05-26).
         # Each pair has a different prediction std from the model (ZEC std≈3.42,
         # BTC std≈0.40). A global threshold is too tight for volatile pairs
@@ -1385,7 +1396,6 @@ class FinBuddyFreqAI_v23(IStrategy):
         # not more noise. Only degenerate pairs (pred_std << 0.30) should be penalized (floor=0.5).
         std_factor = (pair_pred_std / _GLOBAL_STD).clip(lower=0.5, upper=1.0)
 
-        dataframe["regime"] = regime_series
         dataframe["dynamic_long_threshold"]  = base_long  * combined_long  * std_factor
         dataframe["dynamic_short_threshold"] = -(base_short * combined_short * std_factor)
 
@@ -1399,6 +1409,55 @@ class FinBuddyFreqAI_v23(IStrategy):
         MAX_EFFECTIVE_THRESHOLD = float(os.getenv("FREQAI_MAX_EFFECTIVE_THRESHOLD", "2.5"))
         dataframe["dynamic_long_threshold"]  = dataframe["dynamic_long_threshold"].clip(upper=MAX_EFFECTIVE_THRESHOLD)
         dataframe["dynamic_short_threshold"] = dataframe["dynamic_short_threshold"].clip(lower=-MAX_EFFECTIVE_THRESHOLD)
+        return dataframe
+
+    def _quantile_thresholds(
+        self, dataframe: DataFrame,
+        combined_long: pd.Series, combined_short: pd.Series,
+    ) -> DataFrame:
+        """C1 (2026-06-11): quantile-based adaptive entry thresholds.
+
+        Long threshold  = rolling q-quantile of the pair's centered predictions.
+        Short threshold = rolling (1-q)-quantile (negative tail).
+        Regime x WR multiplier product shifts q by tiers (easier/normal/stricter)
+        instead of multiplying an absolute sigma value, so adverse conditions
+        tighten entries without ever making them impossible.
+
+        An absolute floor (FREQAI_ENTRY_ABS_FLOOR) keeps the system flat when the
+        prediction distribution is degenerate (quantiles near zero = no signal).
+        Window/min_periods reuse _CENTERING_WINDOW so live == backtest exactly,
+        matching the centering used in entry/exit/leverage.
+        """
+        q_base = float(os.environ.get("FREQAI_ENTRY_QUANTILE", "0.92"))
+        abs_floor = float(os.environ.get("FREQAI_ENTRY_ABS_FLOOR", "0.10"))
+        win, mp = self._CENTERING_WINDOW, self._CENTERING_MIN_PERIODS
+
+        pred = dataframe.get("&-future_return", pd.Series(0.0, index=dataframe.index))
+        centered = pred - pred.rolling(win, min_periods=mp).median()
+
+        def rq(q: float) -> pd.Series:
+            return centered.rolling(win, min_periods=mp).quantile(min(0.995, max(0.005, q)))
+
+        # Tier the multiplier product: <0.9 easier, 0.9-1.2 normal, >1.2 stricter.
+        long_thr = pd.Series(
+            np.select(
+                [combined_long < 0.9, combined_long > 1.2],
+                [rq(q_base - 0.04), rq(q_base + 0.04)],
+                default=rq(q_base),
+            ),
+            index=dataframe.index,
+        ).clip(lower=abs_floor)
+        short_thr = pd.Series(
+            np.select(
+                [combined_short < 0.9, combined_short > 1.2],
+                [rq(1 - q_base + 0.04), rq(1 - q_base - 0.04)],
+                default=rq(1 - q_base),
+            ),
+            index=dataframe.index,
+        ).clip(upper=-abs_floor)
+
+        dataframe["dynamic_long_threshold"] = long_thr
+        dataframe["dynamic_short_threshold"] = short_thr
         return dataframe
 
     # ------------------------------------------------------------------ #
@@ -1492,6 +1551,19 @@ class FinBuddyFreqAI_v23(IStrategy):
         is_long_regime  = dataframe["regime"].isin(["NEUTRAL", "BULL", "EUPHORIA"])
         is_short_regime = dataframe["regime"].isin(["NEUTRAL", "BEAR", "CRASH"])
 
+        # C3 bounce guard (2026-06-11, env-gated, default off until brain-validated):
+        # block entries against a stretched ~1h-horizon move. RSI(56) on 15m
+        # approximates RSI(14) on 1h without informative-pair plumbing.
+        # Motivation: 2026-06-11 bounce day — model kept shorting oversold pairs
+        # into a +1.9% BTC recovery, 13 shorts at 15% WR (-11.28 USDT).
+        if os.environ.get("FREQAI_BOUNCE_GUARD", "0") == "1":
+            rsi_1h_proxy = ta.RSI(dataframe, timeperiod=56)
+            bounce_ok_long = rsi_1h_proxy < 70    # don't long into overbought
+            bounce_ok_short = rsi_1h_proxy > 35   # don't short into oversold
+        else:
+            bounce_ok_long = pd.Series(True, index=dataframe.index)
+            bounce_ok_short = pd.Series(True, index=dataframe.index)
+
         # Long: price above EMA-50 (uptrend context), not overbought, not at BB top
         ta_long = (
             (dataframe["close"] > dataframe["ema_50"])
@@ -1499,6 +1571,7 @@ class FinBuddyFreqAI_v23(IStrategy):
             & (dataframe["bb_pct"] < 0.90)
             & (dataframe["volume"] > 0)
             & is_long_regime
+            & bounce_ok_long
         )
         # OB veto REMOVED (2026-05-22): ob_long_ok = close < bearish_ob * 0.99 was
         # blocking 100% of longs. In ranging/trending markets close is always near or
@@ -1542,6 +1615,7 @@ class FinBuddyFreqAI_v23(IStrategy):
             & (dataframe["bb_pct"] > 0.10)
             & is_short_regime
             & (dataframe["volume"] > 0)
+            & bounce_ok_short
         )
         # OB veto REMOVED (2026-05-22): ob_short_ok = close > bullish_ob * 1.01 was
         # blocking 95% of shorts. Same root cause as ob_long_ok — price trapped in

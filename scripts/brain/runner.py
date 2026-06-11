@@ -367,6 +367,14 @@ def _build_env_args(cfg: dict, identifier: str) -> list[str]:
             "-e", f"FREQAI_FILTER_DI={'true' if cfg.get('filter_di', True) else 'false'}",
             "-e", f"FREQAI_FILTER_SVM={'true' if cfg.get('filter_svm', True) else 'false'}",
         ]
+        # C1/C3 entry-overhaul params (2026-06-11) — only passed when present so
+        # existing configs keep their hashes and default behavior (absolute mode).
+        if cfg.get("entry_mode"):
+            env_args += ["-e", f"FREQAI_ENTRY_MODE={cfg['entry_mode']}"]
+        if cfg.get("entry_quantile") is not None:
+            env_args += ["-e", f"FREQAI_ENTRY_QUANTILE={cfg['entry_quantile']}"]
+        if cfg.get("bounce_guard") is not None:
+            env_args += ["-e", f"FREQAI_BOUNCE_GUARD={'1' if cfg['bounce_guard'] else '0'}"]
     return env_args
 
 
