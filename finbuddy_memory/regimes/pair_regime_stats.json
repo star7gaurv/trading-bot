@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-11T16:00:01.462723+00:00",
+  "updated": "2026-06-11T16:30:01.974071+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "ZEC/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 11,
-        "wins": 4,
-        "losses": 7,
-        "wr": 0.3636,
-        "pf": 0.445,
-        "profit_usdt": -8.57,
-        "avg_profit_pct": -0.681
-      },
-      "BEAR": {
-        "n": 4,
-        "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 5.712,
-        "profit_usdt": 9.66,
-        "avg_profit_pct": 2.21
-      }
-    },
     "DOGE/USDT:USDT": {
       "NEUTRAL": {
         "n": 3,
@@ -66,6 +46,26 @@
         "pf": 1.097,
         "profit_usdt": 0.09,
         "avg_profit_pct": 0.033
+      }
+    },
+    "ZEC/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 10,
+        "wins": 3,
+        "losses": 7,
+        "wr": 0.3,
+        "pf": 0.335,
+        "profit_usdt": -10.26,
+        "avg_profit_pct": -0.839
+      },
+      "BEAR": {
+        "n": 4,
+        "wins": 2,
+        "losses": 2,
+        "wr": 0.5,
+        "pf": 5.712,
+        "profit_usdt": 9.66,
+        "avg_profit_pct": 2.21
       }
     },
     "BTC/USDT:USDT": {
@@ -703,6 +703,14 @@
       "pf": 0.244
     },
     {
+      "pair": "ZEC/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=30% PF=0.34 n=10 profit=-10.26",
+      "n": 10,
+      "wr": 0.3,
+      "pf": 0.335
+    },
+    {
       "pair": "AAVE/USDT:USDT",
       "regime": "NEUTRAL",
       "reason": "WR=33% PF=0.07 n=6 profit=-4.20",
@@ -717,14 +725,6 @@
       "n": 6,
       "wr": 0.3333,
       "pf": 0.199
-    },
-    {
-      "pair": "ZEC/USDT:USDT",
-      "regime": "NEUTRAL",
-      "reason": "WR=36% PF=0.45 n=11 profit=-8.57",
-      "n": 11,
-      "wr": 0.3636,
-      "pf": 0.445
     }
   ]
 }
