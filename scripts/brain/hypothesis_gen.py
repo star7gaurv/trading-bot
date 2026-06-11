@@ -206,15 +206,33 @@ PERTURB_V22 = [
 ]
 
 
+# Valid threshold scale for the z-score era (_GLOBAL_STD=0.30, fixed 2026-06-08).
+# Configs outside these bounds are from the retired raw-%/0.95-std scale and must
+# neither be queued nor used as parents for guided/bayes exploration.
+LT_BOUNDS = (0.1, 0.8)
+ST_BOUNDS = (-1.0, -0.1)
+
+
+def _in_current_scale(config: dict) -> bool:
+    """True if a config's thresholds fall inside the current valid z-score scale."""
+    lt = config.get("long_threshold")
+    st = config.get("short_threshold")
+    if lt is not None and not (LT_BOUNDS[0] <= lt <= LT_BOUNDS[1]):
+        return False
+    if st is not None and not (ST_BOUNDS[0] <= st <= ST_BOUNDS[1]):
+        return False
+    return True
+
+
 def _clamp(v: dict, param: str) -> dict:
     """Clamp a perturbed param to a sane range."""
     if "threshold" == param.split("_")[-1] and param != "ml_threshold":
         if param == "short_threshold":
             # FIXED 2026-06-08: _GLOBAL_STD=0.30; max useful ST=-1.0 (effective -0.65σ in mature model)
-            v[param] = max(-1.0, min(-0.1, v[param]))
+            v[param] = max(ST_BOUNDS[0], min(ST_BOUNDS[1], v[param]))
         else:
             # FIXED 2026-06-08: max useful LT=0.8 (effective 0.52 in immature, 1.04 in mature model)
-            v[param] = max(0.1, min(0.8, v[param]))
+            v[param] = max(LT_BOUNDS[0], min(LT_BOUNDS[1], v[param]))
     elif param == "ml_threshold":
         v[param] = max(0.45, min(0.85, v[param]))
     elif param.startswith("k_"):
@@ -394,7 +412,11 @@ def _top_k_results(k: int = 3, min_trades: int = 20) -> list[dict]:
     log = [r for r in read_log()
            if r.get("status") == "completed"
            and r.get("config", {}).get("target_version") == "zscore"
-           and r.get("metrics", {}).get("trades", 0) >= min_trades]
+           and r.get("metrics", {}).get("trades", 0) >= min_trades
+           # Old-scale configs (e.g. lt=3.0/3.25 from the _GLOBAL_STD=0.95 era) must
+           # not parent children: their thresholds are unreachable on the current
+           # scale, so every derived config wastes a full 26-pair run.
+           and _in_current_scale(r.get("config", {}))]
     if not log:
         return []
     log.sort(key=lambda r: r["metrics"].get("profit_pct", -1e9), reverse=True)
@@ -522,14 +544,22 @@ def _snap(value: object, dist: object) -> object | None:
         return value if value in dist.choices else None
     if isinstance(dist, _Float):
         v = float(value)
+        # Out-of-range legacy values (e.g. lt=3.0 from the old scale) must be
+        # SKIPPED, not clamped — clamping attributed old-scale scores to the
+        # boundary value (lt=0.8), poisoning TPE's surrogate toward that region.
+        if v < dist.low - 1e-9 or v > dist.high + 1e-9:
+            return None
         if dist.step:
             lo, step = dist.low, dist.step
             snapped = round(round((v - lo) / step) * step + lo, 8)
             snapped = round(max(dist.low, min(dist.high, snapped)), 6)
             return snapped
-        return max(dist.low, min(dist.high, v))
+        return v
     if isinstance(dist, _Int):
-        return max(dist.low, min(dist.high, int(value)))
+        i = int(value)
+        if i < dist.low or i > dist.high:
+            return None
+        return i
     return None
 
 

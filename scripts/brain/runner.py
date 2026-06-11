@@ -495,9 +495,7 @@ def _run_scout(h: dict) -> tuple[bool, dict]:
     Uses the same config and env vars as the full run — only the pair list shrinks.
     Returns (passed, scout_metrics).
 
-    Pass gate: profit_pct > 0 AND sharpe > 0 AND trades >= min_trades.
-    min_trades = 2 for high-threshold configs (lt >= 2.0) since 6/26 pairs naturally
-    generate few signals; min_trades = 5 for normal configs.
+    Pass gate: profit_pct > 0 AND sharpe > 0 AND trades >= 5.
     Fail means the hypothesis is very unlikely to pass the full 26-pair run.
 
     Note: train_period_days=90 requires the full 3-month timerange — we can't shorten
@@ -520,23 +518,15 @@ def _run_scout(h: dict) -> tuple[bool, dict]:
 
     trades = _run_hypothesis_group(scout_h, filtered_scout, "scout", timeout_s=SCOUT_TIMEOUT_S)
 
-    lt = h.get("config", {}).get("long_threshold", 1.5)
-
     if not trades:
-        # High-threshold configs (lt >= 2.5) concentrate signals in non-scout pairs.
-        # The 6 scout pairs are calibrated for regime (e.g. BTC/ETH/SOL/XRP for BEAR)
-        # but at lt=3.25+ the model's strongest signals often live in other alts.
-        # Result: 0 trades on scout but 15-30 trades on the full 26-pair run.
-        # Bypass the scout → pass through to full run so these are not silently rejected.
-        if lt >= 2.5:
-            print(f"[brain] scout 0-trade bypass (lt={lt} >= 2.5) — passing to full run")
-            return True, {}
+        # 0-trade bypass for lt >= 2.5 REMOVED 2026-06-11: that threshold scale is
+        # extinct (valid LT is now 0.1-0.8 after the _GLOBAL_STD=0.30 fix). The
+        # bypass only let stale old-scale configs skip scouting into full 26-pair
+        # runs that produced statistically meaningless few-trade "winners".
         return False, {"trades": 0, "profit_pct": 0.0, "sharpe": 0.0}
 
     m = _compute_metrics_from_raw_trades(trades)
-    # High-threshold configs naturally generate fewer trades on 6 scout pairs.
-    # At lt >= 2.0: require trades >= 2 instead of 5.
-    min_trades = 2 if lt >= 2.0 else 5
+    min_trades = 5
     passed = (
         m.get("profit_pct", -1) > 0
         and m.get("sharpe", -1) > 0

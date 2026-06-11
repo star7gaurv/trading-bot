@@ -50,6 +50,10 @@ services:
       - FREQAI_LEV_HIGH=${FREQAI_LEV_HIGH:-3.0}
       # Circuit breaker — stop new trades when daily loss exceeds limit (added 2026-05-23)
       - FREQAI_DAILY_LOSS_LIMIT=${FREQAI_DAILY_LOSS_LIMIT:-10}
+      # Tier 2: flatten all open positions at limit × mult (added 2026-06-11)
+      - FREQAI_DAILY_FLATTEN_MULT=${FREQAI_DAILY_FLATTEN_MULT:-1.5}
+      # Re-entry cooldown after stop-loss, in candles (added 2026-06-11)
+      - FREQAI_REENTRY_COOLDOWN_CANDLES=${FREQAI_REENTRY_COOLDOWN_CANDLES:-8}
       # Time-limit exit: candle count = model's label_period_candles horizon (added 2026-05-28)
       - FREQAI_LABEL_CANDLES=${FREQAI_LABEL_CANDLES:-12}
       - FREQTRADE__FREQAI__IDENTIFIER=${FREQTRADE__FREQAI__IDENTIFIER:-}

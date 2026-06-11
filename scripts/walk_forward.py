@@ -114,6 +114,11 @@ def _read_env_vars() -> dict[str, str]:
             result[key] = val
     # Force neutral WR so _compute_dynamic_thresholds() applies no WR penalty in WF
     result["FINBUDDY_RECENT_WR"] = "0.55"
+    # Disable the per-pair-per-regime gate, same as brain runner.py: WF folds must
+    # measure the raw signal, not the live bot's accumulated pair_regime_stats.json
+    # (which is mounted read-only into the container and would otherwise leak
+    # live-trading state into fold results).
+    result["FREQAI_DISABLE_PAIR_REGIME_GATE"] = "1"
     return result
 
 

@@ -1,7 +1,7 @@
 # pragma pylint: disable=missing-docstring, invalid-name, pointless-string-statement
 # flake8: noqa: F401
 from functools import reduce
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 import json
@@ -210,8 +210,49 @@ class FinBuddyFreqAI_v23(IStrategy):
             return initial_stop
         return None
 
+    # Cache for _today_closed_pnl: (epoch_ts, value). custom_exit runs per open
+    # trade per iteration — without the cache every call re-sums all closed trades.
+    _today_pnl_cache = (0.0, 0.0)
+
+    def _today_closed_pnl(self) -> float:
+        """Sum of today's (UTC, wall-clock) closed-trade P&L, cached 60s.
+
+        Wall-clock semantics match the original circuit breaker: in backtests
+        historical close dates never fall on the real today, so both breaker
+        tiers are inert there — brain/WF results are unaffected by design.
+        """
+        import time as _time
+        now_ts = _time.time()
+        ts, val = FinBuddyFreqAI_v23._today_pnl_cache
+        if now_ts - ts < 60:
+            return val
+        from datetime import timezone as _tz
+        today = datetime.now(_tz.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+        val = sum(
+            (t.close_profit_abs or 0.0)
+            for t in Trade.get_trades_proxy(is_open=False)
+            if t.close_date_utc and t.close_date_utc >= today
+        )
+        FinBuddyFreqAI_v23._today_pnl_cache = (now_ts, val)
+        return val
+
     def custom_exit(self, pair: str, trade: "Trade", current_time: datetime,
                     current_rate: float, current_profit: float, **kwargs):
+        # Daily flatten tier (2026-06-11): the entry-block breaker caps NEW trades
+        # at -limit, but positions already open can ride to their own stops
+        # (2026-06-11: blocked at -10, day still ended -11.28; theoretical worst
+        # ~-21 with 8 open). If the day reaches -limit × FREQAI_DAILY_FLATTEN_MULT
+        # (default 1.5 → -15), close everything.
+        _daily_limit = float(os.environ.get("FREQAI_DAILY_LOSS_LIMIT", "10"))
+        _flatten_mult = float(os.environ.get("FREQAI_DAILY_FLATTEN_MULT", "1.5"))
+        if _flatten_mult > 0 and self._today_closed_pnl() < -(_daily_limit * _flatten_mult):
+            logger.warning(
+                f"[CircuitBreaker] Daily flatten: today P&L "
+                f"{self._today_closed_pnl():.2f} < -{_daily_limit * _flatten_mult:.1f}. "
+                f"Force-exiting {pair}."
+            )
+            return "daily_flatten"
+
         # Time-limit exit: close trade after label_period_candles candles (timeframe-aware).
         # config.json label_period_candles=12 → 3h on 15m TF. Holding beyond the model's
         # prediction horizon is undefined territory. FREQAI_LABEL_CANDLES env var lets
@@ -716,14 +757,9 @@ class FinBuddyFreqAI_v23(IStrategy):
         # Daily circuit breaker (2026-05-23): block new trades if today's closed P&L
         # has already lost more than FREQAI_DAILY_LOSS_LIMIT USDT (default 10).
         # Protects against runaway loss days like May 14 (-26.53 USDT) and May 21 (-14.44 USDT).
+        # Tier 2 (flatten at limit × FREQAI_DAILY_FLATTEN_MULT) lives in custom_exit.
         _daily_limit = float(os.environ.get("FREQAI_DAILY_LOSS_LIMIT", "10"))
-        from datetime import datetime, timezone as _tz
-        _today_utc = datetime.now(_tz.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-        _today_pnl = sum(
-            (t.close_profit_abs or 0.0)
-            for t in Trade.get_trades_proxy(is_open=False)
-            if t.close_date_utc and t.close_date_utc >= _today_utc
-        )
+        _today_pnl = self._today_closed_pnl()
         if _today_pnl < -_daily_limit:
             logger.warning(
                 f"[CircuitBreaker] Today P&L = {_today_pnl:.2f} USDT "
@@ -970,11 +1006,34 @@ class FinBuddyFreqAI_v23(IStrategy):
         **kwargs,
     ) -> bool:
         # Gate order (cheapest + most-often-blocking first — Bug IV fix 2026-05-20):
+        #   0) re-entry cooldown   (local DB query, ~ms)
         #   1) cluster cap         (in-memory list scan, ~µs)
         #   2) macro fear/greed    (file read, ~ms)
         #   3) funding-rate guard  (HTTP/cache read, ~10–500 ms)
         # Previously funding-rate ran before cluster cap, making wasted Binance
         # HTTP calls every time a cluster-full pair tried to enter.
+
+        # 0. Re-entry cooldown after stop-loss (2026-06-11): a (pair, side) that
+        # just stopped out may not re-enter while the prediction is still pinned
+        # past the entry cutoff. Counter-trend days churn otherwise — 2026-06-11
+        # bounce: APT shorted 3x, ADA 2x, paying the stop-loss each time.
+        cooldown_candles = int(os.environ.get("FREQAI_REENTRY_COOLDOWN_CANDLES", "8"))
+        if cooldown_candles > 0:
+            cutoff = current_time - timedelta(
+                seconds=timeframe_to_seconds(self.timeframe) * cooldown_candles
+            )
+            for t in Trade.get_trades_proxy(pair=pair, is_open=False):
+                if (
+                    t.close_date_utc
+                    and t.close_date_utc >= cutoff
+                    and t.is_short == (side == "short")
+                    and (t.exit_reason or "") == "stop_loss"
+                ):
+                    logger.info(
+                        f"[ReentryCooldown] Blocking {side} on {pair}: stop_loss "
+                        f"exit at {t.close_date_utc} within {cooldown_candles}-candle cooldown."
+                    )
+                    return False
 
         # 1. Correlation cluster cap
         cluster = self._PAIR_CLUSTER.get(pair, "ALTCOIN")
