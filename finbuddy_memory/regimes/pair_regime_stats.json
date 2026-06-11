@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-11T14:00:01.828145+00:00",
+  "updated": "2026-06-11T14:30:01.203617+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "ETH/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 3,
-        "wins": 2,
-        "losses": 1,
-        "wr": 0.6667,
-        "pf": 0.288,
-        "profit_usdt": -3.46,
-        "avg_profit_pct": -0.593
-      },
-      "BEAR": {
-        "n": 3,
-        "wins": 1,
-        "losses": 2,
-        "wr": 0.3333,
-        "pf": 1.097,
-        "profit_usdt": 0.09,
-        "avg_profit_pct": 0.033
-      }
-    },
     "ZEC/USDT:USDT": {
       "NEUTRAL": {
         "n": 11,
@@ -66,6 +46,26 @@
         "pf": 1.432,
         "profit_usdt": 0.32,
         "avg_profit_pct": 0.235
+      }
+    },
+    "ETH/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 3,
+        "wins": 1,
+        "losses": 2,
+        "wr": 0.3333,
+        "pf": 0.026,
+        "profit_usdt": -5.28,
+        "avg_profit_pct": -1.08
+      },
+      "BEAR": {
+        "n": 3,
+        "wins": 1,
+        "losses": 2,
+        "wr": 0.3333,
+        "pf": 1.097,
+        "profit_usdt": 0.09,
+        "avg_profit_pct": 0.033
       }
     },
     "BTC/USDT:USDT": {
@@ -430,13 +430,13 @@
     },
     "APT/USDT:USDT": {
       "NEUTRAL": {
-        "n": 16,
+        "n": 17,
         "wins": 6,
-        "losses": 10,
-        "wr": 0.375,
-        "pf": 1.482,
-        "profit_usdt": 3.44,
-        "avg_profit_pct": 0.218
+        "losses": 11,
+        "wr": 0.3529,
+        "pf": 1.237,
+        "profit_usdt": 2.03,
+        "avg_profit_pct": 0.091
       },
       "BEAR": {
         "n": 5,
