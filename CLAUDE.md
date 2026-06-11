@@ -405,6 +405,26 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 
 > Full session history lives in `finbuddy_memory/FINBUDDY_PROJECT_MEMORY.md`. Only the most recent session is kept here.
 
+### June 11, 2026 — God-Mode Overhaul: Phases A–E shipped (commits `ec23aa45`…`29f96efc`)
+
+**Context:** Deep WF (6 folds, 9,164 trades, post-centering) FAILED every fold (PF 0.44–0.84). Measured: OOS IC=0.054 (real, alt-concentrated, ~0 on BTC/ETH); exits earn (+256 @ 87.5% WR), entries bleed (38% of trades hit full SL); live WR 39.1% = the 40% random baseline of K_TP=3/K_SL=2 geometry. Verdict: entry signal too weak for absolute thresholds. Freeze ended early — measurement complete.
+
+**Phase A (defects, LIVE):** old-scale parents (lt≥2.5) filtered from guided breeding + Optuna `_snap` now skips out-of-range (was clamping lt=3.0 scores onto lt=0.8 — poisoned TPE); scout 0-trade bypass removed; queue pruned (55 stale); **re-entry cooldown** `FREQAI_REENTRY_COOLDOWN_CANDLES=8` (blocks same-pair-side re-entry after stop_loss); **tiered circuit breaker** `FREQAI_DAILY_FLATTEN_MULT=1.5` (custom_exit flattens all at −15); WF folds now set `FREQAI_DISABLE_PAIR_REGIME_GATE=1`.
+
+**Measurement layer (LIVE):** `ic_monitor.py` + `feature_importance_report.py` weekly crons (Mon 06:30/06:45) → `finbuddy_memory/analytics/`. Latest models: **1,844 features, 1,286 dead**. `BaselineEMACross_v1.py` (EMA20/50 entries + identical v23 exits) queued as benchmark with `skip_scout` + `target_version=baseline`.
+
+**Phases B/C (env-gated, default OFF, brain validating):** `FREQAI_ENTRY_MODE=quantile` (rolling-quantile thresholds of own centered preds — unreachable-threshold bug class structurally impossible); `FREQAI_PRUNE_INDICATORS=1` (drops EMA/SMA from expand_all) + `v23_regression_15m_pruned_config.json` (shifted_candles 0, periods [10,50]); `FREQAI_BOUNCE_GUARD=1` (RSI56 guard); `FREQAI_PERPAIR_OI=1` (%-pair_oi_z30d/chg, backfill running); `FREQAI_TREND_HORIZON=1` (%-trend_horizon from regime parquet). ~20 validation experiments queued on bull_2025Q4+bear_2026Q1. **Apply live only after brain PASS → identifier bump + pkl flush + `up -d`.**
+
+**Phase D (LIVE, paper):** funding-farm module — hourly scanner (cron :05) + paper executor (virtual 500 USDT, cash-and-carry, honest fees, basis drift unmodeled) → `finbuddy_memory/funding_farm/ledger.jsonl`; daily-digest line. ≥1 month paper before any real-execution discussion.
+
+**Phase E (LIVE):** `scripts/regime_core.py` — both regime detectors now share price-action rules (live one used SENTIMENT before — root cause of the June 8 disagreement; neither was ever an HMM). **current.json flipped NEUTRAL→BEAR** on unification (the parquet was right). `llm_hypothesis.py` nightly 02:30 — LLM proposes experiments (sanitized, auto-queued) + features (Telegram only, never auto-applied); first run queued 6 + proposed 3. `download_data_daily.sh` full-backfills newly whitelisted pairs. B2: exhausted-family gate (≥40 fails on a (window, model-shape) → param-only configs refused; legacy 15m family already exhausted on all 5 windows).
+
+**Bug found in passing:** per-pair funding cron was missing `cd` → **never ran since 2026-06-04** → `%-pair_funding_*` features all-zeros in every model since. Cron fixed, parquet built (139,852 rows, 26 symbols, 2019→now). Zero-trained features have no splits → no serving skew until the planned retrain.
+
+**⚠️ Cron rule:** every crontab entry MUST `cd /home/ubuntu/var/www/html/trade` first or use absolute script paths — silent-failure pattern (funding_perpair was dead for a week).
+
+**What to watch:** baseline benchmark + ~20 validation experiments complete over ~2–3 days → apply B+C live if PASS (see task runbook). Daily WF 22:00 UTC. Funding-farm first paper position. E2 (LLM confirm gate) deferred until C1 lands live.
+
 ### May 26, 2026 — 5 System Improvements (commit `7a65b56`)
 1. **Daily WF `--cpu-shares 512`**: `walkforward_daily.sh` now passes `--cpu-shares 512` to docker containers. Daily WF (medium priority) yields to live bot under contention. Deep WF uses 256 (lower priority).
 2. **Watchdog CPU load alert**: Added check #5 to `watchdog.py` — CRITICAL alert when `load >= 6.0` (1.5× cores), WARN at `>= 4.0`. Runs via existing 30m cron. Today's 7.79 load would have fired ~5h earlier.
