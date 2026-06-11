@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-11T17:00:02.049174+00:00",
+  "updated": "2026-06-11T17:30:01.240079+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "DOGE/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 3,
-        "wins": 1,
-        "losses": 2,
-        "wr": 0.3333,
-        "pf": 0.19,
-        "profit_usdt": -2.68,
-        "avg_profit_pct": -0.613
-      },
-      "BEAR": {
-        "n": 2,
-        "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 1.432,
-        "profit_usdt": 0.32,
-        "avg_profit_pct": 0.235
-      }
-    },
     "ETH/USDT:USDT": {
       "NEUTRAL": {
         "n": 3,
@@ -286,6 +266,26 @@
         "pf": 0.734,
         "profit_usdt": -0.67,
         "avg_profit_pct": -0.497
+      }
+    },
+    "DOGE/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 0,
+        "losses": 2,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -3.31,
+        "avg_profit_pct": -1.085
+      },
+      "BEAR": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 1.432,
+        "profit_usdt": 0.32,
+        "avg_profit_pct": 0.235
       }
     },
     "ENA/USDT:USDT": {
