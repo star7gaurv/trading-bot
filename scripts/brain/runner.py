@@ -692,6 +692,10 @@ def run_next(max_runs: int = 1, status_only: bool = False) -> int:
             # over-filtering configs that only work on rare pairs).
             today_n = experiments_today_count()
             run_scout = today_n % 10 != 0  # bypass on the 10th, 20th, etc.
+            # Benchmarks (e.g. BaselineEMACross) must always produce a FULL
+            # 26-pair result — a losing benchmark is still the answer we want.
+            if h.get("config", {}).get("skip_scout"):
+                run_scout = False
             if run_scout:
                 scout_pass, scout_m = _run_scout(h)
                 if not scout_pass:
