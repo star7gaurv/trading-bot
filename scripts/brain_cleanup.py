@@ -92,7 +92,11 @@ def cleanup_brain_models(max_age_days: int, keep_top_k: int, dry_run: bool = Fal
         print(f"  preserving top-{keep_top_k} model dirs (by profit_pct): {len(protected)} dirs protected")
     count = 0
     freed = 0
-    patterns = ["brain_*", "wf_*"]
+    # fam_* are the shared model-cache families (2026-06-12): kept on a longer
+    # leash (14d floor) because many experiments reuse one dir. runner.py
+    # touches a family dir on every use, so an active family never expires.
+    fam_cutoff = time.time() - max(max_age_days, 14) * 86400
+    patterns = ["brain_*", "wf_*", "fam_*", "wfam_*"]
     for pattern in patterns:
         for d in MODELS_DIR.glob(pattern):
             if not d.is_dir():
@@ -103,7 +107,7 @@ def cleanup_brain_models(max_age_days: int, keep_top_k: int, dry_run: bool = Fal
                 mtime = d.stat().st_mtime
             except FileNotFoundError:
                 continue
-            if mtime > cutoff:
+            if mtime > (fam_cutoff if pattern in ("fam_*", "wfam_*") else cutoff):
                 continue
             size = _dir_size(d)
             if dry_run:

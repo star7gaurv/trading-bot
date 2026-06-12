@@ -50,6 +50,7 @@ python3 "$SCRIPT" \
     --timeframe 15m \
     --config config.json \
     --skip-download \
+    --reuse-models \
     --max-workers 2 \
     --lgbm-threads 2 >> "$LOG" 2>&1
 

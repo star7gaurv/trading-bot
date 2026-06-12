@@ -98,6 +98,13 @@ def _read_env_vars() -> dict[str, str]:
         "FREQAI_K_SL", "FREQAI_K_TP",
         "FREQAI_LONG_THRESHOLD", "FREQAI_SHORT_THRESHOLD",
         "FREQAI_STABILITY_N", "FREQAI_FEATURE_SET",
+        # 2026-06-12: forward the Phase B/C gates so WF keeps testing the exact
+        # live configuration when these flip on (they default off; absent keys
+        # are simply not forwarded).
+        "FREQAI_ENTRY_MODE", "FREQAI_ENTRY_QUANTILE", "FREQAI_ENTRY_ABS_FLOOR",
+        "FREQAI_BOUNCE_GUARD", "FREQAI_PRUNE_INDICATORS",
+        "FREQAI_PERPAIR_OI", "FREQAI_TREND_HORIZON",
+        "FREQAI_REENTRY_COOLDOWN_CANDLES",
         # FINBUDDY_RECENT_WR deliberately omitted — see docstring
     )
     result: dict[str, str] = {}
@@ -240,16 +247,24 @@ def run_backtest(
     target.write_bytes(sentinel.read_bytes())
     fold_sentinel.unlink(missing_ok=True)
 
-    # Clean up FreqAI model directory to save space and reduce disk I/O load
+    # Clean up FreqAI model directory to save space and reduce disk I/O load.
+    # In --reuse-models mode (wfam_* identifiers) the dir is the cache that makes
+    # the NEXT deep-WF run skip training — keep it and refresh its mtime so
+    # brain_cleanup's fam-style retention sees it as active.
     if freqai_identifier:
         model_dir = COMPOSE_DIR / "user_data" / "models" / freqai_identifier
         if model_dir.exists():
-            import shutil
-            try:
-                shutil.rmtree(model_dir)
-                print(f"  [fold {fold}] Cleaned up FreqAI models in {model_dir.name}", flush=True)
-            except Exception as e:
-                print(f"  [fold {fold}] Warning: failed to clean up model dir: {e}", flush=True)
+            if freqai_identifier.startswith("wfam_"):
+                subprocess.run(["sudo", "touch", "-c", str(model_dir)],
+                               capture_output=True, timeout=10)
+                print(f"  [fold {fold}] Keeping cached FreqAI models in {model_dir.name}", flush=True)
+            else:
+                import shutil
+                try:
+                    shutil.rmtree(model_dir)
+                    print(f"  [fold {fold}] Cleaned up FreqAI models in {model_dir.name}", flush=True)
+                except Exception as e:
+                    print(f"  [fold {fold}] Warning: failed to clean up model dir: {e}", flush=True)
 
     return target
 
@@ -504,6 +519,11 @@ def main():
     p.add_argument("--timeframe", default="15m")
     p.add_argument("--config", help="Custom config filename inside user_data/")
     p.add_argument("--skip-download", action="store_true", help="Skip data download")
+    p.add_argument("--reuse-models", action="store_true",
+                   help="Deterministic per-fold identifiers (wfam_*): repeat runs of the "
+                        "same folds reuse cached trained models and skip training. "
+                        "For deep WF (fixed month-anchored folds); pointless for the "
+                        "daily WF whose windows slide every night.")
     p.add_argument("--max-workers", type=int, default=3,
                    help="Parallel fold workers (default=3; set 1 for sequential/debug)")
     p.add_argument("--lgbm-threads", type=int, default=2,
@@ -538,6 +558,30 @@ def main():
     # preventing FreqAI from loading live-bot models trained on future data (lookahead bias).
     fold_identifier_base = f"wf_{run_stamp}"
 
+    # --reuse-models (2026-06-12): deterministic per-fold identifiers so a repeat
+    # run (deep WF re-runs the same month-anchored folds every 4 days) loads the
+    # previously trained sub-models and skips straight to backtesting. The hash
+    # covers everything that shapes TRAINING: strategy, timeframe, train span,
+    # config file content, and the feature-gate env values. Anything trading-only
+    # (thresholds, k_tp/k_sl) is irrelevant to the trained model. Lookahead
+    # safety is preserved: identifiers are still WF-private (never the live id),
+    # and a fold only ever reuses models trained on ITS OWN fold timerange.
+    if args.reuse_models:
+        import hashlib as _hl
+        cfg_path = COMPOSE_DIR / "user_data" / (args.config or "config.json")
+        feat_env = _read_env_vars()
+        shape = "|".join([
+            args.strategy, args.timeframe,
+            str(args.train_months), str(args.test_months),
+            _hl.sha256(cfg_path.read_bytes()).hexdigest()[:8],
+            feat_env.get("FREQAI_FEATURE_SET", "all"),
+            feat_env.get("FREQAI_PRUNE_INDICATORS", "0"),
+            feat_env.get("FREQAI_PERPAIR_OI", "0"),
+            feat_env.get("FREQAI_TREND_HORIZON", "0"),
+        ])
+        wfam_hash = _hl.sha256(shape.encode()).hexdigest()[:10]
+        print(f"[reuse-models] family hash {wfam_hash} (shape: {shape})")
+
     if not args.skip_download:
         download_data(args.start, args.end, args.timeframe)
     else:
@@ -556,7 +600,11 @@ def main():
             "test_start": vs,
             "test_end": ve,
             "run_dir": run_dir,
-            "freqai_identifier": f"{fold_identifier_base}_f{fold:02d}",
+            "freqai_identifier": (
+                f"wfam_{wfam_hash}_{vs.strftime('%Y%m%d')}"
+                if args.reuse_models
+                else f"{fold_identifier_base}_f{fold:02d}"
+            ),
             "config": args.config,
             "lgbm_threads": args.lgbm_threads,
             "cpu_shares": args.cpu_shares,

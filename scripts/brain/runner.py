@@ -19,6 +19,7 @@ Safety:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
@@ -383,6 +384,37 @@ def _build_env_args(cfg: dict, identifier: str) -> list[str]:
     return env_args
 
 
+# Model-cache family key (2026-06-12). Fields that change WHAT GETS TRAINED:
+# feature pipeline (config_file carries include_timeframes/shifted_candles/
+# periods/DI/SVM), feature gates, target horizon, model class + hyperparams.
+# Deliberately EXCLUDED (trading-only, applied on top of identical predictions):
+# long/short_threshold, k_tp, k_sl, stability_n, entry_mode, entry_quantile,
+# bounce_guard. v23's set_freqai_targets uses ONLY label_period_candles
+# (verified 2026-06-12) — if the target formula ever gains a new dependency,
+# that field MUST be added here or cached models will be silently wrong.
+_TRAIN_SHAPE_KEYS = (
+    "arch", "strategy", "freqaimodel", "config_file", "timeframe",
+    "feature_set", "label_period_candles", "filter_di", "filter_svm",
+    "prune_indicators", "perpair_oi", "trend_horizon", "target_version",
+    "num_leaves", "learning_rate", "min_child_samples", "reg_alpha",
+    "reg_lambda", "n_estimators",
+)
+
+
+def _family_identifier(cfg: dict, window: str) -> str:
+    """Deterministic FreqAI identifier per (training-shape, window).
+
+    Same family + same window → same identifier → FreqAI finds the trained
+    sub-models on disk and skips straight to backtesting. Param-only
+    experiments (most of the queue) stop paying the ~80% training tax.
+    purge_old_models=false in the brain config keeps the cache; cleanup is
+    handled by brain_cleanup.py (fam_* retention).
+    """
+    blob = json.dumps({k: cfg.get(k) for k in _TRAIN_SHAPE_KEYS}, sort_keys=True)
+    fam = hashlib.sha256(blob.encode()).hexdigest()[:10]
+    return f"fam_{fam}_{window}"
+
+
 def _run_hypothesis_group(
     h: dict,
     pairs_subset: list[str],
@@ -393,7 +425,10 @@ def _run_hypothesis_group(
     cfg         = h["config"]
     config_file = cfg.get("config_file", "v23_regression_15m_di_config.json")
     timerange   = h["timerange"]
-    identifier  = f"brain_{h['hypothesis_id']}_{group_suffix}_{int(time.time())}"
+    # Family-cached identifier (2026-06-12): scout and full run share the same
+    # family dir — the scout trains its 6 pairs, the full run reuses those and
+    # trains only the remaining 20. The next same-family experiment trains 0.
+    identifier  = _family_identifier(cfg, h.get("window") or timerange)
     effective_timeout = timeout_s if timeout_s is not None else BACKTEST_TIMEOUT_S
 
     # Extract any LightGBM hyperparams from hypothesis config to patch into the JSON
@@ -457,6 +492,13 @@ def _run_hypothesis_group(
             file=sys.stderr,
         )
         return []
+
+    # Refresh the family dir's mtime on every use (load-only reuse doesn't
+    # write into it) so brain_cleanup's fam_* retention sees it as active.
+    fam_dir = USER_DATA / "models" / identifier
+    if fam_dir.is_dir():
+        subprocess.run(["sudo", "touch", "-c", str(fam_dir)],
+                       capture_output=True, timeout=10)
 
     after    = set(RESULTS_DIR.glob("backtest-result-*.zip"))
     new_zips = sorted(after - before, key=lambda p: p.stat().st_mtime)
