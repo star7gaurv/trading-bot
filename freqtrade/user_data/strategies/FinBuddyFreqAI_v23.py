@@ -157,10 +157,15 @@ class FinBuddyFreqAI_v23(IStrategy):
             return None
 
         # --- Phase 13 Volatility Hook (Emergency Shield) ---
+        # FIXED 2026-06-12: this read "%-relative_volume-period", a pre-rename
+        # FreqAI feature name that never exists in the analyzed dataframe —
+        # .get() returned the 1.0 default on every candle, so the shield NEVER
+        # fired since it shipped. Compute relative volume directly instead.
         candles_open = int((current_time - trade.open_date_utc).total_seconds() / timeframe_to_seconds(self.timeframe))
         if candles_open <= 2 and current_profit < -0.005:
-            last = dataframe.iloc[-1]
-            rel_vol = last.get("%-relative_volume-period", 1.0)
+            vol = dataframe["volume"].tail(20)
+            vol_mean = vol.mean()
+            rel_vol = (vol.iloc[-1] / vol_mean) if vol_mean and vol_mean > 0 else 1.0
             if rel_vol > 5.0:  # 500% volume spike
                 return current_profit - 0.0001
         # ---------------------------------------------------

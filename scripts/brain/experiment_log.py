@@ -49,17 +49,44 @@ _queue_cache: tuple[float, list] | None = None
 _CACHE_TTL = 30.0  # seconds
 
 
+def _queue_mutation_lock():
+    """Exclusive flock serializing queue.jsonl mutations (2026-06-12).
+
+    Multiple cron processes (runner, generate, analyst, llm_hypothesis) mutate
+    the queue. Without a lock, _remove_from_queue's read→rewrite could race an
+    append from another process and silently DROP the appended entry.
+    """
+    import fcntl
+    from contextlib import contextmanager
+
+    @contextmanager
+    def _lock():
+        lock_path = QUEUE_FILE.with_suffix(".jsonl.flock")
+        lock_path.parent.mkdir(parents=True, exist_ok=True)
+        with lock_path.open("w") as lf:
+            fcntl.flock(lf, fcntl.LOCK_EX)
+            try:
+                yield
+            finally:
+                fcntl.flock(lf, fcntl.LOCK_UN)
+    return _lock()
+
+
 def _atomic_append(path: Path, record: dict) -> None:
-    """JSONL append. Single-writer assumption (cron-driven so safe)."""
+    """JSONL append, flock-serialized for the queue file."""
     global _log_cache, _queue_cache
     path.parent.mkdir(parents=True, exist_ok=True)
     line = json.dumps(record, separators=(",", ":")) + "\n"
+    if path == QUEUE_FILE:
+        with _queue_mutation_lock():
+            with path.open("a") as f:
+                f.write(line)
+        _queue_cache = None
+        return
     with path.open("a") as f:
         f.write(line)
     if path == LOG_FILE:
         _log_cache = None
-    elif path == QUEUE_FILE:
-        _queue_cache = None
 
 
 # ── Hypothesis lifecycle ───────────────────────────────────────────────────
@@ -185,16 +212,33 @@ def experiments_today_count() -> int:
 
 
 def _remove_from_queue(hypothesis_id: str) -> None:
-    """Rewrite queue.jsonl without the given hypothesis. O(n) but n is small."""
+    """Rewrite queue.jsonl without the given hypothesis. O(n) but n is small.
+
+    2026-06-12: reads the FILE directly under an exclusive flock — the previous
+    version rewrote from the 30s-TTL read_queue() cache, so an append landing
+    between cache-fill and rewrite was silently dropped.
+    """
     global _queue_cache
     if not QUEUE_FILE.exists():
         return
-    keep = [r for r in read_queue() if r.get("hypothesis_id") != hypothesis_id]
-    tmp = QUEUE_FILE.with_suffix(".jsonl.tmp")
-    with tmp.open("w") as f:
-        for r in keep:
-            f.write(json.dumps(r, separators=(",", ":")) + "\n")
-    tmp.replace(QUEUE_FILE)
+    with _queue_mutation_lock():
+        keep = []
+        with QUEUE_FILE.open() as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    r = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if r.get("hypothesis_id") != hypothesis_id:
+                    keep.append(r)
+        tmp = QUEUE_FILE.with_suffix(".jsonl.tmp")
+        with tmp.open("w") as f:
+            for r in keep:
+                f.write(json.dumps(r, separators=(",", ":")) + "\n")
+        tmp.replace(QUEUE_FILE)
     _queue_cache = None
 
 

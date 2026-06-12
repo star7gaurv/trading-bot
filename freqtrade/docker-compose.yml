@@ -54,6 +54,16 @@ services:
       - FREQAI_DAILY_FLATTEN_MULT=${FREQAI_DAILY_FLATTEN_MULT:-1.5}
       # Re-entry cooldown after stop-loss, in candles (added 2026-06-11)
       - FREQAI_REENTRY_COOLDOWN_CANDLES=${FREQAI_REENTRY_COOLDOWN_CANDLES:-8}
+      # Phase B/C entry-overhaul gates (added 2026-06-12 — default off until promoted).
+      # Compose env is an explicit list: a var missing here NEVER reaches the
+      # container even if set in .env (hard-learned 2026-05-23).
+      - FREQAI_ENTRY_MODE=${FREQAI_ENTRY_MODE:-absolute}
+      - FREQAI_ENTRY_QUANTILE=${FREQAI_ENTRY_QUANTILE:-0.92}
+      - FREQAI_ENTRY_ABS_FLOOR=${FREQAI_ENTRY_ABS_FLOOR:-0.10}
+      - FREQAI_BOUNCE_GUARD=${FREQAI_BOUNCE_GUARD:-0}
+      - FREQAI_PRUNE_INDICATORS=${FREQAI_PRUNE_INDICATORS:-0}
+      - FREQAI_PERPAIR_OI=${FREQAI_PERPAIR_OI:-0}
+      - FREQAI_TREND_HORIZON=${FREQAI_TREND_HORIZON:-0}
       # Time-limit exit: candle count = model's label_period_candles horizon (added 2026-05-28)
       - FREQAI_LABEL_CANDLES=${FREQAI_LABEL_CANDLES:-12}
       - FREQTRADE__FREQAI__IDENTIFIER=${FREQTRADE__FREQAI__IDENTIFIER:-}

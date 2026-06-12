@@ -407,6 +407,31 @@ def apply_promotion(config_hash: str) -> int:
         json.dump(live, f, indent=4)
     print(f"identifier: {old_identifier} → {new_identifier}")
 
+    # 2b. Port feature-pipeline knobs from the experiment's config FILE into the
+    # live config (2026-06-12): a pruned-config winner (e.g.
+    # v23_regression_15m_pruned_config.json) differs in include_shifted_candles /
+    # indicator_periods_candles / include_timeframes — without this, promotion
+    # would deploy a model trained on a DIFFERENT feature set than validated.
+    exp_cfg_file = new_cfg.get("config_file")
+    if exp_cfg_file:
+        exp_cfg_path = ROOT / "freqtrade" / "user_data" / exp_cfg_file
+        try:
+            exp_feat = json.loads(exp_cfg_path.read_text())["freqai"]["feature_parameters"]
+            for key in ("include_shifted_candles", "indicator_periods_candles",
+                        "include_timeframes", "include_corr_pairlist"):
+                if key in exp_feat:
+                    feat[key] = exp_feat[key]
+            print(f"feature_parameters ported from {exp_cfg_file}")
+        except Exception as e:
+            print(f"WARN: could not port feature_parameters from {exp_cfg_file}: {e}",
+                  file=sys.stderr)
+        # config.json may have been modified above — rewrite it
+        with LIVE_CONFIG.open("w") as f:
+            json.dump(live, f, indent=4)
+
+    def _bool_env(v):
+        return None if v is None else ("1" if v else "0")
+
     # 3. Write strategy env vars
     env_keys = {
         "FREQAI_K_TP":            new_cfg.get("k_tp"),
@@ -416,6 +441,13 @@ def apply_promotion(config_hash: str) -> int:
         "FREQAI_STABILITY_N":     new_cfg.get("stability_n"),
         # feature_set: write to env so live uses the same feature set validated in backtest
         "FREQAI_FEATURE_SET":     new_cfg.get("feature_set"),
+        # Entry-overhaul params (2026-06-12): WITHOUT these a promoted
+        # quantile-mode winner would silently deploy as absolute mode.
+        "FREQAI_ENTRY_MODE":         new_cfg.get("entry_mode"),
+        "FREQAI_ENTRY_QUANTILE":     new_cfg.get("entry_quantile"),
+        "FREQAI_BOUNCE_GUARD":       _bool_env(new_cfg.get("bounce_guard")),
+        "FREQAI_PRUNE_INDICATORS":   _bool_env(new_cfg.get("prune_indicators")),
+        "FREQAI_PERPAIR_OI":         _bool_env(new_cfg.get("perpair_oi")),
     }
     env_keys = {k: v for k, v in env_keys.items() if v is not None}
     if env_keys:
