@@ -384,3 +384,6 @@
 | 2026-06-12 08:22:11 | WIF/USDT:USDT | SHORT | 0h06m | -0.98% | -0.56 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-12 09:14:30 | LINK/USDT:USDT | SHORT | 0h29m | -0.87% | -0.50 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-12 12:17:02 | NEAR/USDT:USDT | SHORT | 1h46m | -2.76% | -1.59 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-12 13:54:09 | SOL/USDT:USDT | SHORT | 1h24m | +0.18% | +0.11 | exit_signal | BEAR | freqai_regression_v23_sh |
+| 2026-06-12 13:46:00 | LINK/USDT:USDT | SHORT | 0h15m | +0.91% | +0.53 | exit_signal | BEAR | freqai_regression_v23_sh |
+| 2026-06-12 13:45:14 | ONDO/USDT:USDT | SHORT | 0h14m | +1.63% | +0.94 | exit_signal | BEAR | freqai_regression_v23_sh |
