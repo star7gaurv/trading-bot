@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-12T22:00:01.896083+00:00",
+  "updated": "2026-06-12T22:30:01.853476+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -261,13 +261,13 @@
     },
     "LINK/USDT:USDT": {
       "BEAR": {
-        "n": 7,
-        "wins": 4,
+        "n": 8,
+        "wins": 5,
         "losses": 3,
-        "wr": 0.5714,
-        "pf": 1.375,
-        "profit_usdt": 0.63,
-        "avg_profit_pct": 0.12
+        "wr": 0.625,
+        "pf": 1.506,
+        "profit_usdt": 0.85,
+        "avg_profit_pct": 0.152
       },
       "NEUTRAL": {
         "n": 3,
@@ -350,13 +350,13 @@
         "avg_profit_pct": 0.091
       },
       "BEAR": {
-        "n": 10,
-        "wins": 6,
+        "n": 11,
+        "wins": 7,
         "losses": 4,
-        "wr": 0.6,
-        "pf": 2.4,
-        "profit_usdt": 3.22,
-        "avg_profit_pct": 0.478
+        "wr": 0.6364,
+        "pf": 2.622,
+        "profit_usdt": 3.73,
+        "avg_profit_pct": 0.515
       }
     },
     "ONDO/USDT:USDT": {
@@ -525,13 +525,13 @@
     },
     "WIF/USDT:USDT": {
       "BEAR": {
-        "n": 3,
-        "wins": 2,
+        "n": 4,
+        "wins": 3,
         "losses": 1,
-        "wr": 0.6667,
-        "pf": 2.179,
-        "profit_usdt": 0.66,
-        "avg_profit_pct": 0.303
+        "wr": 0.75,
+        "pf": 2.589,
+        "profit_usdt": 0.89,
+        "avg_profit_pct": 0.328
       },
       "NEUTRAL": {
         "n": 2,
