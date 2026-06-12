@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-12T23:00:02.212212+00:00",
+  "updated": "2026-06-12T23:30:01.503599+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -350,13 +350,13 @@
         "avg_profit_pct": 0.091
       },
       "BEAR": {
-        "n": 11,
-        "wins": 7,
+        "n": 12,
+        "wins": 8,
         "losses": 4,
-        "wr": 0.6364,
-        "pf": 2.622,
-        "profit_usdt": 3.73,
-        "avg_profit_pct": 0.515
+        "wr": 0.6667,
+        "pf": 2.826,
+        "profit_usdt": 4.2,
+        "avg_profit_pct": 0.541
       }
     },
     "ONDO/USDT:USDT": {
@@ -525,13 +525,13 @@
     },
     "WIF/USDT:USDT": {
       "BEAR": {
-        "n": 4,
-        "wins": 3,
+        "n": 5,
+        "wins": 4,
         "losses": 1,
-        "wr": 0.75,
-        "pf": 2.589,
-        "profit_usdt": 0.89,
-        "avg_profit_pct": 0.328
+        "wr": 0.8,
+        "pf": 3.0,
+        "profit_usdt": 1.12,
+        "avg_profit_pct": 0.342
       },
       "NEUTRAL": {
         "n": 2,
