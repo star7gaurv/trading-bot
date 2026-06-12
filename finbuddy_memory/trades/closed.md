@@ -370,3 +370,4 @@
 | 2026-06-11 14:52:05 | ADA/USDT:USDT | SHORT | 1h06m | -1.29% | -0.93 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
 | 2026-06-12 02:10:07 | APT/USDT:USDT | SHORT | 0h25m | -1.42% | -0.82 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-12 02:10:07 | ETH/USDT:USDT | SHORT | 0h09m | -0.82% | -0.47 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-12 04:26:41 | DOT/USDT:USDT | SHORT | 2h01m | -1.13% | -0.65 | stop_loss | BEAR | freqai_regression_v23_sh |

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-12T04:00:02.217761+00:00",
+  "updated": "2026-06-12T04:30:01.415450+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -479,13 +479,13 @@
         "avg_profit_pct": -0.865
       },
       "BEAR": {
-        "n": 2,
+        "n": 3,
         "wins": 0,
-        "losses": 2,
+        "losses": 3,
         "wr": 0.0,
         "pf": 0.0,
-        "profit_usdt": -1.39,
-        "avg_profit_pct": -1.045
+        "profit_usdt": -2.04,
+        "avg_profit_pct": -1.073
       }
     },
     "TRX/USDT:USDT": {
