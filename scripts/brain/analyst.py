@@ -208,11 +208,17 @@ def prune_queue(findings: dict, dry_run: bool = False) -> int:
     Returns count of pruned entries.
     """
     # ── Phase 0: always remove non-zscore entries (incompatible label semantics) ──
+    # Exemption (2026-06-12): target_version='baseline' marks BENCHMARK runs
+    # (e.g. BaselineEMACross_v1) — intentionally non-zscore so promotion and
+    # guided parenting ignore them, but they must RUN, not be pruned.
+    # .get() instead of [] (2026-06-12): schema-less queue entries crashed the
+    # analyst on 18 consecutive runs (Jun 8-12) — skip such entries, never crash.
     zscore_pruned = 0
     _all = read_queue()
     non_zscore_ids = [
-        h["hypothesis_id"] for h in _all
-        if h.get("config", {}).get("target_version") != "zscore"
+        h.get("hypothesis_id") for h in _all
+        if h.get("hypothesis_id")
+        and h.get("config", {}).get("target_version") not in ("zscore", "baseline")
     ]
     if non_zscore_ids:
         if not dry_run:
@@ -244,6 +250,11 @@ def prune_queue(findings: dict, dry_run: bool = False) -> int:
         zero_ids = []
         for h in _queue:
             if h.get("band") == "safe":
+                continue
+            # (lt, window) blacklists don't apply to quantile-mode configs
+            # (long_threshold is inert there) or benchmark runs (2026-06-12).
+            if (h.get("config", {}).get("entry_mode") == "quantile"
+                    or h.get("config", {}).get("target_version") == "baseline"):
                 continue
             lt = h.get("config", {}).get("long_threshold")
             win = h.get("window", "")
@@ -294,6 +305,10 @@ def prune_queue(findings: dict, dry_run: bool = False) -> int:
         for h in _q3:
             if h.get("band") == "safe":
                 continue  # always keep safe-band refinements
+            # Same exemption as Phase 0.5: quantile-mode lt is inert; baselines must run.
+            if (h.get("config", {}).get("entry_mode") == "quantile"
+                    or h.get("config", {}).get("target_version") == "baseline"):
+                continue
             lt3 = h.get("config", {}).get("long_threshold")
             win3 = h.get("window", "")
             if (win3, lt3) in unprofitable_combos:

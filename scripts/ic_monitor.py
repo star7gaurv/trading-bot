@@ -31,9 +31,34 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 from lib.telegram_template import Subsystem, Status, send  # noqa: E402
 
-PREDICTIONS_PKL = ROOT / "freqtrade/user_data/models/historic_predictions.pkl"
 OUT_FILE = ROOT / "finbuddy_memory/analytics/pair_ic.json"
 LABEL_PERIOD = 12  # candles; matches config.json label_period_candles
+
+
+def _predictions_pkl() -> Path:
+    """The LIVE bot writes historic_predictions.pkl inside its IDENTIFIER
+    subdir — the root models/historic_predictions.pkl is an orphan frozen at
+    2026-06-07 (bug found 2026-06-12: first IC report silently analyzed it).
+    Resolve the identifier from freqtrade/.env; fall back to the newest
+    identifier-dir pickle, then the root file."""
+    env = ROOT / "freqtrade/.env"
+    if env.exists():
+        for line in env.read_text().splitlines():
+            if line.startswith("FREQTRADE__FREQAI__IDENTIFIER="):
+                ident = line.split("=", 1)[1].strip()
+                p = ROOT / f"freqtrade/user_data/models/{ident}/historic_predictions.pkl"
+                if p.exists():
+                    return p
+    candidates = sorted(
+        ROOT.glob("freqtrade/user_data/models/*/historic_predictions.pkl"),
+        key=lambda p: p.stat().st_mtime, reverse=True,
+    )
+    if candidates:
+        return candidates[0]
+    return ROOT / "freqtrade/user_data/models/historic_predictions.pkl"
+
+
+PREDICTIONS_PKL = _predictions_pkl()
 
 
 def _spearman(a: pd.Series, b: pd.Series) -> float:

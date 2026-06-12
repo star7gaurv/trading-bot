@@ -180,7 +180,18 @@ def main() -> int:
     with open(PROPOSALS_FILE, "a") as f:
         f.write(json.dumps({"ts": ts, "raw": data}) + "\n")
 
-    # a) auto-queue sanitized entry hypotheses as normal experiments
+    # a) auto-queue sanitized entry hypotheses as normal experiments.
+    # Dedup (2026-06-12): the LLM re-proposes similar ideas across nights —
+    # skip (config, window) pairs already queued or already tested.
+    from experiment_log import read_queue, read_log
+
+    def _cfg_key(c: dict) -> str:
+        return json.dumps(c, sort_keys=True)
+
+    already = {(_cfg_key(r.get("config", {})), r.get("window", ""))
+               for r in read_queue()}
+    already |= {(_cfg_key(r.get("config", {})), r.get("window", ""))
+                for r in read_log()}
     queued = 0
     for h in (data.get("entry_hypotheses") or [])[:MAX_QUEUED_PER_NIGHT]:
         params = _sanitize_params(h.get("params") or {})
@@ -191,8 +202,11 @@ def main() -> int:
         cfg["target_version"] = "zscore"
         rationale = f"llm [v23]: {str(h.get('rationale', ''))[:140]}"
         for win in VALIDATION_WINDOWS:
+            if (_cfg_key(cfg), win) in already:
+                continue
             queue_hypothesis(config=cfg, band="aggressive", rationale=rationale,
                              window=win, timerange=hg.WINDOWS[win])
+            already.add((_cfg_key(cfg), win))
             queued += 1
 
     # b) feature proposals → Telegram for human review (never auto-applied)
