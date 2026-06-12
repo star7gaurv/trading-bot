@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-12T09:30:01.417458+00:00",
+  "updated": "2026-06-12T10:00:01.206500+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,46 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "ETH/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 3,
-        "wins": 1,
-        "losses": 2,
-        "wr": 0.3333,
-        "pf": 0.026,
-        "profit_usdt": -5.28,
-        "avg_profit_pct": -1.08
-      },
-      "BEAR": {
-        "n": 5,
-        "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
-        "pf": 0.534,
-        "profit_usdt": -0.89,
-        "avg_profit_pct": -0.32
-      }
-    },
-    "ZEC/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 10,
-        "wins": 3,
-        "losses": 7,
-        "wr": 0.3,
-        "pf": 0.335,
-        "profit_usdt": -10.26,
-        "avg_profit_pct": -0.839
-      },
-      "BEAR": {
-        "n": 4,
-        "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 5.712,
-        "profit_usdt": 9.66,
-        "avg_profit_pct": 2.21
-      }
-    },
     "BTC/USDT:USDT": {
       "NEUTRAL": {
         "n": 2,
@@ -288,6 +248,26 @@
         "avg_profit_pct": 0.235
       }
     },
+    "ZEC/USDT:USDT": {
+      "BEAR": {
+        "n": 4,
+        "wins": 2,
+        "losses": 2,
+        "wr": 0.5,
+        "pf": 5.712,
+        "profit_usdt": 9.66,
+        "avg_profit_pct": 2.21
+      },
+      "NEUTRAL": {
+        "n": 9,
+        "wins": 3,
+        "losses": 6,
+        "wr": 0.3333,
+        "pf": 0.435,
+        "profit_usdt": -6.72,
+        "avg_profit_pct": -0.724
+      }
+    },
     "ENA/USDT:USDT": {
       "BEAR": {
         "n": 7,
@@ -486,6 +466,26 @@
         "pf": 0.0,
         "profit_usdt": -2.04,
         "avg_profit_pct": -1.073
+      }
+    },
+    "ETH/USDT:USDT": {
+      "BEAR": {
+        "n": 5,
+        "wins": 1,
+        "losses": 4,
+        "wr": 0.2,
+        "pf": 0.534,
+        "profit_usdt": -0.89,
+        "avg_profit_pct": -0.32
+      },
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 0.25,
+        "profit_usdt": -0.42,
+        "avg_profit_pct": -0.325
       }
     },
     "TRX/USDT:USDT": {
@@ -711,14 +711,6 @@
       "pf": 0.534
     },
     {
-      "pair": "ZEC/USDT:USDT",
-      "regime": "NEUTRAL",
-      "reason": "WR=30% PF=0.34 n=10 profit=-10.26",
-      "n": 10,
-      "wr": 0.3,
-      "pf": 0.335
-    },
-    {
       "pair": "AAVE/USDT:USDT",
       "regime": "NEUTRAL",
       "reason": "WR=33% PF=0.07 n=6 profit=-4.20",
@@ -733,6 +725,14 @@
       "n": 6,
       "wr": 0.3333,
       "pf": 0.199
+    },
+    {
+      "pair": "ZEC/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=33% PF=0.43 n=9 profit=-6.72",
+      "n": 9,
+      "wr": 0.3333,
+      "pf": 0.435
     }
   ]
 }
