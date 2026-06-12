@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-12T06:00:02.171000+00:00",
+  "updated": "2026-06-12T06:30:01.506140+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -439,13 +439,13 @@
         "avg_profit_pct": 0.091
       },
       "BEAR": {
-        "n": 6,
-        "wins": 3,
+        "n": 7,
+        "wins": 4,
         "losses": 3,
-        "wr": 0.5,
-        "pf": 2.57,
-        "profit_usdt": 2.48,
-        "avg_profit_pct": 0.583
+        "wr": 0.5714,
+        "pf": 2.937,
+        "profit_usdt": 3.06,
+        "avg_profit_pct": 0.643
       }
     },
     "AVAX/USDT:USDT": {
@@ -543,13 +543,13 @@
     },
     "WIF/USDT:USDT": {
       "BEAR": {
-        "n": 1,
-        "wins": 1,
+        "n": 2,
+        "wins": 2,
         "losses": 0,
         "wr": 1.0,
         "pf": null,
-        "profit_usdt": 0.88,
-        "avg_profit_pct": 1.29
+        "profit_usdt": 1.22,
+        "avg_profit_pct": 0.945
       },
       "NEUTRAL": {
         "n": 2,
