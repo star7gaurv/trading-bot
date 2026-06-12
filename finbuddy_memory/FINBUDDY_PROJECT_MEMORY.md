@@ -4,8 +4,15 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status**: 🟢 v23 LIVE · LT=1.5/ST=-1.5 · BEAR 80% · 380 completed experiments · 261 queued · 1 promotion candidate (pending bear_2026Q1) · brain cron */10 + flock  
-**Last Updated**: 2026-06-01 UTC (4 root-cause bugs fixed: WF cpu-shares, queue drift, LT deadlock cap, promotion unblocked)
+**Status**: 🟢 v23 LIVE (`finbuddy_v23_nosvm_1780729988`) · LT=0.3/ST=-0.3 · DI+SVM disabled · regime BEAR (unified price-action core) · ~460 completed experiments · ~65 queued (26 validation: quantile/pruned/baseline) · no promotion yet · family model cache active  
+**Last Updated**: 2026-06-12 UTC (validation queue unblocked, family cache shipped, promotion 3-layer gap fixed, data sentinel cron live; see CLAUDE.md June 11–12 session entries)
+
+### 2026-06-11/12 — God-Mode Overhaul + Deep Audit (summary; details in CLAUDE.md)
+- Phases A–E shipped: re-entry cooldown, tiered breaker (flatten at −15), quantile entry mode + feature pruning + per-pair OI/funding + trend-horizon (all env-gated OFF pending ~26 brain validations), funding-farm paper module, LLM hypothesis engine nightly, regime detectors unified (NEUTRAL→BEAR flip).
+- Family model cache: param-only experiments and deep-WF re-runs skip training (fam_/wfam_ identifiers).
+- Fixed: analyst 4-day crash-loop; promotion would have deployed quantile winners as absolute mode (3 layers); queue mutation race; emergency vol shield dead since shipping; ic_monitor reading orphaned pkl (live OOS IC = 0.034); per-pair funding cron dead since 06-04 (features were all-zeros).
+- New: `data_sentinel.py` (*/6h) — freshness/constancy/liveness watchdog over all feeds and crons.
+- Measured reality: live WR ≈ 39–41% = random baseline of K_TP=3/K_SL=2 geometry; exits earn (+256), entries bleed (38% full-SL). The validation queue exists to fix entries.
 
 ### 2026-06-01 — 4 Root-Cause Bugs Fixed (commit `4162899`)
 

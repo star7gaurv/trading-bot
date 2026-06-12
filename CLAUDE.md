@@ -117,7 +117,7 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 ### FreqTrade
 - Running **`FinBuddyFreqAI_v23.py` (v23)** in dry-run mode on **Binance Futures USDT-M** — long+short
 - FreqAI identifier: **`finbuddy_v23_nosvm_1780729988`** (bumped 2026-06-06 — SVM disabled to fix do_predict=0 bug; previous: `finbuddy_v23_perpair_funding_1780574683` from 2026-06-04 brain promotion)
-- FreqAI model: **LightGBMRegressor** (predicts z-scored `&-future_return`, N(0,1) distribution). DI=1.0. **SVM disabled** (was flagging all live candles as outliers).
+- FreqAI model: **LightGBMRegressor** (predicts z-scored `&-future_return`, N(0,1) distribution). **DI disabled (DI_threshold=0)** and **SVM disabled** (verified live config 2026-06-12 — the datasieve "could not find step di" log line is cosmetic).
 - **1000 USDT** virtual wallet, max 8 open trades
 - **Confidence-based leverage** (commit `60d4fb4`): 1x / 2x / 3x tiers based on `centered_pred / threshold` ratio. Fallback LOW (1x).
 - API: `http://localhost:8080/api/v1` — user: `bot`, pass: `REDACTED-FREQTRADE__API_SERVER__PASSWORD`
@@ -211,8 +211,14 @@ Standard layer 4 features include 3 funding-rate features (`%-funding_rate`, `%-
 30 */6 * * * brain_cli.py analyse               # brain self-diagnose + prune
 0 7 * * *    brain_cli.py scan                  # brain promotion scan → pending.json + Telegram
 */2 * * * *  telegram_listener.py               # Apply/Skip button handler (calls promote.py --apply)
-0 22 * * *   walkforward_daily.sh               # daily WF (3mo trailing, ~5.5h, 3 folds, 2 workers)
-30 18 */4 * * walkforward_deep.sh              # deep WF every 4 days at 18:30 UTC (midnight IST) — 27mo, 21 folds, ~38.5h
+0 22 * * *   walkforward_daily.sh               # daily WF — 1 fold (train 5mo + test 2mo; reduced from 3 folds 2026-05-24 CPU fix)
+30 18 */4 * * walkforward_deep.sh              # deep WF days 1,5,9,... at 18:30 UTC — 18mo, 7 folds (reduced from 27mo/21 2026-05-26); --reuse-models caches fold models
+30 6 * * 1   ic_monitor.py                      # weekly OOS IC report → analytics/pair_ic.json
+45 6 * * 1   feature_importance_report.py       # weekly importance report → analytics/feature_importance.json
+5 * * * *    funding_farm/scanner.py            # Phase D paper funding farm (hourly)
+30 2 * * *   brain/llm_hypothesis.py            # nightly LLM research proposals
+15 */6 * * * data_sentinel.py                   # silent-failure detector (freshness/constancy/liveness)
+40 1 * * *   build_historical_oi_perpair.py     # per-pair OI daily incremental
 0 4 * * *    auto_promote.py                    # WF Sharpe vs baseline alert
 */30 * * * * walkforward_notify.py              # PASS/FAIL Telegram on new WF summary (flock protected)
 30 4 * * *   download_data_daily.sh             # forward-increment data download
@@ -404,6 +410,16 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 ## Session History Summary
 
 > Full session history lives in `finbuddy_memory/FINBUDDY_PROJECT_MEMORY.md`. Only the most recent session is kept here.
+
+### June 12, 2026 — Validation unblocked + family cache + deep audit (commits `3d97c96d`…`b409e081` + cache `c8344e9b`)
+
+**Queue-schema bug (mine):** the 22 validation experiments queued 06-11 were appended as raw JSON without `status: queued` → invisible to `next_alternating()` → never ran. Same defect existed in the 06-08 recalibration batch (15 experiments never ran) AND crashed the analyst on 18 consecutive runs (Jun 8–12, `KeyError: hypothesis_id`). All 45 entries repaired to the canonical `queue_hypothesis()` schema. **Rule: NEVER append raw JSON to queue.jsonl — always `experiment_log.queue_hypothesis()`.**
+
+**Family model cache (`c8344e9b`):** FreqAI identifier = `fam_<train-shape-hash>_<window>` — param-only experiments reuse trained models (verified: 50s train run → 10s cached run). Deep WF `--reuse-models` (`wfam_*` per fold). `_TRAIN_SHAPE_KEYS` in runner.py — if the target formula ever gains a dependency beyond label_period_candles, add it there. fam/wfam dirs retained 14d, touched on use.
+
+**Deep-audit fixes:** (1) **promotion 3-layer gap**: apply_promotion didn't write entry_mode/quantile/bounce/prune/oi envs, compose didn't forward them, pruned-config feature_parameters weren't ported — a promoted quantile winner would have deployed as absolute mode. All fixed. (2) analyst would have pruned the baselines (non-zscore rule) — exempted, + (lt,window) blacklists skip quantile-mode/baseline. (3) queue mutations flock-serialized (cache-rewrite race dropped concurrent appends). (4) Phase-13 emergency vol shield NEVER fired since shipping (pre-rename feature name) — fixed. (5) ic_monitor read the orphaned ROOT historic_predictions.pkl (frozen 06-07; live bot writes in identifier subdir) — live IC = **0.034** (honest range 0.03–0.05). (6) LLM nightly dedup. **Documented, NOT changed:** custom_stoploss trail trigger uses leveraged profit vs unleveraged ATR% → trails earlier at 2-3x; trailing bucket is net-positive — needs brain validation before any change.
+
+**New:** `scripts/data_sentinel.py` cron (*/6h) — freshness/non-constancy/liveness checks on every feed + cron + queue schema + container; Telegram WARN on silent failures (the audit's recurring pattern: 4 components dead silently). Per-pair OI daily cron added.
 
 ### June 11, 2026 — God-Mode Overhaul: Phases A–E shipped (commits `ec23aa45`…`29f96efc`)
 
