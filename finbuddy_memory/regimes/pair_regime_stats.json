@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-12T21:00:01.516533+00:00",
+  "updated": "2026-06-12T21:30:01.233658+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -370,13 +370,13 @@
         "avg_profit_pct": -0.147
       },
       "BEAR": {
-        "n": 8,
-        "wins": 3,
+        "n": 9,
+        "wins": 4,
         "losses": 5,
-        "wr": 0.375,
-        "pf": 1.542,
-        "profit_usdt": 3.01,
-        "avg_profit_pct": 0.574
+        "wr": 0.4444,
+        "pf": 1.946,
+        "profit_usdt": 5.25,
+        "avg_profit_pct": 0.943
       }
     },
     "BTC/USDT:USDT": {
@@ -441,13 +441,13 @@
         "avg_profit_pct": -0.865
       },
       "BEAR": {
-        "n": 3,
-        "wins": 0,
+        "n": 4,
+        "wins": 1,
         "losses": 3,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -2.04,
-        "avg_profit_pct": -1.073
+        "wr": 0.25,
+        "pf": 0.152,
+        "profit_usdt": -1.73,
+        "avg_profit_pct": -0.667
       }
     },
     "ETH/USDT:USDT": {
