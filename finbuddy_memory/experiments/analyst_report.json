@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-12T19:52:15.653830+00:00",
+  "generated_at": "2026-06-12T20:14:02.931966+00:00",
   "findings": {
     "dead_timeframes": [
       "1h",
@@ -164,14 +164,14 @@
         "avg_pf": 0.414
       },
       "bull_2025Q4": {
-        "n": 50,
-        "avg_wr": 0.388,
-        "avg_pf": 0.548
+        "n": 51,
+        "avg_wr": 0.39,
+        "avg_pf": 0.551
       }
     },
     "tf_stats": {
       "15m": {
-        "n": 381,
+        "n": 382,
         "avg_pf": 0.664,
         "avg_wr": 0.394,
         "avg_trades_day": 4.77
@@ -202,9 +202,10 @@
       }
     }
   },
-  "pruned": 92,
+  "pruned": 71,
   "actions": [
-    "[DRY-RUN] Would skip dead TFs: ['1h', '30m', '4h']"
+    "Queued \u00d71 expansion to untested window bull_2021",
+    "Queued \u00d74 dead-TF cross-validate: best bear config on bull windows (WR=64% PF=3.60)"
   ],
   "llm_insight": ""
 }
