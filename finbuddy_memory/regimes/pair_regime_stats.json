@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-12T14:30:01.974464+00:00",
+  "updated": "2026-06-12T15:00:01.445473+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -39,13 +39,13 @@
         "avg_profit_pct": 0.453
       },
       "BEAR": {
-        "n": 7,
+        "n": 8,
         "wins": 3,
-        "losses": 4,
-        "wr": 0.4286,
-        "pf": 1.937,
-        "profit_usdt": 4.14,
-        "avg_profit_pct": 0.936
+        "losses": 5,
+        "wr": 0.375,
+        "pf": 1.542,
+        "profit_usdt": 3.01,
+        "avg_profit_pct": 0.574
       }
     },
     "LINK/USDT:USDT": {
@@ -59,13 +59,13 @@
         "avg_profit_pct": -0.8
       },
       "BEAR": {
-        "n": 5,
+        "n": 6,
         "wins": 3,
-        "losses": 2,
-        "wr": 0.6,
-        "pf": 1.817,
-        "profit_usdt": 0.89,
-        "avg_profit_pct": 0.256
+        "losses": 3,
+        "wr": 0.5,
+        "pf": 1.179,
+        "profit_usdt": 0.3,
+        "avg_profit_pct": 0.043
       }
     },
     "DOGE/USDT:USDT": {
