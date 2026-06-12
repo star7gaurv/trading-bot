@@ -377,3 +377,6 @@
 | 2026-06-12 06:30:23 | NEAR/USDT:USDT | SHORT | 0h44m | +2.45% | +1.41 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-12 06:45:41 | ADA/USDT:USDT | SHORT | 0h15m | +1.10% | +0.64 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-12 07:08:22 | NEAR/USDT:USDT | SHORT | 0h07m | -2.48% | -1.43 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-12 07:56:55 | ETH/USDT:USDT | SHORT | 0h26m | -0.88% | -0.51 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-12 07:46:05 | APT/USDT:USDT | SHORT | 0h15m | +0.93% | +0.54 | exit_signal | BEAR | freqai_regression_v23_sh |
+| 2026-06-12 07:57:00 | TAO/USDT:USDT | SHORT | 0h26m | -1.31% | -0.76 | stop_loss | BEAR | freqai_regression_v23_sh |

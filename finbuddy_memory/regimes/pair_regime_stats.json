@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-12T07:30:01.737863+00:00",
+  "updated": "2026-06-12T08:00:02.128375+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -19,13 +19,13 @@
         "avg_profit_pct": -1.08
       },
       "BEAR": {
-        "n": 4,
+        "n": 5,
         "wins": 1,
-        "losses": 3,
-        "wr": 0.25,
-        "pf": 0.729,
-        "profit_usdt": -0.38,
-        "avg_profit_pct": -0.18
+        "losses": 4,
+        "wr": 0.2,
+        "pf": 0.534,
+        "profit_usdt": -0.89,
+        "avg_profit_pct": -0.32
       }
     },
     "ZEC/USDT:USDT": {
@@ -370,13 +370,13 @@
     },
     "TAO/USDT:USDT": {
       "BEAR": {
-        "n": 1,
+        "n": 2,
         "wins": 0,
-        "losses": 1,
+        "losses": 2,
         "wr": 0.0,
         "pf": 0.0,
-        "profit_usdt": -0.64,
-        "avg_profit_pct": -1.03
+        "profit_usdt": -1.4,
+        "avg_profit_pct": -1.17
       },
       "NEUTRAL": {
         "n": 2,
@@ -439,13 +439,13 @@
         "avg_profit_pct": 0.091
       },
       "BEAR": {
-        "n": 7,
-        "wins": 4,
+        "n": 8,
+        "wins": 5,
         "losses": 3,
-        "wr": 0.5714,
-        "pf": 2.937,
-        "profit_usdt": 3.06,
-        "avg_profit_pct": 0.643
+        "wr": 0.625,
+        "pf": 3.278,
+        "profit_usdt": 3.6,
+        "avg_profit_pct": 0.679
       }
     },
     "AVAX/USDT:USDT": {
@@ -701,6 +701,14 @@
       "n": 5,
       "wr": 0.2,
       "pf": 0.244
+    },
+    {
+      "pair": "ETH/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=20% PF=0.53 n=5 profit=-0.89",
+      "n": 5,
+      "wr": 0.2,
+      "pf": 0.534
     },
     {
       "pair": "ZEC/USDT:USDT",
