@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-13T21:30:01.807184+00:00",
+  "updated": "2026-06-13T22:00:01.523121+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -19,13 +19,13 @@
         "avg_profit_pct": 0.091
       },
       "BEAR": {
-        "n": 12,
+        "n": 13,
         "wins": 8,
-        "losses": 4,
-        "wr": 0.6667,
-        "pf": 2.826,
-        "profit_usdt": 4.2,
-        "avg_profit_pct": 0.541
+        "losses": 5,
+        "wr": 0.6154,
+        "pf": 2.077,
+        "profit_usdt": 3.37,
+        "avg_profit_pct": 0.388
       }
     },
     "ONDO/USDT:USDT": {
@@ -39,13 +39,13 @@
         "avg_profit_pct": -0.147
       },
       "BEAR": {
-        "n": 11,
+        "n": 12,
         "wins": 5,
-        "losses": 6,
-        "wr": 0.4545,
-        "pf": 1.761,
-        "profit_usdt": 4.83,
-        "avg_profit_pct": 0.706
+        "losses": 7,
+        "wr": 0.4167,
+        "pf": 1.523,
+        "profit_usdt": 3.84,
+        "avg_profit_pct": 0.503
       }
     },
     "NEAR/USDT:USDT": {
@@ -99,13 +99,13 @@
         "avg_profit_pct": -1.007
       },
       "BEAR": {
-        "n": 9,
+        "n": 10,
         "wins": 5,
-        "losses": 4,
-        "wr": 0.5556,
-        "pf": 1.353,
-        "profit_usdt": 0.66,
-        "avg_profit_pct": 0.09
+        "losses": 5,
+        "wr": 0.5,
+        "pf": 1.028,
+        "profit_usdt": 0.07,
+        "avg_profit_pct": -0.022
       }
     },
     "ENA/USDT:USDT": {
