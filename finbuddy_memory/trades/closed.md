@@ -405,3 +405,4 @@
 | 2026-06-13 06:33:18 | LINK/USDT:USDT | SHORT | 1h03m | -0.64% | -0.37 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-13 06:39:08 | SOL/USDT:USDT | SHORT | 0h23m | -0.65% | -0.37 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-13 06:53:24 | ADA/USDT:USDT | SHORT | 0h20m | -1.04% | -0.60 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-13 19:45:28 | LTC/USDT:USDT | SHORT | 1h15m | -0.81% | -0.47 | stop_loss | BEAR | freqai_regression_v23_sh |
