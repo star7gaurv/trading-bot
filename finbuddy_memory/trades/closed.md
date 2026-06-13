@@ -402,3 +402,5 @@
 | 2026-06-12 23:56:17 | LINK/USDT:USDT | SHORT | 0h11m | -0.72% | -0.41 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-13 01:09:03 | ONDO/USDT:USDT | SHORT | 0h23m | -1.38% | -0.80 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-13 04:45:21 | ONDO/USDT:USDT | SHORT | 1h36m | +0.66% | +0.38 | trailing_stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-13 06:33:18 | LINK/USDT:USDT | SHORT | 1h03m | -0.64% | -0.37 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-13 06:39:08 | SOL/USDT:USDT | SHORT | 0h23m | -0.65% | -0.37 | stop_loss | BEAR | freqai_regression_v23_sh |
