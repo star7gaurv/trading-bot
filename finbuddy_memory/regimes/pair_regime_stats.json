@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-13T18:30:02.063677+00:00",
+  "updated": "2026-06-13T19:00:02.121431+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "OP/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 6,
-        "wins": 3,
-        "losses": 3,
-        "wr": 0.5,
-        "pf": 1.06,
-        "profit_usdt": 0.19,
-        "avg_profit_pct": 0.022
-      },
-      "BEAR": {
-        "n": 13,
-        "wins": 0,
-        "losses": 13,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -9.68,
-        "avg_profit_pct": -1.112
-      }
-    },
     "APT/USDT:USDT": {
       "NEUTRAL": {
         "n": 17,
@@ -257,6 +237,26 @@
         "pf": 0.0,
         "profit_usdt": -7.97,
         "avg_profit_pct": -3.85
+      }
+    },
+    "OP/USDT:USDT": {
+      "BEAR": {
+        "n": 13,
+        "wins": 0,
+        "losses": 13,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -9.68,
+        "avg_profit_pct": -1.112
+      },
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 3,
+        "losses": 2,
+        "wr": 0.6,
+        "pf": 1.615,
+        "profit_usdt": 1.28,
+        "avg_profit_pct": 0.26
       }
     },
     "ZEC/USDT:USDT": {
