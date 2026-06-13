@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-13T06:30:01.934992+00:00",
+  "updated": "2026-06-13T07:00:01.131705+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -201,13 +201,13 @@
     },
     "SOL/USDT:USDT": {
       "BEAR": {
-        "n": 4,
+        "n": 5,
         "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 0.453,
-        "profit_usdt": -0.64,
-        "avg_profit_pct": -0.253
+        "losses": 3,
+        "wr": 0.4,
+        "pf": 0.344,
+        "profit_usdt": -1.01,
+        "avg_profit_pct": -0.332
       },
       "NEUTRAL": {
         "n": 3,
@@ -221,13 +221,13 @@
     },
     "ADA/USDT:USDT": {
       "BEAR": {
-        "n": 9,
+        "n": 10,
         "wins": 4,
-        "losses": 5,
-        "wr": 0.4444,
-        "pf": 0.801,
-        "profit_usdt": -0.63,
-        "avg_profit_pct": -0.086
+        "losses": 6,
+        "wr": 0.4,
+        "pf": 0.674,
+        "profit_usdt": -1.23,
+        "avg_profit_pct": -0.181
       },
       "NEUTRAL": {
         "n": 12,
@@ -241,13 +241,13 @@
     },
     "LINK/USDT:USDT": {
       "BEAR": {
-        "n": 9,
+        "n": 10,
         "wins": 5,
-        "losses": 4,
-        "wr": 0.5556,
-        "pf": 1.211,
-        "profit_usdt": 0.44,
-        "avg_profit_pct": 0.056
+        "losses": 5,
+        "wr": 0.5,
+        "pf": 1.028,
+        "profit_usdt": 0.07,
+        "avg_profit_pct": -0.014
       },
       "NEUTRAL": {
         "n": 3,
