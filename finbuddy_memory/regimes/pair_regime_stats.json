@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-13T11:00:01.437772+00:00",
+  "updated": "2026-06-13T11:30:01.769418+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "ZEC/USDT:USDT": {
-      "BEAR": {
-        "n": 4,
-        "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 5.712,
-        "profit_usdt": 9.66,
-        "avg_profit_pct": 2.21
-      },
-      "NEUTRAL": {
-        "n": 9,
-        "wins": 3,
-        "losses": 6,
-        "wr": 0.3333,
-        "pf": 0.435,
-        "profit_usdt": -6.72,
-        "avg_profit_pct": -0.724
-      }
-    },
     "ENA/USDT:USDT": {
       "BEAR": {
         "n": 7,
@@ -97,6 +77,26 @@
         "pf": 2.459,
         "profit_usdt": 5.02,
         "avg_profit_pct": 1.79
+      }
+    },
+    "ZEC/USDT:USDT": {
+      "BEAR": {
+        "n": 3,
+        "wins": 1,
+        "losses": 2,
+        "wr": 0.3333,
+        "pf": 2.927,
+        "profit_usdt": 3.95,
+        "avg_profit_pct": 1.94
+      },
+      "NEUTRAL": {
+        "n": 9,
+        "wins": 3,
+        "losses": 6,
+        "wr": 0.3333,
+        "pf": 0.435,
+        "profit_usdt": -6.72,
+        "avg_profit_pct": -0.724
       }
     },
     "SUI/USDT:USDT": {
