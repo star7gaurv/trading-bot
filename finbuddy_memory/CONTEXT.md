@@ -1,19 +1,19 @@
 # FinBuddy — Master Context
-Last updated: 2026-06-13 05:15 UTC
+Last updated: 2026-06-13 05:30 UTC
 
 ## Current Regime
 Regime: **BEAR** | Confidence: 80.0% | Since: 2026-06-13
 
 ## Market Sentiment
 Fear & Greed: 13 (Extreme Fear)
-BTC Dominance: 56.44%
+BTC Dominance: 56.45%
 News Sentiment: 100.0% bullish
 
 ## Bot Performance
-Total Trades: 580 | Win Rate: 40.0% | Total P&L: 3.43%
+Total Trades: 580 | Win Rate: 40.0% | Total P&L: 3.46%
 
 ## Open Trades (1)
-- ONDO/USDT:USDT: Entry 0.35 | Current 0.35 | P&L: -0.14%
+- ONDO/USDT:USDT: Entry 0.35 | Current 0.35 | P&L: 0.37%
 ## Risk Flags
 - None
 
