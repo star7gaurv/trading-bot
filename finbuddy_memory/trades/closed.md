@@ -438,3 +438,7 @@
 | 2026-06-14 20:26:20 | UNI/USDT:USDT | SHORT | 0h40m | -0.73% | -0.41 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-14 20:36:37 | ADA/USDT:USDT | SHORT | 0h06m | -0.80% | -0.46 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-14 20:35:18 | 1000PEPE/USDT:USDT | SHORT | 0h04m | -0.84% | -0.48 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-14 21:20:34 | TON/USDT:USDT | SHORT | 0h50m | -1.45% | -0.83 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-14 21:25:26 | ONDO/USDT:USDT | SHORT | 0h18m | -4.96% | -2.84 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-14 21:17:14 | TAO/USDT:USDT | SHORT | 0h07m | -2.12% | -1.21 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-14 21:26:39 | ARB/USDT:USDT | SHORT | 0h08m | -0.89% | -0.51 | stop_loss | BEAR | freqai_regression_v23_sh |

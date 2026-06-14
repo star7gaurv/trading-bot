@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-14T21:00:01.185401+00:00",
+  "updated": "2026-06-14T21:30:02.093835+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -50,13 +50,13 @@
     },
     "ONDO/USDT:USDT": {
       "BEAR": {
-        "n": 18,
+        "n": 19,
         "wins": 7,
-        "losses": 11,
-        "wr": 0.3889,
-        "pf": 1.141,
-        "profit_usdt": 1.43,
-        "avg_profit_pct": 0.103
+        "losses": 12,
+        "wr": 0.3684,
+        "pf": 0.892,
+        "profit_usdt": -1.41,
+        "avg_profit_pct": -0.164
       },
       "NEUTRAL": {
         "n": 2,
@@ -70,13 +70,13 @@
     },
     "ARB/USDT:USDT": {
       "BEAR": {
-        "n": 5,
+        "n": 6,
         "wins": 2,
-        "losses": 3,
-        "wr": 0.4,
-        "pf": 1.473,
-        "profit_usdt": 1.33,
-        "avg_profit_pct": 0.344
+        "losses": 4,
+        "wr": 0.3333,
+        "pf": 1.247,
+        "profit_usdt": 0.82,
+        "avg_profit_pct": 0.138
       },
       "NEUTRAL": {
         "n": 8,
@@ -381,13 +381,13 @@
     },
     "TON/USDT:USDT": {
       "BEAR": {
-        "n": 3,
+        "n": 4,
         "wins": 1,
-        "losses": 2,
-        "wr": 0.3333,
-        "pf": 0.46,
-        "profit_usdt": -1.42,
-        "avg_profit_pct": -0.59
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.35,
+        "profit_usdt": -2.25,
+        "avg_profit_pct": -0.805
       }
     },
     "ETH/USDT:USDT": {
@@ -452,13 +452,13 @@
         "avg_profit_pct": 0.25
       },
       "BEAR": {
-        "n": 3,
+        "n": 4,
         "wins": 1,
-        "losses": 2,
-        "wr": 0.3333,
-        "pf": 0.913,
-        "profit_usdt": -0.21,
-        "avg_profit_pct": -0.113
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.608,
+        "profit_usdt": -1.42,
+        "avg_profit_pct": -0.615
       }
     },
     "1000SHIB/USDT:USDT": {
