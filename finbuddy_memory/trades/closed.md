@@ -421,3 +421,4 @@
 | 2026-06-14 08:09:40 | APT/USDT:USDT | SHORT | 0h07m | -0.99% | -0.57 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-14 11:16:19 | DOT/USDT:USDT | SHORT | 3h00m | +0.17% | +0.10 | time_limit_exit | BEAR | freqai_regression_v23_sh |
 | 2026-06-14 11:15:59 | LDO/USDT:USDT | SHORT | 3h00m | +0.07% | +0.04 | time_limit_exit | BEAR | freqai_regression_v23_sh |
+| 2026-06-14 12:23:13 | APT/USDT:USDT | SHORT | 2h13m | +0.70% | +0.40 | trailing_stop_loss | BEAR | freqai_regression_v23_sh |
