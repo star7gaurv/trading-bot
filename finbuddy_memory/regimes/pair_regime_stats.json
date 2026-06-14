@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-14T01:00:01.586509+00:00",
+  "updated": "2026-06-14T01:30:01.355609+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -261,13 +261,13 @@
     },
     "ONDO/USDT:USDT": {
       "BEAR": {
-        "n": 12,
+        "n": 13,
         "wins": 5,
-        "losses": 7,
-        "wr": 0.4167,
-        "pf": 1.523,
-        "profit_usdt": 3.84,
-        "avg_profit_pct": 0.503
+        "losses": 8,
+        "wr": 0.3846,
+        "pf": 1.384,
+        "profit_usdt": 3.1,
+        "avg_profit_pct": 0.365
       },
       "NEUTRAL": {
         "n": 2,
@@ -410,13 +410,13 @@
         "avg_profit_pct": -0.107
       },
       "BEAR": {
-        "n": 9,
+        "n": 10,
         "wins": 4,
-        "losses": 5,
-        "wr": 0.4444,
-        "pf": 0.77,
-        "profit_usdt": -0.76,
-        "avg_profit_pct": -0.118
+        "losses": 6,
+        "wr": 0.4,
+        "pf": 0.676,
+        "profit_usdt": -1.22,
+        "avg_profit_pct": -0.186
       }
     },
     "ETH/USDT:USDT": {
