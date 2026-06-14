@@ -418,3 +418,4 @@
 | 2026-06-14 05:52:18 | ONDO/USDT:USDT | SHORT | 0h36m | -1.14% | -0.65 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-14 06:02:28 | APT/USDT:USDT | SHORT | 0h17m | -0.99% | -0.57 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-14 06:10:58 | LTC/USDT:USDT | SHORT | 0h25m | -0.62% | -0.36 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-14 08:09:40 | APT/USDT:USDT | SHORT | 0h07m | -0.99% | -0.57 | stop_loss | BEAR | freqai_regression_v23_sh |
