@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-14T04:30:01.816805+00:00",
+  "updated": "2026-06-14T05:00:01.376106+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -19,13 +19,13 @@
         "avg_profit_pct": -0.052
       },
       "BEAR": {
-        "n": 14,
-        "wins": 8,
+        "n": 15,
+        "wins": 9,
         "losses": 6,
-        "wr": 0.5714,
-        "pf": 1.747,
-        "profit_usdt": 2.78,
-        "avg_profit_pct": 0.286
+        "wr": 0.6,
+        "pf": 1.978,
+        "profit_usdt": 3.64,
+        "avg_profit_pct": 0.367
       }
     },
     "TAO/USDT:USDT": {
