@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-14T18:30:01.218488+00:00",
+  "updated": "2026-06-14T19:00:02.005334+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -50,13 +50,13 @@
     },
     "ONDO/USDT:USDT": {
       "BEAR": {
-        "n": 16,
-        "wins": 6,
+        "n": 17,
+        "wins": 7,
         "losses": 10,
-        "wr": 0.375,
-        "pf": 1.216,
-        "profit_usdt": 2.06,
-        "avg_profit_pct": 0.183
+        "wr": 0.4118,
+        "pf": 1.218,
+        "profit_usdt": 2.08,
+        "avg_profit_pct": 0.175
       },
       "NEUTRAL": {
         "n": 2,
