@@ -412,3 +412,4 @@
 | 2026-06-14 01:25:50 | ADA/USDT:USDT | SHORT | 3h10m | -0.80% | -0.46 | time_limit_exit | BEAR | freqai_regression_v23_sh |
 | 2026-06-14 01:24:20 | ONDO/USDT:USDT | SHORT | 1h32m | -1.29% | -0.74 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-14 02:20:06 | APT/USDT:USDT | SHORT | 1h49m | -1.04% | -0.59 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-14 03:33:03 | DOT/USDT:USDT | SHORT | 1h47m | +0.27% | +0.15 | exit_signal | BEAR | freqai_regression_v23_sh |
