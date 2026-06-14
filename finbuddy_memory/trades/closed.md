@@ -426,3 +426,5 @@
 | 2026-06-14 12:45:30 | APT/USDT:USDT | SHORT | 0h15m | +0.59% | +0.33 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-14 14:16:33 | ARB/USDT:USDT | SHORT | 0h31m | +0.45% | +0.26 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-14 14:30:23 | TAO/USDT:USDT | SHORT | 0h45m | +3.83% | +2.20 | exit_signal | BEAR | freqai_regression_v23_sh |
+| 2026-06-14 14:46:47 | 1000PEPE/USDT:USDT | SHORT | 1h01m | +2.19% | +1.26 | exit_signal | BEAR | freqai_regression_v23_sh |
+| 2026-06-14 14:46:47 | SOL/USDT:USDT | SHORT | 0h51m | +1.87% | +1.07 | exit_signal | BEAR | freqai_regression_v23_sh |

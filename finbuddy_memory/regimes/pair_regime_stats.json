@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-14T14:30:01.930806+00:00",
+  "updated": "2026-06-14T15:00:01.257046+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -452,13 +452,13 @@
         "avg_profit_pct": 0.25
       },
       "BEAR": {
-        "n": 1,
-        "wins": 0,
+        "n": 2,
+        "wins": 1,
         "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -0.76,
-        "avg_profit_pct": -1.31
+        "wr": 0.5,
+        "pf": 2.895,
+        "profit_usdt": 1.44,
+        "avg_profit_pct": 1.26
       }
     },
     "1000SHIB/USDT:USDT": {
