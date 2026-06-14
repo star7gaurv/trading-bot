@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-14T15:00:01.257046+00:00",
+  "updated": "2026-06-14T15:30:01.597939+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -30,13 +30,13 @@
     },
     "SOL/USDT:USDT": {
       "BEAR": {
-        "n": 4,
-        "wins": 2,
+        "n": 5,
+        "wins": 3,
         "losses": 2,
-        "wr": 0.5,
-        "pf": 0.515,
-        "profit_usdt": -0.5,
-        "avg_profit_pct": -0.21
+        "wr": 0.6,
+        "pf": 1.553,
+        "profit_usdt": 0.57,
+        "avg_profit_pct": 0.206
       },
       "NEUTRAL": {
         "n": 1,
@@ -554,13 +554,13 @@
         "avg_profit_pct": -0.215
       },
       "BEAR": {
-        "n": 1,
-        "wins": 0,
+        "n": 2,
+        "wins": 1,
         "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -0.59,
-        "avg_profit_pct": -0.99
+        "wr": 0.5,
+        "pf": 2.136,
+        "profit_usdt": 0.67,
+        "avg_profit_pct": 0.6
       }
     },
     "FET/USDT:USDT": {
