@@ -428,3 +428,7 @@
 | 2026-06-14 14:30:23 | TAO/USDT:USDT | SHORT | 0h45m | +3.83% | +2.20 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-14 14:46:47 | 1000PEPE/USDT:USDT | SHORT | 1h01m | +2.19% | +1.26 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-14 14:46:47 | SOL/USDT:USDT | SHORT | 0h51m | +1.87% | +1.07 | exit_signal | BEAR | freqai_regression_v23_sh |
+| 2026-06-14 16:24:26 | TAO/USDT:USDT | SHORT | 1h24m | -2.86% | -1.65 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-14 16:15:24 | LINK/USDT:USDT | SHORT | 0h59m | -0.26% | -0.15 | exit_signal | BEAR | freqai_regression_v23_sh |
+| 2026-06-14 16:17:41 | ONDO/USDT:USDT | SHORT | 1h02m | -1.37% | -0.79 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-14 16:27:01 | APT/USDT:USDT | SHORT | 0h41m | -1.04% | -0.60 | trailing_stop_loss | BEAR | freqai_regression_v23_sh |
