@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-14T12:30:01.726350+00:00",
+  "updated": "2026-06-14T13:00:01.306823+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -281,13 +281,13 @@
     },
     "APT/USDT:USDT": {
       "BEAR": {
-        "n": 17,
-        "wins": 9,
+        "n": 19,
+        "wins": 11,
         "losses": 8,
-        "wr": 0.5294,
-        "pf": 1.514,
-        "profit_usdt": 2.5,
-        "avg_profit_pct": 0.208
+        "wr": 0.5789,
+        "pf": 1.665,
+        "profit_usdt": 3.23,
+        "avg_profit_pct": 0.254
       },
       "NEUTRAL": {
         "n": 15,
@@ -614,13 +614,13 @@
         "avg_profit_pct": 0.102
       },
       "BEAR": {
-        "n": 5,
-        "wins": 2,
+        "n": 6,
+        "wins": 3,
         "losses": 3,
-        "wr": 0.4,
-        "pf": 0.027,
-        "profit_usdt": -2.88,
-        "avg_profit_pct": -0.748
+        "wr": 0.5,
+        "pf": 0.233,
+        "profit_usdt": -2.27,
+        "avg_profit_pct": -0.445
       }
     }
   },
