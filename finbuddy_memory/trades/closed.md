@@ -424,3 +424,4 @@
 | 2026-06-14 12:23:13 | APT/USDT:USDT | SHORT | 2h13m | +0.70% | +0.40 | trailing_stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-14 12:45:30 | LDO/USDT:USDT | SHORT | 1h15m | +1.07% | +0.61 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-14 12:45:30 | APT/USDT:USDT | SHORT | 0h15m | +0.59% | +0.33 | exit_signal | BEAR | freqai_regression_v23_sh |
+| 2026-06-14 14:16:33 | ARB/USDT:USDT | SHORT | 0h31m | +0.45% | +0.26 | exit_signal | BEAR | freqai_regression_v23_sh |
