@@ -436,3 +436,5 @@
 | 2026-06-14 18:31:48 | ONDO/USDT:USDT | SHORT | 0h03m | +0.04% | +0.02 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-14 19:06:38 | ONDO/USDT:USDT | SHORT | 0h21m | -1.12% | -0.65 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-14 20:26:20 | UNI/USDT:USDT | SHORT | 0h40m | -0.73% | -0.41 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-14 20:36:37 | ADA/USDT:USDT | SHORT | 0h06m | -0.80% | -0.46 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-14 20:35:18 | 1000PEPE/USDT:USDT | SHORT | 0h04m | -0.84% | -0.48 | stop_loss | BEAR | freqai_regression_v23_sh |
