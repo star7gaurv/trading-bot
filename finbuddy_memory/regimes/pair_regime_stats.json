@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-15T13:00:01.841988+00:00",
+  "updated": "2026-06-15T13:30:01.766302+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,46 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "LTC/USDT:USDT": {
-      "BEAR": {
-        "n": 5,
-        "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
-        "pf": 0.234,
-        "profit_usdt": -1.31,
-        "avg_profit_pct": -0.426
-      },
-      "NEUTRAL": {
-        "n": 4,
-        "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 0.635,
-        "profit_usdt": -0.57,
-        "avg_profit_pct": -0.128
-      }
-    },
-    "OP/USDT:USDT": {
-      "BEAR": {
-        "n": 12,
-        "wins": 0,
-        "losses": 12,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -8.85,
-        "avg_profit_pct": -1.1
-      },
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 3,
-        "losses": 2,
-        "wr": 0.6,
-        "pf": 1.615,
-        "profit_usdt": 1.28,
-        "avg_profit_pct": 0.26
-      }
-    },
     "DOGE/USDT:USDT": {
       "BEAR": {
         "n": 2,
@@ -66,6 +26,26 @@
         "pf": 0.0,
         "profit_usdt": -0.93,
         "avg_profit_pct": -0.91
+      }
+    },
+    "OP/USDT:USDT": {
+      "BEAR": {
+        "n": 11,
+        "wins": 0,
+        "losses": 11,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -8.17,
+        "avg_profit_pct": -1.11
+      },
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 3,
+        "losses": 2,
+        "wr": 0.6,
+        "pf": 1.615,
+        "profit_usdt": 1.28,
+        "avg_profit_pct": 0.26
       }
     },
     "SUI/USDT:USDT": {
@@ -613,14 +593,34 @@
         "profit_usdt": -2.27,
         "avg_profit_pct": -0.445
       }
+    },
+    "LTC/USDT:USDT": {
+      "BEAR": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.323,
+        "profit_usdt": -0.84,
+        "avg_profit_pct": -0.36
+      },
+      "NEUTRAL": {
+        "n": 4,
+        "wins": 2,
+        "losses": 2,
+        "wr": 0.5,
+        "pf": 0.635,
+        "profit_usdt": -0.57,
+        "avg_profit_pct": -0.128
+      }
     }
   },
   "blocked": [
     {
       "pair": "OP/USDT:USDT",
       "regime": "BEAR",
-      "reason": "WR=0% PF=0.00 n=12 profit=-8.85",
-      "n": 12,
+      "reason": "WR=0% PF=0.00 n=11 profit=-8.17",
+      "n": 11,
       "wr": 0.0,
       "pf": 0.0
     },
@@ -639,14 +639,6 @@
       "n": 5,
       "wr": 0.2,
       "pf": 0.078
-    },
-    {
-      "pair": "LTC/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=20% PF=0.23 n=5 profit=-1.31",
-      "n": 5,
-      "wr": 0.2,
-      "pf": 0.234
     },
     {
       "pair": "TAO/USDT:USDT",
