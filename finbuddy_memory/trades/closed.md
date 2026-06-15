@@ -443,3 +443,5 @@
 | 2026-06-14 21:17:14 | TAO/USDT:USDT | SHORT | 0h07m | -2.12% | -1.21 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-14 21:26:39 | ARB/USDT:USDT | SHORT | 0h08m | -0.89% | -0.51 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-15 08:48:55 | TAO/USDT:USDT | SHORT | 0h03m | -1.18% | -0.67 | trailing_stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-15 19:41:18 | RENDER/USDT:USDT | SHORT | 1h40m | +2.79% | +1.58 | exit_signal | BEAR | freqai_regression_v23_sh |
+| 2026-06-15 19:40:40 | SUI/USDT:USDT | SHORT | 0h40m | +0.99% | +0.56 | trailing_stop_loss | BEAR | freqai_regression_v23_sh |
