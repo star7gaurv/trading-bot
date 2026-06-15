@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-15T16:00:01.475511+00:00",
+  "updated": "2026-06-15T16:30:01.993516+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,46 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "ENA/USDT:USDT": {
-      "BEAR": {
-        "n": 3,
-        "wins": 1,
-        "losses": 2,
-        "wr": 0.3333,
-        "pf": 0.007,
-        "profit_usdt": -2.79,
-        "avg_profit_pct": -1.517
-      },
-      "NEUTRAL": {
-        "n": 7,
-        "wins": 3,
-        "losses": 4,
-        "wr": 0.4286,
-        "pf": 0.296,
-        "profit_usdt": -4.52,
-        "avg_profit_pct": -0.737
-      }
-    },
-    "OP/USDT:USDT": {
-      "BEAR": {
-        "n": 10,
-        "wins": 0,
-        "losses": 10,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -7.49,
-        "avg_profit_pct": -1.123
-      },
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 3,
-        "losses": 2,
-        "wr": 0.6,
-        "pf": 1.615,
-        "profit_usdt": 1.28,
-        "avg_profit_pct": 0.26
-      }
-    },
     "DOGE/USDT:USDT": {
       "BEAR": {
         "n": 1,
@@ -97,6 +57,26 @@
         "pf": 0.553,
         "profit_usdt": -3.82,
         "avg_profit_pct": -0.319
+      }
+    },
+    "OP/USDT:USDT": {
+      "BEAR": {
+        "n": 9,
+        "wins": 0,
+        "losses": 9,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -6.72,
+        "avg_profit_pct": -1.123
+      },
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 3,
+        "losses": 2,
+        "wr": 0.6,
+        "pf": 1.615,
+        "profit_usdt": 1.28,
+        "avg_profit_pct": 0.26
       }
     },
     "SOL/USDT:USDT": {
@@ -217,6 +197,26 @@
         "pf": 0.0,
         "profit_usdt": -7.97,
         "avg_profit_pct": -3.85
+      }
+    },
+    "ENA/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 7,
+        "wins": 3,
+        "losses": 4,
+        "wr": 0.4286,
+        "pf": 0.296,
+        "profit_usdt": -4.52,
+        "avg_profit_pct": -0.737
+      },
+      "BEAR": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 0.011,
+        "profit_usdt": -1.8,
+        "avg_profit_pct": -1.55
       }
     },
     "LINK/USDT:USDT": {
@@ -619,8 +619,8 @@
     {
       "pair": "OP/USDT:USDT",
       "regime": "BEAR",
-      "reason": "WR=0% PF=0.00 n=10 profit=-7.49",
-      "n": 10,
+      "reason": "WR=0% PF=0.00 n=9 profit=-6.72",
+      "n": 9,
       "wr": 0.0,
       "pf": 0.0
     },
