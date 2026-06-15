@@ -409,6 +409,16 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 
 ## Session History Summary
 
+### June 15, 2026 — Signal-quality fix: return-attribution sample weighting (commit `5866361e`)
+
+**Why:** equity curve reviewed — peak +114 USDT (May 20), now ~+20; the "profit" was two anomalous days (May 15–16 +105). Validation experiments (quantile/pruned/baseline) ALL lost on recent windows → entry mechanism is NOT the lever. Root cause is signal quality. Measured: 12-candle target recomputed every candle → labels overlap 92% (label concurrency); model overfits low-amplitude chop where the 38%-full-SL bleed originates.
+
+**Key insight (honest):** naive López de Prado *uniqueness* weighting is near-uniform for a FIXED-horizon label → no-op here. Built the useful half instead: weight rows by realized **move size**.
+
+**Shipped:** `freqtrade/user_data/freqaimodels/LightGBMRegressorWeighted.py` — `sample_weight = clip(|z-target|/mean|z-target|, 0.25, 4.0)` into FreqAI's `fit()`. Down-weights chop, up-weights big moves. Selected via `freqaimodel` config field (family cache keys on it). A/B vs stock queued on bull_2025Q4 + bear_2026Q1 (front of queue). Smoke-tested clean. Live bot untouched.
+
+**Next if A/B helps:** triple-barrier labels + meta-labeling (2nd model decides act/skip — canonical fix for "good recall, bad precision"; filters the bleeding entries). See [[reference-sample-weighting]].
+
 > Full session history lives in `finbuddy_memory/FINBUDDY_PROJECT_MEMORY.md`. Only the most recent session is kept here.
 
 ### June 12, 2026 — Validation unblocked + family cache + deep audit (commits `3d97c96d`…`b409e081` + cache `c8344e9b`)
