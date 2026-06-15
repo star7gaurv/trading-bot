@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-15T01:30:01.361600+00:00",
+  "updated": "2026-06-15T02:00:01.902125+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "ENA/USDT:USDT": {
-      "BEAR": {
-        "n": 4,
-        "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 0.658,
-        "profit_usdt": -0.96,
-        "avg_profit_pct": -0.445
-      },
-      "NEUTRAL": {
-        "n": 7,
-        "wins": 3,
-        "losses": 4,
-        "wr": 0.4286,
-        "pf": 0.296,
-        "profit_usdt": -4.52,
-        "avg_profit_pct": -0.737
-      }
-    },
     "ZEC/USDT:USDT": {
       "BEAR": {
         "n": 1,
@@ -206,6 +186,26 @@
         "pf": 12.364,
         "profit_usdt": 12.16,
         "avg_profit_pct": 0.26
+      }
+    },
+    "ENA/USDT:USDT": {
+      "BEAR": {
+        "n": 3,
+        "wins": 1,
+        "losses": 2,
+        "wr": 0.3333,
+        "pf": 0.007,
+        "profit_usdt": -2.79,
+        "avg_profit_pct": -1.517
+      },
+      "NEUTRAL": {
+        "n": 7,
+        "wins": 3,
+        "losses": 4,
+        "wr": 0.4286,
+        "pf": 0.296,
+        "profit_usdt": -4.52,
+        "avg_profit_pct": -0.737
       }
     },
     "BTC/USDT:USDT": {
