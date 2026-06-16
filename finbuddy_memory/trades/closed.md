@@ -455,3 +455,6 @@
 | 2026-06-16 02:25:57 | WIF/USDT:USDT | SHORT | 2h25m | +1.83% | +1.05 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-16 02:15:57 | SOL/USDT:USDT | SHORT | 1h34m | +2.16% | +1.23 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-16 02:41:13 | DOT/USDT:USDT | SHORT | 0h25m | +0.92% | +0.53 | exit_signal | BEAR | freqai_regression_v23_sh |
+| 2026-06-16 03:26:35 | LTC/USDT:USDT | SHORT | 0h41m | -0.87% | -0.50 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-16 03:26:46 | 1000PEPE/USDT:USDT | SHORT | 0h41m | -1.42% | -0.82 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-16 03:27:20 | DOT/USDT:USDT | SHORT | 0h16m | -1.28% | -0.74 | stop_loss | BEAR | freqai_regression_v23_sh |

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-16T03:00:01.769838+00:00",
+  "updated": "2026-06-16T03:30:01.593234+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -190,13 +190,13 @@
         "avg_profit_pct": -0.865
       },
       "BEAR": {
-        "n": 9,
+        "n": 10,
         "wins": 6,
-        "losses": 3,
-        "wr": 0.6667,
-        "pf": 1.593,
-        "profit_usdt": 1.21,
-        "avg_profit_pct": 0.277
+        "losses": 4,
+        "wr": 0.6,
+        "pf": 1.169,
+        "profit_usdt": 0.47,
+        "avg_profit_pct": 0.121
       }
     },
     "ADA/USDT:USDT": {
@@ -476,13 +476,13 @@
         "avg_profit_pct": -0.215
       },
       "BEAR": {
-        "n": 3,
+        "n": 4,
         "wins": 1,
-        "losses": 2,
-        "wr": 0.3333,
-        "pf": 1.178,
-        "profit_usdt": 0.19,
-        "avg_profit_pct": 0.12
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.667,
+        "profit_usdt": -0.63,
+        "avg_profit_pct": -0.265
       }
     },
     "FET/USDT:USDT": {
@@ -547,13 +547,13 @@
     },
     "LTC/USDT:USDT": {
       "BEAR": {
-        "n": 4,
+        "n": 5,
         "wins": 1,
-        "losses": 3,
-        "wr": 0.25,
-        "pf": 0.323,
-        "profit_usdt": -0.84,
-        "avg_profit_pct": -0.36
+        "losses": 4,
+        "wr": 0.2,
+        "pf": 0.23,
+        "profit_usdt": -1.34,
+        "avg_profit_pct": -0.462
       },
       "NEUTRAL": {
         "n": 4,
@@ -630,6 +630,14 @@
       "n": 5,
       "wr": 0.2,
       "pf": 0.078
+    },
+    {
+      "pair": "LTC/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=20% PF=0.23 n=5 profit=-1.34",
+      "n": 5,
+      "wr": 0.2,
+      "pf": 0.23
     },
     {
       "pair": "TAO/USDT:USDT",
