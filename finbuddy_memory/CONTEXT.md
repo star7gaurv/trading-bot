@@ -1,5 +1,5 @@
 # FinBuddy — Master Context
-Last updated: 2026-06-16 18:00 UTC
+Last updated: 2026-06-16 18:15 UTC
 
 ## Current Regime
 Regime: **BEAR** | Confidence: 80.0% | Since: 2026-06-16
@@ -10,11 +10,10 @@ BTC Dominance: 56.37%
 News Sentiment: 95.0% bullish
 
 ## Bot Performance
-Total Trades: 680 | Win Rate: 40.9% | Total P&L: 2.67%
+Total Trades: 681 | Win Rate: 40.8% | Total P&L: 2.58%
 
-## Open Trades (2)
-- XRP/USDT:USDT: Entry 1.22 | Current 1.22 | P&L: -0.39%
-- DOT/USDT:USDT: Entry 1.00 | Current 1.01 | P&L: -1.04%
+## Open Trades (1)
+- AVAX/USDT:USDT: Entry 6.88 | Current 6.89 | P&L: -0.17%
 ## Risk Flags
 - None
 

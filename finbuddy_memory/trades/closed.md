@@ -467,3 +467,5 @@
 | 2026-06-16 08:50:13 | TON/USDT:USDT | SHORT | 0h19m | -1.31% | -0.75 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-16 12:35:27 | APT/USDT:USDT | SHORT | 1h20m | -1.28% | -0.73 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-16 14:00:33 | SOL/USDT:USDT | SHORT | 0h15m | +0.70% | +0.39 | exit_signal | BEAR | freqai_regression_v23_sh |
+| 2026-06-16 18:04:03 | XRP/USDT:USDT | SHORT | 2h48m | -1.17% | -0.67 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-16 18:05:18 | DOT/USDT:USDT | SHORT | 2h49m | -1.74% | -0.99 | stop_loss | BEAR | freqai_regression_v23_sh |
