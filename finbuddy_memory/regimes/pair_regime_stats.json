@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-16T19:00:01.744818+00:00",
+  "updated": "2026-06-16T19:30:01.806568+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -354,13 +354,13 @@
         "avg_profit_pct": -0.865
       },
       "BEAR": {
-        "n": 2,
-        "wins": 1,
+        "n": 3,
+        "wins": 2,
         "losses": 1,
-        "wr": 0.5,
-        "pf": 1.657,
-        "profit_usdt": 0.46,
-        "avg_profit_pct": 0.41
+        "wr": 0.6667,
+        "pf": 2.3,
+        "profit_usdt": 0.91,
+        "avg_profit_pct": 0.547
       }
     },
     "DOGE/USDT:USDT": {
