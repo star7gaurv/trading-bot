@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-16T03:30:01.593234+00:00",
+  "updated": "2026-06-16T04:00:02.086862+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,97 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "BTC/USDT:USDT": {
-      "BEAR": {
-        "n": 2,
-        "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 1.143,
-        "profit_usdt": 0.02,
-        "avg_profit_pct": -0.045
-      }
-    },
-    "AVAX/USDT:USDT": {
-      "BEAR": {
-        "n": 4,
-        "wins": 1,
-        "losses": 3,
-        "wr": 0.25,
-        "pf": 0.712,
-        "profit_usdt": -0.47,
-        "avg_profit_pct": -0.152
-      },
-      "NEUTRAL": {
-        "n": 3,
-        "wins": 0,
-        "losses": 3,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -2.08,
-        "avg_profit_pct": -0.777
-      }
-    },
-    "OP/USDT:USDT": {
-      "BEAR": {
-        "n": 7,
-        "wins": 0,
-        "losses": 7,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -5.58,
-        "avg_profit_pct": -1.204
-      },
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 3,
-        "losses": 2,
-        "wr": 0.6,
-        "pf": 1.615,
-        "profit_usdt": 1.28,
-        "avg_profit_pct": 0.26
-      }
-    },
-    "UNI/USDT:USDT": {
-      "BEAR": {
-        "n": 7,
-        "wins": 1,
-        "losses": 6,
-        "wr": 0.1429,
-        "pf": 0.364,
-        "profit_usdt": -2.5,
-        "avg_profit_pct": -0.59
-      },
-      "NEUTRAL": {
-        "n": 11,
-        "wins": 5,
-        "losses": 6,
-        "wr": 0.4545,
-        "pf": 0.524,
-        "profit_usdt": -1.7,
-        "avg_profit_pct": -0.21
-      }
-    },
-    "NEAR/USDT:USDT": {
-      "BEAR": {
-        "n": 6,
-        "wins": 2,
-        "losses": 4,
-        "wr": 0.3333,
-        "pf": 0.588,
-        "profit_usdt": -2.28,
-        "avg_profit_pct": -0.713
-      },
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 4,
-        "losses": 1,
-        "wr": 0.8,
-        "pf": 9.619,
-        "profit_usdt": 9.05,
-        "avg_profit_pct": 2.646
-      }
-    },
     "ONDO/USDT:USDT": {
       "BEAR": {
         "n": 18,
@@ -119,6 +28,26 @@
         "avg_profit_pct": 0.72
       }
     },
+    "AVAX/USDT:USDT": {
+      "BEAR": {
+        "n": 3,
+        "wins": 1,
+        "losses": 2,
+        "wr": 0.3333,
+        "pf": 0.975,
+        "profit_usdt": -0.03,
+        "avg_profit_pct": 0.023
+      },
+      "NEUTRAL": {
+        "n": 3,
+        "wins": 0,
+        "losses": 3,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -2.08,
+        "avg_profit_pct": -0.777
+      }
+    },
     "DASH/USDT:USDT": {
       "BEAR": {
         "n": 2,
@@ -137,6 +66,46 @@
         "pf": 0.0,
         "profit_usdt": -7.97,
         "avg_profit_pct": -3.85
+      }
+    },
+    "OP/USDT:USDT": {
+      "BEAR": {
+        "n": 6,
+        "wins": 0,
+        "losses": 6,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -5.01,
+        "avg_profit_pct": -1.265
+      },
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 3,
+        "losses": 2,
+        "wr": 0.6,
+        "pf": 1.615,
+        "profit_usdt": 1.28,
+        "avg_profit_pct": 0.26
+      }
+    },
+    "UNI/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 11,
+        "wins": 5,
+        "losses": 6,
+        "wr": 0.4545,
+        "pf": 0.524,
+        "profit_usdt": -1.7,
+        "avg_profit_pct": -0.21
+      },
+      "BEAR": {
+        "n": 6,
+        "wins": 1,
+        "losses": 5,
+        "wr": 0.1667,
+        "pf": 0.419,
+        "profit_usdt": -1.98,
+        "avg_profit_pct": -0.56
       }
     },
     "ENA/USDT:USDT": {
@@ -237,6 +206,26 @@
         "pf": 12.364,
         "profit_usdt": 12.16,
         "avg_profit_pct": 0.26
+      }
+    },
+    "NEAR/USDT:USDT": {
+      "BEAR": {
+        "n": 5,
+        "wins": 2,
+        "losses": 3,
+        "wr": 0.4,
+        "pf": 0.66,
+        "profit_usdt": -1.68,
+        "avg_profit_pct": -0.68
+      },
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 4,
+        "losses": 1,
+        "wr": 0.8,
+        "pf": 9.619,
+        "profit_usdt": 9.05,
+        "avg_profit_pct": 2.646
       }
     },
     "TON/USDT:USDT": {
@@ -387,13 +376,13 @@
     },
     "POL/USDT:USDT": {
       "BEAR": {
-        "n": 2,
+        "n": 3,
         "wins": 0,
-        "losses": 2,
+        "losses": 3,
         "wr": 0.0,
         "pf": 0.0,
-        "profit_usdt": -1.06,
-        "avg_profit_pct": -0.78
+        "profit_usdt": -1.57,
+        "avg_profit_pct": -0.813
       },
       "NEUTRAL": {
         "n": 1,
@@ -604,24 +593,35 @@
         "profit_usdt": -1.7,
         "avg_profit_pct": -0.147
       }
+    },
+    "BTC/USDT:USDT": {
+      "BEAR": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 0.16,
+        "avg_profit_pct": 0.26
+      }
     }
   },
   "blocked": [
     {
       "pair": "OP/USDT:USDT",
       "regime": "BEAR",
-      "reason": "WR=0% PF=0.00 n=7 profit=-5.58",
-      "n": 7,
+      "reason": "WR=0% PF=0.00 n=6 profit=-5.01",
+      "n": 6,
       "wr": 0.0,
       "pf": 0.0
     },
     {
       "pair": "UNI/USDT:USDT",
       "regime": "BEAR",
-      "reason": "WR=14% PF=0.36 n=7 profit=-2.50",
-      "n": 7,
-      "wr": 0.1429,
-      "pf": 0.364
+      "reason": "WR=17% PF=0.42 n=6 profit=-1.98",
+      "n": 6,
+      "wr": 0.1667,
+      "pf": 0.419
     },
     {
       "pair": "ARB/USDT:USDT",
@@ -694,14 +694,6 @@
       "n": 9,
       "wr": 0.3333,
       "pf": 0.435
-    },
-    {
-      "pair": "NEAR/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=33% PF=0.59 n=6 profit=-2.28",
-      "n": 6,
-      "wr": 0.3333,
-      "pf": 0.588
     },
     {
       "pair": "ADA/USDT:USDT",
