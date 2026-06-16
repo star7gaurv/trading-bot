@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-16T04:00:02.086862+00:00",
+  "updated": "2026-06-16T04:30:01.201210+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "ONDO/USDT:USDT": {
-      "BEAR": {
-        "n": 18,
-        "wins": 6,
-        "losses": 12,
-        "wr": 0.3333,
-        "pf": 0.373,
-        "profit_usdt": -8.16,
-        "avg_profit_pct": -0.741
-      },
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 2.227,
-        "profit_usdt": 1.46,
-        "avg_profit_pct": 0.72
-      }
-    },
     "AVAX/USDT:USDT": {
       "BEAR": {
         "n": 3,
@@ -46,6 +26,26 @@
         "pf": 0.0,
         "profit_usdt": -2.08,
         "avg_profit_pct": -0.777
+      }
+    },
+    "ONDO/USDT:USDT": {
+      "BEAR": {
+        "n": 17,
+        "wins": 6,
+        "losses": 11,
+        "wr": 0.3529,
+        "pf": 0.392,
+        "profit_usdt": -7.51,
+        "avg_profit_pct": -0.728
+      },
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 2.227,
+        "profit_usdt": 1.46,
+        "avg_profit_pct": 0.72
       }
     },
     "DASH/USDT:USDT": {
@@ -680,20 +680,20 @@
       "pf": 0.199
     },
     {
-      "pair": "ONDO/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=33% PF=0.37 n=18 profit=-8.16",
-      "n": 18,
-      "wr": 0.3333,
-      "pf": 0.373
-    },
-    {
       "pair": "ZEC/USDT:USDT",
       "regime": "NEUTRAL",
       "reason": "WR=33% PF=0.43 n=9 profit=-6.72",
       "n": 9,
       "wr": 0.3333,
       "pf": 0.435
+    },
+    {
+      "pair": "ONDO/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=35% PF=0.39 n=17 profit=-7.51",
+      "n": 17,
+      "wr": 0.3529,
+      "pf": 0.392
     },
     {
       "pair": "ADA/USDT:USDT",
