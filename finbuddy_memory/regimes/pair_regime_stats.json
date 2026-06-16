@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-16T06:00:01.150105+00:00",
+  "updated": "2026-06-16T06:30:01.599525+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -230,13 +230,13 @@
     },
     "TON/USDT:USDT": {
       "BEAR": {
-        "n": 4,
-        "wins": 1,
+        "n": 5,
+        "wins": 2,
         "losses": 3,
-        "wr": 0.25,
-        "pf": 0.35,
-        "profit_usdt": -2.25,
-        "avg_profit_pct": -0.805
+        "wr": 0.4,
+        "pf": 0.526,
+        "profit_usdt": -1.64,
+        "avg_profit_pct": -0.434
       }
     },
     "ETH/USDT:USDT": {
@@ -505,13 +505,13 @@
         "avg_profit_pct": -1.96
       },
       "BEAR": {
-        "n": 3,
+        "n": 4,
         "wins": 3,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 2.77,
-        "avg_profit_pct": 1.627
+        "losses": 1,
+        "wr": 0.75,
+        "pf": 3.078,
+        "profit_usdt": 1.87,
+        "avg_profit_pct": 0.83
       }
     },
     "LDO/USDT:USDT": {
