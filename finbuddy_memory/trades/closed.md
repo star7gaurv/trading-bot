@@ -465,3 +465,4 @@
 | 2026-06-16 07:09:22 | DOT/USDT:USDT | SHORT | 0h38m | -0.87% | -0.50 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-16 07:41:04 | NEAR/USDT:USDT | SHORT | 0h25m | -3.81% | -2.16 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-16 08:50:13 | TON/USDT:USDT | SHORT | 0h19m | -1.31% | -0.75 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-16 12:35:27 | APT/USDT:USDT | SHORT | 1h20m | -1.28% | -0.73 | stop_loss | BEAR | freqai_regression_v23_sh |
