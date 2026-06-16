@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-16T06:30:01.599525+00:00",
+  "updated": "2026-06-16T07:00:02.055833+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "DASH/USDT:USDT": {
-      "BEAR": {
-        "n": 2,
-        "wins": 0,
-        "losses": 2,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -2.55,
-        "avg_profit_pct": -1.865
-      },
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 0,
-        "losses": 2,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -7.97,
-        "avg_profit_pct": -3.85
-      }
-    },
     "OP/USDT:USDT": {
       "BEAR": {
         "n": 6,
@@ -279,6 +259,26 @@
         "avg_profit_pct": -0.61
       }
     },
+    "DASH/USDT:USDT": {
+      "BEAR": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -1.74,
+        "avg_profit_pct": -2.54
+      },
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 0,
+        "losses": 2,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -7.97,
+        "avg_profit_pct": -3.85
+      }
+    },
     "ARB/USDT:USDT": {
       "BEAR": {
         "n": 5,
@@ -465,13 +465,13 @@
         "avg_profit_pct": -0.215
       },
       "BEAR": {
-        "n": 4,
+        "n": 5,
         "wins": 1,
-        "losses": 3,
-        "wr": 0.25,
-        "pf": 0.667,
-        "profit_usdt": -0.63,
-        "avg_profit_pct": -0.265
+        "losses": 4,
+        "wr": 0.2,
+        "pf": 0.486,
+        "profit_usdt": -1.33,
+        "avg_profit_pct": -0.454
       }
     },
     "FET/USDT:USDT": {
@@ -638,6 +638,14 @@
       "n": 5,
       "wr": 0.2,
       "pf": 0.23
+    },
+    {
+      "pair": "1000PEPE/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=20% PF=0.49 n=5 profit=-1.33",
+      "n": 5,
+      "wr": 0.2,
+      "pf": 0.486
     },
     {
       "pair": "TAO/USDT:USDT",
