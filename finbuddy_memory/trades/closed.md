@@ -452,3 +452,5 @@
 | 2026-06-15 22:30:32 | DOT/USDT:USDT | SHORT | 1h15m | +3.06% | +1.74 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-16 00:40:58 | AVAX/USDT:USDT | SHORT | 1h45m | -1.28% | -0.70 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-16 01:30:34 | RENDER/USDT:USDT | SHORT | 1h45m | +1.38% | +0.79 | exit_signal | BEAR | freqai_regression_v23_sh |
+| 2026-06-16 02:25:57 | WIF/USDT:USDT | SHORT | 2h25m | +1.83% | +1.05 | exit_signal | BEAR | freqai_regression_v23_sh |
+| 2026-06-16 02:15:57 | SOL/USDT:USDT | SHORT | 1h34m | +2.16% | +1.23 | exit_signal | BEAR | freqai_regression_v23_sh |
