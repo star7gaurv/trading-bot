@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-16T01:00:02.090022+00:00",
+  "updated": "2026-06-16T01:30:02.028741+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,77 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "DOGE/USDT:USDT": {
-      "BEAR": {
-        "n": 1,
-        "wins": 1,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 1.06,
-        "avg_profit_pct": 1.55
-      },
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -0.93,
-        "avg_profit_pct": -0.91
-      }
-    },
-    "BTC/USDT:USDT": {
-      "BEAR": {
-        "n": 3,
-        "wins": 2,
-        "losses": 1,
-        "wr": 0.6667,
-        "pf": 2.929,
-        "profit_usdt": 0.27,
-        "avg_profit_pct": 0.187
-      }
-    },
-    "APT/USDT:USDT": {
-      "BEAR": {
-        "n": 21,
-        "wins": 11,
-        "losses": 10,
-        "wr": 0.5238,
-        "pf": 1.195,
-        "profit_usdt": 1.32,
-        "avg_profit_pct": 0.071
-      },
-      "NEUTRAL": {
-        "n": 15,
-        "wins": 4,
-        "losses": 11,
-        "wr": 0.2667,
-        "pf": 0.553,
-        "profit_usdt": -3.82,
-        "avg_profit_pct": -0.319
-      }
-    },
-    "OP/USDT:USDT": {
-      "BEAR": {
-        "n": 9,
-        "wins": 0,
-        "losses": 9,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -6.72,
-        "avg_profit_pct": -1.123
-      },
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 3,
-        "losses": 2,
-        "wr": 0.6,
-        "pf": 1.615,
-        "profit_usdt": 1.28,
-        "avg_profit_pct": 0.26
-      }
-    },
     "SOL/USDT:USDT": {
       "BEAR": {
         "n": 4,
@@ -97,6 +26,37 @@
         "pf": 0.0,
         "profit_usdt": -0.91,
         "avg_profit_pct": -1.1
+      }
+    },
+    "OP/USDT:USDT": {
+      "BEAR": {
+        "n": 8,
+        "wins": 0,
+        "losses": 8,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -6.15,
+        "avg_profit_pct": -1.159
+      },
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 3,
+        "losses": 2,
+        "wr": 0.6,
+        "pf": 1.615,
+        "profit_usdt": 1.28,
+        "avg_profit_pct": 0.26
+      }
+    },
+    "BTC/USDT:USDT": {
+      "BEAR": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 1.143,
+        "profit_usdt": 0.02,
+        "avg_profit_pct": -0.045
       }
     },
     "AVAX/USDT:USDT": {
@@ -434,6 +394,17 @@
         "avg_profit_pct": -0.695
       }
     },
+    "DOGE/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.93,
+        "avg_profit_pct": -0.91
+      }
+    },
     "POL/USDT:USDT": {
       "BEAR": {
         "n": 2,
@@ -613,14 +584,34 @@
         "profit_usdt": -0.57,
         "avg_profit_pct": -0.128
       }
+    },
+    "APT/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 15,
+        "wins": 4,
+        "losses": 11,
+        "wr": 0.2667,
+        "pf": 0.553,
+        "profit_usdt": -3.82,
+        "avg_profit_pct": -0.319
+      },
+      "BEAR": {
+        "n": 20,
+        "wins": 10,
+        "losses": 10,
+        "wr": 0.5,
+        "pf": 0.749,
+        "profit_usdt": -1.7,
+        "avg_profit_pct": -0.147
+      }
     }
   },
   "blocked": [
     {
       "pair": "OP/USDT:USDT",
       "regime": "BEAR",
-      "reason": "WR=0% PF=0.00 n=9 profit=-6.72",
-      "n": 9,
+      "reason": "WR=0% PF=0.00 n=8 profit=-6.15",
+      "n": 8,
       "wr": 0.0,
       "pf": 0.0
     },
