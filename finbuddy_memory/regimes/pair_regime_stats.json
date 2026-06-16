@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-16T19:30:01.806568+00:00",
+  "updated": "2026-06-16T20:00:02.068120+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,46 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "LINK/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -0.82,
-        "avg_profit_pct": -0.8
-      },
-      "BEAR": {
-        "n": 11,
-        "wins": 5,
-        "losses": 6,
-        "wr": 0.4545,
-        "pf": 0.969,
-        "profit_usdt": -0.08,
-        "avg_profit_pct": -0.044
-      }
-    },
-    "ONDO/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 2.227,
-        "profit_usdt": 1.46,
-        "avg_profit_pct": 0.72
-      },
-      "BEAR": {
-        "n": 16,
-        "wins": 6,
-        "losses": 10,
-        "wr": 0.375,
-        "pf": 0.452,
-        "profit_usdt": -5.88,
-        "avg_profit_pct": -0.625
-      }
-    },
     "DOT/USDT:USDT": {
       "NEUTRAL": {
         "n": 4,
@@ -86,6 +46,26 @@
         "pf": 0.602,
         "profit_usdt": -1.68,
         "avg_profit_pct": -0.242
+      }
+    },
+    "ONDO/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 2.65,
+        "avg_profit_pct": 2.61
+      },
+      "BEAR": {
+        "n": 16,
+        "wins": 6,
+        "losses": 10,
+        "wr": 0.375,
+        "pf": 0.452,
+        "profit_usdt": -5.88,
+        "avg_profit_pct": -0.625
       }
     },
     "SUI/USDT:USDT": {
@@ -217,6 +197,17 @@
         "pf": 0.0,
         "profit_usdt": -0.61,
         "avg_profit_pct": -0.61
+      }
+    },
+    "LINK/USDT:USDT": {
+      "BEAR": {
+        "n": 11,
+        "wins": 5,
+        "losses": 6,
+        "wr": 0.4545,
+        "pf": 0.969,
+        "profit_usdt": -0.08,
+        "avg_profit_pct": -0.044
       }
     },
     "DASH/USDT:USDT": {
