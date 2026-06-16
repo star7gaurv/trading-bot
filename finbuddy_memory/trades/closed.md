@@ -463,3 +463,4 @@
 | 2026-06-16 06:22:21 | RENDER/USDT:USDT | SHORT | 1h56m | -1.56% | -0.90 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-16 06:47:22 | 1000PEPE/USDT:USDT | SHORT | 1h20m | -1.21% | -0.70 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-16 07:09:22 | DOT/USDT:USDT | SHORT | 0h38m | -0.87% | -0.50 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-16 07:41:04 | NEAR/USDT:USDT | SHORT | 0h25m | -3.81% | -2.16 | stop_loss | BEAR | freqai_regression_v23_sh |
