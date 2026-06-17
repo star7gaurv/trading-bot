@@ -477,3 +477,6 @@
 | 2026-06-17 01:11:17 | XRP/USDT:USDT | SHORT | 0h25m | +0.17% | +0.09 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-17 01:10:37 | RENDER/USDT:USDT | SHORT | 0h25m | +0.08% | +0.04 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-17 01:30:25 | XRP/USDT:USDT | SHORT | 0h05m | -0.10% | -0.06 | exit_signal | BEAR | freqai_regression_v23_sh |
+| 2026-06-17 01:50:42 | APT/USDT:USDT | SHORT | 0h20m | -1.33% | -0.76 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-17 01:50:12 | XRP/USDT:USDT | SHORT | 0h05m | -0.89% | -0.51 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-17 01:58:17 | RENDER/USDT:USDT | SHORT | 0h12m | -1.47% | -0.84 | stop_loss | BEAR | freqai_regression_v23_sh |
