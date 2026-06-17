@@ -483,3 +483,5 @@
 | 2026-06-17 04:11:14 | XRP/USDT:USDT | SHORT | 0h20m | -0.89% | -0.51 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-17 06:46:17 | AVAX/USDT:USDT | SHORT | 0h16m | +0.53% | +0.29 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-17 08:15:22 | AVAX/USDT:USDT | SHORT | 0h30m | +1.14% | +0.63 | exit_signal | BEAR | freqai_regression_v23_sh |
+| 2026-06-17 11:10:01 | DOT/USDT:USDT | SHORT | 1h39m | +1.11% | +0.63 | trailing_stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-17 11:06:36 | AVAX/USDT:USDT | SHORT | 1h36m | +0.83% | +0.45 | trailing_stop_loss | BEAR | freqai_regression_v23_sh |
