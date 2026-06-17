@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-17T08:30:01.214038+00:00",
+  "updated": "2026-06-17T09:00:01.706095+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,17 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "TON/USDT:USDT": {
-      "BEAR": {
-        "n": 6,
-        "wins": 2,
-        "losses": 4,
-        "wr": 0.3333,
-        "pf": 0.432,
-        "profit_usdt": -2.39,
-        "avg_profit_pct": -0.58
-      }
-    },
     "OP/USDT:USDT": {
       "BEAR": {
         "n": 5,
@@ -57,6 +46,17 @@
         "pf": 0.601,
         "profit_usdt": -1.24,
         "avg_profit_pct": -0.162
+      }
+    },
+    "TON/USDT:USDT": {
+      "BEAR": {
+        "n": 5,
+        "wins": 2,
+        "losses": 3,
+        "wr": 0.4,
+        "pf": 0.621,
+        "profit_usdt": -1.11,
+        "avg_profit_pct": -0.32
       }
     },
     "ONDO/USDT:USDT": {
@@ -316,13 +316,13 @@
         "avg_profit_pct": -0.865
       },
       "BEAR": {
-        "n": 4,
-        "wins": 3,
+        "n": 5,
+        "wins": 4,
         "losses": 1,
-        "wr": 0.75,
-        "pf": 2.714,
-        "profit_usdt": 1.2,
-        "avg_profit_pct": 0.542
+        "wr": 0.8,
+        "pf": 3.614,
+        "profit_usdt": 1.83,
+        "avg_profit_pct": 0.662
       }
     },
     "DOGE/USDT:USDT": {
@@ -684,14 +684,6 @@
       "n": 6,
       "wr": 0.3333,
       "pf": 0.199
-    },
-    {
-      "pair": "TON/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=33% PF=0.43 n=6 profit=-2.39",
-      "n": 6,
-      "wr": 0.3333,
-      "pf": 0.432
     },
     {
       "pair": "ZEC/USDT:USDT",
