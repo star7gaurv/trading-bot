@@ -267,7 +267,9 @@ function ClosedTradesTable({ onSelectTrade }) {
     () => getClosedTrades({ limit: PAGE_SIZE, offset: page * PAGE_SIZE }),
     [page]
   );
-  const { data, error, loading, lastUpdated, refresh } = usePolling(fetcher, 30000);
+  // deps=[page] → re-fetch immediately when the page changes (was missing, so
+  // Next/Prev only moved the counter and never loaded the next page).
+  const { data, error, loading, lastUpdated, refresh } = usePolling(fetcher, 30000, [page]);
 
   const raw = data?.trades ?? (Array.isArray(data) ? data : []);
   const total = data?.total_trades ?? raw.length;

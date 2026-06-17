@@ -11,7 +11,15 @@ export function usePolling(fetcher, intervalMs = 5000, deps = []) {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const aliveRef = useRef(true);
+  // Always call the LATEST fetcher. Without this, the polling closure captured the
+  // fetcher from the first render (deps=[]) — so paginated callers (offset changes
+  // with `page`) kept re-fetching page 0 forever. The ref fixes the stale closure
+  // even when a caller forgets deps; passing deps=[page] additionally forces an
+  // immediate re-fetch on page change instead of waiting for the next interval.
+  const fetcherRef = useRef(fetcher);
+  fetcherRef.current = fetcher;
 
   useEffect(() => {
     aliveRef.current = true;
@@ -19,7 +27,7 @@ export function usePolling(fetcher, intervalMs = 5000, deps = []) {
 
     const tick = async () => {
       try {
-        const result = await fetcher();
+        const result = await fetcherRef.current();
         if (!aliveRef.current) return;
         setData(result);
         setError(null);
@@ -42,9 +50,11 @@ export function usePolling(fetcher, intervalMs = 5000, deps = []) {
       if (timer) clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
+  }, [...deps, refreshKey, intervalMs]);
 
-  return { data, error, loading, lastUpdated };
+  // `refresh` was previously destructured by callers (e.g. ClosedTradesTable) but
+  // never returned — the refresh button was a no-op. Triggers an immediate re-fetch.
+  return { data, error, loading, lastUpdated, refresh: () => setRefreshKey((k) => k + 1) };
 }
 
 /** One-shot fetch with manual refresh. */
