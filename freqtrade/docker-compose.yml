@@ -64,6 +64,12 @@ services:
       - FREQAI_PRUNE_INDICATORS=${FREQAI_PRUNE_INDICATORS:-0}
       - FREQAI_PERPAIR_OI=${FREQAI_PERPAIR_OI:-0}
       - FREQAI_TREND_HORIZON=${FREQAI_TREND_HORIZON:-0}
+      # Capital Preservation Layer (2026-06-16): early-exit a losing trade when the
+      # model stops supporting it. DEFAULT OFF — A/B backtest on 20260101-20260401
+      # showed it made the bleed WORSE (-553.9 vs -545.6) by churning more trades:
+      # the per-candle prediction is too noisy to use as a real-time abandon signal.
+      - FREQAI_PRED_DECAY_EXIT=${FREQAI_PRED_DECAY_EXIT:-0}
+      - FREQAI_PRED_DECAY_LEVEL=${FREQAI_PRED_DECAY_LEVEL:-0.0}
       # Time-limit exit: candle count = model's label_period_candles horizon (added 2026-05-28)
       - FREQAI_LABEL_CANDLES=${FREQAI_LABEL_CANDLES:-12}
       - FREQTRADE__FREQAI__IDENTIFIER=${FREQTRADE__FREQAI__IDENTIFIER:-}

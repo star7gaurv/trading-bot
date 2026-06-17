@@ -258,12 +258,40 @@ class FinBuddyFreqAI_v23(IStrategy):
             )
             return "daily_flatten"
 
+        candles_open = int((current_time - trade.open_date_utc).total_seconds() / timeframe_to_seconds(self.timeframe))
+
+        # ── Capital Preservation Layer (2026-06-16): prediction-decay early exit ──
+        # The bleed pattern: shorts win in the morning, then a counter-trend bounce
+        # stops out a cluster of them at full SL in the afternoon. This watches the
+        # MODEL's live view of every open trade and cuts it EARLY — the moment the
+        # model stops supporting the position while it's underwater — turning a
+        # -1.2 full stop-loss into a ~-0.4 early exit. Only fires on losers (never
+        # cuts a winner) and only when the model has gone neutral/against the trade.
+        # FREQAI_PRED_DECAY_LEVEL = centered-prediction level at which the model no
+        # longer supports the side (default 0.0).
+        # DEFAULT OFF (2026-06-16): A/B backtest showed early-exit made the bleed
+        # WORSE (-553.9 vs -545.6, WR 38.1% vs 40.4%, +243 more trades). The
+        # per-candle prediction is too noisy as a real-time abandon trigger — it
+        # cuts trades that recover and churns re-entries. Kept gated for reference.
+        if os.environ.get("FREQAI_PRED_DECAY_EXIT", "0") == "1" and candles_open >= 1 and current_profit < -0.002:
+            decay_level = float(os.environ.get("FREQAI_PRED_DECAY_LEVEL", "0.0"))
+            df, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
+            if df is not None and not df.empty:
+                last = df.iloc[-1]
+                if int(last.get("do_predict", 0)) == 1 and "&-future_return" in df.columns:
+                    pred = float(last.get("&-future_return", 0.0))
+                    centered = pred - df["&-future_return"].tail(self._CENTERING_WINDOW).median()
+                    # short supported while centered < 0; long supported while centered > 0
+                    if trade.is_short and centered >= decay_level:
+                        return "pred_decay_exit"
+                    if (not trade.is_short) and centered <= -decay_level:
+                        return "pred_decay_exit"
+
         # Time-limit exit: close trade after label_period_candles candles (timeframe-aware).
         # config.json label_period_candles=12 → 3h on 15m TF. Holding beyond the model's
         # prediction horizon is undefined territory. FREQAI_LABEL_CANDLES env var lets
         # brain tune this parameter (same as K_SL/K_TP). Default 12 matches config.
         label_candles = int(os.environ.get("FREQAI_LABEL_CANDLES", "12"))
-        candles_open = int((current_time - trade.open_date_utc).total_seconds() / timeframe_to_seconds(self.timeframe))
         if candles_open >= label_candles:
             return "time_limit_exit"
         return None
