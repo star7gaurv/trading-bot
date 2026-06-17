@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-17T12:30:01.822889+00:00",
+  "updated": "2026-06-17T13:00:02.066341+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "ETH/USDT:USDT": {
-      "BEAR": {
-        "n": 5,
-        "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
-        "pf": 0.534,
-        "profit_usdt": -0.89,
-        "avg_profit_pct": -0.32
-      },
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 0.25,
-        "profit_usdt": -0.42,
-        "avg_profit_pct": -0.325
-      }
-    },
     "XRP/USDT:USDT": {
       "BEAR": {
         "n": 7,
@@ -77,6 +57,26 @@
         "pf": 0.797,
         "profit_usdt": -0.74,
         "avg_profit_pct": -0.067
+      }
+    },
+    "ETH/USDT:USDT": {
+      "BEAR": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.718,
+        "profit_usdt": -0.4,
+        "avg_profit_pct": -0.22
+      },
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 0.25,
+        "profit_usdt": -0.42,
+        "avg_profit_pct": -0.325
       }
     },
     "DASH/USDT:USDT": {
@@ -628,14 +628,6 @@
       "n": 5,
       "wr": 0.2,
       "pf": 0.513
-    },
-    {
-      "pair": "ETH/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=20% PF=0.53 n=5 profit=-0.89",
-      "n": 5,
-      "wr": 0.2,
-      "pf": 0.534
     },
     {
       "pair": "UNI/USDT:USDT",
