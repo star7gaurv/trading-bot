@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-17T01:00:01.974967+00:00",
+  "updated": "2026-06-17T01:30:01.434600+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -132,13 +132,13 @@
     },
     "XRP/USDT:USDT": {
       "BEAR": {
-        "n": 3,
-        "wins": 1,
+        "n": 4,
+        "wins": 2,
         "losses": 2,
-        "wr": 0.3333,
-        "pf": 1.647,
-        "profit_usdt": 0.44,
-        "avg_profit_pct": 0.153
+        "wr": 0.5,
+        "pf": 1.779,
+        "profit_usdt": 0.53,
+        "avg_profit_pct": 0.158
       },
       "NEUTRAL": {
         "n": 1,
@@ -487,13 +487,13 @@
         "avg_profit_pct": -1.96
       },
       "BEAR": {
-        "n": 6,
-        "wins": 4,
+        "n": 7,
+        "wins": 5,
         "losses": 2,
-        "wr": 0.6667,
-        "pf": 3.137,
-        "profit_usdt": 2.18,
-        "avg_profit_pct": 0.643
+        "wr": 0.7143,
+        "pf": 3.176,
+        "profit_usdt": 2.22,
+        "avg_profit_pct": 0.563
       }
     },
     "LDO/USDT:USDT": {
