@@ -494,3 +494,4 @@
 | 2026-06-17 15:00:31 | ADA/USDT:USDT | SHORT | 0h05m | +0.40% | +0.22 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-17 15:51:41 | ETH/USDT:USDT | SHORT | 0h51m | -1.10% | -0.62 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-17 15:48:46 | ADA/USDT:USDT | SHORT | 0h21m | -1.32% | -0.75 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-17 18:16:18 | LDO/USDT:USDT | SHORT | 1h00m | +3.24% | +1.83 | exit_signal | BEAR | freqai_regression_v23_sh |
