@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-17T21:00:01.167128+00:00",
+  "updated": "2026-06-17T21:30:01.471411+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "ARB/USDT:USDT": {
-      "BEAR": {
-        "n": 5,
-        "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
-        "pf": 0.078,
-        "profit_usdt": -3.06,
-        "avg_profit_pct": -1.006
-      },
-      "NEUTRAL": {
-        "n": 8,
-        "wins": 5,
-        "losses": 3,
-        "wr": 0.625,
-        "pf": 0.611,
-        "profit_usdt": -1.15,
-        "avg_profit_pct": -0.154
-      }
-    },
     "DOT/USDT:USDT": {
       "BEAR": {
         "n": 16,
@@ -414,6 +394,26 @@
         "avg_profit_pct": 0.551
       }
     },
+    "ARB/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 8,
+        "wins": 5,
+        "losses": 3,
+        "wr": 0.625,
+        "pf": 0.611,
+        "profit_usdt": -1.15,
+        "avg_profit_pct": -0.154
+      },
+      "BEAR": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.107,
+        "profit_usdt": -2.18,
+        "avg_profit_pct": -0.935
+      }
+    },
     "ADA/USDT:USDT": {
       "NEUTRAL": {
         "n": 11,
@@ -587,14 +587,6 @@
       "n": 6,
       "wr": 0.1667,
       "pf": 0.051
-    },
-    {
-      "pair": "ARB/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=20% PF=0.08 n=5 profit=-3.06",
-      "n": 5,
-      "wr": 0.2,
-      "pf": 0.078
     },
     {
       "pair": "ETH/USDT:USDT",
