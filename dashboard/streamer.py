@@ -303,7 +303,11 @@ async def brain_experiments(
                     continue
                 m = row.get("metrics") or {}
                 cfg = row.get("config") or {}
-                # Extract profit_pct — log stores as decimal (0.052 = 5.2%), convert to %
+                # 2026-06-17 ×100 BUG FIX: profit_pct is ALREADY a percent in the log
+                # (runner.py: sum(profits)/10000*100; the brain log prints "profit=-33.703%").
+                # The old `profit_pct * 100` rendered -33.7% as -3370% — destroying trust in
+                # every dashboard number. WR, by contrast, IS stored as a decimal (0.469) and
+                # correctly keeps its ×100.
                 profit_pct = m.get("profit_pct")
                 wr = m.get("wr")
                 items.append({
@@ -313,7 +317,7 @@ async def brain_experiments(
                     "version": cfg.get("target_version", "v23"),
                     "ts": row.get("completed_at") or row.get("created_at"),
                     "kvs": {
-                        "profit": f"{profit_pct * 100:.2f}" if profit_pct is not None else "",
+                        "profit": f"{profit_pct:.2f}" if profit_pct is not None else "",
                         "WR": f"{wr * 100:.1f}" if wr is not None else "",
                         "sharpe": f"{m.get('sharpe', ''):.3f}" if m.get("sharpe") is not None else "",
                         "trades": str(m.get("trades", "")),

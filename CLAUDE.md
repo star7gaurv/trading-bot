@@ -123,7 +123,7 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 - API: `http://localhost:8080/api/v1` — user: `bot`, pass: `REDACTED-FREQTRADE__API_SERVER__PASSWORD`
 - Whitelist: **26 pairs** (trimmed from 37 on 2026-05-24 — removed DASH/ZEC/BCH/DOGE/AAVE/TRX/1000SHIB/BNB/INJ/HBAR/ATOM), **15m timeframe** (each pair has 5 TFs of historical data: 15m + 30m + 1h + 4h + 1d)
 - **Per-pair-per-regime gate active** — `pair_regime_stats.json` blocks pair-regime combos with rolling 30d (n≥5, WR<40%, PF<0.7)
-- Strategy env vars (live): K_TP=3.0, K_SL=2.0, **LONG_THRESHOLD=0.3, SHORT_THRESHOLD=-0.3, STABILITY_N=1** (FIXED 2026-06-08: LT reset from 1.5 — two-layer deadlock fixed; see session note below)
+- Strategy env vars (live): K_TP=3.0, K_SL=2.0, **LONG_THRESHOLD=0.7, SHORT_THRESHOLD=-0.6, STABILITY_N=1** (RAISED 2026-06-17 from 0.3/-0.3 — Phase-1 stop-the-bleed: per-trade expectancy is negative and profit is monotonic in trade frequency, so fewer/more-selective entries reduce stop-loss bleed. Asymmetric: longs are the worse side. Source: `freqtrade/.env`. See 2026-06-17 session note.)
 - **`_GLOBAL_STD = 0.30`** in strategy (FIXED 2026-06-08: was 0.95 from raw-% era; z-score model has std≈0.13–0.30)
 - **`std_factor = (pair_pred_std / 0.30).clip(lower=0.5, upper=1.0)`** (FIXED: cap was 3.0 — was penalizing pairs with better prediction variance, making their threshold harder)
 
@@ -408,6 +408,44 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 ---
 
 ## Session History Summary
+
+### June 17, 2026 — Turnaround: forensic diagnosis + Phase 1 (stop bleed) + Phase 2 (honest brain)
+
+**Gaurav pushed back on jumping to meta-labeling without research. He was right.** Did the deep forensics:
+
+**Diagnosis (measured):**
+- **Live (713 trades, +16 USDT total — ALL from one week; every week since loses):** the model's
+  EXIT is genuine alpha — `exit_signal` exits = 204 trades, +1.82% avg, **+309 USDT, 89.7% WR**.
+  But `stop_loss` exits = 288 trades, −1.39% avg, **−313 USDT, 0% WR** (~40% of entries). They almost
+  exactly cancel. Payoff ratio 1.38 (fine — NOT the disease). LONG −33 all-time/−50 last-30d; SHORT +49/−42.
+- **Brain (1,770 experiments, 0 scalable winners):** profit is MONOTONIC in trade count — 0-150
+  trades avg −0.34% (19% positive), 1500+ avg **−52%** (0% positive). The 89 "profitable" runs avg
+  **45 trades, PF~1.1** = noise. **Per-trade expectancy is negative.**
+- **Root cause:** the ENTRY is a coin flip; the EXIT is the edge (IC≈0 at entry time). The 2026-05/06
+  "deadlock" saga chased a 45-trade mirage (LT=3.25) → promoted → bot stopped → panic slashed
+  thresholds 3.25→0.3 → **that manufactured the high-frequency bleed.**
+
+**4-phase turnaround plan** (each phase gates the next with a MEASUREMENT, not hope):
+`/home/ubuntu/.claude/plans/warm-splashing-haven.md`. Phase 1+2 shipped this session; Phase 3
+(meta-labeling, GATED on meta AUC>0.55, killed at ≤0.52) and Phase 4 (new entry features, only if
+Phase 3 proves features lack edge) are re-planned after measurement.
+
+**Phase 1 — stop bleed + freeze (LIVE):** `freqtrade/.env` thresholds 0.3/−0.3 → **0.7/−0.6**
+(asymmetric, longs worse). `docker-compose up -d` (verified in container). Reversible, no retrain.
+Frozen baseline recorded → `finbuddy_memory/FROZEN_BASELINE_2026-06-17.md`; do NOT tweak/promote
+live until the honest brain beats it. Honest expectation: stabilize near breakeven, NOT create profit.
+
+**Phase 2 — make brain honest (so it stops crowning noise):**
+- `runner.py` scout gate: was `profit>0 & sharpe>0 & trades>=5` → now also `trades>=40 & pf>1.0`
+  (`SCOUT_MIN_TRADES=40`, `SCOUT_MIN_PF=1.0`). Stops noise flooding full runs.
+- `promote.py`: `MIN_TOTAL_TRADES` 30→**150**, new **`MIN_PF=1.1`** (avg PF per regime side). A
+  45-trade PF-1.05 run can never be promoted again.
+- `runner.py` `_WINDOW_STARTS`: added **bull_2021/crash_2022** (were missing → pair-history filter
+  fell through → late-listed pairs reached FreqTrade with NaN data → `NoneType.predict` crash). This
+  was the root cause of the recurring crash_2022 failures. The "no bear entries, falling back to bull"
+  alternation is graceful-by-design (queue-balance, not a bug) — left as is.
+- `dashboard/streamer.py`: removed `profit_pct * 100` — profit_pct is ALREADY a percent (showed
+  −33.7% as −3370%); WR keeps ×100 (decimal). `finbuddy-streamer.service` restarted.
 
 ### June 15, 2026 — Signal-quality fix: return-attribution sample weighting (commit `5866361e`)
 

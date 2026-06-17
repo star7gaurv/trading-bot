@@ -38,7 +38,13 @@ PENDING_FILE = PROMOTIONS_DIR / "pending.json"
 # +0.10–0.19% per cross-window run; 1.0pp was unreachable. Re-tighten as
 # experiments mature (target 0.5 once a config consistently clears 1%).
 MIN_AVG_PROFIT_IMPROVEMENT = 0.1   # percentage points
-MIN_TOTAL_TRADES = 30              # lowered from 60: with lp=12 (high-lt configs), 2 windows give ~60–120 trades
+# 2026-06-17 HONEST-BRAIN fix. Was 30 — far too low. Forensics (1,770 experiments): the
+# 89 "profitable" configs averaged 45 trades at PF~1.1, statistically indistinguishable
+# from noise; per-trade expectancy across the whole space is negative. A 30-trade sample
+# is luck, not edge. Require a real sample AND a real profit factor on BOTH regimes so a
+# 45-trade PF-1.05 run can NEVER be promoted again (that mirage caused the deadlock saga).
+MIN_TOTAL_TRADES = 150             # statistical significance across all evaluated windows
+MIN_PF = 1.1                       # avg profit factor required on EACH regime side
 MIN_BULL_RUNS = 2                  # 2 independent bull windows required (2026-06-01: raised from 1 on user instruction)
 MIN_BEAR_RUNS = 1                  # 1 bear window sufficient
 # Safety floor for the per-run check below: avg(profits)>0 must hold AND no
@@ -253,6 +259,16 @@ def find_candidates() -> list[dict]:
         bull_wr_ok = any(r.get("metrics", {}).get("wr", 0) >= 0.50 for r in g["bull_runs"])
         bear_wr_ok = any(r.get("metrics", {}).get("wr", 0) >= 0.50 for r in bear_perf_runs)
         if not bull_wr_ok or not bear_wr_ok:
+            continue
+
+        # PF gate (2026-06-17 HONEST-BRAIN): profit>0 alone passes thin-edge noise. Require
+        # a genuine profit factor on each regime side. pf can be inf (no losers) on tiny
+        # samples — the MIN_TOTAL_TRADES gate below guards that. Use mean PF per side.
+        bull_pfs = [r["metrics"].get("pf", 0) for r in g["bull_runs"]]
+        bear_pfs = [r["metrics"].get("pf", 0) for r in bear_perf_runs]
+        bull_pf_ok = (sum(bull_pfs) / len(bull_pfs)) >= MIN_PF
+        bear_pf_ok = (sum(bear_pfs) / len(bear_pfs)) >= MIN_PF
+        if not (bull_pf_ok and bear_pf_ok):
             continue
 
         if total_trades < MIN_TOTAL_TRADES:

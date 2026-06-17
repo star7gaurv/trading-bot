@@ -83,9 +83,11 @@ def _filter_pairs_for_window(pairs: list[str], window: str) -> list[str]:
 
     # Map window name → window start date string (YYYYMMDD)
     _WINDOW_STARTS = {
-        "bull_2024Q1": "20240101",
-        "bull_2024Q2": "20240401",
-        "bear_2025Q1": "20250101",
+        "bull_2021":   "20210101",   # deep-history stress windows (2026-06-17): MUST be listed
+        "crash_2022":  "20220501",   # here or the filter falls through and late-listed pairs
+        "bull_2024Q1": "20240101",   # reach FreqTrade with all-NaN data → model trains to None →
+        "bull_2024Q2": "20240401",   # AttributeError: 'NoneType'.predict crashes the whole run.
+        "bear_2025Q1": "20250101",   # This was the root cause of the recurring crash_2022 failures.
         "bull_2025Q4": "20251001",
         "bear_2026Q1": "20260101",
     }
@@ -529,6 +531,13 @@ SCOUT_PAIRS_NEUTRAL = [
 ]
 SCOUT_TIMEOUT_S = 1800  # 30 min — 6 pairs should finish in ~15 min; generous buffer
 
+# Honest-brain scout quality gates (2026-06-17). A 6-pair, 3-month scout that can't
+# produce a meaningful sample with a positive profit factor is noise, not a candidate.
+# Full 26-pair runs need ~150 trades for significance (promote.py MIN_TOTAL_TRADES);
+# 6/26 of that ≈ 35, so 40 is the floor for the scout's own sample.
+SCOUT_MIN_TRADES = 40
+SCOUT_MIN_PF = 1.0
+
 
 def _get_scout_pairs() -> list[str]:
     """Return the scout pair pool calibrated to the current live regime."""
@@ -581,11 +590,17 @@ def _run_scout(h: dict) -> tuple[bool, dict]:
         return False, {"trades": 0, "profit_pct": 0.0, "sharpe": 0.0}
 
     m = _compute_metrics_from_raw_trades(trades)
-    min_trades = 5
+    # 2026-06-17 HONEST-BRAIN fix: the old gate (profit>0 AND sharpe>0 AND trades>=5)
+    # crowned statistical noise. Forensics: per-trade expectancy is negative; the only
+    # configs that showed "profit" were the ones that barely traded (the 89 "winners"
+    # averaged 45 trades, PF~1.1 — indistinguishable from luck). A 5-trade scout pass is
+    # meaningless. New gate requires a meaningful sample on the 6-pair scout AND real
+    # quality (positive profit factor), so noise no longer floods the full 26-pair runs.
     passed = (
         m.get("profit_pct", -1) > 0
         and m.get("sharpe", -1) > 0
-        and m.get("trades", 0) >= min_trades
+        and m.get("pf", 0) > SCOUT_MIN_PF
+        and m.get("trades", 0) >= SCOUT_MIN_TRADES
     )
     return passed, m
 
