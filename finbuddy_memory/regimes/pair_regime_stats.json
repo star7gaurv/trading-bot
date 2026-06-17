@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-17T19:00:01.243490+00:00",
+  "updated": "2026-06-17T19:30:01.411608+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "OP/USDT:USDT": {
-      "BEAR": {
-        "n": 4,
-        "wins": 0,
-        "losses": 4,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -3.95,
-        "avg_profit_pct": -1.51
-      },
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 3,
-        "losses": 2,
-        "wr": 0.6,
-        "pf": 1.615,
-        "profit_usdt": 1.28,
-        "avg_profit_pct": 0.26
-      }
-    },
     "ARB/USDT:USDT": {
       "BEAR": {
         "n": 5,
@@ -66,6 +46,26 @@
         "pf": 0.0,
         "profit_usdt": -2.6,
         "avg_profit_pct": -0.917
+      }
+    },
+    "OP/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 3,
+        "losses": 2,
+        "wr": 0.6,
+        "pf": 1.615,
+        "profit_usdt": 1.28,
+        "avg_profit_pct": 0.26
+      },
+      "BEAR": {
+        "n": 3,
+        "wins": 0,
+        "losses": 3,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -2.8,
+        "avg_profit_pct": -1.457
       }
     },
     "TRX/USDT:USDT": {
