@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-17T08:00:01.910212+00:00",
+  "updated": "2026-06-17T08:30:01.214038+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "NEAR/USDT:USDT": {
-      "BEAR": {
-        "n": 6,
-        "wins": 2,
-        "losses": 4,
-        "wr": 0.3333,
-        "pf": 0.459,
-        "profit_usdt": -3.84,
-        "avg_profit_pct": -1.202
-      },
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 4,
-        "losses": 1,
-        "wr": 0.8,
-        "pf": 9.619,
-        "profit_usdt": 9.05,
-        "avg_profit_pct": 2.646
-      }
-    },
     "TON/USDT:USDT": {
       "BEAR": {
         "n": 6,
@@ -586,6 +566,26 @@
         "profit_usdt": 0.16,
         "avg_profit_pct": 0.26
       }
+    },
+    "NEAR/USDT:USDT": {
+      "BEAR": {
+        "n": 5,
+        "wins": 1,
+        "losses": 4,
+        "wr": 0.2,
+        "pf": 0.199,
+        "profit_usdt": -5.69,
+        "avg_profit_pct": -1.986
+      },
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 4,
+        "losses": 1,
+        "wr": 0.8,
+        "pf": 9.619,
+        "profit_usdt": 9.05,
+        "avg_profit_pct": 2.646
+      }
     }
   },
   "blocked": [
@@ -612,6 +612,14 @@
       "n": 5,
       "wr": 0.2,
       "pf": 0.078
+    },
+    {
+      "pair": "NEAR/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=20% PF=0.20 n=5 profit=-5.69",
+      "n": 5,
+      "wr": 0.2,
+      "pf": 0.199
     },
     {
       "pair": "LTC/USDT:USDT",
@@ -692,14 +700,6 @@
       "n": 9,
       "wr": 0.3333,
       "pf": 0.435
-    },
-    {
-      "pair": "NEAR/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=33% PF=0.46 n=6 profit=-3.84",
-      "n": 6,
-      "wr": 0.3333,
-      "pf": 0.459
     },
     {
       "pair": "ADA/USDT:USDT",
