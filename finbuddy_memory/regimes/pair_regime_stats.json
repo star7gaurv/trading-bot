@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-17T04:00:01.871453+00:00",
+  "updated": "2026-06-17T04:30:01.526695+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -132,13 +132,13 @@
     },
     "XRP/USDT:USDT": {
       "BEAR": {
-        "n": 6,
+        "n": 7,
         "wins": 2,
-        "losses": 4,
-        "wr": 0.3333,
-        "pf": 0.968,
-        "profit_usdt": -0.04,
-        "avg_profit_pct": -0.06
+        "losses": 5,
+        "wr": 0.2857,
+        "pf": 0.688,
+        "profit_usdt": -0.55,
+        "avg_profit_pct": -0.179
       },
       "NEUTRAL": {
         "n": 1,
@@ -652,6 +652,14 @@
       "n": 15,
       "wr": 0.2667,
       "pf": 0.553
+    },
+    {
+      "pair": "XRP/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=29% PF=0.69 n=7 profit=-0.55",
+      "n": 7,
+      "wr": 0.2857,
+      "pf": 0.688
     },
     {
       "pair": "AAVE/USDT:USDT",
