@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-17T19:30:01.411608+00:00",
+  "updated": "2026-06-17T20:00:02.064576+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -405,13 +405,13 @@
         "avg_profit_pct": 0.102
       },
       "BEAR": {
-        "n": 8,
-        "wins": 4,
+        "n": 9,
+        "wins": 5,
         "losses": 4,
-        "wr": 0.5,
-        "pf": 0.563,
-        "profit_usdt": -1.96,
-        "avg_profit_pct": -0.262
+        "wr": 0.5556,
+        "pf": 1.453,
+        "profit_usdt": 2.03,
+        "avg_profit_pct": 0.551
       }
     },
     "ADA/USDT:USDT": {
