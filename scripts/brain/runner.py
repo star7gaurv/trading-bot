@@ -383,6 +383,14 @@ def _build_env_args(cfg: dict, identifier: str) -> list[str]:
             env_args += ["-e", f"FREQAI_PRUNE_INDICATORS={'1' if cfg['prune_indicators'] else '0'}"]
         if cfg.get("perpair_oi") is not None:
             env_args += ["-e", f"FREQAI_PERPAIR_OI={'1' if cfg['perpair_oi'] else '0'}"]
+        # Phase 3 meta-labeling (2026-06-17). meta_label changes the TRAINED targets (in
+        # _TRAIN_SHAPE_KEYS); meta_threshold is a serve-time gate (NOT in shape keys — same
+        # trained model can A/B different thresholds). Pair with freqaimodel=
+        # LightGBMRegressorMultiTarget so the extra targets get their own models.
+        if cfg.get("meta_label") is not None:
+            env_args += ["-e", f"FREQAI_META_LABEL={'1' if cfg['meta_label'] else '0'}"]
+        if cfg.get("meta_threshold") is not None:
+            env_args += ["-e", f"FREQAI_META_THRESHOLD={cfg['meta_threshold']}"]
     return env_args
 
 
@@ -398,6 +406,7 @@ _TRAIN_SHAPE_KEYS = (
     "arch", "strategy", "freqaimodel", "config_file", "timeframe",
     "feature_set", "label_period_candles", "filter_di", "filter_svm",
     "prune_indicators", "perpair_oi", "trend_horizon", "target_version",
+    "meta_label",  # Phase 3: adds &-meta_long/short targets → different trained model
     "num_leaves", "learning_rate", "min_child_samples", "reg_alpha",
     "reg_lambda", "n_estimators",
 )

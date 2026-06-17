@@ -447,6 +447,28 @@ live until the honest brain beats it. Honest expectation: stabilize near breakev
 - `dashboard/streamer.py`: removed `profit_pct * 100` — profit_pct is ALREADY a percent (showed
   −33.7% as −3370%); WR keeps ×100 (decimal). `finbuddy-streamer.service` restarted.
 
+**Phase 3 — meta-labeling BUILT (default OFF, A/B queued, live untouched):**
+- Hypothesis: the +309 exit_signal alpha vs −313 stop_loss bleed is a precision problem; a 2nd
+  model that predicts "reach TP before SL?" at entry time can filter the bleeders. Canonical fix.
+- `FinBuddyFreqAI_v23.py`: added `_triple_barrier_labels()` (O(horizon) vectorized first-touch) +
+  two binary targets `&-meta_long`/`&-meta_short` in `set_freqai_targets`, emitted ONLY when
+  `FREQAI_META_LABEL=1`. Entry gate in `populate_entry_trend` is **AND-only** (can only remove
+  entries, never add): `enter_long &= &-meta_long > FREQAI_META_THRESHOLD` (mirror for short).
+  Default OFF ⇒ live byte-identical. Barriers use live K_TP/K_SL geometry.
+- Uses FreqAI built-in `LightGBMRegressorMultiTarget` (one model per target → the primary
+  `&-future_return` regressor is unchanged; meta is purely additive). No new config file —
+  `--freqaimodel` is passed per-experiment by runner.py:462.
+- `runner.py`: `_build_env_args` forwards `FREQAI_META_LABEL`/`FREQAI_META_THRESHOLD`; `meta_label`
+  added to `_TRAIN_SHAPE_KEYS` (changes trained targets → own family cache; meta_threshold excluded
+  = serve-time gate, A/B-able on same model).
+- **Smoke-tested clean**: 2-pair/2-week backtest trained `label_list=['&-future_return','&-meta_long',
+  '&-meta_short']`, ran end-to-end, gate active. **Queued 6 A/B experiments** (meta vs matched stock,
+  identical params lt/st=0.3, on bull_2025Q4 + bear_2026Q1 + bear_2025Q1) via `queue_hypothesis()`.
+- **GO/NO-GO (next session):** compare meta vs matched-stock PF / WR / stop_loss_count. If meta cuts
+  the stop-loss bleed and lifts PF with enough trades → sweep meta_threshold + validate → consider
+  live. If meta shows NO separation (PF/WR unchanged) → entry-time features lack the signal → Phase 4
+  (new entry features) is the real cure. Apply live ONLY on PASS (identifier bump + pkl flush + up -d).
+
 ### June 15, 2026 — Signal-quality fix: return-attribution sample weighting (commit `5866361e`)
 
 **Why:** equity curve reviewed — peak +114 USDT (May 20), now ~+20; the "profit" was two anomalous days (May 15–16 +105). Validation experiments (quantile/pruned/baseline) ALL lost on recent windows → entry mechanism is NOT the lever. Root cause is signal quality. Measured: 12-candle target recomputed every candle → labels overlap 92% (label concurrency); model overfits low-amplitude chop where the 38%-full-SL bleed originates.

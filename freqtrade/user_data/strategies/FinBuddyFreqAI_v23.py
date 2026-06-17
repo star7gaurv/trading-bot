@@ -1344,6 +1344,59 @@ class FinBuddyFreqAI_v23(IStrategy):
     # v23 — Regression target: predicted future % return                #
     # ------------------------------------------------------------------ #
 
+    @staticmethod
+    def _triple_barrier_labels(dataframe, horizon, k_tp, k_sl, side, atr):
+        """Binary first-touch triple-barrier outcome for META-LABELING (Phase 3, 2026-06-17).
+
+        Returns a float Series: 1.0 if — entering at this candle on `side` — price touches
+        the take-profit barrier (k_tp*ATR) BEFORE the stop-loss barrier (k_sl*ATR) within
+        `horizon` candles; 0.0 if SL-first, both-in-same-candle (conservative = treat as loss),
+        or neither (timeout). Last `horizon` rows + the ATR warmup are NaN (future unknown) so
+        FreqAI drops them — same treatment as &-future_return.
+
+        This is the meta-model's training target: predict AT ENTRY TIME whether a trade will
+        reach the profitable exit or die at the stop. Live forensics: exit_signal exits earn
+        +309 USDT @ 89.7% WR while stop_loss exits lose -313 @ 0% WR; ~40% of entries hit the
+        stop. The meta-gate filters those bleeding entries while keeping the exit alpha.
+
+        O(horizon) vectorized numpy (no per-row loop). Tail futures default to -inf/+inf so
+        out-of-range comparisons are cleanly False (no NaN-compare warnings).
+        """
+        close = dataframe["close"].to_numpy(dtype=float)
+        high  = dataframe["high"].to_numpy(dtype=float)
+        low   = dataframe["low"].to_numpy(dtype=float)
+        a     = np.asarray(atr, dtype=float)
+        n     = len(close)
+        h     = int(horizon)
+
+        if side == "long":
+            tp_level = close + k_tp * a       # profit when price rises
+            sl_level = close - k_sl * a
+        else:  # short: profit when price falls
+            tp_level = close - k_tp * a
+            sl_level = close + k_sl * a
+
+        tp_hit = np.full(n, np.inf)
+        sl_hit = np.full(n, np.inf)
+        for d in range(1, h + 1):
+            fut_high = np.full(n, -np.inf); fut_high[: n - d] = high[d:]
+            fut_low  = np.full(n,  np.inf); fut_low[: n - d]  = low[d:]
+            if side == "long":
+                tp_touch = fut_high >= tp_level
+                sl_touch = fut_low  <= sl_level
+            else:
+                tp_touch = fut_low  <= tp_level
+                sl_touch = fut_high >= sl_level
+            # Record earliest offset only (where not already hit).
+            tp_hit = np.where(np.isinf(tp_hit) & tp_touch, float(d), tp_hit)
+            sl_hit = np.where(np.isinf(sl_hit) & sl_touch, float(d), sl_hit)
+
+        label = (tp_hit < sl_hit).astype(float)   # TP strictly before SL = win; ties/timeout = 0
+        label[~np.isfinite(a)] = np.nan            # ATR warmup rows
+        if h > 0:
+            label[n - h:] = np.nan                 # incomplete future
+        return pd.Series(label, index=dataframe.index)
+
     def set_freqai_targets(
         self, dataframe: DataFrame, metadata: dict, **kwargs
     ) -> DataFrame:
@@ -1387,6 +1440,19 @@ class FinBuddyFreqAI_v23(IStrategy):
         #     assign a neutral-but-wrong z-score=0 to those samples.
         # FreqAI filters NaN-target rows before fitting. Dropping them is correct.
         dataframe["&-future_return"] = (raw_return_pct - mu) / sig
+
+        # Phase 3 META-LABELING targets (2026-06-17, default OFF). Only emitted when
+        # FREQAI_META_LABEL=1 so the live single-target model is byte-identical. Two binary
+        # triple-barrier targets (long/short) train a 2nd model that, at entry time, predicts
+        # "will this trade reach TP before the stop?". Used with freqaimodel=
+        # LightGBMRegressorMultiTarget (one independent model per target → the primary
+        # &-future_return regressor is unchanged). Barriers match live risk geometry (K_TP/K_SL).
+        if os.getenv("FREQAI_META_LABEL", "0") == "1":
+            atr = ta.ATR(dataframe, timeperiod=14)
+            dataframe["&-meta_long"] = self._triple_barrier_labels(
+                dataframe, horizon, self.K_TP, self.K_SL, "long", atr)
+            dataframe["&-meta_short"] = self._triple_barrier_labels(
+                dataframe, horizon, self.K_TP, self.K_SL, "short", atr)
         return dataframe
 
     # ------------------------------------------------------------------ #
@@ -1708,6 +1774,15 @@ class FinBuddyFreqAI_v23(IStrategy):
                     f"gated {int(is_blocked.sum())} candles"
                 )
 
+        # Phase 3 META-LABELING gate (2026-06-17, default OFF). AND-only: can only REMOVE
+        # entries the primary already wants, never add — so worst case is fewer trades, never
+        # a new class of bad trade. When FREQAI_META_LABEL=1 and the meta classifier column is
+        # present, require predicted win-probability > META_THRESHOLD (filters the ~40% of
+        # entries that die at the stop loss). Live behavior is identical while disabled.
+        if os.getenv("FREQAI_META_LABEL", "0") == "1" and "&-meta_long" in dataframe.columns:
+            meta_thr = float(os.getenv("FREQAI_META_THRESHOLD", "0.5"))
+            enter_long = enter_long & (dataframe["&-meta_long"] > meta_thr)
+
         dataframe.loc[enter_long, "enter_long"] = 1
         dataframe.loc[enter_long, "enter_tag"]  = "freqai_regression_v23_long"
 
@@ -1739,6 +1814,11 @@ class FinBuddyFreqAI_v23(IStrategy):
         # Apply the same per-pair-per-regime block to shorts.
         if blocked_regimes:
             enter_short = enter_short & ~is_blocked
+
+        # Phase 3 META-LABELING gate (short side, mirror of the long gate above).
+        if os.getenv("FREQAI_META_LABEL", "0") == "1" and "&-meta_short" in dataframe.columns:
+            meta_thr = float(os.getenv("FREQAI_META_THRESHOLD", "0.5"))
+            enter_short = enter_short & (dataframe["&-meta_short"] > meta_thr)
 
         dataframe.loc[enter_short, "enter_short"] = 1
         dataframe.loc[enter_short, "enter_tag"]   = "freqai_regression_v23_short"
