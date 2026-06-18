@@ -517,3 +517,4 @@
 | 2026-06-18 13:45:36 | APT/USDT:USDT | SHORT | 1h30m | +0.90% | +0.51 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-18 15:15:42 | AVAX/USDT:USDT | SHORT | 0h54m | +3.29% | +1.86 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-18 19:40:01 | AVAX/USDT:USDT | SHORT | 1h09m | -1.70% | -0.96 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-18 20:05:14 | RENDER/USDT:USDT | SHORT | 1h04m | -1.98% | -1.12 | stop_loss | BEAR | freqai_regression_v23_sh |
