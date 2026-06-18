@@ -510,3 +510,4 @@
 | 2026-06-18 07:24:37 | DOT/USDT:USDT | SHORT | 0h39m | -1.31% | -0.74 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-18 09:25:08 | OP/USDT:USDT | SHORT | 1h54m | -1.55% | -0.88 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-18 09:47:58 | ONDO/USDT:USDT | SHORT | 2h02m | -1.90% | -1.08 | trailing_stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-18 11:00:39 | AVAX/USDT:USDT | SHORT | 1h39m | +0.49% | +0.28 | trailing_stop_loss | BEAR | freqai_regression_v23_sh |
