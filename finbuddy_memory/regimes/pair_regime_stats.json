@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-18T07:30:01.335758+00:00",
+  "updated": "2026-06-18T08:00:01.491254+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -154,13 +154,13 @@
         "avg_profit_pct": -0.865
       },
       "BEAR": {
-        "n": 11,
+        "n": 12,
         "wins": 7,
-        "losses": 4,
-        "wr": 0.6364,
-        "pf": 2.018,
-        "profit_usdt": 2.25,
-        "avg_profit_pct": 0.374
+        "losses": 5,
+        "wr": 0.5833,
+        "pf": 1.604,
+        "profit_usdt": 1.68,
+        "avg_profit_pct": 0.258
       }
     },
     "DOGE/USDT:USDT": {
@@ -216,13 +216,13 @@
     },
     "WIF/USDT:USDT": {
       "BEAR": {
-        "n": 8,
+        "n": 9,
         "wins": 7,
-        "losses": 1,
-        "wr": 0.875,
-        "pf": 6.143,
-        "profit_usdt": 2.88,
-        "avg_profit_pct": 0.599
+        "losses": 2,
+        "wr": 0.7778,
+        "pf": 2.493,
+        "profit_usdt": 2.06,
+        "avg_profit_pct": 0.372
       },
       "NEUTRAL": {
         "n": 2,
@@ -365,13 +365,13 @@
         "avg_profit_pct": -0.917
       },
       "BEAR": {
-        "n": 17,
+        "n": 18,
         "wins": 7,
-        "losses": 10,
-        "wr": 0.4118,
-        "pf": 0.537,
-        "profit_usdt": -3.34,
-        "avg_profit_pct": -0.334
+        "losses": 11,
+        "wr": 0.3889,
+        "pf": 0.487,
+        "profit_usdt": -4.08,
+        "avg_profit_pct": -0.388
       }
     },
     "LDO/USDT:USDT": {
@@ -675,6 +675,14 @@
       "n": 13,
       "wr": 0.3846,
       "pf": 0.514
+    },
+    {
+      "pair": "DOT/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=39% PF=0.49 n=18 profit=-4.08",
+      "n": 18,
+      "wr": 0.3889,
+      "pf": 0.487
     }
   ]
 }
