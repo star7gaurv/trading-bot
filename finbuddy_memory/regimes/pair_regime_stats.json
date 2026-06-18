@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-18T03:30:02.043726+00:00",
+  "updated": "2026-06-18T04:00:01.557415+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -154,13 +154,13 @@
         "avg_profit_pct": -0.865
       },
       "BEAR": {
-        "n": 10,
-        "wins": 6,
+        "n": 11,
+        "wins": 7,
         "losses": 4,
-        "wr": 0.6,
-        "pf": 1.548,
-        "profit_usdt": 1.21,
-        "avg_profit_pct": 0.219
+        "wr": 0.6364,
+        "pf": 2.018,
+        "profit_usdt": 2.25,
+        "avg_profit_pct": 0.374
       }
     },
     "DOGE/USDT:USDT": {
@@ -216,13 +216,13 @@
     },
     "WIF/USDT:USDT": {
       "BEAR": {
-        "n": 7,
-        "wins": 6,
+        "n": 8,
+        "wins": 7,
         "losses": 1,
-        "wr": 0.8571,
-        "pf": 5.286,
-        "profit_usdt": 2.4,
-        "avg_profit_pct": 0.563
+        "wr": 0.875,
+        "pf": 6.143,
+        "profit_usdt": 2.88,
+        "avg_profit_pct": 0.599
       },
       "NEUTRAL": {
         "n": 2,
