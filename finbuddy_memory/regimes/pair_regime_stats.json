@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-18T10:00:01.662332+00:00",
+  "updated": "2026-06-18T10:30:02.073411+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -516,13 +516,13 @@
     },
     "ONDO/USDT:USDT": {
       "BEAR": {
-        "n": 15,
+        "n": 16,
         "wins": 6,
-        "losses": 9,
-        "wr": 0.4,
-        "pf": 0.495,
-        "profit_usdt": -4.95,
-        "avg_profit_pct": -0.575
+        "losses": 10,
+        "wr": 0.375,
+        "pf": 0.446,
+        "profit_usdt": -6.03,
+        "avg_profit_pct": -0.658
       }
     },
     "BTC/USDT:USDT": {
@@ -656,6 +656,14 @@
       "n": 9,
       "wr": 0.3333,
       "pf": 0.435
+    },
+    {
+      "pair": "ONDO/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=38% PF=0.45 n=16 profit=-6.03",
+      "n": 16,
+      "wr": 0.375,
+      "pf": 0.446
     },
     {
       "pair": "ADA/USDT:USDT",
