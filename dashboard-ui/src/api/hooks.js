@@ -12,7 +12,6 @@ export function usePolling(fetcher, intervalMs = 5000, deps = []) {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const aliveRef = useRef(true);
   // Always call the LATEST fetcher. Without this, the polling closure captured the
   // fetcher from the first render (deps=[]) — so paginated callers (offset changes
   // with `page`) kept re-fetching page 0 forever. The ref fixes the stale closure
@@ -22,23 +21,27 @@ export function usePolling(fetcher, intervalMs = 5000, deps = []) {
   fetcherRef.current = fetcher;
 
   useEffect(() => {
-    aliveRef.current = true;
+    // Per-effect alive flag (NOT a shared ref): when `page` changes, the old
+    // effect's cleanup sets ITS OWN `alive=false`, so an in-flight page-0 fetch
+    // that resolves late can no longer overwrite page-1's data. A shared ref was
+    // toggled back to true by the new effect, letting the stale fetch win the race.
+    let alive = true;
     let timer = null;
 
     const tick = async () => {
       try {
         const result = await fetcherRef.current();
-        if (!aliveRef.current) return;
+        if (!alive) return;
         setData(result);
         setError(null);
         setLastUpdated(Date.now());
       } catch (e) {
-        if (!aliveRef.current) return;
+        if (!alive) return;
         setError(e.message || String(e));
       } finally {
-        if (aliveRef.current) setLoading(false);
+        if (alive) setLoading(false);
       }
-      if (aliveRef.current && intervalMs > 0) {
+      if (alive && intervalMs > 0) {
         timer = setTimeout(tick, intervalMs);
       }
     };
@@ -46,7 +49,7 @@ export function usePolling(fetcher, intervalMs = 5000, deps = []) {
     tick();
 
     return () => {
-      aliveRef.current = false;
+      alive = false;
       if (timer) clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
