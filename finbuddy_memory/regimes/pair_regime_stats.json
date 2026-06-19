@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-19T20:30:01.429018+00:00",
+  "updated": "2026-06-19T21:00:01.392140+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "OP/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 3,
-        "wins": 3,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 3.36,
-        "avg_profit_pct": 1.113
-      },
-      "BEAR": {
-        "n": 5,
-        "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
-        "pf": 0.435,
-        "profit_usdt": -2.08,
-        "avg_profit_pct": -0.618
-      }
-    },
     "ENA/USDT:USDT": {
       "NEUTRAL": {
         "n": 5,
@@ -401,6 +381,26 @@
         "pf": 0.085,
         "profit_usdt": -2.81,
         "avg_profit_pct": -0.97
+      }
+    },
+    "OP/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 2,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 2.04,
+        "avg_profit_pct": 1.03
+      },
+      "BEAR": {
+        "n": 5,
+        "wins": 1,
+        "losses": 4,
+        "wr": 0.2,
+        "pf": 0.435,
+        "profit_usdt": -2.08,
+        "avg_profit_pct": -0.618
       }
     },
     "ADA/USDT:USDT": {
