@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-19T20:00:01.141712+00:00",
+  "updated": "2026-06-19T20:30:01.429018+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -81,13 +81,13 @@
         "avg_profit_pct": -0.29
       },
       "BEAR": {
-        "n": 7,
+        "n": 8,
         "wins": 3,
-        "losses": 4,
-        "wr": 0.4286,
-        "pf": 0.721,
-        "profit_usdt": -0.72,
-        "avg_profit_pct": -0.186
+        "losses": 5,
+        "wr": 0.375,
+        "pf": 0.587,
+        "profit_usdt": -1.31,
+        "avg_profit_pct": -0.294
       }
     },
     "TAO/USDT:USDT": {
@@ -688,6 +688,14 @@
       "n": 16,
       "wr": 0.375,
       "pf": 0.446
+    },
+    {
+      "pair": "SUI/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=38% PF=0.59 n=8 profit=-1.31",
+      "n": 8,
+      "wr": 0.375,
+      "pf": 0.587
     },
     {
       "pair": "ADA/USDT:USDT",
