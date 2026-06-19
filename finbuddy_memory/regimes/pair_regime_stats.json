@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-19T09:00:01.877330+00:00",
+  "updated": "2026-06-19T09:30:01.666250+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -39,13 +39,13 @@
         "avg_profit_pct": 1.113
       },
       "BEAR": {
-        "n": 4,
-        "wins": 0,
+        "n": 5,
+        "wins": 1,
         "losses": 4,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -3.68,
-        "avg_profit_pct": -1.48
+        "wr": 0.2,
+        "pf": 0.435,
+        "profit_usdt": -2.08,
+        "avg_profit_pct": -0.618
       }
     },
     "ENA/USDT:USDT": {
@@ -616,6 +616,14 @@
       "n": 5,
       "wr": 0.2,
       "pf": 0.23
+    },
+    {
+      "pair": "OP/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=20% PF=0.43 n=5 profit=-2.08",
+      "n": 5,
+      "wr": 0.2,
+      "pf": 0.435
     },
     {
       "pair": "1000PEPE/USDT:USDT",
