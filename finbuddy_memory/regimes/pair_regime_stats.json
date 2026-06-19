@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-19T04:00:01.553574+00:00",
+  "updated": "2026-06-19T04:30:02.075716+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -165,13 +165,13 @@
     },
     "POL/USDT:USDT": {
       "BEAR": {
-        "n": 3,
+        "n": 4,
         "wins": 0,
-        "losses": 3,
+        "losses": 4,
         "wr": 0.0,
         "pf": 0.0,
-        "profit_usdt": -1.57,
-        "avg_profit_pct": -0.813
+        "profit_usdt": -2.23,
+        "avg_profit_pct": -0.9
       },
       "NEUTRAL": {
         "n": 1,
@@ -505,13 +505,13 @@
         "avg_profit_pct": -0.319
       },
       "BEAR": {
-        "n": 24,
-        "wins": 12,
+        "n": 25,
+        "wins": 13,
         "losses": 12,
-        "wr": 0.5,
-        "pf": 0.712,
-        "profit_usdt": -2.38,
-        "avg_profit_pct": -0.172
+        "wr": 0.52,
+        "pf": 0.713,
+        "profit_usdt": -2.37,
+        "avg_profit_pct": -0.164
       }
     },
     "ONDO/USDT:USDT": {
