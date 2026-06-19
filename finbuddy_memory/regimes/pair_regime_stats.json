@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-19T11:30:01.717879+00:00",
+  "updated": "2026-06-19T12:00:01.572604+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -143,13 +143,13 @@
         "avg_profit_pct": -0.865
       },
       "BEAR": {
-        "n": 19,
+        "n": 20,
         "wins": 11,
-        "losses": 8,
-        "wr": 0.5789,
-        "pf": 1.527,
-        "profit_usdt": 2.57,
-        "avg_profit_pct": 0.244
+        "losses": 9,
+        "wr": 0.55,
+        "pf": 1.345,
+        "profit_usdt": 1.91,
+        "avg_profit_pct": 0.172
       }
     },
     "DOGE/USDT:USDT": {
@@ -314,13 +314,13 @@
         "avg_profit_pct": -1.96
       },
       "BEAR": {
-        "n": 13,
+        "n": 14,
         "wins": 7,
-        "losses": 6,
-        "wr": 0.5385,
-        "pf": 1.178,
-        "profit_usdt": 1.01,
-        "avg_profit_pct": 0.139
+        "losses": 7,
+        "wr": 0.5,
+        "pf": 0.962,
+        "profit_usdt": -0.26,
+        "avg_profit_pct": -0.031
       }
     },
     "XRP/USDT:USDT": {
