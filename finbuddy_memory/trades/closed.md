@@ -534,3 +534,4 @@
 | 2026-06-19 11:47:06 | AVAX/USDT:USDT | SHORT | 0h14m | -1.21% | -0.66 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-19 12:53:06 | LDO/USDT:USDT | SHORT | 1h07m | -1.61% | -0.92 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-19 12:53:21 | ARB/USDT:USDT | SHORT | 0h07m | -1.11% | -0.63 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-19 13:44:53 | SUI/USDT:USDT | SHORT | 0h44m | -1.15% | -0.65 | stop_loss | BEAR | freqai_regression_v23_sh |
