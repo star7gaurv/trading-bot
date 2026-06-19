@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-18T23:30:01.576679+00:00",
+  "updated": "2026-06-19T00:00:01.858501+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -10,13 +10,13 @@
   "stats": {
     "ZEC/USDT:USDT": {
       "NEUTRAL": {
-        "n": 7,
-        "wins": 2,
+        "n": 6,
+        "wins": 1,
         "losses": 5,
-        "wr": 0.2857,
-        "pf": 0.338,
-        "profit_usdt": -6.48,
-        "avg_profit_pct": -0.899
+        "wr": 0.1667,
+        "pf": 0.177,
+        "profit_usdt": -8.06,
+        "avg_profit_pct": -1.308
       }
     },
     "SUI/USDT:USDT": {
@@ -70,13 +70,13 @@
         "avg_profit_pct": -0.658
       },
       "BEAR": {
-        "n": 2,
+        "n": 3,
         "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 0.011,
-        "profit_usdt": -1.8,
-        "avg_profit_pct": -1.55
+        "losses": 2,
+        "wr": 0.3333,
+        "pf": 0.006,
+        "profit_usdt": -3.46,
+        "avg_profit_pct": -2.01
       }
     },
     "DASH/USDT:USDT": {
@@ -578,6 +578,14 @@
       "pf": 0.051
     },
     {
+      "pair": "ZEC/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=17% PF=0.18 n=6 profit=-8.06",
+      "n": 6,
+      "wr": 0.1667,
+      "pf": 0.177
+    },
+    {
       "pair": "ETH/USDT:USDT",
       "regime": "BEAR",
       "reason": "WR=20% PF=0.19 n=5 profit=-1.65",
@@ -632,14 +640,6 @@
       "n": 15,
       "wr": 0.2667,
       "pf": 0.553
-    },
-    {
-      "pair": "ZEC/USDT:USDT",
-      "regime": "NEUTRAL",
-      "reason": "WR=29% PF=0.34 n=7 profit=-6.48",
-      "n": 7,
-      "wr": 0.2857,
-      "pf": 0.338
     },
     {
       "pair": "AAVE/USDT:USDT",
