@@ -4,8 +4,26 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status**: 🟢 v23 LIVE (`finbuddy_v23_nosvm_1780729988`) · LT=0.3/ST=-0.3 · DI+SVM disabled · regime BEAR (unified price-action core) · ~460 completed experiments · ~65 queued (26 validation: quantile/pruned/baseline) · no promotion yet · family model cache active  
-**Last Updated**: 2026-06-12 UTC (validation queue unblocked, family cache shipped, promotion 3-layer gap fixed, data sentinel cron live; see CLAUDE.md June 11–12 session entries)
+**Status**: 🟢 v23 LIVE (`finbuddy_v23_nosvm_1780729988`) · **LT=0.7/ST=−0.6** (asymmetric, raised 2026-06-17 to stop the bleed) · DI+SVM disabled · regime BEAR (genuine — BTC ≈ −15%/mo) · short-only by design · 752 trades / **+17.6 USDT** / 41% WR · **534 completed experiments, queue 0, 0 surviving promotions** · family model cache active  
+**Last Updated**: 2026-06-19 UTC (meta-labeling NO-GO; brain windows made honest; pagination root-caused — see CLAUDE.md June 19 session entry)
+
+### 2026-06-13 → 06-19 — Turnaround + entry-tuning exhausted (summary; details in CLAUDE.md)
+- **Honest diagnosis:** the EXIT is the alpha (exit_signal ~90% WR / +309 USDT), the ENTRY is a coin
+  flip (IC≈0); stop-loss exits (−313) almost exactly cancel the gains. Per-trade expectancy is
+  negative; profit is monotonic in trade count. The +114 May-20 peak was 2 lucky days; ~breakeven since.
+- **Phase 1 (LIVE):** thresholds 0.3/−0.3 → **0.7/−0.6** to cut trade frequency (stop the bleed).
+  Frozen baseline recorded → `FROZEN_BASELINE_2026-06-17.md`. Do NOT tune/promote live until the
+  honest brain beats it.
+- **Phase 2 (LIVE):** made the brain honest so it stops crowning noise — scout gate trades≥40 & PF>1.0;
+  promote MIN_TRADES 30→150, new MIN_PF=1.1. Dashboard ×100 double-count fixed.
+- **Sample weighting (06-15)** and **meta-labeling (06-17 built / 06-19 tested):** both targeted entry
+  quality. **Meta-labeling = hard NO-GO (06-19):** tightening the filter made the stop-loss rate WORSE
+  (no precision). With threshold/quantile/pruning/weighting all also losing, **entry tuning is
+  exhausted → Phase 4 (new entry FEATURES) is the only lever left.** Research-and-approve first.
+- **Brain windows made honest (06-19):** two windows NAMED "bull" were actually down markets
+  (bull_2024Q2 −11%, bull_2025Q4 −23%) → renamed bear_*; added genuine bull_2024Q4 (+47%);
+  PAIRED rotation now tests real bull + real bear. promote.py auto-handles via name substring.
+- **Pagination (06-19):** nginx `index.html` no-cache fix (browsers were pinned to stale JS).
 
 ### 2026-06-11/12 — God-Mode Overhaul + Deep Audit (summary; details in CLAUDE.md)
 - Phases A–E shipped: re-entry cooldown, tiered breaker (flatten at −15), quantile entry mode + feature pruning + per-pair OI/funding + trend-horizon (all env-gated OFF pending ~26 brain validations), funding-farm paper module, LLM hypothesis engine nightly, regime detectors unified (NEUTRAL→BEAR flip).
