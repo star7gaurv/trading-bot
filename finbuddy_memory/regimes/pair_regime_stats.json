@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-19T08:00:01.336759+00:00",
+  "updated": "2026-06-19T08:30:01.503490+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -314,13 +314,13 @@
         "avg_profit_pct": -1.96
       },
       "BEAR": {
-        "n": 12,
-        "wins": 6,
+        "n": 13,
+        "wins": 7,
         "losses": 6,
-        "wr": 0.5,
-        "pf": 0.763,
-        "profit_usdt": -1.34,
-        "avg_profit_pct": -0.196
+        "wr": 0.5385,
+        "pf": 1.178,
+        "profit_usdt": 1.01,
+        "avg_profit_pct": 0.139
       }
     },
     "XRP/USDT:USDT": {
