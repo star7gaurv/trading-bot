@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-19T12:30:01.475410+00:00",
+  "updated": "2026-06-19T13:00:01.724832+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -374,13 +374,13 @@
         "avg_profit_pct": 0.102
       },
       "BEAR": {
-        "n": 9,
+        "n": 10,
         "wins": 5,
-        "losses": 4,
-        "wr": 0.5556,
-        "pf": 1.453,
-        "profit_usdt": 2.03,
-        "avg_profit_pct": 0.551
+        "losses": 5,
+        "wr": 0.5,
+        "pf": 1.206,
+        "profit_usdt": 1.11,
+        "avg_profit_pct": 0.335
       }
     },
     "ARB/USDT:USDT": {
@@ -394,13 +394,13 @@
         "avg_profit_pct": -0.154
       },
       "BEAR": {
-        "n": 4,
+        "n": 5,
         "wins": 1,
-        "losses": 3,
-        "wr": 0.25,
-        "pf": 0.107,
-        "profit_usdt": -2.18,
-        "avg_profit_pct": -0.935
+        "losses": 4,
+        "wr": 0.2,
+        "pf": 0.085,
+        "profit_usdt": -2.81,
+        "avg_profit_pct": -0.97
       }
     },
     "ADA/USDT:USDT": {
@@ -592,6 +592,14 @@
       "n": 6,
       "wr": 0.1667,
       "pf": 0.051
+    },
+    {
+      "pair": "ARB/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=20% PF=0.09 n=5 profit=-2.81",
+      "n": 5,
+      "wr": 0.2,
+      "pf": 0.085
     },
     {
       "pair": "ETH/USDT:USDT",
