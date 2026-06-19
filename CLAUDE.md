@@ -112,7 +112,7 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ---
 
-## What Is Live and Working Right Now (verified 2026-06-08 UTC by Claude Code — two-layer threshold deadlock fixed)
+## What Is Live and Working Right Now (verified 2026-06-19 UTC by Claude Code — identifier `finbuddy_v23_nosvm_1780729988`, thresholds 0.7/−0.6, SVM off, 752 trades / +17.6 USDT / 41% WR; bot untouched all session)
 
 ### FreqTrade
 - Running **`FinBuddyFreqAI_v23.py` (v23)** in dry-run mode on **Binance Futures USDT-M** — long+short
@@ -408,6 +408,39 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 ---
 
 ## Session History Summary
+
+### June 19, 2026 — Meta-labeling NO-GO + honest brain windows + dashboard pagination root-caused
+
+**1. Phase 3 meta-labeling KILLED (hard NO-GO).** Ran full 26-pair A/B (cache hits, `skip_scout`),
+identical params, only `meta_threshold` varied. Tightening the filter made the stop-loss death rate
+**WORSE**, not better — bear_2026Q1 53.8%→55.9%→61.1% (mt 0.5→0.515→0.6), bull_2025Q4 49.8→50.1→51.1%.
+A filter with real signal drops losers first → SL% falls; it rose ⇒ zero/negative precision. The
+earlier 6-pair scout "hint" (SL% 36→28%) was small-sample noise — vanished at full scale. Confirms
+prior IC≈0 finding: **edge is in EXITS (exit_signal_wr 96–100% every run), entries are coin flips.**
+Meta code stays in tree, `FREQAI_META_LABEL=0` (live byte-identical). → Phase 4 (new entry features).
+Detail: auto-memory `reference_meta_label_nogo.md`.
+
+**Queue race worked around:** the brain cron queue silently dropped queued experiments 3× (concurrent
+queue.jsonl rewrite). Ran configs DIRECTLY via `runner.run_hypothesis(h)` (needs `config`+`window`+
+`timerange`, hold `_acquire_lock()`), bypassing the queue. Removed a stray `/tmp/inspect.py` that
+shadowed the stdlib and crashed any script run from /tmp.
+
+**2. `long_count=0` investigated → NOT a bug.** Recent runs + live are short-only because the market
+is genuinely bearish (regime=BEAR; "bull_2025Q4" was actually BTC −23%) and the hard regime gate
+correctly blocks longs in down-markets. Proof longs work: 165/394 genuinely-bull runs had longs.
+
+**3. Brain test-window NAMES made honest** (commit pending; brain-only, live untouched). Audited
+actual BTC return per window: "bull_2024Q2" was −11%, "bull_2025Q4" was −23% — both renamed to
+`bear_2024Q2`/`bear_2025Q4`. Added genuine `bull_2024Q4` (+47%, 36/38 pair coverage). PAIRED_WINDOWS
+rebalanced to genuine 2 bull (bull_2024Q1 +68%, bull_2024Q4 +47%) + 2 bear. Updated all refs across
+hypothesis_gen.py / analyst.py / llm_hypothesis.py / runner.py (promote.py auto-handles via substring).
+~800 OLD-name log entries left immutable (low impact). Detail: `reference_meta_label_nogo.md`.
+
+**4. Dashboard pagination FIXED (real root cause).** Not a code bug — nginx served `index.html` with
+no cache header, so browsers kept stale JS pointing at old bundles (every rebuild "didn't help").
+Fixed: `index.html`→no-cache, `/assets/*`→immutable; verified through Cloudflare. Hardened the
+`usePolling` hook against an in-flight fetch race. **User must hard-refresh once.** Detail:
+auto-memory `reference_dashboard_deploy.md`.
 
 ### June 17, 2026 — Turnaround: forensic diagnosis + Phase 1 (stop bleed) + Phase 2 (honest brain)
 

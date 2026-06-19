@@ -86,9 +86,10 @@ def _filter_pairs_for_window(pairs: list[str], window: str) -> list[str]:
         "bull_2021":   "20210101",   # deep-history stress windows (2026-06-17): MUST be listed
         "crash_2022":  "20220501",   # here or the filter falls through and late-listed pairs
         "bull_2024Q1": "20240101",   # reach FreqTrade with all-NaN data → model trains to None →
-        "bull_2024Q2": "20240401",   # AttributeError: 'NoneType'.predict crashes the whole run.
-        "bear_2025Q1": "20250101",   # This was the root cause of the recurring crash_2022 failures.
-        "bull_2025Q4": "20251001",
+        "bear_2024Q2": "20240401",   # AttributeError: 'NoneType'.predict crashes the whole run.
+        "bull_2024Q4": "20241001",   # This was the root cause of the recurring crash_2022 failures.
+        "bear_2025Q1": "20250101",   # (honest window names 2026-06-19: bull_2024Q2→bear_2024Q2,
+        "bear_2025Q4": "20251001",   #  bull_2025Q4→bear_2025Q4; added genuine bull_2024Q4.)
         "bear_2026Q1": "20260101",
     }
     start_str = _WINDOW_STARTS.get(window)
@@ -810,7 +811,7 @@ def run_next(max_runs: int = 1, status_only: bool = False) -> int:
             if metrics.get("profit_pct", -1) > 0 and metrics.get("sharpe", -1) > 0:
                 from hypothesis_gen import WINDOWS, PAIRED_WINDOWS
                 # Use PAIRED_WINDOWS order so cross-window queuing preserves
-                # the bull→bear interleaving: bull_2024Q2 queued before bear_2025Q1, etc.
+                # the bull→bear interleaving: bull_2024Q1 queued before bear_2025Q1, etc.
                 paired_windows_dict = {w: WINDOWS[w] for w in PAIRED_WINDOWS if w in WINDOWS}
                 # Attach metrics to h so queue_missing_windows can log them in rationale
                 h_with_metrics = {**h, "metrics": metrics}

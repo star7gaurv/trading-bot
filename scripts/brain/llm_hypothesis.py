@@ -38,7 +38,7 @@ import hypothesis_gen as hg                          # noqa: E402
 
 PROPOSALS_FILE = ROOT / "finbuddy_memory/experiments/llm_proposals.jsonl"
 MAX_QUEUED_PER_NIGHT = 3
-VALIDATION_WINDOWS = ["bull_2025Q4", "bear_2026Q1"]
+VALIDATION_WINDOWS = ["bull_2024Q4", "bear_2026Q1"]  # genuine bull + live-condition bear (2026-06-19; bull_2025Q4 was −23%, renamed bear_2025Q4)
 
 # Params the LLM may set on an experiment, with sanitizers.
 _ALLOWED_PARAMS = {

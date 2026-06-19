@@ -66,8 +66,8 @@ NEAR_BREAKEVEN_HIGH  = 1.05
 FEE_DRAG_WR_MIN      = 0.50   # WR > this AND PF < 1.0 → fee drag (winners cut short)
 NOISE_TRADES_PER_DAY = 5.5    # avg trades/day above this = too noisy on that TF
 WINDOW_DAYS = {
-    "bull_2024Q1": 91, "bull_2024Q2": 91, "bear_2025Q1": 90,
-    "bull_2025Q4": 92, "bear_2026Q1": 90,   # Fix 5 (2026-05-22): added new windows
+    "bull_2024Q1": 91, "bull_2024Q4": 92, "bear_2024Q2": 91, "bear_2025Q1": 90,
+    "bear_2025Q4": 92, "bear_2026Q1": 90,   # honest names 2026-06-19 (bull_2024Q2→bear, bull_2025Q4→bear)
     "bull_2021": 90, "crash_2022": 245,     # 2026-06-08: deep-history stress windows (crash_2022 ~8mo)
 }
 
@@ -444,7 +444,7 @@ def inject_targeted(findings: dict, dry_run: bool = False) -> list[str]:
                         vc, "aggressive",
                         f"analyst: short-bias fix — long_threshold {old_lt}→{vc['long_threshold']} "
                         f"(improve bull capture); parent={best_bear['hypothesis_id'][:6]}",
-                        windows=["bull_2024Q1", "bull_2024Q2"],
+                        windows=["bull_2024Q1", "bull_2024Q4"],  # genuine bulls (2026-06-19; bull_2024Q2 was −11%)
                     )
                     actions.append(f"Queued ×{n} short-bias/lower-long-threshold on BULL windows")
 

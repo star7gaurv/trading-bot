@@ -102,12 +102,20 @@ def _available_timeframes(candidates: list[str]) -> list[str]:
 # Z-scored target added 2026-05-22. Old results have incompatible label distribution.
 # New experiments carry target_version="zscore"; promote.py filters to zscore only.
 DATA_COVERAGE_CUTOFF = "2026-01-01"  # ensure all windows have coverage
+# WINDOW NAMING IS HONEST ABOUT DIRECTION (audited 2026-06-19 against the BTC 4h feather).
+# promote.py classifies a window as bull/bear purely by the "bull"/"bear" substring in its
+# NAME, and the gate requires ≥2 bull + ≥1 bear passing runs to prove the strategy is
+# market-agnostic. Mislabeling a falling quarter "bull_*" silently lets a config satisfy the
+# "bull" requirement on a down market — defeating the gate. The two former liars
+# (bull_2024Q2 = actually −11%, bull_2025Q4 = actually −23%) were renamed to bear_* on
+# 2026-06-19. Actual measured BTC return is in each comment below — keep it accurate on edits.
 WINDOWS = {
-    "bull_2024Q1": "20240101-20240401",   # BTC +60% — strong bull early-2024
-    "bull_2024Q2": "20240401-20240701",   # mid-2024 chop/consolidation
-    "bear_2025Q1": "20250101-20250401",   # BTC -28% — bear leg Q1 2025
-    "bull_2025Q4": "20251001-20260101",   # BTC recovery Oct-Dec 2025 (renamed from recent_2025Q4)
-    "bear_2026Q1": "20260101-20260401",   # BTC declining Jan-Apr 2026 (renamed from recent_2026Q1)
+    "bull_2024Q1": "20240101-20240401",   # BTC +68% — strong bull (halving run-up)
+    "bull_2024Q4": "20241001-20250101",   # BTC +47% — post-election bull (added 2026-06-19, 36/38 pairs)
+    "bear_2024Q2": "20240401-20240701",   # BTC -11% — mild down/chop (was mislabeled "bull_2024Q2")
+    "bear_2025Q1": "20250101-20250401",   # BTC -12% — bear leg Q1 2025
+    "bear_2025Q4": "20251001-20260101",   # BTC -23% — deep bear (was mislabeled "bull_2025Q4")
+    "bear_2026Q1": "20260101-20260401",   # BTC -22% — declining Jan-Apr 2026 (live-condition window)
     # 2026-06-08: deep-history windows enabled by the 2020→present backfill. ~12 of 26 pairs
     # (the majors: BTC/ETH/SOL/XRP/LINK/ADA/DOT/LTC/AVAX/NEAR/FIL...) have data this far back —
     # FreqTrade backtest silently skips pairs without data, so these run on the majors.
@@ -120,16 +128,17 @@ WINDOWS = {
 
 # Window order for queue generation: bull→bear pairs so the runner tests
 # each config on one bull AND one bear back-to-back (~3h to both results).
-# bull_2024Q2 first (historically strongest bull signal), bear_2025Q1 second
-# (best WR/PF on bear), bear_2026Q1 at position 4 (promotion gate window),
-# bull_2024Q1 last (hardest bull, least informative for initial validation).
+# REBALANCED 2026-06-19 to use GENUINE bull windows. The old rotation used
+# bull_2024Q2 (−11%) and bull_2025Q4 (−23%) as its "bull" representatives — both
+# were actually DOWN markets, so the brain's day-to-day "bull" validation never
+# tested an up-market. Now: bull_2024Q1 (+68%) + bull_2024Q4 (+47%) are the real
+# bulls; bear_2025Q1 + bear_2026Q1 (the live-condition gate) are the bears. 2:2
+# balance keeps next_alternating() from exhausting the bear queue (the 2026-06-04 bug).
 PAIRED_WINDOWS = [
-    "bull_2024Q2",
-    "bear_2025Q1",
-    "bull_2025Q4",
-    "bear_2026Q1",
-    # bull_2024Q1 removed 2026-06-04: caused 3:2 bull:bear enqueue ratio →
-    # bear queue exhausted 50% faster → alternation collapsed to pure-bull.
+    "bull_2024Q1",   # genuine bull (+68%)
+    "bear_2025Q1",   # genuine bear (−12%)
+    "bull_2024Q4",   # genuine bull (+47%, recent → 36/38 pair coverage)
+    "bear_2026Q1",   # promotion gate window (must pass WR≥50%), live-condition bear
 ]
 
 # Target version tag — added to every new queued experiment so promote.py can
@@ -880,25 +889,25 @@ def generate_and_queue(safe_n: int = 6, aggressive_n: int = 6, windows: list[str
     queue on each window. Returns count of newly queued hypotheses.
 
     Window order matters for speed-to-promotion: each variant is queued as
-    (bull_2024Q2, bear_2025Q1, bull_2025Q4, bear_2026Q1, bull_2024Q1) so that
-    the runner always processes one bull → one bear back-to-back for every config.
-    This means a promising config gets BOTH a bull and a bear result within ~3h
-    instead of waiting for the entire bull backlog to drain first.
+    (bull_2024Q1, bear_2025Q1, bull_2024Q4, bear_2026Q1) so that the runner always
+    processes one bull → one bear back-to-back for every config. This means a
+    promising config gets BOTH a bull and a bear result within ~3h instead of
+    waiting for the entire bull backlog to drain first.
 
-    PAIRED_WINDOWS order: best historical bull first, its matching bear second.
-    bear_2026Q1 is the promotion gate (BEAR_2026Q1_REQUIRED) — included at position 4.
-    bull_2024Q1 is the hardest bull and least informative early — placed last.
+    REBALANCED 2026-06-19: now uses GENUINE bull windows (bull_2024Q1 +68%,
+    bull_2024Q4 +47%). The old rotation's "bull" slots (bull_2024Q2, bull_2025Q4)
+    were actually −11% and −23% down markets — renamed to bear_* and dropped here.
+    bear_2026Q1 is the promotion gate (BEAR_2026Q1_REQUIRED). 2:2 balance keeps
+    next_alternating() from exhausting the bear queue.
     """
     from experiment_log import read_queue as _rq
-    # Paired window order: bull, bear, bull, bear, bull — tested back-to-back per config.
+    # Paired window order: bull, bear, bull, bear — tested back-to-back per config.
     PAIRED_WINDOWS = [
-        "bull_2024Q2",  # primary bull validation (strongest bull signal historically)
-        "bear_2025Q1",  # primary bear validation (best PF/WR on bear)
-        "bull_2025Q4",  # secondary bull (recent, pre-2026-crash)
-        "bear_2026Q1",  # promotion gate window (must pass WR≥50%)
-        # bull_2024Q1 removed: was 3rd bull causing 3:2 bull:bear ratio → bear queue
-        # exhausted 50% faster than replenished → alternation collapsed to pure-bull.
-        # 2:2 balance ensures next_alternating() always finds a bear entry. (2026-06-04)
+        "bull_2024Q1",  # genuine bull (+68%, halving run-up)
+        "bear_2025Q1",  # genuine bear (−12%, best PF/WR on bear historically)
+        "bull_2024Q4",  # genuine bull (+47%, recent → 36/38 pair coverage)
+        "bear_2026Q1",  # promotion gate window (must pass WR≥50%), live-condition bear
+        # 2:2 balance ensures next_alternating() always finds a bear entry (2026-06-04 fix).
     ]
     target_windows = windows or PAIRED_WINDOWS
     safe = generate_safe_band_both(n_per_arch=safe_n // 2 + safe_n % 2)
