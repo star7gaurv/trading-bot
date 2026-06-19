@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-19T21:00:01.392140+00:00",
+  "updated": "2026-06-19T21:30:02.093026+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -354,13 +354,13 @@
         "avg_profit_pct": 0.102
       },
       "BEAR": {
-        "n": 10,
+        "n": 11,
         "wins": 5,
-        "losses": 5,
-        "wr": 0.5,
-        "pf": 1.206,
-        "profit_usdt": 1.11,
-        "avg_profit_pct": 0.335
+        "losses": 6,
+        "wr": 0.4545,
+        "pf": 1.04,
+        "profit_usdt": 0.25,
+        "avg_profit_pct": 0.166
       }
     },
     "ARB/USDT:USDT": {
