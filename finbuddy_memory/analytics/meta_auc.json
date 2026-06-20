@@ -1,0 +1,25 @@
+{
+  "files": 6,
+  "windows": {
+    "20240608_20250101": {
+      "pairs": 6,
+      "long": {
+        "n": 33576,
+        "auc": 0.5025,
+        "base_rate": 0.4515
+      },
+      "short": {
+        "n": 33576,
+        "auc": 0.5021,
+        "base_rate": 0.4837
+      },
+      "pooled": {
+        "n": 67152,
+        "auc": 0.5038,
+        "base_rate": 0.4676
+      }
+    }
+  },
+  "best_auc": 0.5038,
+  "verdict": "DEAD \u2014 no separable signal at entry; go to Phase 4b (new features)"
+}
