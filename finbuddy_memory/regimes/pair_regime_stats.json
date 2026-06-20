@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-19T23:30:01.954063+00:00",
+  "updated": "2026-06-20T00:00:01.473237+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -185,13 +185,13 @@
     },
     "WIF/USDT:USDT": {
       "BEAR": {
-        "n": 9,
+        "n": 10,
         "wins": 7,
-        "losses": 2,
-        "wr": 0.7778,
-        "pf": 2.493,
-        "profit_usdt": 2.06,
-        "avg_profit_pct": 0.372
+        "losses": 3,
+        "wr": 0.7,
+        "pf": 2.085,
+        "profit_usdt": 1.79,
+        "avg_profit_pct": 0.288
       },
       "NEUTRAL": {
         "n": 2,
@@ -354,13 +354,13 @@
         "avg_profit_pct": 0.102
       },
       "BEAR": {
-        "n": 11,
+        "n": 12,
         "wins": 5,
-        "losses": 6,
-        "wr": 0.4545,
-        "pf": 1.04,
-        "profit_usdt": 0.25,
-        "avg_profit_pct": 0.166
+        "losses": 7,
+        "wr": 0.4167,
+        "pf": 0.899,
+        "profit_usdt": -0.73,
+        "avg_profit_pct": 0.007
       }
     },
     "ARB/USDT:USDT": {

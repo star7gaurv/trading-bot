@@ -541,3 +541,4 @@
 | 2026-06-19 19:50:47 | SUI/USDT:USDT | SHORT | 0h05m | -1.05% | -0.59 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-19 20:57:38 | LDO/USDT:USDT | SHORT | 0h57m | -1.52% | -0.86 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-19 23:31:06 | WIF/USDT:USDT | SHORT | 3h00m | -0.47% | -0.27 | time_limit_exit | BEAR | freqai_regression_v23_sh |
+| 2026-06-19 23:56:43 | LDO/USDT:USDT | SHORT | 0h59m | -1.74% | -0.98 | stop_loss | BEAR | freqai_regression_v23_sh |
