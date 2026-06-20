@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-20T10:00:01.475733+00:00",
+  "updated": "2026-06-20T10:30:01.146688+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -10,13 +10,13 @@
   "stats": {
     "ZEC/USDT:USDT": {
       "NEUTRAL": {
-        "n": 2,
+        "n": 1,
         "wins": 0,
-        "losses": 2,
+        "losses": 1,
         "wr": 0.0,
         "pf": 0.0,
-        "profit_usdt": -4.22,
-        "avg_profit_pct": -2.065
+        "profit_usdt": -2.3,
+        "avg_profit_pct": -2.25
       }
     },
     "SUI/USDT:USDT": {
