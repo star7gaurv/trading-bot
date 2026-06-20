@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-20T05:30:01.479052+00:00",
+  "updated": "2026-06-20T06:00:01.783322+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,17 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "DASH/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 0,
-        "losses": 2,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -7.97,
-        "avg_profit_pct": -3.85
-      }
-    },
     "ZEC/USDT:USDT": {
       "NEUTRAL": {
         "n": 5,
