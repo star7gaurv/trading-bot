@@ -1345,22 +1345,31 @@ class FinBuddyFreqAI_v23(IStrategy):
     # ------------------------------------------------------------------ #
 
     @staticmethod
-    def _triple_barrier_labels(dataframe, horizon, k_tp, k_sl, side, atr):
-        """Binary first-touch triple-barrier outcome for META-LABELING (Phase 3, 2026-06-17).
+    def _meta_outcome_labels(dataframe, horizon, tp_mult, sl_mult, side, atr, fee_pct):
+        """Net-of-fees realized-outcome label for META-LABELING (Phase 3, CORRECTED 2026-06-20).
 
-        Returns a float Series: 1.0 if — entering at this candle on `side` — price touches
-        the take-profit barrier (k_tp*ATR) BEFORE the stop-loss barrier (k_sl*ATR) within
-        `horizon` candles; 0.0 if SL-first, both-in-same-candle (conservative = treat as loss),
-        or neither (timeout). Last `horizon` rows + the ATR warmup are NaN (future unknown) so
+        Returns a float Series: 1.0 if — entering at this candle on `side` — the trade ends
+        NET-PROFITABLE, else 0.0. Last `horizon` rows + ATR warmup are NaN (future unknown) so
         FreqAI drops them — same treatment as &-future_return.
 
-        This is the meta-model's training target: predict AT ENTRY TIME whether a trade will
-        reach the profitable exit or die at the stop. Live forensics: exit_signal exits earn
-        +309 USDT @ 89.7% WR while stop_loss exits lose -313 @ 0% WR; ~40% of entries hit the
-        stop. The meta-gate filters those bleeding entries while keeping the exit alpha.
+        WHY THIS REPLACES the old 3*ATR/2*ATR triple-barrier (the 2026-06-17 version):
+          The bot does NOT exit on a far TP barrier — it exits on SIGNAL/trail/ROI, and real
+          winners cash out at ~+0.9% (median), often BELOW the old 3*ATR TP. Validated against
+          783 real trades: the old label caught only 24.8% of actual winners (mislabeled 75% of
+          the positive class as losses) — its meta-model was trained on a corrupted target, which
+          is why the 2026-06-19 A/B showed "no separation". This label, scored against the same
+          783 real outcomes, agrees 77.4% of the time (winner-recall 0.77, +rate 0.445 vs true
+          base 0.405). See session note 2026-06-20.
 
-        O(horizon) vectorized numpy (no per-row loop). Tail futures default to -inf/+inf so
-        out-of-range comparisons are cleanly False (no NaN-compare warnings).
+        Outcome rule (path-aware, first-touch within `horizon`):
+          • favorable barrier touched first (+tp_mult*ATR, padded by round-trip fee) → 1 (win)
+          • stop barrier touched first (-sl_mult*ATR)                                → 0 (loss)
+          • neither (timeout)        → judge by forward return at horizon, net of fee_pct
+          • both in same candle (tie) → 0 (conservative)
+
+        Defaults (env-tunable, see set_freqai_targets): tp_mult=2.0, sl_mult=2.0 (symmetric — the
+        empirically-best definition), horizon=24 (≈ p90 of real holding; median is 4.6 candles),
+        fee_pct=0.10 (round-trip taker). O(horizon) vectorized numpy; no NaN-compare warnings.
         """
         close = dataframe["close"].to_numpy(dtype=float)
         high  = dataframe["high"].to_numpy(dtype=float)
@@ -1368,13 +1377,14 @@ class FinBuddyFreqAI_v23(IStrategy):
         a     = np.asarray(atr, dtype=float)
         n     = len(close)
         h     = int(horizon)
+        feep  = close * (fee_pct / 100.0)        # round-trip fee, in price units
 
         if side == "long":
-            tp_level = close + k_tp * a       # profit when price rises
-            sl_level = close - k_sl * a
-        else:  # short: profit when price falls
-            tp_level = close - k_tp * a
-            sl_level = close + k_sl * a
+            tp_level = close + tp_mult * a + feep    # favorable = price rises; pad TP by fee
+            sl_level = close - sl_mult * a
+        else:  # short: favorable = price falls
+            tp_level = close - tp_mult * a - feep
+            sl_level = close + sl_mult * a
 
         tp_hit = np.full(n, np.inf)
         sl_hit = np.full(n, np.inf)
@@ -1391,7 +1401,18 @@ class FinBuddyFreqAI_v23(IStrategy):
             tp_hit = np.where(np.isinf(tp_hit) & tp_touch, float(d), tp_hit)
             sl_hit = np.where(np.isinf(sl_hit) & sl_touch, float(d), sl_hit)
 
-        label = (tp_hit < sl_hit).astype(float)   # TP strictly before SL = win; ties/timeout = 0
+        # TP strictly before SL = win; SL-first and same-candle ties = loss.
+        label = np.where(tp_hit < sl_hit, 1.0, 0.0)
+
+        # Timeout (neither barrier touched): judge by realized forward return net of fees.
+        # This is what fixes the old label's blindness to small signal-exit winners.
+        neither   = np.isinf(tp_hit) & np.isinf(sl_hit)
+        close_fwd = np.full(n, np.nan); close_fwd[: n - h] = close[h:]
+        raw_ret   = (close_fwd / close - 1.0) * 100.0
+        fwd_ret   = raw_ret if side == "long" else -raw_ret
+        fwd_cmp   = np.where(np.isfinite(fwd_ret), fwd_ret, -np.inf)   # avoid NaN-compare warns
+        label     = np.where(neither & (fwd_cmp - fee_pct > 0.0), 1.0, label)
+
         label[~np.isfinite(a)] = np.nan            # ATR warmup rows
         if h > 0:
             label[n - h:] = np.nan                 # incomplete future
@@ -1448,11 +1469,15 @@ class FinBuddyFreqAI_v23(IStrategy):
         # LightGBMRegressorMultiTarget (one independent model per target → the primary
         # &-future_return regressor is unchanged). Barriers match live risk geometry (K_TP/K_SL).
         if os.getenv("FREQAI_META_LABEL", "0") == "1":
-            atr = ta.ATR(dataframe, timeperiod=14)
-            dataframe["&-meta_long"] = self._triple_barrier_labels(
-                dataframe, horizon, self.K_TP, self.K_SL, "long", atr)
-            dataframe["&-meta_short"] = self._triple_barrier_labels(
-                dataframe, horizon, self.K_TP, self.K_SL, "short", atr)
+            atr      = ta.ATR(dataframe, timeperiod=14)
+            meta_h   = int(os.getenv("FREQAI_META_HORIZON", "24"))
+            meta_tp  = float(os.getenv("FREQAI_META_TP_MULT", "2.0"))
+            meta_sl  = float(os.getenv("FREQAI_META_SL_MULT", "2.0"))
+            meta_fee = float(os.getenv("FREQAI_META_FEE_PCT", "0.10"))
+            dataframe["&-meta_long"] = self._meta_outcome_labels(
+                dataframe, meta_h, meta_tp, meta_sl, "long", atr, meta_fee)
+            dataframe["&-meta_short"] = self._meta_outcome_labels(
+                dataframe, meta_h, meta_tp, meta_sl, "short", atr, meta_fee)
         return dataframe
 
     # ------------------------------------------------------------------ #
@@ -1822,6 +1847,38 @@ class FinBuddyFreqAI_v23(IStrategy):
 
         dataframe.loc[enter_short, "enter_short"] = 1
         dataframe.loc[enter_short, "enter_tag"]   = "freqai_regression_v23_short"
+
+        # META-LABELING AUC EVAL DUMP (2026-06-20, default OFF). When FREQAI_META_DUMP=1 this
+        # writes the OOS meta predictions alongside the freshly-recomputed ground-truth labels
+        # to a parquet, so scripts/brain/meta_auc.py can score the meta-model's separation
+        # (AUC) — the GO/NO-GO gate that was skipped in the 2026-06-17 run. EVAL-ONLY: it uses
+        # future bars to build the label, but writes to disk only and NEVER touches any entry
+        # decision. Gated OFF in live (the env is unset) → byte-identical live behavior.
+        if os.getenv("FREQAI_META_DUMP", "0") == "1" and "&-meta_long" in dataframe.columns:
+            try:
+                atr_e   = ta.ATR(dataframe, timeperiod=14)
+                m_h     = int(os.getenv("FREQAI_META_HORIZON", "24"))
+                m_tp    = float(os.getenv("FREQAI_META_TP_MULT", "2.0"))
+                m_sl    = float(os.getenv("FREQAI_META_SL_MULT", "2.0"))
+                m_fee   = float(os.getenv("FREQAI_META_FEE_PCT", "0.10"))
+                dump = pd.DataFrame({
+                    "date":       dataframe["date"],
+                    "do_predict": dataframe.get("do_predict", 0),
+                    "pred_long":  dataframe["&-meta_long"],   # model prediction (OOS in backtest)
+                    "pred_short": dataframe["&-meta_short"],
+                    "y_long":  self._meta_outcome_labels(dataframe, m_h, m_tp, m_sl, "long",  atr_e, m_fee),
+                    "y_short": self._meta_outcome_labels(dataframe, m_h, m_tp, m_sl, "short", atr_e, m_fee),
+                })
+                outdir = Path("/freqtrade/user_data/meta_eval")
+                outdir.mkdir(parents=True, exist_ok=True)
+                safe = metadata["pair"].replace("/", "_").replace(":", "_")
+                # Date-range suffix so different backtest windows (e.g. bull vs bear) never
+                # overwrite each other's dump → meta_auc.py groups & scores per window.
+                d0 = pd.to_datetime(dump["date"].iloc[0]).strftime("%Y%m%d")
+                d1 = pd.to_datetime(dump["date"].iloc[-1]).strftime("%Y%m%d")
+                dump.to_parquet(outdir / f"{safe}__{d0}_{d1}.parquet")
+            except Exception as e:
+                logger.warning(f"[meta dump] {metadata.get('pair')}: {e}")
 
         return dataframe
 

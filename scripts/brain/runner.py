@@ -392,6 +392,19 @@ def _build_env_args(cfg: dict, identifier: str) -> list[str]:
             env_args += ["-e", f"FREQAI_META_LABEL={'1' if cfg['meta_label'] else '0'}"]
         if cfg.get("meta_threshold") is not None:
             env_args += ["-e", f"FREQAI_META_THRESHOLD={cfg['meta_threshold']}"]
+        # Corrected meta-label geometry (2026-06-20). These change the TRAINED meta target →
+        # they ARE in _TRAIN_SHAPE_KEYS (own cache family, distinct from the old broken label).
+        if cfg.get("meta_tp_mult") is not None:
+            env_args += ["-e", f"FREQAI_META_TP_MULT={cfg['meta_tp_mult']}"]
+        if cfg.get("meta_sl_mult") is not None:
+            env_args += ["-e", f"FREQAI_META_SL_MULT={cfg['meta_sl_mult']}"]
+        if cfg.get("meta_horizon") is not None:
+            env_args += ["-e", f"FREQAI_META_HORIZON={cfg['meta_horizon']}"]
+        if cfg.get("meta_fee_pct") is not None:
+            env_args += ["-e", f"FREQAI_META_FEE_PCT={cfg['meta_fee_pct']}"]
+        # meta_dump is a serve-time eval side-effect (NOT in shape keys → cache still hits).
+        if cfg.get("meta_dump") is not None:
+            env_args += ["-e", f"FREQAI_META_DUMP={'1' if cfg['meta_dump'] else '0'}"]
     return env_args
 
 
@@ -408,6 +421,11 @@ _TRAIN_SHAPE_KEYS = (
     "feature_set", "label_period_candles", "filter_di", "filter_svm",
     "prune_indicators", "perpair_oi", "trend_horizon", "target_version",
     "meta_label",  # Phase 3: adds &-meta_long/short targets → different trained model
+    # Corrected meta-label geometry (2026-06-20): these define WHAT the meta target IS, so a
+    # change here = a different trained meta model. Must be here or the corrected label would
+    # collide with the old broken-label cache (fam_6aeb1b16f6_*). meta_threshold/meta_dump are
+    # serve-time only and stay EXCLUDED.
+    "meta_tp_mult", "meta_sl_mult", "meta_horizon", "meta_fee_pct",
     "num_leaves", "learning_rate", "min_child_samples", "reg_alpha",
     "reg_lambda", "n_estimators",
 )
