@@ -545,3 +545,4 @@
 | 2026-06-20 00:28:21 | AVAX/USDT:USDT | SHORT | 0h17m | -1.88% | -1.05 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-20 03:33:45 | AVAX/USDT:USDT | SHORT | 1h05m | -1.57% | -0.88 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-20 05:09:06 | ENA/USDT:USDT | SHORT | 1h38m | -1.50% | -0.84 | trailing_stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-20 05:15:22 | WIF/USDT:USDT | SHORT | 1h14m | -1.91% | -1.07 | stop_loss | BEAR | freqai_regression_v23_sh |
