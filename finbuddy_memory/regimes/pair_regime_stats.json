@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-20T11:00:01.864953+00:00",
+  "updated": "2026-06-20T11:30:01.639201+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -263,13 +263,13 @@
         "avg_profit_pct": -1.96
       },
       "BEAR": {
-        "n": 14,
-        "wins": 7,
+        "n": 15,
+        "wins": 8,
         "losses": 7,
-        "wr": 0.5,
-        "pf": 0.962,
-        "profit_usdt": -0.26,
-        "avg_profit_pct": -0.031
+        "wr": 0.5333,
+        "pf": 0.991,
+        "profit_usdt": -0.06,
+        "avg_profit_pct": -0.005
       }
     },
     "XRP/USDT:USDT": {
@@ -494,13 +494,13 @@
         "avg_profit_pct": -1.057
       },
       "BEAR": {
-        "n": 4,
-        "wins": 1,
+        "n": 5,
+        "wins": 2,
         "losses": 3,
-        "wr": 0.25,
-        "pf": 0.005,
-        "profit_usdt": -4.3,
-        "avg_profit_pct": -1.883
+        "wr": 0.4,
+        "pf": 0.102,
+        "profit_usdt": -3.88,
+        "avg_profit_pct": -1.358
       }
     },
     "ONDO/USDT:USDT": {
