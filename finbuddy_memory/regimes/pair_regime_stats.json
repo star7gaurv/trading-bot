@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-20T13:30:01.964811+00:00",
+  "updated": "2026-06-20T14:00:01.522376+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,17 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "ZEC/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -2.3,
-        "avg_profit_pct": -2.25
-      }
-    },
     "SUI/USDT:USDT": {
       "NEUTRAL": {
         "n": 2,
@@ -263,13 +252,13 @@
         "avg_profit_pct": -1.96
       },
       "BEAR": {
-        "n": 15,
-        "wins": 8,
+        "n": 16,
+        "wins": 9,
         "losses": 7,
-        "wr": 0.5333,
-        "pf": 0.991,
-        "profit_usdt": -0.06,
-        "avg_profit_pct": -0.005
+        "wr": 0.5625,
+        "pf": 1.053,
+        "profit_usdt": 0.37,
+        "avg_profit_pct": 0.043
       }
     },
     "XRP/USDT:USDT": {
@@ -323,13 +312,13 @@
         "avg_profit_pct": 0.102
       },
       "BEAR": {
-        "n": 12,
-        "wins": 5,
+        "n": 13,
+        "wins": 6,
         "losses": 7,
-        "wr": 0.4167,
-        "pf": 0.899,
-        "profit_usdt": -0.73,
-        "avg_profit_pct": 0.007
+        "wr": 0.4615,
+        "pf": 0.941,
+        "profit_usdt": -0.43,
+        "avg_profit_pct": 0.048
       }
     },
     "ARB/USDT:USDT": {
@@ -494,13 +483,13 @@
         "avg_profit_pct": -1.057
       },
       "BEAR": {
-        "n": 5,
-        "wins": 2,
+        "n": 6,
+        "wins": 3,
         "losses": 3,
-        "wr": 0.4,
-        "pf": 0.102,
-        "profit_usdt": -3.88,
-        "avg_profit_pct": -1.358
+        "wr": 0.5,
+        "pf": 0.53,
+        "profit_usdt": -2.03,
+        "avg_profit_pct": -0.582
       }
     },
     "ONDO/USDT:USDT": {
