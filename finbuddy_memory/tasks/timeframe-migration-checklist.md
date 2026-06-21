@@ -60,3 +60,14 @@
 - [ ] `py_compile` + in-container module load.
 - [ ] 1h smoke backtest (2 pairs, 2 weeks) trains + runs end-to-end, no NaN crash.
 - [ ] IC gate already shows the 1h signal is `btc_vol_12` (volatility, not direction) — temper expectations.
+
+
+## ✅ STATUS 2026-06-20: strategy CENTRALIZED (section C done in code)
+FinBuddyFreqAI_v23.py now derives startup_candle_count / _Z_ROLLING / _CENTERING_WINDOW /
+_DAY_CANDLES / _PRED_STD_WINDOW / _META_HORIZON_DEFAULT from `_CANDLES_PER_DAY =
+86400//timeframe_to_seconds(timeframe)`. informative_pairs() and the BTC-ref feather path are
+now timeframe-derived too. VERIFIED byte-identical at 15m (all 8 constants == prior hardcoded
+values; informative order preserved). REMAINING for the actual 1h flip: create
+v23_regression_1h_di_config.json (timeframe+include_timeframes+label_period_candles), flip
+config.json/strategy timeframe, brain TF maps, WF scripts, dashboard:623, identifier bump+flush.
+RSI/ATR indicator PERIODS (14/28/56) deliberately left TF-natural (documented choice).

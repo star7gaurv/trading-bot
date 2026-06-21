@@ -97,7 +97,20 @@ class FinBuddyFreqAI_v23(IStrategy):
     timeframe = "15m"  # matches config.json; was "5m" (stale, overridden at load 2026-05-20)
 
     can_short = True
-    startup_candle_count = 2400  # max safe: Binance 15m cap=2494 (5x499). ROLLING=2880 min_periods=200 so z-score valid from candle 200+
+
+    # ── Timeframe-derived candle-count constants (CENTRALIZED 2026-06-20) ──────────
+    # Every lookback below is expressed in WALL-CLOCK and converted to candles for the
+    # ACTIVE timeframe, so changing `timeframe` propagates everywhere — there are no
+    # scattered magic numbers left to miss when migrating TF. At 15m each reproduces
+    # the exact prior hardcoded value (verified by unit test). 86400 = seconds/day.
+    _CANDLES_PER_DAY       = 86400 // timeframe_to_seconds(timeframe)  # 96@15m · 24@1h
+    startup_candle_count   = 25 * _CANDLES_PER_DAY        # 2400@15m — z-score/centering warmup
+    _Z_ROLLING             = 30 * _CANDLES_PER_DAY        # 2880@15m — z-score window (set_freqai_targets)
+    _CENTERING_WINDOW      = 20 * _CANDLES_PER_DAY        # 1920@15m — serve-time recentering (3 sites)
+    _CENTERING_MIN_PERIODS = 200                          # warmup floor (TF-independent count)
+    _DAY_CANDLES           = _CANDLES_PER_DAY             # 96@15m — 1-day rolling high/low
+    _PRED_STD_WINDOW       = round(_CANDLES_PER_DAY * 25 / 24)  # 100@15m — ~25h per-pair pred-std
+    _META_HORIZON_DEFAULT  = 6 * _CANDLES_PER_DAY // 24   # 24@15m — 6h meta-label horizon
 
     # Regression entry thresholds (grid search via docker env).
     LONG_THRESHOLD  = float(os.getenv("FREQAI_LONG_THRESHOLD",  "1.0"))   # predicted % return to enter long
@@ -121,9 +134,11 @@ class FinBuddyFreqAI_v23(IStrategy):
 
     def informative_pairs(self):
         pairs = self.dp.current_whitelist()
-        informative = [(pair, "15m") for pair in pairs]
-        informative += [(pair, "1h") for pair in pairs]
-        informative += [(pair, "4h") for pair in pairs]
+        # Base TF + the higher TFs that differ from base (avoids a base==informative
+        # collision when timeframe changes). At 15m → [15m,1h,4h] (identical to before);
+        # at 1h → [1h,4h] (the redundant 1h-as-informative is dropped automatically).
+        tfs = [self.timeframe] + [tf for tf in ("1h", "4h") if tf != self.timeframe]
+        informative = [(pair, tf) for tf in tfs for pair in pairs]  # TF-grouped (matches prior order)
         informative += [("BTC/USDT:USDT", "1d")]
         informative += [("BTC/USDT:USDT", "4h")]
         return informative
@@ -355,14 +370,14 @@ class FinBuddyFreqAI_v23(IStrategy):
     #   IDENTICAL in live and backtest. min_periods=200 matches the z-score
     #   normalization warmup (ROLLING=2880, min_periods=200 in set_freqai_targets).
     #
-    # ⚠️ COUPLING: this window MUST be the same in all 3 centering sites —
-    #   leverage(), populate_entry_trend(), populate_exit_trend() — so the
-    #   threshold comparison is coherent across sizing, entry, and exit.
-    _CENTERING_WINDOW      = 1920   # 20 days on 15m TF
-    _CENTERING_MIN_PERIODS = 200
+    # ⚠️ COUPLING: _CENTERING_WINDOW (defined up top, TF-derived = 20*_CANDLES_PER_DAY:
+    #   1920@15m, 480@1h) MUST be identical in all 3 centering sites — leverage(),
+    #   populate_entry_trend(), populate_exit_trend() — so the threshold comparison is
+    #   coherent across sizing, entry, and exit. It stays < startup_candle_count by design.
 
-    _HISTORICAL_BTC_15M_FILE = "/freqtrade/user_data/data/binance/futures/BTC_USDT_USDT-15m-futures.feather"
-    _btc_15m_df = None  # class-level cache for BTC 15m OHLCV (for rel-strength feature)
+    # BTC reference OHLCV for the rel-strength feature — loaded at the ACTIVE timeframe.
+    _HISTORICAL_BTC_15M_FILE = f"/freqtrade/user_data/data/binance/futures/BTC_USDT_USDT-{timeframe}-futures.feather"
+    _btc_15m_df = None  # class-level cache for BTC base-TF OHLCV (rel-strength feature)
 
     _RECENT_WR_FILE = "/home/ubuntu/.finbuddy/state/recent_wr.json"
     _recent_wr_cache = 0.50
@@ -1207,8 +1222,8 @@ class FinBuddyFreqAI_v23(IStrategy):
 
         dataframe["%-atr"] = ta.ATR(dataframe, timeperiod=14) / dataframe["close"]
 
-        rolling_high = dataframe["high"].rolling(96).max()
-        rolling_low = dataframe["low"].rolling(96).min()
+        rolling_high = dataframe["high"].rolling(self._DAY_CANDLES).max()
+        rolling_low = dataframe["low"].rolling(self._DAY_CANDLES).min()
         dataframe["%-price_position"] = (
             (dataframe["close"] - rolling_low)
             / (rolling_high - rolling_low + 1e-9)
@@ -1449,9 +1464,9 @@ class FinBuddyFreqAI_v23(IStrategy):
         past_return = (dataframe["close"] / dataframe["close"].shift(horizon) - 1.0) * 100
         
         # Calculate mean and std on past_return, which has NO look-ahead bias at all
-        ROLLING = 2880
-        mu  = past_return.rolling(ROLLING, min_periods=200).mean()
-        sig = past_return.rolling(ROLLING, min_periods=200).std().replace(0, 1e-9)
+        ROLLING = self._Z_ROLLING   # 2880@15m, TF-derived (30 days)
+        mu  = past_return.rolling(ROLLING, min_periods=self._CENTERING_MIN_PERIODS).mean()
+        sig = past_return.rolling(ROLLING, min_periods=self._CENTERING_MIN_PERIODS).std().replace(0, 1e-9)
         
         # Standardize the raw FUTURE target using past parameters.
         # DO NOT fillna here — let NaN rows stay NaN so FreqAI drops them correctly:
@@ -1470,7 +1485,7 @@ class FinBuddyFreqAI_v23(IStrategy):
         # &-future_return regressor is unchanged). Barriers match live risk geometry (K_TP/K_SL).
         if os.getenv("FREQAI_META_LABEL", "0") == "1":
             atr      = ta.ATR(dataframe, timeperiod=14)
-            meta_h   = int(os.getenv("FREQAI_META_HORIZON", "24"))
+            meta_h   = int(os.getenv("FREQAI_META_HORIZON", str(self._META_HORIZON_DEFAULT)))
             meta_tp  = float(os.getenv("FREQAI_META_TP_MULT", "2.0"))
             meta_sl  = float(os.getenv("FREQAI_META_SL_MULT", "2.0"))
             meta_fee = float(os.getenv("FREQAI_META_FEE_PCT", "0.10"))
@@ -1577,14 +1592,14 @@ class FinBuddyFreqAI_v23(IStrategy):
         if "%-future_return" in dataframe.columns:
             pair_pred_std = (
                 dataframe["%-future_return"]
-                .rolling(100, min_periods=10)
+                .rolling(self._PRED_STD_WINDOW, min_periods=10)
                 .std()
                 .fillna(_GLOBAL_STD)
             )
         elif "&-future_return" in dataframe.columns:
             pair_pred_std = (
                 dataframe["&-future_return"]
-                .rolling(100, min_periods=10)
+                .rolling(self._PRED_STD_WINDOW, min_periods=10)
                 .std()
                 .fillna(_GLOBAL_STD)
             )
@@ -1857,7 +1872,7 @@ class FinBuddyFreqAI_v23(IStrategy):
         if os.getenv("FREQAI_META_DUMP", "0") == "1" and "&-meta_long" in dataframe.columns:
             try:
                 atr_e   = ta.ATR(dataframe, timeperiod=14)
-                m_h     = int(os.getenv("FREQAI_META_HORIZON", "24"))
+                m_h     = int(os.getenv("FREQAI_META_HORIZON", str(self._META_HORIZON_DEFAULT)))
                 m_tp    = float(os.getenv("FREQAI_META_TP_MULT", "2.0"))
                 m_sl    = float(os.getenv("FREQAI_META_SL_MULT", "2.0"))
                 m_fee   = float(os.getenv("FREQAI_META_FEE_PCT", "0.10"))
