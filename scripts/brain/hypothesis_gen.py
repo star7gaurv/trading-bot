@@ -151,12 +151,27 @@ TARGET_VERSION = "zscore"
 # ══════════════════════════════════════════════════════════════════════════
 
 # v23 Regression — LightGBMRegressor predicting future_return %
+def _active_tf_and_config(default_tf="15m", default_cfg="v23_regression_15m_di_config.json"):
+    """Active timeframe + its config file from the single source of truth
+    (finbuddy_memory/timeframe_profiles.json — set by the dashboard switcher). The brain SEED
+    follows the live timeframe; the AGGRESSIVE band still explores all timeframes."""
+    try:
+        p = Path(__file__).resolve().parents[2] / "finbuddy_memory" / "timeframe_profiles.json"
+        d = json.loads(p.read_text())
+        tf = d.get("active", default_tf)
+        return tf, d.get("profiles", {}).get(tf, {}).get("config_file", default_cfg)
+    except Exception:
+        return default_tf, default_cfg
+
+
+_ACTIVE_TF, _ACTIVE_CFG = _active_tf_and_config()
+
 SEED_CONFIG_V23 = {
     "arch":               "v23",
     "strategy":           "FinBuddyFreqAI_v23",
     "freqaimodel":        "LightGBMRegressor",
-    "config_file":        "v23_regression_15m_di_config.json",
-    "timeframe":          "15m",
+    "config_file":        _ACTIVE_CFG,   # follows active timeframe (single source of truth)
+    "timeframe":          _ACTIVE_TF,
     "long_threshold":     0.3,    # FIXED 2026-06-08: _GLOBAL_STD=0.30, std_factor capped at 1.0.
                                   # effective = 0.3×1.3×0.5=0.195 (degenerate pairs) → 0.3×1.3×1.0=0.39 (normal).
                                   # ETH (std=0.33, centered=0.538): fires long at 0.390. LT=0.5 → threshold 0.65 → blocked.

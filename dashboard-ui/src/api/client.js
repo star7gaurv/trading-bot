@@ -145,6 +145,23 @@ export async function getStrategyConfig() {
   return request("/api/config");
 }
 
+// ─── Timeframe switcher ───
+export async function getTimeframeInfo() {
+  return request("/api/timeframe");
+}
+export async function getTimeframeStatus() {
+  return request("/api/timeframe/status");
+}
+export async function switchTimeframe(timeframe) {
+  return request("/api/timeframe/switch", { method: "POST", body: { timeframe } });
+}
+export async function rollbackTimeframe() {
+  return request("/api/timeframe/rollback", { method: "POST" });
+}
+export async function getFeatureIC() {
+  return request("/api/feature-ic");
+}
+
 // ─── Stats & diagnostics ───
 export async function getExitReasons() {
   return request("/api/stats/exit-reasons");

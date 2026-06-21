@@ -60,6 +60,8 @@ END=$(date -u +'%Y-%m-01')
 
 echo "[$(date -u +'%Y-%m-%d %H:%M:%S UTC')] === Daily walk-forward starting: $START → $END ===" >> "$LOG"
 
+# Follow the UI-selected timeframe (single source of truth), fallback 15m.
+ACTIVE_TF=$(python3 -c "import json;print(json.load(open('/home/ubuntu/var/www/html/trade/finbuddy_memory/timeframe_profiles.json'))['active'])" 2>/dev/null || echo 15m)
 python3 "$SCRIPT" \
     --start "$START" \
     --end "$END" \
@@ -67,7 +69,7 @@ python3 "$SCRIPT" \
     --test-months 2 \
     --slide-months 2 \
     --strategy FinBuddyFreqAI_v23 \
-    --timeframe 15m \
+    --timeframe "$ACTIVE_TF" \
     --config config.json \
     --skip-download \
     --max-workers 1 \

@@ -935,6 +935,134 @@ async def get_config(_: dict = Depends(require_auth)):
     }
 
 
+# ───────────────────── Timeframe switcher ─────────────────────
+TIMEFRAME_PROFILES = REPO_ROOT / "finbuddy_memory/timeframe_profiles.json"
+TIMEFRAME_STATUS = REPO_ROOT / "finbuddy_memory/timeframe_switch_status.json"
+FEATURE_IC_FILE = REPO_ROOT / "finbuddy_memory/analytics/feature_ic.json"
+FEATURE_IC_BY_TF = REPO_ROOT / "finbuddy_memory/analytics/feature_ic_by_tf.json"
+APPLY_TF_SCRIPT = REPO_ROOT / "scripts/apply_timeframe.py"
+MODELS_DIR = REPO_ROOT / "freqtrade/user_data/models"
+TF_SWITCH_LOG = Path("/home/ubuntu/.finbuddy/logs/timeframe_switch.log")
+
+
+def _load_tf_profiles() -> dict:
+    try:
+        return json.loads(TIMEFRAME_PROFILES.read_text())
+    except (OSError, json.JSONDecodeError):
+        return {"active": None, "available": [], "profiles": {}, "history": []}
+
+
+def _tf_status() -> dict:
+    """Switch status + health: is the (new) model trained & present?"""
+    prof = _load_tf_profiles()
+    out: dict[str, Any] = {"active": prof.get("active"), "state": "idle"}
+    if TIMEFRAME_STATUS.exists():
+        try:
+            out.update(json.loads(TIMEFRAME_STATUS.read_text()))
+        except (OSError, json.JSONDecodeError):
+            pass
+    # health: does the live identifier's model dir exist + how fresh
+    identifier = out.get("identifier")
+    if not identifier and CONFIG_JSON.exists():
+        try:
+            identifier = json.loads(CONFIG_JSON.read_text()).get("freqai", {}).get("identifier")
+        except (OSError, json.JSONDecodeError):
+            identifier = None
+    model_present, model_age_min = False, None
+    if identifier:
+        mdir = MODELS_DIR / identifier
+        if mdir.is_dir():
+            subs = [p for p in mdir.glob("sub-train*") if p.is_dir()] or [mdir]
+            newest = max((p.stat().st_mtime for p in subs), default=mdir.stat().st_mtime)
+            model_present = True
+            model_age_min = round((time.time() - newest) / 60.0, 1)
+    out["identifier"] = identifier
+    out["model_present"] = model_present
+    out["model_age_min"] = model_age_min
+    # "ready" once the new model has trained; while a switch is in progress and the model
+    # isn't present yet, it's still training.
+    if out.get("state") == "training":
+        out["ready"] = model_present
+    else:
+        out["ready"] = model_present
+    return out
+
+
+@app.get("/api/timeframe")
+async def get_timeframe(_: dict = Depends(require_auth)):
+    prof = _load_tf_profiles()
+    ic = {}
+    for f in (FEATURE_IC_BY_TF, FEATURE_IC_FILE):
+        if f.exists():
+            try:
+                ic = json.loads(f.read_text()); break
+            except (OSError, json.JSONDecodeError):
+                pass
+    return {
+        "active": prof.get("active"),
+        "available": prof.get("available", []),
+        "profiles": prof.get("profiles", {}),
+        "history": prof.get("history", [])[-10:],
+        "status": _tf_status(),
+        "ic_by_tf": ic,
+    }
+
+
+@app.get("/api/timeframe/status")
+async def get_timeframe_status(_: dict = Depends(require_auth)):
+    return _tf_status()
+
+
+@app.get("/api/feature-ic")
+async def get_feature_ic(_: dict = Depends(require_auth)):
+    for f in (FEATURE_IC_BY_TF, FEATURE_IC_FILE):
+        if f.exists():
+            try:
+                return json.loads(f.read_text())
+            except (OSError, json.JSONDecodeError):
+                pass
+    return {"available": False}
+
+
+class TimeframeSwitchIn(BaseModel):
+    timeframe: str
+
+
+def _spawn_apply(args: list[str]) -> None:
+    """Spawn apply_timeframe.py detached so the HTTP call returns immediately while the
+    retrain proceeds in the background. Output → timeframe_switch.log."""
+    TF_SWITCH_LOG.parent.mkdir(parents=True, exist_ok=True)
+    logf = open(TF_SWITCH_LOG, "a")
+    subprocess.Popen(
+        [sys.executable, str(APPLY_TF_SCRIPT)] + args,
+        cwd=str(REPO_ROOT), stdout=logf, stderr=subprocess.STDOUT,
+        start_new_session=True,
+    )
+
+
+@app.post("/api/timeframe/switch")
+async def switch_timeframe(body: TimeframeSwitchIn, _: dict = Depends(require_auth)):
+    prof = _load_tf_profiles()
+    allowed = prof.get("available", [])
+    # STRICT allowlist — tf is passed as a single argv token; never accept anything else.
+    if body.timeframe not in allowed:
+        raise HTTPException(status_code=400, detail=f"timeframe must be one of {allowed}")
+    if body.timeframe == prof.get("active"):
+        return {"accepted": False, "reason": "already active", "active": prof.get("active")}
+    _spawn_apply([body.timeframe])
+    return {"accepted": True, "timeframe": body.timeframe,
+            "note": "Switch started — retraining all pairs (~hours). Poll /api/timeframe/status."}
+
+
+@app.post("/api/timeframe/rollback")
+async def rollback_timeframe(_: dict = Depends(require_auth)):
+    prof = _load_tf_profiles()
+    if not prof.get("history"):
+        raise HTTPException(status_code=400, detail="no history to roll back to")
+    _spawn_apply(["--rollback"])
+    return {"accepted": True, "note": "Rollback started — poll /api/timeframe/status."}
+
+
 # ───────────────────── Exit reasons + Recent trades ─────────────────────
 
 @app.get("/api/stats/exit-reasons")

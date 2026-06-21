@@ -6,6 +6,7 @@ import Card from "../components/Card";
 import Badge from "../components/Badge";
 import { usePolling } from "../api/hooks";
 import { getStrategyConfig, getWhitelist, getBalance } from "../api/client";
+import TimeframeCard from "./TimeframeCard";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -145,6 +146,7 @@ function ConfigPanel({ data, loading, error, lastUpdated }) {
         <KV label="FreqAI Identifier" value={identifier} />
         <KV label="Timeframe" value={cfg.timeframe} />
         <KV label="Max open trades" value={cfg.max_open_trades} />
+        {/* timeframe is now switchable via the Timeframe card above */}
         <KV label="Stake amount" value={cfg.stake_amount != null ? `${cfg.stake_amount} USDT` : "unlimited"} />
         <KV label="Dry run" value={cfg.dry_run ? "Yes" : "No"} tone={cfg.dry_run ? "warn" : "profit"} />
       </Section>
@@ -174,9 +176,7 @@ export default function Settings() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 text-xxs text-text-muted italic">
-        <span>Read-only view — changes must be made via server config files.</span>
-      </div>
+      <TimeframeCard />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="space-y-4">
