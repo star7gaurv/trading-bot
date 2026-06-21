@@ -162,6 +162,14 @@ export async function getFeatureIC() {
   return request("/api/feature-ic");
 }
 
+// ─── Funding farm + signal quality ───
+export async function getFundingFarm() {
+  return request("/api/funding-farm");
+}
+export async function getSignalQuality() {
+  return request("/api/signal-quality");
+}
+
 // ─── Stats & diagnostics ───
 export async function getExitReasons() {
   return request("/api/stats/exit-reasons");

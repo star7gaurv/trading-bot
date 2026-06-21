@@ -2,9 +2,9 @@
  * TimeframeCard — switch the live trading timeframe from the UI.
  * Whole-system: a switch retrains all pairs and realigns config/.env/brain/WF.
  * Enhancements: informed switching (IC-by-TF), confirm modal, retrain progress + health,
- * rollback, audit history.
+ * rollback, audit history, data-warning banner, best-IC recommendation badge.
  */
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Card from "../components/Card";
 import Badge from "../components/Badge";
 import { usePolling } from "../api/hooks";
@@ -26,18 +26,37 @@ function StatusBadge({ status }) {
   return <Badge variant="unknown" size="xs">{st || "idle"}</Badge>;
 }
 
-// IC-by-TF informed-switching panel (defensive against either feature_ic.json shape).
-function ICPanel({ ic }) {
-  if (!ic || ic.available === false || !ic.report) {
+/** Compute best TF (highest max |bear IC| across all features) from feature_ic_by_tf.json. */
+function useBestTF(icByTf) {
+  return useMemo(() => {
+    if (!icByTf?.by_tf) return null;
+    let best = null, bestIc = 0;
+    for (const [tf, r] of Object.entries(icByTf.by_tf)) {
+      const maxIc = Math.max(
+        ...Object.values(r.report || {}).flatMap((w) =>
+          ["bear_2025Q1", "bear_2026Q1"].map((k) => Math.abs((w[k]?.ic) ?? 0))
+        ),
+        0
+      );
+      if (maxIc > bestIc) { bestIc = maxIc; best = tf; }
+    }
+    return bestIc > 0.05 ? best : null;
+  }, [icByTf]);
+}
+
+// IC-by-TF informed-switching panel (handles both feature_ic_by_tf.json and legacy feature_ic.json shapes).
+function ICPanel({ ic, activeTf }) {
+  // New format: {by_tf: {tf: {horizon, report, graduated}}}
+  const tfReport = ic?.by_tf?.[activeTf] ?? (ic?.report ? ic : null);
+  if (!tfReport || !tfReport.report) {
     return (
       <p className="text-xxs text-text-muted italic">
-        No IC data yet — run scripts/brain/feature_ic.py to populate.
+        No IC data yet — run scripts/brain/feature_ic.py --all-tf to populate.
       </p>
     );
   }
-  const grad = ic.graduated || [];
-  // Show the highest |bear IC| feature per the report.
-  const rows = Object.entries(ic.report)
+  const grad = tfReport.graduated || [];
+  const rows = Object.entries(tfReport.report)
     .map(([feat, w]) => {
       const bear = ["bear_2025Q1", "bear_2026Q1"]
         .map((k) => (w[k] && w[k].ic != null ? Math.abs(w[k].ic) : 0));
@@ -48,7 +67,7 @@ function ICPanel({ ic }) {
   return (
     <div>
       <p className="text-xxs text-text-tertiary mb-1">
-        Entry-signal strength (|bear IC|, H={ic.horizon ?? "?"}) — &gt;0.05 = usable
+        Entry-signal strength @ {activeTf} (|bear IC|, H={tfReport.horizon ?? "?"}) — &gt;0.05 = usable
       </p>
       <div className="space-y-0.5">
         {rows.map((r) => (
@@ -79,6 +98,8 @@ export default function TimeframeCard() {
   const status = data?.status;
   const history = data?.history || [];
   const profiles = data?.profiles || {};
+  const dataWarnings = data?.data_warnings || {};
+  const bestTF = useBestTF(data?.ic_by_tf);
 
   async function doSwitch() {
     setBusy(true);
@@ -134,7 +155,7 @@ export default function TimeframeCard() {
                 key={tf}
                 disabled={busy || switching || tf === active}
                 onClick={() => { setPending(tf); setMsg(null); }}
-                className={`px-3 py-1 rounded text-xs font-mono border transition ${
+                className={`relative px-3 py-1 rounded text-xs font-mono border transition ${
                   tf === active
                     ? "bg-accent/15 text-accent border-accent/40 cursor-default"
                     : "bg-surface text-text-secondary border-border hover:border-accent/40 disabled:opacity-40"
@@ -144,8 +165,18 @@ export default function TimeframeCard() {
                 {profiles[tf]?.label_period_candles != null && (
                   <span className="text-text-muted ml-1">·lp{profiles[tf].label_period_candles}</span>
                 )}
+                {tf === bestTF && tf !== active && (
+                  <span className="absolute -top-1.5 -right-1.5 text-profit text-[9px] font-semibold leading-none">
+                    ✦
+                  </span>
+                )}
               </button>
             ))}
+            {bestTF && (
+              <span className="self-center text-xxs text-profit ml-1">
+                ✦ best IC
+              </span>
+            )}
           </div>
 
           {switching && (
@@ -157,7 +188,7 @@ export default function TimeframeCard() {
 
           {/* IC informed-switching */}
           <div className="border-t border-border pt-2">
-            <ICPanel ic={data.ic_by_tf} />
+            <ICPanel ic={data.ic_by_tf} activeTf={active} />
           </div>
 
           {/* rollback + history */}
@@ -191,10 +222,15 @@ export default function TimeframeCard() {
             <h3 className="text-sm font-semibold text-text-primary mb-2">
               {pending === "__rollback__" ? "Roll back timeframe?" : `Switch to ${pending}?`}
             </h3>
-            <p className="text-xxs text-text-secondary mb-3">
+            <p className="text-xxs text-text-secondary mb-2">
               This recreates the live bot, <span className="text-warn">retrains all 26 pairs (~hours)</span>,
               resets pair-regime stats, and realigns brain + walk-forward. The bot is dry-run.
             </p>
+            {pending && pending !== "__rollback__" && dataWarnings[pending] && (
+              <div className="mb-2 px-2 py-1.5 rounded bg-warn/10 border border-warn/30 text-xxs text-warn">
+                ⚠ {dataWarnings[pending]} — data downloads via cron at 04:30 UTC.
+              </div>
+            )}
             <div className="flex gap-2 justify-end">
               <button disabled={busy} onClick={() => setPending(null)}
                 className="px-3 py-1 rounded text-xs border border-border text-text-secondary hover:border-accent/40 disabled:opacity-40">

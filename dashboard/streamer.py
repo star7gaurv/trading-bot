@@ -943,6 +943,13 @@ FEATURE_IC_BY_TF = REPO_ROOT / "finbuddy_memory/analytics/feature_ic_by_tf.json"
 APPLY_TF_SCRIPT = REPO_ROOT / "scripts/apply_timeframe.py"
 MODELS_DIR = REPO_ROOT / "freqtrade/user_data/models"
 TF_SWITCH_LOG = Path("/home/ubuntu/.finbuddy/logs/timeframe_switch.log")
+DATA_FUTURES_DIR = REPO_ROOT / "freqtrade/user_data/data/binance/futures"
+
+# ───────────────────── Funding farm ─────────────────────
+FUNDING_PARQUET = REPO_ROOT / "finbuddy_memory/historical/funding_perpair.parquet"
+FUNDING_FARM_STATE = REPO_ROOT / "finbuddy_memory/funding_farm/state.json"
+FUNDING_FARM_SCANNER_LOG = Path("/home/ubuntu/.finbuddy/logs/funding_farm.log")
+FUNDING_MIN_APR = 0.15   # same threshold as scanner.py
 
 
 def _load_tf_profiles() -> dict:
@@ -998,13 +1005,21 @@ async def get_timeframe(_: dict = Depends(require_auth)):
                 ic = json.loads(f.read_text()); break
             except (OSError, json.JSONDecodeError):
                 pass
+    # data_warnings: per-TF feather count so the confirm modal can warn if data is sparse
+    available = prof.get("available", [])
+    data_warnings: dict[str, str | None] = {}
+    if DATA_FUTURES_DIR.is_dir():
+        for tf in available:
+            n = len(list(DATA_FUTURES_DIR.glob(f"*-{tf}-futures.feather")))
+            data_warnings[tf] = None if n >= 10 else f"{n}/26 pairs have {tf} data"
     return {
         "active": prof.get("active"),
-        "available": prof.get("available", []),
+        "available": available,
         "profiles": prof.get("profiles", {}),
         "history": prof.get("history", [])[-10:],
         "status": _tf_status(),
         "ic_by_tf": ic,
+        "data_warnings": data_warnings,
     }
 
 
@@ -1061,6 +1076,128 @@ async def rollback_timeframe(_: dict = Depends(require_auth)):
         raise HTTPException(status_code=400, detail="no history to roll back to")
     _spawn_apply(["--rollback"])
     return {"accepted": True, "note": "Rollback started — poll /api/timeframe/status."}
+
+
+@app.get("/api/funding-farm")
+async def funding_farm(_: dict = Depends(require_auth)):
+    """Live funding-farm monitor: current APR per symbol vs the 15% entry threshold.
+    Lets Gaurav see the gap to opportunity without SSH. Farm is correctly dormant in bear
+    market (no symbol clears 15% APR); this makes the state visible in the dashboard."""
+    def compute():
+        import pandas as pd  # lazy import (not always installed in all envs)
+        rows: list[dict] = []
+        if FUNDING_PARQUET.exists():
+            try:
+                df = pd.read_parquet(FUNDING_PARQUET)
+                # Latest row per symbol → annualize (8h rate × 3 events/day × 365 days)
+                latest = df.sort_values("date").groupby("symbol").last().reset_index()
+                for _, r in latest.iterrows():
+                    rate = float(r.get("funding_rate") or 0.0)
+                    apr = rate * 3 * 365  # Binance 8h funding → APR
+                    sym = str(r["symbol"])
+                    rows.append({
+                        "symbol": sym,
+                        "apr": round(apr, 4),
+                        "gap_to_threshold": round(max(0.0, FUNDING_MIN_APR - abs(apr)), 4),
+                        "funding_rate": round(rate, 6),
+                        "at_threshold": abs(apr) >= FUNDING_MIN_APR,
+                    })
+                rows.sort(key=lambda x: abs(x["apr"]), reverse=True)
+            except Exception as e:
+                rows = [{"error": str(e)}]
+
+        # Farm state (open paper positions + realized PnL)
+        state: dict = {}
+        if FUNDING_FARM_STATE.exists():
+            try:
+                state = json.loads(FUNDING_FARM_STATE.read_text())
+            except (OSError, json.JSONDecodeError):
+                pass
+
+        # Last scanner run timestamp from log
+        last_scan: str | None = None
+        if FUNDING_FARM_SCANNER_LOG.exists():
+            try:
+                lines = FUNDING_FARM_SCANNER_LOG.read_text().splitlines()
+                for ln in reversed(lines[-50:]):
+                    if "scanner" in ln.lower() or "scan" in ln.lower() or "checking" in ln.lower():
+                        last_scan = ln[:25].strip(); break
+            except OSError:
+                pass
+
+        best = rows[0] if rows and "error" not in rows[0] else None
+        return {
+            "symbols": rows[:10],  # top 10 by |APR|
+            "best_apr": best["apr"] if best else None,
+            "best_symbol": best["symbol"] if best else None,
+            "threshold": FUNDING_MIN_APR,
+            "threshold_pct": round(FUNDING_MIN_APR * 100, 1),
+            "positions": state.get("positions", {}),
+            "realized_pnl": state.get("realized_pnl", 0.0),
+            "last_accrual": state.get("last_accrual"),
+            "last_scan": last_scan,
+        }
+
+    return await asyncio.get_event_loop().run_in_executor(None, compute)
+
+
+@app.get("/api/signal-quality")
+async def signal_quality(_: dict = Depends(require_auth)):
+    """Live model health: do_predict ratio, entry rate, prediction distribution.
+    Answers 'is the model healthy right now?' without digging through logs."""
+    async def compute():
+        # Sample BTC + ETH from pair_candles (last 200 candles = ~3d at 1h)
+        cfg_tf = "1h"
+        if CONFIG_JSON.exists():
+            try:
+                cfg_tf = json.loads(CONFIG_JSON.read_text()).get("timeframe", "1h")
+            except (OSError, json.JSONDecodeError):
+                pass
+
+        agg = {"do_predict_total": 0, "do_predict_1": 0, "pred_values": [],
+               "pairs_sampled": 0, "entry_long": 0, "entry_short": 0}
+        for pair in ["BTC/USDT:USDT", "ETH/USDT:USDT", "SOL/USDT:USDT"]:
+            try:
+                cd = await ft_get("/pair_candles", params={"pair": pair, "timeframe": cfg_tf, "limit": 100})
+                cols = cd.get("columns", [])
+                data = cd.get("data", [])
+                if not cols or not data:
+                    continue
+                dp_idx = cols.index("do_predict") if "do_predict" in cols else None
+                pred_idx = cols.index("&-future_return") if "&-future_return" in cols else None
+                el_idx = cols.index("enter_long") if "enter_long" in cols else None
+                es_idx = cols.index("enter_short") if "enter_short" in cols else None
+                for row in data[:-1]:  # skip forming candle
+                    if dp_idx is not None:
+                        agg["do_predict_total"] += 1
+                        if (row[dp_idx] or 0) == 1:
+                            agg["do_predict_1"] += 1
+                    if pred_idx is not None and row[pred_idx] is not None:
+                        agg["pred_values"].append(float(row[pred_idx]))
+                    if el_idx is not None and (row[el_idx] or 0) == 1:
+                        agg["entry_long"] += 1
+                    if es_idx is not None and (row[es_idx] or 0) == 1:
+                        agg["entry_short"] += 1
+                agg["pairs_sampled"] += 1
+            except Exception:
+                continue
+
+        import statistics
+        preds = agg["pred_values"]
+        return {
+            "do_predict_ratio": round(agg["do_predict_1"] / agg["do_predict_total"], 3)
+                                 if agg["do_predict_total"] else None,
+            "do_predict_1": agg["do_predict_1"],
+            "do_predict_total": agg["do_predict_total"],
+            "entry_long_count": agg["entry_long"],
+            "entry_short_count": agg["entry_short"],
+            "pred_mean": round(statistics.mean(preds), 4) if preds else None,
+            "pred_stdev": round(statistics.stdev(preds), 4) if len(preds) > 1 else None,
+            "pairs_sampled": agg["pairs_sampled"],
+            "timeframe": cfg_tf,
+        }
+
+    return await compute()
 
 
 # ───────────────────── Exit reasons + Recent trades ─────────────────────
