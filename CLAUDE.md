@@ -112,16 +112,22 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ---
 
-## What Is Live and Working Right Now (verified 2026-06-19 UTC by Claude Code — identifier `finbuddy_v23_nosvm_1780729988`, thresholds 0.7/−0.6, SVM off, 752 trades / +17.6 USDT / 41% WR; bot untouched all session)
+## What Is Live and Working Right Now (verified 2026-06-21 UTC by Claude Code via `docker exec` — TIMEFRAME NOW **1h**, identifier `finbuddy_v23_tf1h_1782044602`, thresholds 0.7/−0.6, SVM off)
+
+> ⚠️ **2026-06-21: live FLIPPED from 15m → 1h** via the dashboard timeframe switcher (`apply_timeframe.py 1h`;
+> `timeframe_profiles.json` active=1h). config.json + freqtrade/.env both on `finbuddy_v23_tf1h_1782044602`
+> (container retrained, up & verified). label_period 6 candles, include_timeframes ['4h','1d'].
+> config.json/.env are currently **uncommitted** in the working tree (the live container is already running them).
+> The 752-trade / +17.6 USDT figure below is the **15m** track record — now historical; the 1h model starts fresh.
 
 ### FreqTrade
 - Running **`FinBuddyFreqAI_v23.py` (v23)** in dry-run mode on **Binance Futures USDT-M** — long+short
-- FreqAI identifier: **`finbuddy_v23_nosvm_1780729988`** (bumped 2026-06-06 — SVM disabled to fix do_predict=0 bug; previous: `finbuddy_v23_perpair_funding_1780574683` from 2026-06-04 brain promotion)
+- FreqAI identifier: **`finbuddy_v23_tf1h_1782044602`** (1h timeframe switch 2026-06-21; previous: `finbuddy_v23_nosvm_1780729988` bumped 2026-06-06 — SVM disabled to fix do_predict=0 bug)
 - FreqAI model: **LightGBMRegressor** (predicts z-scored `&-future_return`, N(0,1) distribution). **DI disabled (DI_threshold=0)** and **SVM disabled** (verified live config 2026-06-12 — the datasieve "could not find step di" log line is cosmetic).
 - **1000 USDT** virtual wallet, max 8 open trades
 - **Confidence-based leverage** (commit `60d4fb4`): 1x / 2x / 3x tiers based on `centered_pred / threshold` ratio. Fallback LOW (1x).
 - API: `http://localhost:8080/api/v1` — user: `bot`, pass: `REDACTED-FREQTRADE__API_SERVER__PASSWORD`
-- Whitelist: **26 pairs** (trimmed from 37 on 2026-05-24 — removed DASH/ZEC/BCH/DOGE/AAVE/TRX/1000SHIB/BNB/INJ/HBAR/ATOM), **15m timeframe** (each pair has 5 TFs of historical data: 15m + 30m + 1h + 4h + 1d)
+- Whitelist: **26 pairs** (trimmed from 37 on 2026-05-24 — removed DASH/ZEC/BCH/DOGE/AAVE/TRX/1000SHIB/BNB/INJ/HBAR/ATOM), **1h timeframe** (switched from 15m 2026-06-21; informative TFs ['4h','1d']; each pair has historical data on 15m + 30m + 1h + 4h + 1d)
 - **Per-pair-per-regime gate active** — `pair_regime_stats.json` blocks pair-regime combos with rolling 30d (n≥5, WR<40%, PF<0.7)
 - Strategy env vars (live): K_TP=3.0, K_SL=2.0, **LONG_THRESHOLD=0.7, SHORT_THRESHOLD=-0.6, STABILITY_N=1** (RAISED 2026-06-17 from 0.3/-0.3 — Phase-1 stop-the-bleed: per-trade expectancy is negative and profit is monotonic in trade frequency, so fewer/more-selective entries reduce stop-loss bleed. Asymmetric: longs are the worse side. Source: `freqtrade/.env`. See 2026-06-17 session note.)
 - **`_GLOBAL_STD = 0.30`** in strategy (FIXED 2026-06-08: was 0.95 from raw-% era; z-score model has std≈0.13–0.30)
@@ -250,7 +256,7 @@ Standard layer 4 features include 3 funding-rate features (`%-funding_rate`, `%-
 ## Current Strategy
 
 ### ✅ Active: `FinBuddyFreqAI_v23.py` v23 — Regression + Per-Pair-Per-Regime Gate
-- Binance Futures USDT-M (perpetual, isolated margin), **15m base TF**, **26 pairs** (trimmed 2026-05-24), `can_short=True`
+- Binance Futures USDT-M (perpetual, isolated margin), **1h base TF** (switched from 15m 2026-06-21; switchable via the dashboard timeframe switcher), **26 pairs** (trimmed 2026-05-24), `can_short=True`
 - **LightGBMRegressor**: predicts `&-future_return` (regression target, no classifier bias)
 - **2x Leverage**: Implemented via `leverage()` callback.
 - **Max Open Trades**: 8.
@@ -258,7 +264,7 @@ Standard layer 4 features include 3 funding-rate features (`%-funding_rate`, `%-
 - **Per-pair-per-regime gate** (2026-05-19): blocks (pair, regime) combos with rolling 30d WR<40% AND PF<0.7
 - **Stability filter**: requires N=2 consecutive candles past threshold
 - FreqAI identifier: `finbuddy_v23_live_*` — bumped on each brain promotion
-- `custom_stoploss()`: ATR-based asymmetric (K_TP=2.0, K_SL=2.0 — currently)
+- `custom_stoploss()`: ATR-based asymmetric (K_TP=3.0, K_SL=2.0 — live `.env` 2026-06-21)
 - **Status**: Live since 2026-05-19. Awaiting brain to find profitable config + auto-promote.
 
 ### 🗄️ Retired (on disk for history, not referenced by live config or brain)

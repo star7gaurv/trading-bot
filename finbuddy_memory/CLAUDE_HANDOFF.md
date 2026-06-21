@@ -1,16 +1,16 @@
 # 🤝 FinBuddy — Handoff Note for Claude Code
 
-**Last updated:** 2026-06-19 UTC (meta-labeling NO-GO confirmed; brain window names made honest; dashboard pagination root-caused)
-**Branch:** `master`
+**Last updated:** 2026-06-21 UTC (live flipped to 1h via timeframe switcher; promote.py identifier→.env gap fixed)
+**Branch:** `fix/meta-label-corrected`
 
 ---
 
-## ✅ Current Live State (verified 2026-06-19)
+## ✅ Current Live State (verified 2026-06-21 via `docker exec`)
 
 | Item | Value |
 |---|---|
-| Live strategy | `FinBuddyFreqAI_v23.py` (15m TF, LightGBMRegressor, z-scored target) |
-| FreqAI identifier | `finbuddy_v23_nosvm_1780729988` |
+| Live strategy | `FinBuddyFreqAI_v23.py` (**1h TF** — switched from 15m 2026-06-21; LightGBMRegressor, z-scored target) |
+| FreqAI identifier | `finbuddy_v23_tf1h_1782044602` (set in `.env`, overrides config.json; was `finbuddy_v23_nosvm_1780729988`) |
 | Pairs | **26** |
 | Leverage | Confidence-based tiers 1×/2×/3× (FALLBACK = 1×) |
 | Regime | **BEAR (80% confidence)** — market genuinely falling (BTC ≈ −15% this month) |
@@ -26,12 +26,21 @@ FREQAI_SHORT_THRESHOLD=-0.6    # asymmetric: longs are the worse side
 FREQAI_K_TP=3.0
 FREQAI_K_SL=2.0
 FREQAI_STABILITY_N=1
-FREQAI_LABEL_CANDLES=12
+FREQAI_LABEL_CANDLES=12         # ⚠️ see note below — exit-only horizon, now diverged from model
 FREQAI_DAILY_LOSS_LIMIT=10
 FREQAI_REENTRY_COOLDOWN_CANDLES=8
 FREQAI_DAILY_FLATTEN_MULT=1.5
 FINBUDDY_RECENT_WR=0.4
+FREQTRADE__FREQAI__IDENTIFIER=finbuddy_v23_tf1h_1782044602   # overrides config.json freqai.identifier
 ```
+
+⚠️ **Label-horizon divergence after the 1h switch (2026-06-21):** the *model* label horizon is
+`config.json freqai.feature_parameters.label_period_candles = 6` (1h profile), but the *time-limit
+exit* (`custom_exit`/`custom_stoploss`, strategy line ~332) reads `FREQAI_LABEL_CANDLES` from `.env`,
+still **12**. On 15m both were 12 (matched = 3h); on 1h the model predicts 6h ahead while the
+time-limit exit holds 12h. `apply_timeframe.py` does not update `FREQAI_LABEL_CANDLES`, and the
+1h profile in `timeframe_profiles.json` has no exit-horizon field. Decide whether to align them
+(set `.env` to 6, or make the time-limit exit derive from `label_period_candles`).
 
 ⚠️ `docker-compose.yml` has an explicit `environment:` block — every new `.env` var MUST also be added there. `docker-compose restart` does NOT reload `.env` — always `docker-compose up -d freqtrade`.
 

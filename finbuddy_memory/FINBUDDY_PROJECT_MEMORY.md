@@ -4,7 +4,7 @@
 
 **Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status**: 🟢 v23 LIVE (`finbuddy_v23_nosvm_1780729988`) · **LT=0.7/ST=−0.6** (asymmetric, raised 2026-06-17 to stop the bleed) · DI+SVM disabled · regime BEAR (genuine — BTC ≈ −15%/mo) · short-only by design · 752 trades / **+17.6 USDT** / 41% WR · **534 completed experiments, queue 0, 0 surviving promotions** · family model cache active  
+**Status**: 🟢 v23 LIVE on **1h** (`finbuddy_v23_tf1h_1782044602` — switched from 15m 2026-06-21 via the dashboard timeframe switcher; label 6 candles, informative ['4h','1d']) · **LT=0.7/ST=−0.6** (asymmetric, raised 2026-06-17 to stop the bleed) · K_TP=3.0/K_SL=2.0 · DI+SVM disabled · regime BEAR (genuine — BTC ≈ −15%/mo) · short-only by design · 15m era track record was 752 trades / +17.6 USDT / 41% WR (now historical — 1h model starts fresh) · family model cache active · promote.py identifier→.env gap FIXED 2026-06-21 (commit 2f430d74)  
 **Last Updated**: 2026-06-19 UTC (meta-labeling NO-GO; brain windows made honest; pagination root-caused — see CLAUDE.md June 19 session entry)
 
 ### 2026-06-13 → 06-19 — Turnaround + entry-tuning exhausted (summary; details in CLAUDE.md)
@@ -380,7 +380,7 @@ keep in mind no matter what we have to make it self aware, self evolving, consci
 | Component | Status | Notes |
 |---|---|---|
 | **FreqTrade** | ✅ Running, dry-run | Strategy v16.2, Binance USDT-M, isolated margin, port 8080 |
-| **FreqAI identifier** | `finbuddy_v23_tf1h_1782038210` | Active model key |
+| **FreqAI identifier** | `finbuddy_v23_tf1h_1782044602` | Active model key |
 | **Whitelist** | 26 pairs | Binance USDT-M perpetuals |
 | **Regime** | 🐻 BEAR | From HMM (updates every 4h) |
 | **Open trades** | 0 (0L / 0S) | Live positions |
