@@ -279,6 +279,22 @@ class FinBuddyFreqAI_v23(IStrategy):
         FinBuddyFreqAI_v23._today_pnl_cache = (now_ts, val)
         return val
 
+    def _label_period_candles(self) -> int:
+        """The model's prediction horizon, in candles — single source of truth.
+
+        Reads `freqai.feature_parameters.label_period_candles` from config (which the
+        brain tunes via `FREQTRADE__FREQAI__FEATURE_PARAMETERS__LABEL_PERIOD_CANDLES`
+        and apply_timeframe.py sets per TF). Used both by `set_freqai_targets` (target
+        horizon) and the `custom_exit` time-limit, so the two can never diverge across
+        a timeframe switch. (Before 2026-06-21 the time-limit read a separate
+        FREQAI_LABEL_CANDLES env var that the 1h switch left stale at 12 while the model
+        moved to 6 — that env var is now removed.)
+        """
+        try:
+            return int(self.freqai_info["feature_parameters"]["label_period_candles"])
+        except (AttributeError, KeyError, TypeError, ValueError):
+            return 12
+
     def custom_exit(self, pair: str, trade: "Trade", current_time: datetime,
                     current_rate: float, current_profit: float, **kwargs):
         # Daily flatten tier (2026-06-11): the entry-block breaker caps NEW trades
@@ -325,11 +341,13 @@ class FinBuddyFreqAI_v23(IStrategy):
                     if (not trade.is_short) and centered <= -decay_level:
                         return "pred_decay_exit"
 
-        # Time-limit exit: close trade after label_period_candles candles (timeframe-aware).
-        # config.json label_period_candles=12 → 3h on 15m TF. Holding beyond the model's
-        # prediction horizon is undefined territory. FREQAI_LABEL_CANDLES env var lets
-        # brain tune this parameter (same as K_SL/K_TP). Default 12 matches config.
-        label_candles = int(os.environ.get("FREQAI_LABEL_CANDLES", "12"))
+        # Time-limit exit: close trade after the model's prediction horizon
+        # (label_period_candles) candles. Holding beyond the horizon the model was
+        # trained to predict is undefined territory. Derived from config (single source
+        # of truth via _label_period_candles) so the exit horizon always tracks the
+        # model — e.g. 6 candles @1h, 12 @15m — and the brain's label_period_candles
+        # tuning applies to both automatically.
+        label_candles = self._label_period_candles()
         if candles_open >= label_candles:
             return "time_limit_exit"
         return None
@@ -1478,7 +1496,7 @@ class FinBuddyFreqAI_v23(IStrategy):
         2026-05-22: target is now Z-SCORED over a 30-day rolling window of PAST returns
         to completely eliminate look-ahead bias and ensure the distribution is standard-normal.
         """
-        horizon = self.freqai_info["feature_parameters"]["label_period_candles"]
+        horizon = self._label_period_candles()
         raw_return_pct = (
             dataframe["close"].shift(-horizon) / dataframe["close"] - 1.0
         ) * 100

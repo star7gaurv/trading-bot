@@ -26,7 +26,6 @@ FREQAI_SHORT_THRESHOLD=-0.6    # asymmetric: longs are the worse side
 FREQAI_K_TP=3.0
 FREQAI_K_SL=2.0
 FREQAI_STABILITY_N=1
-FREQAI_LABEL_CANDLES=12         # ⚠️ see note below — exit-only horizon, now diverged from model
 FREQAI_DAILY_LOSS_LIMIT=10
 FREQAI_REENTRY_COOLDOWN_CANDLES=8
 FREQAI_DAILY_FLATTEN_MULT=1.5
@@ -34,13 +33,14 @@ FINBUDDY_RECENT_WR=0.4
 FREQTRADE__FREQAI__IDENTIFIER=finbuddy_v23_tf1h_1782044602   # overrides config.json freqai.identifier
 ```
 
-⚠️ **Label-horizon divergence after the 1h switch (2026-06-21):** the *model* label horizon is
-`config.json freqai.feature_parameters.label_period_candles = 6` (1h profile), but the *time-limit
-exit* (`custom_exit`/`custom_stoploss`, strategy line ~332) reads `FREQAI_LABEL_CANDLES` from `.env`,
-still **12**. On 15m both were 12 (matched = 3h); on 1h the model predicts 6h ahead while the
-time-limit exit holds 12h. `apply_timeframe.py` does not update `FREQAI_LABEL_CANDLES`, and the
-1h profile in `timeframe_profiles.json` has no exit-horizon field. Decide whether to align them
-(set `.env` to 6, or make the time-limit exit derive from `label_period_candles`).
+✅ **Label-horizon divergence FIXED (2026-06-21, applied live).** Previously the time-limit exit read
+a separate `FREQAI_LABEL_CANDLES` env var (stale at 12 after the 1h switch moved the model to 6).
+The exit now derives its horizon from `config.json freqai.feature_parameters.label_period_candles`
+via `FinBuddyFreqAI_v23._label_period_candles()` — single source of truth, the same value the brain
+tunes and `apply_timeframe.py` sets per TF, used by both `set_freqai_targets` and `custom_exit`. The
+`FREQAI_LABEL_CANDLES` env var was removed from `.env` + `docker-compose.yml`. Verified live: container
+recreated (`up -d`, identifier unchanged, model reused), env var absent, `[TF-init] timeframe=1h` clean.
+Live exit horizon is now 6 candles (6h@1h), matching the model.
 
 ⚠️ `docker-compose.yml` has an explicit `environment:` block — every new `.env` var MUST also be added there. `docker-compose restart` does NOT reload `.env` — always `docker-compose up -d freqtrade`.
 
