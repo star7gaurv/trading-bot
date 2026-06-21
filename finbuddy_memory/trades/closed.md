@@ -561,3 +561,4 @@
 | 2026-06-20 22:01:57 | RENDER/USDT:USDT | SHORT | 3h01m | +0.02% | +0.01 | time_limit_exit | BEAR | freqai_regression_v23_sh |
 | 2026-06-20 22:13:32 | ENA/USDT:USDT | SHORT | 1h13m | -1.52% | -0.85 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-20 22:14:32 | LDO/USDT:USDT | SHORT | 0h44m | -0.92% | -0.51 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-21 00:15:43 | RENDER/USDT:USDT | SHORT | 1h45m | +1.82% | +1.02 | exit_signal | BEAR | freqai_regression_v23_sh |
