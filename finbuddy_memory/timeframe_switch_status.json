@@ -1,8 +1,8 @@
 {
   "state": "training",
-  "from": "15m",
+  "from": "1h",
   "to": "1h",
-  "started_at": "2026-06-21T10:36:59.645864+00:00",
-  "identifier": "finbuddy_v23_tf1h_1782038210",
+  "started_at": "2026-06-21T12:23:25.240896+00:00",
+  "identifier": "finbuddy_v23_tf1h_1782044602",
   "restart_ok": true
 }

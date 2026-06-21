@@ -66,6 +66,13 @@
       "from": "15m",
       "to": "1h",
       "identifier": "finbuddy_v23_tf1h_1782038210"
+    },
+    {
+      "ts": 1782044602,
+      "at": "2026-06-21T12:23:25.240705+00:00",
+      "from": "1h",
+      "to": "1h",
+      "identifier": "finbuddy_v23_tf1h_1782044602"
     }
   ]
 }
