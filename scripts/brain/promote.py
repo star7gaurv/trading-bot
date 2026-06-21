@@ -449,7 +449,15 @@ def apply_promotion(config_hash: str) -> int:
         return None if v is None else ("1" if v else "0")
 
     # 3. Write strategy env vars
+    # CRITICAL: FREQTRADE__FREQAI__IDENTIFIER lives in .env and docker-compose forwards it
+    # (${FREQTRADE__FREQAI__IDENTIFIER:-}), which OVERRIDES config.json's freqai.identifier.
+    # So the new identifier MUST be written here too, or the container keeps the OLD model
+    # after `up -d` → the promoted config's new model never trains/loads and the promotion
+    # silently has no effect (strategy may run new params against a stale/old model).
+    # (Same pattern as scripts/apply_timeframe.py. .env identifier introduced 2026-06-06;
+    # promotions before this fix may have been silently overridden.)
     env_keys = {
+        "FREQTRADE__FREQAI__IDENTIFIER": new_identifier,
         "FREQAI_K_TP":            new_cfg.get("k_tp"),
         "FREQAI_K_SL":            new_cfg.get("k_sl"),
         "FREQAI_LONG_THRESHOLD":  new_cfg.get("long_threshold"),
