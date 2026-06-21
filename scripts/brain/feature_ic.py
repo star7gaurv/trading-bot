@@ -22,6 +22,7 @@ ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "freqtrade" / "user_data" / "data" / "binance" / "futures"
 FUNDING = ROOT / "finbuddy_memory" / "historical" / "funding_perpair.parquet"
 OIFILE = ROOT / "finbuddy_memory" / "historical" / "oi_perpair.parquet"
+OFDIR = ROOT / "finbuddy_memory" / "historical" / "orderflow"
 OUT = ROOT / "finbuddy_memory" / "analytics" / "feature_ic.json"
 
 import sys
@@ -80,9 +81,28 @@ def oi_feats(symbol: str) -> pd.DataFrame | None:
     return sub[["date", "oi_z30d", "oi_chg", "oi_chg_abs"]]
 
 
+def orderflow_feats(symbol: str) -> pd.DataFrame | None:
+    """4b.5 order-flow from taker-buy volume (Binance klines field 9, fetched separately)."""
+    f = OFDIR / f"{symbol}.parquet"
+    if not f.exists():
+        return None
+    of = pd.read_parquet(f)
+    of["date"] = pd.to_datetime(of["date"], utc=True)
+    of = of.sort_values("date")
+    vol = of["volume"].replace(0, np.nan)
+    ratio = (of["taker_buy_base"] / vol)              # fraction of volume that was aggressive buy
+    net = 2 * of["taker_buy_base"] - of["volume"]     # per-candle net taker-buy
+    of["of_taker_ratio"] = ratio
+    of["of_ratio_z"] = (ratio - ratio.rolling(96).mean()) / ratio.rolling(96).std()
+    of["of_netflow_12"] = net.rolling(12).sum() / of["volume"].rolling(12).sum()
+    of["of_netflow_z"] = (of["of_netflow_12"] - of["of_netflow_12"].rolling(96).mean()) / of["of_netflow_12"].rolling(96).std()
+    return of[["date", "of_taker_ratio", "of_ratio_z", "of_netflow_12", "of_netflow_z"]]
+
+
 FEATURES = ["btc_ret_1", "btc_ret_4", "btc_ret_12", "btc_vol_12", "btc_accel",
             "funding_rate", "funding_rate_z30d", "funding_rate_chg", "funding_abs_z",
-            "oi_z30d", "oi_chg", "oi_chg_abs"]
+            "oi_z30d", "oi_chg", "oi_chg_abs",
+            "of_taker_ratio", "of_ratio_z", "of_netflow_12", "of_netflow_z"]
 
 
 def main() -> int:
@@ -114,6 +134,10 @@ def main() -> int:
         if oo is not None:
             oo["date"] = oo["date"].astype("datetime64[ns, UTC]")
             df = pd.merge_asof(df, oo, on="date", direction="backward")  # hourly OI → ffill
+        of = orderflow_feats(sym)
+        if of is not None:
+            of["date"] = of["date"].astype("datetime64[ns, UTC]")
+            df = df.merge(of, on="date", how="left")             # exact 15m join
         for w, (s, e) in WINDOWS.items():
             m = (df["date"] >= pd.Timestamp(s, tz="UTC")) & (df["date"] < pd.Timestamp(e, tz="UTC"))
             sub = df[m]
