@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-21T03:00:01.859204+00:00",
+  "updated": "2026-06-21T03:30:01.376626+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -312,13 +312,13 @@
         "avg_profit_pct": 0.102
       },
       "BEAR": {
-        "n": 16,
+        "n": 17,
         "wins": 7,
-        "losses": 9,
-        "wr": 0.4375,
-        "pf": 0.897,
-        "profit_usdt": -0.8,
-        "avg_profit_pct": -0.003
+        "losses": 10,
+        "wr": 0.4118,
+        "pf": 0.877,
+        "profit_usdt": -0.98,
+        "avg_profit_pct": -0.022
       }
     },
     "ARB/USDT:USDT": {
@@ -483,13 +483,13 @@
         "avg_profit_pct": -1.057
       },
       "BEAR": {
-        "n": 8,
+        "n": 9,
         "wins": 4,
-        "losses": 4,
-        "wr": 0.5,
-        "pf": 0.505,
-        "profit_usdt": -2.56,
-        "avg_profit_pct": -0.555
+        "losses": 5,
+        "wr": 0.4444,
+        "pf": 0.435,
+        "profit_usdt": -3.39,
+        "avg_profit_pct": -0.657
       }
     },
     "ONDO/USDT:USDT": {
