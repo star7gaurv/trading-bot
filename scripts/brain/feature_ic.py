@@ -11,9 +11,13 @@ GATE: a feature graduates to a brain A/B only if |pooled IC| > 0.05 on the BEAR 
 (live is bear). |IC| <= ~0.03 is the current noise floor → drop it.
 
 Families tested here (the free, no-new-data ones — 4b.1 BTC lead-lag + 4b.2 funding extremes).
-Usage: python3 scripts/brain/feature_ic.py
+Usage:
+  python3 scripts/brain/feature_ic.py [horizon [tf]]   # single-TF (backward compat)
+  python3 scripts/brain/feature_ic.py --all-tf         # sweep all TFs → feature_ic_by_tf.json
 """
 import json
+import sys
+from datetime import datetime, timezone
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -24,10 +28,11 @@ FUNDING = ROOT / "finbuddy_memory" / "historical" / "funding_perpair.parquet"
 OIFILE = ROOT / "finbuddy_memory" / "historical" / "oi_perpair.parquet"
 OFDIR = ROOT / "finbuddy_memory" / "historical" / "orderflow"
 OUT = ROOT / "finbuddy_memory" / "analytics" / "feature_ic.json"
+OUT_BY_TF = ROOT / "finbuddy_memory" / "analytics" / "feature_ic_by_tf.json"
 
-import sys
-H = int(sys.argv[1]) if len(sys.argv) > 1 else 12  # forward-return horizon in candles
-TF = sys.argv[2] if len(sys.argv) > 2 else "15m"   # timeframe (15m/30m/1h/4h)
+ALL_TF_MODE = "--all-tf" in sys.argv
+H = int(sys.argv[1]) if not ALL_TF_MODE and len(sys.argv) > 1 else 12
+TF = sys.argv[2] if not ALL_TF_MODE and len(sys.argv) > 2 else "15m"
 
 WINDOWS = {
     "bull_2024Q1": ("2024-01-01", "2024-04-01"),
@@ -38,8 +43,9 @@ WINDOWS = {
 BEAR = ["bear_2025Q1", "bear_2026Q1"]
 
 
-def load_ohlcv(pair: str) -> pd.DataFrame | None:
-    f = DATA / f"{pair.replace('/', '_').replace(':', '_')}-{TF}-futures.feather"
+def load_ohlcv(pair: str, tf: str = None) -> pd.DataFrame | None:
+    _tf = tf or TF
+    f = DATA / f"{pair.replace('/', '_').replace(':', '_')}-{_tf}-futures.feather"
     if not f.exists():
         return None
     df = pd.read_feather(f)
@@ -82,9 +88,10 @@ def oi_feats(symbol: str) -> pd.DataFrame | None:
     return sub[["date", "oi_z30d", "oi_chg", "oi_chg_abs"]]
 
 
-def orderflow_feats(symbol: str) -> pd.DataFrame | None:
+def orderflow_feats(symbol: str, tf: str = None) -> pd.DataFrame | None:
     """4b.5 order-flow from taker-buy volume (Binance klines field 9, fetched separately)."""
-    if TF != "15m":          # order-flow data is 15m-only; skip for higher-TF sweeps
+    _tf = tf or TF
+    if _tf != "15m":         # order-flow data is 15m-only; skip for higher-TF sweeps
         return None
     f = OFDIR / f"{symbol}.parquet"
     if not f.exists():
@@ -108,39 +115,39 @@ FEATURES = ["btc_ret_1", "btc_ret_4", "btc_ret_12", "btc_vol_12", "btc_accel",
             "of_taker_ratio", "of_ratio_z", "of_netflow_12", "of_netflow_z"]
 
 
-def main() -> int:
-    btc = load_ohlcv("BTC/USDT:USDT")
+def _run_single(h: int, tf: str) -> dict:
+    """Compute IC report for one (horizon, timeframe) combination. Returns {report, graduated}."""
+    btc = load_ohlcv("BTC/USDT:USDT", tf)
     if btc is None:
-        print("[feature_ic] no BTC data"); return 1
+        print(f"[feature_ic] no BTC {tf} data"); return {}
     bll = btc_leadlag(btc)
 
     cfg = json.loads((ROOT / "freqtrade/user_data/config.json").read_text())
     pairs = cfg["exchange"]["pair_whitelist"]
 
-    # Accumulate (feature value, fwd_return) rows per window across all pairs.
     rows = {w: {f: [[], []] for f in FEATURES} for w in WINDOWS}
 
     for pair in pairs:
-        df = load_ohlcv(pair)
+        df = load_ohlcv(pair, tf)
         if df is None:
             continue
         df = df.sort_values("date").reset_index(drop=True)
-        df["fwd"] = df["close"].shift(-H) / df["close"] - 1.0
-        df = df.merge(bll, on="date", how="left")            # exact 15m join
+        df["fwd"] = df["close"].shift(-h) / df["close"] - 1.0
+        df = df.merge(bll, on="date", how="left")
         df["date"] = df["date"].astype("datetime64[ns, UTC]")
         sym = pair.split("/")[0] + "USDT"
         ff = funding_feats(sym)
         if ff is not None:
             ff["date"] = ff["date"].astype("datetime64[ns, UTC]")
-            df = pd.merge_asof(df, ff, on="date", direction="backward")  # 8h funding → ffill
+            df = pd.merge_asof(df, ff, on="date", direction="backward")
         oo = oi_feats(sym)
         if oo is not None:
             oo["date"] = oo["date"].astype("datetime64[ns, UTC]")
-            df = pd.merge_asof(df, oo, on="date", direction="backward")  # hourly OI → ffill
-        of = orderflow_feats(sym)
+            df = pd.merge_asof(df, oo, on="date", direction="backward")
+        of = orderflow_feats(sym, tf)
         if of is not None:
             of["date"] = of["date"].astype("datetime64[ns, UTC]")
-            df = df.merge(of, on="date", how="left")             # exact 15m join
+            df = df.merge(of, on="date", how="left")
         for w, (s, e) in WINDOWS.items():
             m = (df["date"] >= pd.Timestamp(s, tz="UTC")) & (df["date"] < pd.Timestamp(e, tz="UTC"))
             sub = df[m]
@@ -160,7 +167,6 @@ def main() -> int:
         x = pd.Series(np.concatenate(xs)); y = pd.Series(np.concatenate(ys))
         if x.nunique() < 5:
             return None, len(x)
-        # Spearman = Pearson on ranks (no scipy dependency on host).
         xr = x.rank().to_numpy(); yr = y.rank().to_numpy()
         if xr.std() == 0 or yr.std() == 0:
             return None, len(x)
@@ -173,24 +179,63 @@ def main() -> int:
             val, n = ic(rows[w][f][0], rows[w][f][1])
             report[f][w] = {"ic": val, "n": n}
 
-    # print table
-    hdr = f"{'feature':18s} " + " ".join(f"{w:>13s}" for w in WINDOWS) + "   GATE(bear>0.05)"
-    print(hdr); print("-" * len(hdr))
     graduated = []
     for f in FEATURES:
-        cells = []
-        for w in WINDOWS:
-            v = report[f][w]["ic"]
-            cells.append(f"{v:>13}" if v is not None else f"{'-':>13}")
         bear_ics = [abs(report[f][w]["ic"]) for w in BEAR if report[f][w]["ic"] is not None]
-        passes = bool(bear_ics) and max(bear_ics) > 0.05
-        if passes:
+        if bool(bear_ics) and max(bear_ics) > 0.05:
             graduated.append(f)
-        print(f"{f:18s} " + " ".join(cells) + ("   PASS ✅" if passes else "   ---"))
 
-    print(f"\nGraduated (|bear IC| > 0.05 → eligible for brain A/B): {graduated or 'NONE'}")
+    return {"horizon": h, "report": report, "graduated": graduated}
+
+
+def _print_table(result: dict, tf: str) -> None:
+    report = result.get("report", {})
+    h = result.get("horizon", "?")
+    print(f"\n=== IC table  tf={tf}  horizon={h} ===")
+    hdr = f"{'feature':18s} " + " ".join(f"{w:>13s}" for w in WINDOWS) + "   GATE(bear>0.05)"
+    print(hdr); print("-" * len(hdr))
+    for f in FEATURES:
+        if f not in report:
+            continue
+        cells = [f"{report[f][w]['ic']:>13}" if report[f][w]["ic"] is not None else f"{'-':>13}"
+                 for w in WINDOWS]
+        passes = f in result.get("graduated", [])
+        print(f"{f:18s} " + " ".join(cells) + ("   PASS ✅" if passes else "   ---"))
+    print(f"\nGraduated: {result.get('graduated') or 'NONE'}")
+
+
+def main() -> int:
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps({"horizon": H, "report": report, "graduated": graduated}, indent=2))
+
+    if ALL_TF_MODE:
+        # Canonical horizon per TF (wall-clock ~12h each)
+        TF_HORIZONS = {"15m": 48, "30m": 24, "1h": 12, "4h": 3}
+        by_tf: dict = {}
+        for tf, h in TF_HORIZONS.items():
+            print(f"\n[feature_ic] computing tf={tf} h={h}…")
+            result = _run_single(h, tf)
+            if result:
+                _print_table(result, tf)
+                by_tf[tf] = result
+        combined = {
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "by_tf": by_tf,
+        }
+        OUT_BY_TF.write_text(json.dumps(combined, indent=2))
+        print(f"\n→ written {OUT_BY_TF}")
+        # Also update the single-TF file with the active TF's result (keeps existing crons happy)
+        active_tf = json.loads((ROOT / "finbuddy_memory/timeframe_profiles.json").read_text()).get("active", "1h")
+        if active_tf in by_tf:
+            OUT.write_text(json.dumps(by_tf[active_tf], indent=2))
+            print(f"→ updated {OUT} with active TF ({active_tf})")
+        return 0
+
+    # Single-TF mode (backward compat: python3 feature_ic.py [horizon [tf]])
+    result = _run_single(H, TF)
+    if not result:
+        return 1
+    _print_table(result, TF)
+    OUT.write_text(json.dumps(result, indent=2))
     print(f"→ written {OUT}")
     return 0
 

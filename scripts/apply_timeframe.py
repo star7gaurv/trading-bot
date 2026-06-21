@@ -24,7 +24,7 @@ Usage:
   python3 scripts/apply_timeframe.py 1h --dry-run     # print planned config, write nothing
   python3 scripts/apply_timeframe.py 1h --no-restart  # apply files but don't recreate container
 """
-import argparse, json, shutil, subprocess, sys, time
+import argparse, json, re, shutil, subprocess, sys, time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -35,6 +35,9 @@ PROFILES = ROOT / "finbuddy_memory" / "timeframe_profiles.json"
 STATUS = ROOT / "finbuddy_memory" / "timeframe_switch_status.json"
 PAIR_REGIME = ROOT / "finbuddy_memory" / "regimes" / "pair_regime_stats.json"
 USER_DATA = ROOT / "freqtrade" / "user_data"
+HYPOTHESIS_GEN = ROOT / "scripts" / "brain" / "hypothesis_gen.py"
+BRAIN_CLI = ROOT / "scripts" / "brain" / "brain_cli.py"
+DATA_DIR = ROOT / "freqtrade" / "user_data" / "data" / "binance" / "futures"
 
 
 def load_profiles() -> dict:
@@ -66,17 +69,33 @@ def apply(tf: str, dry_run: bool = False, no_restart: bool = False) -> int:
         "identifier": new_identifier,
         "config_file": profile["config_file"],
     }
+    # Gap 2 — data check: count feather files for the target TF
+    feather_count = len(list(DATA_DIR.glob(f"*-{tf}-futures.feather")))
+    data_warning = None if feather_count >= 10 else (
+        f"Only {feather_count}/26 pairs have {tf} data — bot may stall on first startup. "
+        f"Data downloads via cron at 04:30 UTC (download_data_daily.sh)."
+    )
+    if data_warning:
+        print(f"WARN: {data_warning}", file=sys.stderr)
+    else:
+        print(f"data check: {feather_count} pairs have {tf} feathers ✓")
+
     if dry_run:
-        print(json.dumps({"from": prev_tf, "to": tf, "old_identifier": old_identifier,
-                          "planned": planned, "env": {k: profile.get(k) for k in
-                          ("long_threshold", "short_threshold", "k_tp", "k_sl", "stability_n")}},
-                         indent=2))
+        print(json.dumps({
+            "from": prev_tf, "to": tf, "old_identifier": old_identifier, "planned": planned,
+            "data_check": f"{feather_count} pairs", "data_warning": data_warning,
+            "seed_label_period_patch": profile["label_period_candles"],
+            "brain_generate_queued": True,
+            "env": {k: profile.get(k) for k in
+                    ("long_threshold", "short_threshold", "k_tp", "k_sl", "stability_n")},
+        }, indent=2))
         return 0
 
     # 1. status: starting
     _write_status({"state": "applying", "from": prev_tf, "to": tf,
                    "started_at": datetime.now(timezone.utc).isoformat(),
-                   "identifier": new_identifier, "restart_ok": None})
+                   "identifier": new_identifier, "restart_ok": None,
+                   "data_warning": data_warning})
 
     # 2. backup config.json (keep 3)
     shutil.copy(LIVE_CONFIG, LIVE_CONFIG.with_suffix(f".json.bak-{ts}"))
@@ -166,7 +185,46 @@ def apply(tf: str, dry_run: bool = False, no_restart: bool = False) -> int:
     # 8. final status
     _write_status({"state": "training", "from": prev_tf, "to": tf,
                    "started_at": datetime.now(timezone.utc).isoformat(),
-                   "identifier": new_identifier, "restart_ok": restart_ok})
+                   "identifier": new_identifier, "restart_ok": restart_ok,
+                   "data_warning": data_warning})
+
+    # Gap 1 — patch brain SEED label_period_candles so experiments start from the right horizon.
+    # hypothesis_gen.py line 182: "label_period_candles": <int>,
+    new_lp = profile["label_period_candles"]
+    try:
+        src = HYPOTHESIS_GEN.read_text()
+        patched = re.sub(
+            r'("label_period_candles"\s*:\s*)\d+(\s*,\s*#.*SEED)',
+            lambda m: f'{m.group(1)}{new_lp}{m.group(2)}' if m.group(2) else m.group(0),
+            src,
+        )
+        # Fallback: match without trailing comment (the actual format in the file)
+        if patched == src:
+            # Find SEED_CONFIG_V23 block and replace the first label_period_candles inside it
+            patched = re.sub(
+                r'(SEED_CONFIG_V23\s*=\s*\{[^}]*?"label_period_candles"\s*:\s*)\d+',
+                lambda m: f'{m.group(1)}{new_lp}',
+                src, flags=re.DOTALL,
+            )
+        if patched != src:
+            HYPOTHESIS_GEN.write_text(patched)
+            print(f"hypothesis_gen.py SEED label_period_candles patched → {new_lp}")
+        else:
+            print("WARN: could not patch hypothesis_gen.py SEED label_period_candles", file=sys.stderr)
+    except Exception as e:
+        print(f"WARN: SEED patch failed: {e}", file=sys.stderr)
+
+    # Gap 3 — seed brain experiments for the new TF immediately (don't wait for midnight cron).
+    try:
+        subprocess.Popen(
+            [sys.executable, str(BRAIN_CLI), "generate"],
+            cwd=str(ROOT),
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+        print("brain_cli.py generate spawned in background → 1h experiments will queue shortly")
+    except Exception as e:
+        print(f"WARN: brain generate spawn failed: {e}", file=sys.stderr)
+
     print(f"DONE: active timeframe {prev_tf} -> {tf}")
     return 0 if (no_restart or restart_ok) else 1
 
