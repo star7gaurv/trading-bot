@@ -247,3 +247,4 @@ um_threads=2** added to both config.json and 23_regression_15m_di_config.json. 
 - **2026-06-09 16:00 UTC** — 🎯 Trade milestone reached: 500 closed trades
 - **2026-06-10 16:00 UTC** — Regime changed: BEAR → NEUTRAL
 - **2026-06-11 20:00 UTC** — Regime changed: NEUTRAL → BEAR
+- **2026-06-21 12:00 UTC** — FreqAI identifier changed: finbuddy_v23_nosvm_1780729988 → finbuddy_v23_tf1h_1782038210
