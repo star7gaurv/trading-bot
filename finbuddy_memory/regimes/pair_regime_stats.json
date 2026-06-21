@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-21T08:30:01.300838+00:00",
+  "updated": "2026-06-21T09:00:01.826363+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "TAO/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 1,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 0.26,
-        "avg_profit_pct": 0.25
-      },
-      "BEAR": {
-        "n": 5,
-        "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
-        "pf": 0.513,
-        "profit_usdt": -2.09,
-        "avg_profit_pct": -0.728
-      }
-    },
     "1000SHIB/USDT:USDT": {
       "NEUTRAL": {
         "n": 2,
@@ -543,6 +523,17 @@
         "pf": 0.521,
         "profit_usdt": -1.25,
         "avg_profit_pct": -0.219
+      }
+    },
+    "TAO/USDT:USDT": {
+      "BEAR": {
+        "n": 5,
+        "wins": 1,
+        "losses": 4,
+        "wr": 0.2,
+        "pf": 0.513,
+        "profit_usdt": -2.09,
+        "avg_profit_pct": -0.728
       }
     }
   },
