@@ -132,6 +132,29 @@ class FinBuddyFreqAI_v23(IStrategy):
     #   "minimal"   — drop all of the above (only raw OHLCV-derived indicators)
     FEATURE_SET = os.getenv("FREQAI_FEATURE_SET", "all").lower()
 
+    def bot_start(self, **kwargs) -> None:
+        """Recompute the TF-derived candle constants from the EFFECTIVE (runtime) timeframe.
+
+        The class-level constants are computed at import from the class's literal `timeframe`.
+        FreqTrade applies the config's timeframe override at the INSTANCE level AFTER the class
+        is defined, so without this hook a config timeframe ≠ the class default would run with
+        15m-scaled windows (the 2026-06-21 bug). bot_start runs after the override is applied.
+        At 15m this reproduces the exact frozen values (byte-identical → live unchanged)."""
+        cpd = 86400 // timeframe_to_seconds(self.timeframe)
+        self._CANDLES_PER_DAY      = cpd
+        self.startup_candle_count  = 25 * cpd
+        self._Z_ROLLING            = 30 * cpd
+        self._CENTERING_WINDOW     = 20 * cpd
+        self._DAY_CANDLES          = cpd
+        self._PRED_STD_WINDOW      = round(cpd * 25 / 24)
+        self._META_HORIZON_DEFAULT = 6 * cpd // 24
+        logger.info(
+            f"[TF-init] timeframe={self.timeframe} candles/day={cpd} "
+            f"startup={self.startup_candle_count} z_roll={self._Z_ROLLING} "
+            f"centering={self._CENTERING_WINDOW} day={self._DAY_CANDLES} "
+            f"pred_std={self._PRED_STD_WINDOW} meta_h={self._META_HORIZON_DEFAULT}"
+        )
+
     def informative_pairs(self):
         pairs = self.dp.current_whitelist()
         # Base TF + the higher TFs that differ from base (avoids a base==informative
