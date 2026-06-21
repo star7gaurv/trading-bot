@@ -1,0 +1,47 @@
+{
+  "active": "15m",
+  "available": ["15m", "30m", "1h", "4h"],
+  "profiles": {
+    "15m": {
+      "config_file": "v23_regression_15m_di_config.json",
+      "label_period_candles": 12,
+      "include_timeframes": ["1h", "4h"],
+      "long_threshold": 0.7,
+      "short_threshold": -0.6,
+      "k_tp": 3.0,
+      "k_sl": 2.0,
+      "stability_n": 1
+    },
+    "30m": {
+      "config_file": "v23_regression_30m_config.json",
+      "label_period_candles": 12,
+      "include_timeframes": ["1h", "4h"],
+      "long_threshold": 0.7,
+      "short_threshold": -0.6,
+      "k_tp": 3.0,
+      "k_sl": 2.0,
+      "stability_n": 1
+    },
+    "1h": {
+      "config_file": "v23_regression_1h_config.json",
+      "label_period_candles": 6,
+      "include_timeframes": ["4h", "1d"],
+      "long_threshold": 0.7,
+      "short_threshold": -0.6,
+      "k_tp": 3.0,
+      "k_sl": 2.0,
+      "stability_n": 1
+    },
+    "4h": {
+      "config_file": "v23_regression_4h_config.json",
+      "label_period_candles": 6,
+      "include_timeframes": ["1d"],
+      "long_threshold": 0.7,
+      "short_threshold": -0.6,
+      "k_tp": 3.0,
+      "k_sl": 2.0,
+      "stability_n": 1
+    }
+  },
+  "history": []
+}
