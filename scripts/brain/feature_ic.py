@@ -26,7 +26,8 @@ OFDIR = ROOT / "finbuddy_memory" / "historical" / "orderflow"
 OUT = ROOT / "finbuddy_memory" / "analytics" / "feature_ic.json"
 
 import sys
-H = int(sys.argv[1]) if len(sys.argv) > 1 else 12  # forward-return horizon (12 = live target)
+H = int(sys.argv[1]) if len(sys.argv) > 1 else 12  # forward-return horizon in candles
+TF = sys.argv[2] if len(sys.argv) > 2 else "15m"   # timeframe (15m/30m/1h/4h)
 
 WINDOWS = {
     "bull_2024Q1": ("2024-01-01", "2024-04-01"),
@@ -38,7 +39,7 @@ BEAR = ["bear_2025Q1", "bear_2026Q1"]
 
 
 def load_ohlcv(pair: str) -> pd.DataFrame | None:
-    f = DATA / f"{pair.replace('/', '_').replace(':', '_')}-15m-futures.feather"
+    f = DATA / f"{pair.replace('/', '_').replace(':', '_')}-{TF}-futures.feather"
     if not f.exists():
         return None
     df = pd.read_feather(f)
@@ -83,6 +84,8 @@ def oi_feats(symbol: str) -> pd.DataFrame | None:
 
 def orderflow_feats(symbol: str) -> pd.DataFrame | None:
     """4b.5 order-flow from taker-buy volume (Binance klines field 9, fetched separately)."""
+    if TF != "15m":          # order-flow data is 15m-only; skip for higher-TF sweeps
+        return None
     f = OFDIR / f"{symbol}.parquet"
     if not f.exists():
         return None
