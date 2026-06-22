@@ -191,3 +191,14 @@ export function memorySocket() {
   const token = encodeURIComponent(getToken() || "");
   return new WebSocket(`${proto}//${window.location.host}/ws/memory?token=${token}`);
 }
+
+// ─── New endpoints ───
+export async function getWfCoverage() {
+  return request("/api/wf/coverage");
+}
+export async function flattenTrades() {
+  return request("/api/timeframe/flatten", { method: "POST" });
+}
+export async function updateParams(body) {
+  return request("/api/params", { method: "POST", body });
+}

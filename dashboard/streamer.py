@@ -1200,6 +1200,136 @@ async def signal_quality(_: dict = Depends(require_auth)):
     return await compute()
 
 
+# ───────────────────── WF Coverage + Flatten + Params ─────────────────────
+
+# Reverse-lookup: config_file basename → inferred TF
+_CFG_TO_TF = {
+    "v23_regression_15m_di_config.json": "15m",
+    "v23_regression_15m_pruned_config.json": "15m",
+    "v23_regression_15m_config.json": "15m",
+    "v23_regression_30m_config.json": "30m",
+    "v23_regression_1h_config.json": "1h",
+    "v23_regression_4h_config.json": "4h",
+}
+
+
+@app.get("/api/wf/coverage")
+async def wf_coverage(_: dict = Depends(require_auth)):
+    """WF coverage heatmap: (TF × window) → {total, passed, best_profit}.
+    Reads experiment log.jsonl and infers TF from config_file field."""
+    coverage: dict[str, dict[str, dict]] = {}
+    tfs_seen: set[str] = set()
+    windows_seen: set[str] = set()
+    total = 0
+    try:
+        for line in EXP_LOG_FILE.read_text().splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                e = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            status = e.get("status", "")
+            if status not in ("completed", "scout_failed", "failed"):
+                continue
+            cfg_file = e.get("config_file") or e.get("hypothesis", {}).get("config_file", "")
+            tf = _CFG_TO_TF.get(cfg_file.split("/")[-1] if cfg_file else "", "15m")
+            window = e.get("window", "unknown")
+            metrics = e.get("metrics") or {}
+            profit = metrics.get("profit_pct") or metrics.get("profit") or 0.0
+            passed = status == "completed" and (profit or 0) > 0
+            tfs_seen.add(tf)
+            windows_seen.add(window)
+            total += 1
+            cell = coverage.setdefault(tf, {}).setdefault(window, {"total": 0, "passed": 0, "best_profit": None})
+            cell["total"] += 1
+            if passed:
+                cell["passed"] += 1
+            if profit is not None:
+                if cell["best_profit"] is None or profit > cell["best_profit"]:
+                    cell["best_profit"] = round(profit, 4)
+    except OSError:
+        pass
+    # Canonical window order (chronological)
+    _WINDOW_ORDER = ["bull_2021", "crash_2022", "bull_2024Q1", "bear_2024Q2",
+                     "bull_2024Q4", "bear_2025Q1", "bear_2025Q4", "bear_2026Q1"]
+    ordered_windows = [w for w in _WINDOW_ORDER if w in windows_seen]
+    ordered_windows += sorted(w for w in windows_seen if w not in _WINDOW_ORDER)
+    return {
+        "coverage": coverage,
+        "tfs_seen": sorted(tfs_seen, key=lambda t: ["15m", "30m", "1h", "4h"].index(t) if t in ["15m","30m","1h","4h"] else 99),
+        "windows_seen": ordered_windows,
+        "total_experiments": total,
+    }
+
+
+@app.post("/api/timeframe/flatten")
+async def flatten_trades(_: dict = Depends(require_auth)):
+    """Close all open trades before a timeframe switch to avoid holding stale-model positions."""
+    try:
+        open_trades = await ft_get("/status")
+    except Exception:
+        open_trades = []
+    trade_ids = [t["trade_id"] for t in (open_trades if isinstance(open_trades, list) else [])]
+    closed = 0
+    errors = []
+    for tid in trade_ids:
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                r = await client.delete(
+                    f"{FT_BASE}/trades/{tid}",
+                    headers={"Authorization": FT_AUTH},
+                )
+                if r.status_code in (200, 204):
+                    closed += 1
+                else:
+                    errors.append(f"trade {tid}: {r.status_code}")
+        except Exception as e:
+            errors.append(f"trade {tid}: {e}")
+    return {"closed": closed, "errors": errors,
+            "message": f"Closed {closed} trade{'s' if closed != 1 else ''} before timeframe switch."}
+
+
+class ParamsIn(BaseModel):
+    long_threshold: float | None = None
+    short_threshold: float | None = None
+    k_tp: float | None = None
+    k_sl: float | None = None
+
+
+@app.post("/api/params")
+async def update_params(body: ParamsIn, _: dict = Depends(require_auth)):
+    """Update live strategy params by writing to .env and restarting the container.
+    Uses docker-compose restart (not up -d) — no model reload, just env reload."""
+    _PARAM_MAP = {
+        "long_threshold":  "FREQAI_LONG_THRESHOLD",
+        "short_threshold": "FREQAI_SHORT_THRESHOLD",
+        "k_tp":            "FREQAI_K_TP",
+        "k_sl":            "FREQAI_K_SL",
+    }
+    updates = {k: v for k, v in body.model_dump().items() if v is not None}
+    if not updates:
+        raise HTTPException(status_code=400, detail="No params provided")
+    # Read and patch .env
+    lines = _ENV_FILE.read_text().splitlines() if _ENV_FILE.exists() else []
+    env_keys_to_update = {_PARAM_MAP[k]: str(v) for k, v in updates.items()}
+    out = [ln for ln in lines if ln.split("=", 1)[0] not in env_keys_to_update]
+    out += [f"{k}={v}" for k, v in env_keys_to_update.items()]
+    _ENV_FILE.write_text("\n".join(out) + "\n")
+    # Restart container (env-only change — no model reload needed)
+    import subprocess as _sp
+    try:
+        _sp.run(
+            ["docker-compose", "restart", "freqtrade"],
+            cwd=str(REPO_ROOT / "freqtrade"),
+            capture_output=True, text=True, timeout=60,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Restart failed: {e}") from e
+    return {"applied": updates, "message": f"Updated {list(updates.keys())} and restarted FreqTrade."}
+
+
 # ───────────────────── Exit reasons + Recent trades ─────────────────────
 
 @app.get("/api/stats/exit-reasons")

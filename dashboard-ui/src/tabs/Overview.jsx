@@ -7,10 +7,12 @@
  *   3. Exit reasons (diagnostic) + Recent closed trades
  *   4. Risk card + Brain status + Walk-forward status
  */
+import React from "react";
 import Card from "../components/Card";
 import Stat from "../components/Stat";
 import Table from "../components/Table";
 import Badge from "../components/Badge";
+import FundingFarmCard from "../components/FundingFarmCard";
 import { usePolling } from "../api/hooks";
 import {
   getProfitSummary,
@@ -25,6 +27,9 @@ import {
   getExitReasons,
   getRecentTrades,
   getStrategyConfig,
+  getSignalQuality,
+  getTimeframeInfo,
+  switchTimeframe,
 } from "../api/client";
 import {
   formatUsdt,
@@ -646,6 +651,133 @@ function MiniStat({ label, value, sub, tone = "default" }) {
   );
 }
 
+// ─── Signal Quality card ───
+function SignalQualityCard() {
+  const { data, error, lastUpdated } = usePolling(getSignalQuality, 30000);
+  const ratio = data?.do_predict_ratio;
+  const ratioTone = ratio == null ? "default" : ratio >= 0.4 ? "profit" : ratio >= 0.2 ? "warn" : "loss";
+  const ratioColor = { profit: "bg-profit", warn: "bg-warn", loss: "bg-loss", default: "bg-text-muted/40" }[ratioTone];
+  return (
+    <Card title="Signal Quality" subtitle={data?.timeframe ? `@${data.timeframe}` : ""} lastUpdated={lastUpdated}>
+      {error ? (
+        <p className="text-xs text-text-muted italic">Unavailable</p>
+      ) : !data ? (
+        <p className="text-xs text-text-muted italic">Loading…</p>
+      ) : (
+        <div className="space-y-2.5">
+          <div>
+            <div className="flex justify-between text-xxs text-text-tertiary mb-1">
+              <span>do_predict ratio</span>
+              <span className={`font-mono font-semibold text-${ratioTone === "profit" ? "profit" : ratioTone === "warn" ? "warn" : "loss"}`}>
+                {ratio != null ? `${(ratio * 100).toFixed(0)}%` : "—"}
+              </span>
+            </div>
+            <div className="h-1.5 rounded-full bg-surface-alt overflow-hidden">
+              <div className={`h-full rounded-full transition-all ${ratioColor}`} style={{ width: `${Math.min(100, (ratio ?? 0) * 100)}%` }} />
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div>
+              <div className="text-xxs text-text-tertiary">Longs</div>
+              <div className="text-sm font-mono font-semibold text-text-primary">{data.entry_long_count ?? 0}</div>
+            </div>
+            <div>
+              <div className="text-xxs text-text-tertiary">Shorts</div>
+              <div className="text-sm font-mono font-semibold text-text-primary">{data.entry_short_count ?? 0}</div>
+            </div>
+            <div>
+              <div className="text-xxs text-text-tertiary">Pred μ</div>
+              <div className={`text-sm font-mono font-semibold ${(data.pred_mean ?? 0) >= 0 ? "text-profit" : "text-loss"}`}>
+                {data.pred_mean != null ? (data.pred_mean >= 0 ? "+" : "") + data.pred_mean.toFixed(3) : "—"}
+              </div>
+            </div>
+          </div>
+          <div className="text-xxs text-text-muted">
+            {data.pairs_sampled} pairs sampled · {ratio != null && ratio < 0.2 ? "⚠ Low do_predict — model may be retraining" : ratio != null && ratio >= 0.4 ? "✓ Model healthy" : "Model warming up"}
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+// ─── TF Mini-Switcher card ───
+const _TF_OPTIONS = ["15m", "30m", "1h", "4h"];
+function TFMiniSwitcher({ onNavigateTab }) {
+  const { data, refresh } = usePolling(getTimeframeInfo, 8000);
+  const [pending, setPending] = React.useState(null);
+  const [busy, setBusy] = React.useState(false);
+  const active = data?.active;
+  const status = data?.status;
+  const modelAge = status?.model_age_min;
+  const ageLabel = modelAge != null
+    ? modelAge < 60 ? `${Math.round(modelAge)}m ago` : `${(modelAge / 60).toFixed(1)}h ago`
+    : "—";
+  const isTraining = status?.state === "training";
+
+  async function doSwitch(tf) {
+    setBusy(true);
+    try { await switchTimeframe(tf); refresh(); }
+    catch (e) { console.error(e); }
+    finally { setBusy(false); setPending(null); }
+  }
+
+  return (
+    <Card
+      title="Timeframe"
+      subtitle={isTraining ? "Retraining…" : `Model: ${ageLabel}`}
+      actions={
+        <button
+          onClick={() => onNavigateTab?.("settings")}
+          className="text-xxs text-accent hover:underline"
+        >Full settings →</button>
+      }
+    >
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-mono font-semibold text-text-primary bg-elevated border border-border rounded px-2 py-0.5">
+            {active ?? "—"}
+          </span>
+          {isTraining && <Badge variant="warn" size="xs">training</Badge>}
+          {!isTraining && status?.ready && <Badge variant="ok" size="xs">live</Badge>}
+        </div>
+        <div className="flex gap-1.5 flex-wrap">
+          {_TF_OPTIONS.map((tf) => (
+            <button
+              key={tf}
+              disabled={tf === active || busy}
+              onClick={() => setPending(tf)}
+              className={`text-xs font-mono px-2.5 py-1 rounded border transition-colors
+                ${tf === active
+                  ? "bg-accent/20 border-accent/40 text-accent cursor-default"
+                  : "bg-surface-alt border-border text-text-secondary hover:border-accent hover:text-accent disabled:opacity-40"
+                }`}
+            >
+              {tf}
+            </button>
+          ))}
+        </div>
+        {pending && (
+          <div className="border border-border rounded p-2 bg-elevated text-xs space-y-1.5">
+            <p className="text-text-secondary">Switch to <strong className="text-text-primary">{pending}</strong>? All 26 pairs will retrain (~hours).</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => doSwitch(pending)}
+                disabled={busy}
+                className="px-2.5 py-1 bg-accent text-white rounded text-xs font-semibold hover:bg-accent/80 disabled:opacity-50"
+              >Confirm</button>
+              <button
+                onClick={() => setPending(null)}
+                className="px-2.5 py-1 border border-border rounded text-xs text-text-secondary hover:text-text-primary"
+              >Cancel</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}
+
 // ─── Tab root ───
 export default function Overview({ onNavigateTab }) {
   const profit = usePolling(getProfitSummary, 15000);
@@ -719,6 +851,13 @@ export default function Overview({ onNavigateTab }) {
           lastUpdated={brain.lastUpdated}
         />
         <WfPanel data={wf.data} error={wf.error} lastUpdated={wf.lastUpdated} />
+      </div>
+
+      {/* Row 5: Funding farm + Signal quality + TF mini-switcher */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <FundingFarmCard />
+        <SignalQualityCard />
+        <TFMiniSwitcher onNavigateTab={onNavigateTab} />
       </div>
     </div>
   );

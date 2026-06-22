@@ -12,6 +12,7 @@ import {
   getTimeframeInfo,
   switchTimeframe,
   rollbackTimeframe,
+  flattenTrades,
 } from "../api/client";
 
 function StatusBadge({ status }) {
@@ -92,6 +93,7 @@ export default function TimeframeCard() {
   const [pending, setPending] = useState(null); // tf awaiting confirm, or "__rollback__"
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
+  const [doFlatten, setDoFlatten] = useState(false);
 
   const active = data?.active;
   const available = data?.available || [];
@@ -105,6 +107,10 @@ export default function TimeframeCard() {
     setBusy(true);
     setMsg(null);
     try {
+      if (doFlatten && pending !== "__rollback__") {
+        const flatRes = await flattenTrades();
+        if (flatRes?.closed > 0) setMsg(`Closed ${flatRes.closed} trades. Switching…`);
+      }
       const res =
         pending === "__rollback__"
           ? await rollbackTimeframe()
@@ -230,6 +236,19 @@ export default function TimeframeCard() {
               <div className="mb-2 px-2 py-1.5 rounded bg-warn/10 border border-warn/30 text-xxs text-warn">
                 ⚠ {dataWarnings[pending]} — data downloads via cron at 04:30 UTC.
               </div>
+            )}
+            {pending !== "__rollback__" && (
+              <label className="flex items-center gap-2 mb-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={doFlatten}
+                  onChange={(e) => setDoFlatten(e.target.checked)}
+                  className="accent-accent w-3.5 h-3.5"
+                />
+                <span className="text-xxs text-text-secondary">
+                  Close all open trades before switching <span className="text-text-muted">(recommended)</span>
+                </span>
+              </label>
             )}
             <div className="flex gap-2 justify-end">
               <button disabled={busy} onClick={() => setPending(null)}

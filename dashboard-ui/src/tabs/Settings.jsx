@@ -7,6 +7,7 @@ import Badge from "../components/Badge";
 import { usePolling } from "../api/hooks";
 import { getStrategyConfig, getWhitelist, getBalance } from "../api/client";
 import TimeframeCard from "./TimeframeCard";
+import ParamControls from "../components/ParamControls";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -177,6 +178,7 @@ export default function Settings() {
   return (
     <div className="space-y-4">
       <TimeframeCard />
+      <ParamControls />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="space-y-4">

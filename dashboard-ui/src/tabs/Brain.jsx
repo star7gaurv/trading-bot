@@ -14,7 +14,7 @@ import Table from "../components/Table";
 import Badge from "../components/Badge";
 import LogStream from "../components/LogStream";
 import { usePolling } from "../api/hooks";
-import { getBrainQueue, getBrainExperiments, brainLogSocket } from "../api/client";
+import { getBrainQueue, getBrainExperiments, getWfCoverage, brainLogSocket } from "../api/client";
 import { formatRelative, formatDuration, formatDateTime } from "../utils/format";
 
 // ─── Queue stat strip ────────────────────────────────────────────────────────
@@ -55,8 +55,10 @@ function statusVariant(status) {
   return "unknown";
 }
 
-function ExperimentsTable({ data, error, loading, lastUpdated }) {
+function ExperimentsTable({ data, error, loading, lastUpdated, coverageFilter }) {
   const [windowFilter, setWindowFilter] = useState("");
+  // When coverage heatmap clicks a cell, override the filter
+  const effectiveFilter = coverageFilter || windowFilter;
 
   const rows = Array.isArray(data) ? data : (data?.items ?? []);
 
@@ -70,10 +72,10 @@ function ExperimentsTable({ data, error, loading, lastUpdated }) {
     return { ...r, _window: windowMatch, _profit: profitNum, _wr: wrNum };
   });
 
-  const filtered = windowFilter
+  const filtered = effectiveFilter
     ? enriched.filter((r) =>
-        r._window.toLowerCase().includes(windowFilter.toLowerCase()) ||
-        (r.raw ?? "").toLowerCase().includes(windowFilter.toLowerCase())
+        r._window.toLowerCase().includes(effectiveFilter.toLowerCase()) ||
+        (r.raw ?? "").toLowerCase().includes(effectiveFilter.toLowerCase())
       )
     : enriched;
 
@@ -257,20 +259,88 @@ function BrainLogStream() {
   );
 }
 
+// ─── WF Coverage Heatmap ────────────────────────────────────────────────────
+
+function WFCoveragePanel({ onCellClick, activeFilter }) {
+  const { data } = usePolling(getWfCoverage, 120000); // 2-min refresh
+  if (!data || !data.total_experiments) return null;
+
+  const tfs = data.tfs_seen ?? [];
+  const windows = data.windows_seen ?? [];
+  const coverage = data.coverage ?? {};
+
+  function cellStyle(cell) {
+    if (!cell || cell.total === 0) return { bg: "bg-surface-alt/50", text: "text-text-muted", label: "—" };
+    if (cell.passed > 0) return { bg: "bg-profit/20 hover:bg-profit/30 border-profit/30", text: "text-profit", label: String(cell.total) };
+    return { bg: "bg-warn/10 hover:bg-warn/20 border-warn/20", text: "text-warn", label: String(cell.total) };
+  }
+
+  return (
+    <Card title="WF Coverage" subtitle={`${data.total_experiments.toLocaleString()} experiments`}>
+      <div className="overflow-x-auto">
+        <table className="text-xxs w-full border-collapse">
+          <thead>
+            <tr>
+              <th className="text-left text-text-tertiary pr-2 pb-1 font-normal">TF</th>
+              {windows.map((w) => (
+                <th key={w} className="text-text-tertiary font-mono font-normal pb-1 px-1 text-center whitespace-nowrap">
+                  {w.replace("bear_", "🔻").replace("bull_", "🔺").replace("crash_", "💥")}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {tfs.map((tf) => (
+              <tr key={tf}>
+                <td className="pr-2 py-0.5 font-mono text-text-secondary">{tf}</td>
+                {windows.map((w) => {
+                  const cell = coverage[tf]?.[w];
+                  const style = cellStyle(cell);
+                  const isActive = activeFilter === w;
+                  return (
+                    <td key={w} className="px-1 py-0.5 text-center">
+                      <button
+                        onClick={() => onCellClick(isActive ? null : w)}
+                        className={`w-full rounded border text-xxs font-mono px-1.5 py-0.5 transition-colors cursor-pointer
+                          ${style.bg} ${isActive ? "ring-1 ring-accent" : ""}`}
+                      >
+                        <span className={style.text}>{style.label}</span>
+                      </button>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="mt-1.5 flex gap-3 text-xxs text-text-muted">
+          <span><span className="inline-block w-2 h-2 rounded bg-profit/20 mr-1" />has pass</span>
+          <span><span className="inline-block w-2 h-2 rounded bg-warn/10 mr-1" />tested/no pass</span>
+          <span><span className="inline-block w-2 h-2 rounded bg-surface-alt/50 mr-1" />untested</span>
+          {activeFilter && <span className="text-accent">Filtering: {activeFilter} · <button onClick={() => onCellClick(null)} className="underline">clear</button></span>}
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 // ─── Tab root ────────────────────────────────────────────────────────────────
 
 export default function Brain() {
   const queue = usePolling(getBrainQueue, 30000);
   const experiments = usePolling(() => getBrainExperiments(50), 30000);
+  const [coverageFilter, setCoverageFilter] = useState(null);
 
   return (
     <div className="space-y-4">
       <QueueStrip data={queue.data} />
+      <WFCoveragePanel onCellClick={setCoverageFilter} activeFilter={coverageFilter} />
       <ExperimentsTable
         data={experiments.data}
         error={experiments.error}
         loading={experiments.loading}
         lastUpdated={experiments.lastUpdated}
+        coverageFilter={coverageFilter}
       />
       <BrainLogStream />
     </div>

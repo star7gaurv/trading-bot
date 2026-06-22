@@ -236,6 +236,43 @@ def apply(tf: str, dry_run: bool = False, no_restart: bool = False) -> int:
     except Exception as e:
         print(f"WARN: brain generate spawn failed: {e}", file=sys.stderr)
 
+    # Regime → TF advisory: read current regime and send a Telegram advisory if the
+    # chosen TF is suboptimal for the prevailing market regime (IC-evidence based).
+    _REGIME_TF_ADVICE = {
+        "CRASH":    ("4h", "4h reduces noise in crashes — IC 4h > 15m in stress regimes"),
+        "BEAR":     ("1h", "1h IC 0.07 > 15m 0.03 in bear markets (measured Jun 2026)"),
+        "NEUTRAL":  ("1h", "any TF valid; 1h is a balanced default"),
+        "BULL":     ("15m", "15m fires more entries in bull — signal frequency is valuable"),
+        "EUPHORIA": ("15m", "15m captures momentum in high-vol rallies"),
+    }
+    try:
+        regime_file = ROOT / "finbuddy_memory" / "regimes" / "current.json"
+        regime = json.loads(regime_file.read_text()).get("regime", "NEUTRAL")
+        rec_tf, reason = _REGIME_TF_ADVICE.get(regime, ("1h", "default"))
+        if rec_tf == tf:
+            advisory = f"✅ TF switch to {tf} — optimal for current {regime} regime ({reason})"
+        else:
+            advisory = (
+                f"⚠️ TF switched to {tf} (current regime: {regime})\n"
+                f"Recommended: {rec_tf} — {reason}\n"
+                f"You can switch via the dashboard TimeframeCard."
+            )
+        print(f"[RegimeAdvisory] {advisory}")
+        # Send via Telegram (same pattern as walkforward_notify.py)
+        cfg_tg = json.loads((ROOT / "freqtrade" / "user_data" / "config.json").read_text()).get("telegram", {})
+        token, chat_id = cfg_tg.get("token"), cfg_tg.get("chat_id")
+        if token and chat_id:
+            import urllib.request as _ur
+            _ur.urlopen(
+                _ur.Request(
+                    f"https://api.telegram.org/bot{token}/sendMessage",
+                    data=json.dumps({"chat_id": chat_id, "text": advisory, "parse_mode": "HTML"}).encode(),
+                    headers={"Content-Type": "application/json"},
+                    method="POST",
+                ), timeout=10)
+    except Exception as _e:
+        print(f"WARN: regime advisory failed: {_e}", file=sys.stderr)
+
     print(f"DONE: active timeframe {prev_tf} -> {tf}")
     return 0 if (no_restart or restart_ok) else 1
 
