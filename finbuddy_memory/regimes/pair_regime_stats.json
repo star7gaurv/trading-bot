@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-21T23:30:02.077546+00:00",
+  "updated": "2026-06-22T00:00:01.411474+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "POL/USDT:USDT": {
-      "BEAR": {
-        "n": 5,
-        "wins": 0,
-        "losses": 5,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -2.93,
-        "avg_profit_pct": -0.968
-      },
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 1,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 3.19,
-        "avg_profit_pct": 3.14
-      }
-    },
     "UNI/USDT:USDT": {
       "BEAR": {
         "n": 5,
@@ -86,6 +66,26 @@
         "pf": 0.004,
         "profit_usdt": -4.71,
         "avg_profit_pct": -1.16
+      }
+    },
+    "POL/USDT:USDT": {
+      "BEAR": {
+        "n": 4,
+        "wins": 0,
+        "losses": 4,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -1.92,
+        "avg_profit_pct": -0.838
+      },
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 3.19,
+        "avg_profit_pct": 3.14
       }
     },
     "FIL/USDT:USDT": {
@@ -505,14 +505,6 @@
     }
   },
   "blocked": [
-    {
-      "pair": "POL/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=0% PF=0.00 n=5 profit=-2.93",
-      "n": 5,
-      "wr": 0.0,
-      "pf": 0.0
-    },
     {
       "pair": "XRP/USDT:USDT",
       "regime": "BEAR",
