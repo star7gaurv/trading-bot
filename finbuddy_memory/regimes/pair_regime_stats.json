@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-22T20:30:01.328196+00:00",
+  "updated": "2026-06-22T21:00:01.344009+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -10,13 +10,13 @@
   "stats": {
     "WIF/USDT:USDT": {
       "NEUTRAL": {
-        "n": 2,
-        "wins": 1,
+        "n": 1,
+        "wins": 0,
         "losses": 1,
-        "wr": 0.5,
-        "pf": 1.582,
-        "profit_usdt": 0.64,
-        "avg_profit_pct": 0.745
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -1.1,
+        "avg_profit_pct": -1.07
       },
       "BEAR": {
         "n": 11,
@@ -26,26 +26,6 @@
         "pf": 0.971,
         "profit_usdt": -0.08,
         "avg_profit_pct": -0.015
-      }
-    },
-    "POL/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 1,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 3.19,
-        "avg_profit_pct": 3.14
-      },
-      "BEAR": {
-        "n": 3,
-        "wins": 0,
-        "losses": 3,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -1.87,
-        "avg_profit_pct": -1.093
       }
     },
     "ATOM/USDT:USDT": {
@@ -492,6 +472,17 @@
         "pf": 0.513,
         "profit_usdt": -2.09,
         "avg_profit_pct": -0.728
+      }
+    },
+    "POL/USDT:USDT": {
+      "BEAR": {
+        "n": 3,
+        "wins": 0,
+        "losses": 3,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -1.87,
+        "avg_profit_pct": -1.093
       }
     }
   },
