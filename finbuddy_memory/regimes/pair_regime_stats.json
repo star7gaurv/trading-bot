@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-22T19:30:01.964624+00:00",
+  "updated": "2026-06-22T20:00:01.475422+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "POL/USDT:USDT": {
-      "BEAR": {
-        "n": 4,
-        "wins": 0,
-        "losses": 4,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -1.92,
-        "avg_profit_pct": -0.838
-      },
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 1,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 3.19,
-        "avg_profit_pct": 3.14
-      }
-    },
     "WIF/USDT:USDT": {
       "NEUTRAL": {
         "n": 2,
@@ -46,6 +26,26 @@
         "pf": 0.971,
         "profit_usdt": -0.08,
         "avg_profit_pct": -0.015
+      }
+    },
+    "POL/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 3.19,
+        "avg_profit_pct": 3.14
+      },
+      "BEAR": {
+        "n": 3,
+        "wins": 0,
+        "losses": 3,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -1.87,
+        "avg_profit_pct": -1.093
       }
     },
     "ATOM/USDT:USDT": {
