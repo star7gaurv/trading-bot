@@ -112,13 +112,24 @@ def apply(tf: str, dry_run: bool = False, no_restart: bool = False) -> int:
     # Port feature-pipeline knobs from the per-TF config FILE (mirror promote.py 2b) so the live
     # feature set matches what the brain trains for that timeframe.
     try:
-        exp_feat = json.loads((USER_DATA / profile["config_file"]).read_text())["freqai"]["feature_parameters"]
+        exp_cfg = json.loads((USER_DATA / profile["config_file"]).read_text())
+        exp_freqai = exp_cfg["freqai"]
+        exp_feat = exp_freqai["feature_parameters"]
         for key in ("include_shifted_candles", "indicator_periods_candles",
                     "include_timeframes", "include_corr_pairlist"):
             if key in exp_feat:
                 feat[key] = exp_feat[key]
+        # Also port top-level freqai keys that are TF-specific (not just feature_parameters).
+        # These were previously missed, causing live_retrain_hours to stay at the old TF's value.
+        for key in ("live_retrain_hours", "purge_old_models", "backtest_period_days"):
+            if key in exp_freqai:
+                live["freqai"][key] = exp_freqai[key]
     except Exception as e:
         print(f"WARN: could not port feature_parameters from {profile['config_file']}: {e}", file=sys.stderr)
+    # Set startup_candle_count from TF (25 days × candles-per-day). Null in config means FreqTrade
+    # uses the class-level default (2400 at 15m) regardless of the actual timeframe.
+    _secs = {"15m": 900, "30m": 1800, "1h": 3600, "4h": 14400}.get(tf, 3600)
+    live["startup_candle_count"] = 25 * (86400 // _secs)
     LIVE_CONFIG.write_text(json.dumps(live, indent=4))
     print(f"config.json: timeframe={tf} label_period={feat['label_period_candles']} "
           f"include={feat['include_timeframes']} identifier {old_identifier} -> {new_identifier}")
