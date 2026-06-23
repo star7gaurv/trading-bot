@@ -986,12 +986,20 @@ def _tf_status() -> dict:
     out["identifier"] = identifier
     out["model_present"] = model_present
     out["model_age_min"] = model_age_min
-    # "ready" once the new model has trained; while a switch is in progress and the model
-    # isn't present yet, it's still training.
-    if out.get("state") == "training":
-        out["ready"] = model_present
-    else:
-        out["ready"] = model_present
+    # Self-healing: if model is present but status file is stuck in "training"
+    # (apply_timeframe.py never writes "idle" after training completes), auto-flip to idle.
+    # This prevents the dashboard from showing "Retraining..." for days after a switch.
+    if out.get("state") == "training" and model_present:
+        out["state"] = "idle"
+        # Also patch the file so next read is correct without waiting for the streamer
+        try:
+            d = json.loads(TIMEFRAME_STATUS.read_text())
+            d["state"] = "idle"
+            d["ready"] = True
+            TIMEFRAME_STATUS.write_text(json.dumps(d, indent=2))
+        except Exception:
+            pass
+    out["ready"] = model_present
     return out
 
 
