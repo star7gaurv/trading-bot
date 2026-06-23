@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-23T08:00:01.637514+00:00",
+  "updated": "2026-06-23T08:30:01.550385+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -10,13 +10,13 @@
   "stats": {
     "ATOM/USDT:USDT": {
       "NEUTRAL": {
-        "n": 3,
+        "n": 2,
         "wins": 1,
-        "losses": 2,
-        "wr": 0.3333,
-        "pf": 0.007,
-        "profit_usdt": -3.0,
-        "avg_profit_pct": -0.987
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 0.009,
+        "profit_usdt": -2.14,
+        "avg_profit_pct": -1.055
       }
     },
     "FIL/USDT:USDT": {
