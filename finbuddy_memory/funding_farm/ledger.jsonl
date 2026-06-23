@@ -1,2 +1,3 @@
 {"ts": "2026-06-23T02:05:02.184518+00:00", "event": "open", "symbol": "TONUSDT", "notional": 250.0, "funding_rate": 0.00182227, "apr_pct": 199.54, "entry_fee": 0.375}
 {"ts": "2026-06-23T08:05:02.404688+00:00", "event": "accrue", "symbol": "TONUSDT", "events": 1, "rate": 0.0, "credit": 0.0}
+{"ts": "2026-06-23T16:05:02.699769+00:00", "event": "accrue", "symbol": "TONUSDT", "events": 1, "rate": 0.0, "credit": 0.0}
