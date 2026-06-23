@@ -405,6 +405,11 @@ def _build_env_args(cfg: dict, identifier: str) -> list[str]:
         # meta_dump is a serve-time eval side-effect (NOT in shape keys → cache still hits).
         if cfg.get("meta_dump") is not None:
             env_args += ["-e", f"FREQAI_META_DUMP={'1' if cfg['meta_dump'] else '0'}"]
+        # EMA-200 primary-trend filter (2026-06-23): serve-time entry gate only — never long
+        # below EMA-200, never short above. Does NOT change trained model → excluded from
+        # _TRAIN_SHAPE_KEYS. A/B-able on cached predictions (same family as the base experiment).
+        if cfg.get("trend_filter") is not None:
+            env_args += ["-e", f"FREQAI_TREND_FILTER={'1' if cfg['trend_filter'] else '0'}"]
     return env_args
 
 
