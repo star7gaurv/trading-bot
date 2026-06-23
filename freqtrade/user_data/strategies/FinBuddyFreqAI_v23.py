@@ -341,6 +341,21 @@ class FinBuddyFreqAI_v23(IStrategy):
                     if (not trade.is_short) and centered <= -decay_level:
                         return "pred_decay_exit"
 
+        # ── Progress-cut exit (2026-06-23, env-gated FREQAI_PROGRESS_CUT=1; default off) ──
+        # Different from pred_decay (which cut on the noisy per-candle PREDICTION and made
+        # things worse). This cuts on lack of PRICE PROGRESS: winners declare themselves fast
+        # (exit_signal fires at ~2.5 candles avg, 100% WR in backtest); a trade still underwater
+        # after PROGRESS_CUT_CANDLES with no exit_signal is almost certainly a loser. Cutting it
+        # here — cheaply, before it drifts to the full time-limit or a catastrophe stop — is the
+        # asymmetric idea: give trades room through noise (wide price stop), but cut them on TIME
+        # if the thesis isn't playing out. Pairs with a wide K_SL so the price stop handles only
+        # tail risk and THIS handles the slow bleeders.
+        if os.environ.get("FREQAI_PROGRESS_CUT", "0") == "1":
+            cut_candles = int(os.environ.get("FREQAI_PROGRESS_CUT_CANDLES", "3"))
+            cut_profit  = float(os.environ.get("FREQAI_PROGRESS_CUT_PROFIT", "-0.005"))
+            if candles_open >= cut_candles and current_profit < cut_profit:
+                return "progress_cut"
+
         # Time-limit exit: close trade after the model's prediction horizon
         # (label_period_candles) candles. Holding beyond the horizon the model was
         # trained to predict is undefined territory. Derived from config (single source
@@ -955,11 +970,63 @@ class FinBuddyFreqAI_v23(IStrategy):
 
         base_stake = min(proposed_stake, max_stake)
         result = round(base_stake * multiplier * confidence_factor, 2)
+        # ── Probe-scale (2026-06-23, env-gated FREQAI_PROBE_SCALE=1; default off) ──
+        # Anti-martingale: enter at a REDUCED "probe" size. adjust_trade_position then
+        # adds the rest ONLY to trades that confirm (go green in the first candles). The
+        # measured structure: ~28 trades/2mo ride to a 100%-WR exit_signal; the other ~180
+        # are coin-flip noise. We can't tell them apart at entry — so let the market reveal
+        # them with a small probe, then back the winners. Winners get full size, losers stay
+        # small. Sidesteps the unsolvable "predict direction at entry" problem entirely.
+        if os.environ.get("FREQAI_PROBE_SCALE", "0") == "1":
+            probe_frac = float(os.environ.get("FREQAI_PROBE_FRACTION", "0.5"))
+            result = round(result * probe_frac, 2)
         logger.info(
             f"[RiskEngine] stake={result} regime={regime} mult={multiplier} "
             f"conf_factor={confidence_factor:.3f}"
         )
         return max(result, min_stake or 0)
+
+    def adjust_trade_position(
+        self, trade, current_time: datetime, current_rate: float,
+        current_profit: float, min_stake, max_stake: float,
+        current_entry_rate: float, current_exit_rate: float,
+        current_entry_profit: float, current_exit_profit: float, **kwargs,
+    ):
+        """Anti-martingale probe-scale: add to confirmed winners once.
+
+        Only active when FREQAI_PROBE_SCALE=1. The initial entry is a reduced probe
+        (custom_stake_amount × FREQAI_PROBE_FRACTION). When a trade has gone green past
+        FREQAI_PROBE_CONFIRM_PCT within the first FREQAI_PROBE_WINDOW candles, add the
+        remaining size — backing the trades the market has shown are working. Losers are
+        never added to; they stay at the small probe size and exit via stop/progress/signal.
+        """
+        if os.environ.get("FREQAI_PROBE_SCALE", "0") != "1":
+            return None
+        # Add only once (initial probe = 1 entry; after add = 2).
+        if trade.nr_of_successful_entries >= 2:
+            return None
+        confirm_pct = float(os.environ.get("FREQAI_PROBE_CONFIRM_PCT", "0.004"))  # +0.4%
+        window = int(os.environ.get("FREQAI_PROBE_WINDOW", "2"))
+        candles_open = int((current_time - trade.open_date_utc).total_seconds()
+                           / timeframe_to_seconds(self.timeframe))
+        if candles_open > window:
+            return None  # confirmation window passed — never scale a late/lagging trade
+        if current_profit < confirm_pct:
+            return None  # not confirmed yet (or underwater) — hold the small probe
+        # Confirmed winner — add the complement of the probe fraction (≈ bring to full size).
+        probe_frac = float(os.environ.get("FREQAI_PROBE_FRACTION", "0.5"))
+        try:
+            add_frac = max(0.0, (1.0 / probe_frac) - 1.0)  # 0.5 → +1.0× (doubles to full)
+            add_stake = round(trade.stake_amount * add_frac, 2)
+            if add_stake <= 0:
+                return None
+            if max_stake and trade.stake_amount + add_stake > max_stake:
+                add_stake = round(max_stake - trade.stake_amount, 2)
+            if min_stake and add_stake < min_stake:
+                return None
+            return add_stake
+        except Exception:
+            return None
 
     # Confidence-based leverage tiers (added 2026-05-20).
     # Read from env so they can be tuned without code changes.
@@ -1799,12 +1866,51 @@ class FinBuddyFreqAI_v23(IStrategy):
 
         volatility_ok = dataframe["atr_ratio"] > 0.003
 
+        # ── Option 2+3 entry mode (env-gated FREQAI_ENTRY_MODE=trend_vol; default off) ──
+        # Research (2026-06-22): the model's DIRECTION prediction is a coin flip out-of-sample
+        # (dir-acc ~55%, IC 0.03) and it leans long even in bear → only ~1% of candles cleared
+        # the short threshold, so the bot stopped trading. But the model's EXIT is genuine alpha
+        # (exit_signal 90.8% WR), and the ONLY feature that passed the IC gate was volatility
+        # (btc_vol_12, IC 0.07). So trend_vol mode: the ENTRY no longer uses the model's direction
+        # — it follows the confirmed local TREND (close vs EMA-50 + EMA slope), gated by VOLATILITY
+        # EXPANSION (atr_ratio above its own rolling median). The model keeps owning the EXIT
+        # (custom_exit / exit_signal). Direction comes from price (which is trending), timing from
+        # volatility (the real signal); the coin-flip directional prediction is removed from entry.
+        _slope_n = max(1, self._DAY_CANDLES // 4)   # ~6h EMA-50 slope window
+        _ema_rising  = dataframe["ema_50"] > dataframe["ema_50"].shift(_slope_n)
+        _ema_falling = dataframe["ema_50"] < dataframe["ema_50"].shift(_slope_n)
+        _vol_med = dataframe["atr_ratio"].rolling(
+            self._DAY_CANDLES, min_periods=max(2, self._DAY_CANDLES // 2)
+        ).median()
+        _vol_expanding = dataframe["atr_ratio"] > _vol_med
+        tv_long = (
+            (dataframe["close"] > dataframe["ema_50"]) & _ema_rising
+            & _vol_expanding & (dataframe["rsi_14"] < 75) & (dataframe["volume"] > 0)
+        )
+        tv_short = (
+            (dataframe["close"] < dataframe["ema_50"]) & _ema_falling
+            & _vol_expanding & (dataframe["rsi_14"] > 25) & (dataframe["volume"] > 0)
+        )
+        _entry_mode = os.environ.get("FREQAI_ENTRY_MODE", "absolute")
+
         # Hard regime gate: no longs in BEAR/CRASH, no shorts in BULL/EUPHORIA.
         # Dynamic threshold (×1.3 in BEAR) is insufficient — std_factor can reduce
         # effective threshold to 1.6σ, still allowing longs when market is trending down.
         # Result was 8 longs in 80% BEAR → 170 stop losses at 0% WR (-207 USDT).
         is_long_regime  = dataframe["regime"].isin(["NEUTRAL", "BULL", "EUPHORIA"])
         is_short_regime = dataframe["regime"].isin(["NEUTRAL", "BEAR", "CRASH"])
+
+        # ── Primary-trend filter (2026-06-23, env-gated FREQAI_TREND_FILTER=1; default off) ──
+        # Measured pathology: the 5-state regime is too coarse — it labeled 1/3 of a +47% BULL
+        # window as NEUTRAL, which allows shorts, so the bot SHORTED a raging uptrend and bled
+        # (-75 stop-loss bucket). The model's direction is a coin flip, so without a trend anchor
+        # it fights the primary trend. This blocks counter-trend entries using EMA-200 (the primary
+        # trend, much finer than the 5-state regime): never long below it, never short above it.
+        # When on, this REPLACES the regime gate as the directional anchor (regime still sizes).
+        if os.environ.get("FREQAI_TREND_FILTER", "0") == "1":
+            _above_primary = dataframe["close"] > dataframe["ema_200"]
+            is_long_regime  = is_long_regime  & _above_primary
+            is_short_regime = is_short_regime & ~_above_primary
 
         # C3 bounce guard (2026-06-11, env-gated, default off until brain-validated):
         # block entries against a stretched ~1h-horizon move. RSI(56) on 15m
@@ -1833,12 +1939,19 @@ class FinBuddyFreqAI_v23(IStrategy):
         # above bearish_ob so the condition was never true. Confirmed: 0/100 candles
         # passed on live BTC data. OB columns kept in populate_indicators for future use.
 
-        enter_long = (
-            (dataframe["do_predict"] == 1)
-            & long_stable
-            & ta_long
-            & volatility_ok
-        )
+        if _entry_mode == "trend_vol":
+            enter_long = (
+                (dataframe["do_predict"] == 1)
+                & tv_long
+                & is_long_regime
+            )
+        else:
+            enter_long = (
+                (dataframe["do_predict"] == 1)
+                & long_stable
+                & ta_long
+                & volatility_ok
+            )
 
         # Phase 1 (2026-05-19) — Per-Pair-Per-Regime Dynamic Block.
         # Zero out entries for this pair on candles whose regime matches a
@@ -1885,12 +1998,19 @@ class FinBuddyFreqAI_v23(IStrategy):
         # blocking 95% of shorts. Same root cause as ob_long_ok — price trapped in
         # the tight OB range. Confirmed: only 5/100 candles passed on live BTC data.
 
-        enter_short = (
-            (dataframe["do_predict"] == 1)
-            & short_stable
-            & ta_short
-            & volatility_ok
-        )
+        if _entry_mode == "trend_vol":
+            enter_short = (
+                (dataframe["do_predict"] == 1)
+                & tv_short
+                & is_short_regime
+            )
+        else:
+            enter_short = (
+                (dataframe["do_predict"] == 1)
+                & short_stable
+                & ta_short
+                & volatility_ok
+            )
 
         # Apply the same per-pair-per-regime block to shorts.
         if blocked_regimes:
