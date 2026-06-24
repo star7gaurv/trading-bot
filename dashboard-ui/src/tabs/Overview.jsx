@@ -86,7 +86,9 @@ function fmtDurationShort(seconds) {
   return `${h}h ${m}m`;
 }
 
-// Compute current win/loss streak from newest-first closed trades
+// Compute current win/loss streak from newest-first closed trades.
+// `capped` is true when the whole sampled window is one run, so the real
+// streak may be longer than what we counted (shown as e.g. "30+").
 function computeStreak(closed) {
   if (!Array.isArray(closed) || closed.length === 0) return null;
   const first = closed[0];
@@ -97,7 +99,7 @@ function computeStreak(closed) {
     if (win === firstWin) n += 1;
     else break;
   }
-  return { count: n, win: firstWin };
+  return { count: n, win: firstWin, capped: n === closed.length };
 }
 
 // ─── Stat strip ───
@@ -180,7 +182,7 @@ function StatStrip({ profit, openTrades, regime, dailyPerf, balance, recentClose
       />
       <Stat
         label="Streak"
-        value={streak ? streak.count : "—"}
+        value={streak ? `${streak.count}${streak.capped ? "+" : ""}` : "—"}
         unit={streak ? (streak.win ? "wins" : "losses") : ""}
         tone={streak == null ? "default" : streak.win ? "profit" : "loss"}
         mono={false}
@@ -243,16 +245,6 @@ function OpenTradesPanel({ data, error, lastUpdated, loading, walletTotal }) {
             {isShort ? "SHORT" : "LONG"}{lev}
           </Badge>
         );
-      },
-    },
-    {
-      key: "stake_amount",
-      label: <InfoTip label="Invested" text="How much money (USDT) is committed to this position right now." />,
-      align: "right",
-      mono: true,
-      render: (r) => {
-        const v = r.stake_amount;
-        return v == null ? "—" : v.toFixed(2);
       },
     },
     {
@@ -510,13 +502,6 @@ function RecentTradesPanel({ data, error, lastUpdated }) {
           {r.is_short ? "SHORT" : "LONG"}
         </Badge>
       ),
-    },
-    {
-      key: "stake_amount",
-      label: <InfoTip label="Invested" text="How much money (USDT) was committed to this trade." />,
-      align: "right",
-      mono: true,
-      render: (r) => (r.stake_amount != null ? r.stake_amount.toFixed(2) : "—"),
     },
     {
       key: "open_rate",

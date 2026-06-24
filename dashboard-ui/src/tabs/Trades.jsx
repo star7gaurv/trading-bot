@@ -312,6 +312,14 @@ function ClosedTradesTable({ onSelectTrade }) {
       ),
     },
     {
+      key: "stake_amount",
+      label: "Invested",
+      align: "right",
+      mono: true,
+      render: (r) =>
+        r.stake_amount != null ? `${r.stake_amount.toFixed(1)}` : "—",
+    },
+    {
       key: "pnl",
       label: "P&L",
       align: "right",
