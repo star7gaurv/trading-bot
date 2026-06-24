@@ -578,3 +578,4 @@
 | 2026-06-24 14:00:34 | RENDER/USDT:USDT | SHORT | 3h50m | +2.58% | +1.45 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-24 14:00:49 | UNI/USDT:USDT | SHORT | 3h00m | +3.02% | +1.69 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-24 14:00:54 | BTC/USDT:USDT | SHORT | 2h00m | +4.82% | +1.51 | exit_signal | BEAR | freqai_regression_v23_sh |
+| 2026-06-24 20:51:02 | APT/USDT:USDT | SHORT | 0h50m | -3.73% | -2.11 | stop_loss | BEAR | freqai_regression_v23_sh |
