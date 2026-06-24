@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-24T00:30:02.235975+00:00",
+  "generated_at": "2026-06-24T06:30:02.252983+00:00",
   "findings": {
     "dead_timeframes": [
       "1h",
@@ -15,10 +15,10 @@
     "near_breakeven": false,
     "best_bear": {
       "schema_version": 1,
-      "hypothesis_id": "3d850f566971",
+      "hypothesis_id": "7a8ea6d26084",
       "parent_id": null,
       "band": "safe",
-      "rationale": "safe [v23]: k_sl +0.25 (wider stop)",
+      "rationale": "safe [v23]: k_tp -0.25 (tighter trail lock)",
       "window": "bear_2025Q1",
       "timerange": "20250101-20250401",
       "config": {
@@ -30,7 +30,7 @@
         "long_threshold": 0.8,
         "short_threshold": -1.0,
         "k_sl": 3.0,
-        "k_tp": 4.0,
+        "k_tp": 3.75,
         "stability_n": 1,
         "label_period_candles": 48,
         "filter_di": true,
@@ -42,22 +42,22 @@
         "target_version": "zscore"
       },
       "status": "completed",
-      "created_at": "2026-06-19T18:00:01.691387+00:00",
-      "started_at": "2026-06-19T19:40:01.891881+00:00",
-      "completed_at": "2026-06-19T19:41:21.192656+00:00",
+      "created_at": "2026-06-24T06:00:02.249541+00:00",
+      "started_at": "2026-06-24T06:10:01.274434+00:00",
+      "completed_at": "2026-06-24T06:11:07.745783+00:00",
       "metrics": {
-        "trades": 656,
-        "wr": 0.6189,
-        "sharpe": 2.083,
-        "pf": 1.192,
-        "profit_pct": 4.238,
-        "max_dd": 3.752,
+        "trades": 360,
+        "wr": 0.6889,
+        "sharpe": 3.132,
+        "pf": 1.321,
+        "profit_pct": 4.296,
+        "max_dd": 2.219,
         "long_count": 0,
-        "short_count": 656,
-        "exit_signal_count": 319,
-        "exit_signal_wr": 0.9969,
-        "stop_loss_count": 132,
-        "elapsed_s": 59
+        "short_count": 360,
+        "exit_signal_count": 228,
+        "exit_signal_wr": 0.9737,
+        "stop_loss_count": 98,
+        "elapsed_s": 48
       },
       "error": null
     },
@@ -107,10 +107,10 @@
     },
     "best_overall": {
       "schema_version": 1,
-      "hypothesis_id": "3d850f566971",
+      "hypothesis_id": "7a8ea6d26084",
       "parent_id": null,
       "band": "safe",
-      "rationale": "safe [v23]: k_sl +0.25 (wider stop)",
+      "rationale": "safe [v23]: k_tp -0.25 (tighter trail lock)",
       "window": "bear_2025Q1",
       "timerange": "20250101-20250401",
       "config": {
@@ -122,7 +122,7 @@
         "long_threshold": 0.8,
         "short_threshold": -1.0,
         "k_sl": 3.0,
-        "k_tp": 4.0,
+        "k_tp": 3.75,
         "stability_n": 1,
         "label_period_candles": 48,
         "filter_di": true,
@@ -134,30 +134,30 @@
         "target_version": "zscore"
       },
       "status": "completed",
-      "created_at": "2026-06-19T18:00:01.691387+00:00",
-      "started_at": "2026-06-19T19:40:01.891881+00:00",
-      "completed_at": "2026-06-19T19:41:21.192656+00:00",
+      "created_at": "2026-06-24T06:00:02.249541+00:00",
+      "started_at": "2026-06-24T06:10:01.274434+00:00",
+      "completed_at": "2026-06-24T06:11:07.745783+00:00",
       "metrics": {
-        "trades": 656,
-        "wr": 0.6189,
-        "sharpe": 2.083,
-        "pf": 1.192,
-        "profit_pct": 4.238,
-        "max_dd": 3.752,
+        "trades": 360,
+        "wr": 0.6889,
+        "sharpe": 3.132,
+        "pf": 1.321,
+        "profit_pct": 4.296,
+        "max_dd": 2.219,
         "long_count": 0,
-        "short_count": 656,
-        "exit_signal_count": 319,
-        "exit_signal_wr": 0.9969,
-        "stop_loss_count": 132,
-        "elapsed_s": 59
+        "short_count": 360,
+        "exit_signal_count": 228,
+        "exit_signal_wr": 0.9737,
+        "stop_loss_count": 98,
+        "elapsed_s": 48
       },
       "error": null
     },
     "window_stats": {
       "bear_2025Q1": {
-        "n": 146,
-        "avg_wr": 0.429,
-        "avg_pf": 0.829
+        "n": 147,
+        "avg_wr": 0.431,
+        "avg_pf": 0.832
       },
       "bull_2024Q1": {
         "n": 137,
@@ -185,9 +185,9 @@
         "avg_pf": 1.114
       },
       "crash_2022": {
-        "n": 1,
-        "avg_wr": 0.507,
-        "avg_pf": 0.719
+        "n": 2,
+        "avg_wr": 0.46,
+        "avg_pf": 0.623
       },
       "bull_2024Q4": {
         "n": 6,
@@ -207,16 +207,16 @@
     },
     "tf_stats": {
       "15m": {
-        "n": 478,
-        "avg_pf": 0.682,
+        "n": 479,
+        "avg_pf": 0.683,
         "avg_wr": 0.417,
         "avg_trades_day": 7.43
       },
       "1h": {
-        "n": 46,
+        "n": 47,
         "avg_pf": 0.535,
-        "avg_wr": 0.373,
-        "avg_trades_day": 2.59
+        "avg_wr": 0.374,
+        "avg_trades_day": 2.61
       },
       "5m": {
         "n": 18,
@@ -238,7 +238,7 @@
       }
     }
   },
-  "pruned": 26,
+  "pruned": 24,
   "actions": [],
   "llm_insight": ""
 }
