@@ -803,6 +803,12 @@ async def performance_pair(_: dict = Depends(require_auth)):
         gross_loss = abs(sum(losses))
         profit_factor = (gross_profit / gross_loss) if gross_loss > 0 else None
 
+        # Capital view (2026-06-24 UI redesign): how much was actually committed
+        # to this pair, what came back, and the return on that capital.
+        total_staked = sum(t.get("stake_amount") or 0.0 for t in ptrades)
+        total_returned = total_staked + total_profit
+        roi_pct = (total_profit / total_staked) if total_staked > 0 else None
+
         durations = []
         for t in ptrades:
             ct = t.get("close_timestamp") or 0
@@ -820,6 +826,9 @@ async def performance_pair(_: dict = Depends(require_auth)):
             "profit_all_coin": total_profit,
             "profit_abs": total_profit,
             "duration_avg": duration_avg,  # minutes
+            "invested": total_staked,
+            "returned": total_returned,
+            "roi_pct": roi_pct,
         })
 
     # Sort best P&L first
@@ -1401,6 +1410,11 @@ async def trades_recent(
             "open_date": t.get("open_date"),
             "close_date": t.get("close_date"),
             "duration_seconds": (ct - ot) / 1000 if ot and ct else None,
+            # Enrichment (2026-06-24 UI redesign): show entry/exit price + invested amount
+            "open_rate": t.get("open_rate"),
+            "close_rate": t.get("close_rate"),
+            "stake_amount": t.get("stake_amount"),
+            "leverage": t.get("leverage"),
         })
     return out
 

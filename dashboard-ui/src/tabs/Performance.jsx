@@ -11,6 +11,7 @@ import { useMemo } from "react";
 import Card from "../components/Card";
 import Table from "../components/Table";
 import Stat from "../components/Stat";
+import InfoTip from "../components/InfoTip";
 import { usePolling } from "../api/hooks";
 import {
   getDailyPerformance,
@@ -356,6 +357,79 @@ function PairBarChart({ data }) {
   );
 }
 
+// ─── Per-pair capital table ──────────────────────────────────────────────────
+// Answers "how much did we actually put into each pair, and what came back?"
+// — not just profit in isolation.
+
+function PairCapitalTable({ data }) {
+  const rows = useMemo(() => {
+    if (!Array.isArray(data)) return [];
+    return [...data]
+      .filter((p) => (p.invested ?? 0) > 0)
+      .sort((a, b) => (b.invested ?? 0) - (a.invested ?? 0))
+      .map((p) => ({ ...p, id: p.key }));
+  }, [data]);
+
+  const cleanPair = (k) => (k ?? "").replace("/USDT:USDT", "").replace("/USDT", "");
+
+  const cols = [
+    { key: "pair", label: "Pair", mono: true, render: (r) => cleanPair(r.key) },
+    {
+      key: "invested",
+      label: <InfoTip label="Invested" text="Total money (USDT) committed to this pair across all its trades." />,
+      align: "right",
+      mono: true,
+      render: (r) => (r.invested != null ? r.invested.toFixed(0) : "—"),
+    },
+    {
+      key: "returned",
+      label: <InfoTip label="Returned" text="What came back: invested amount plus or minus profit." />,
+      align: "right",
+      mono: true,
+      render: (r) => (r.returned != null ? r.returned.toFixed(0) : "—"),
+    },
+    {
+      key: "profit_abs",
+      label: "Net P&L",
+      align: "right",
+      mono: true,
+      render: (r) => {
+        const v = r.profit_abs ?? 0;
+        const cls = v >= 0 ? "text-profit" : "text-loss";
+        return <span className={cls}>{v >= 0 ? "+" : ""}{v.toFixed(2)}</span>;
+      },
+    },
+    {
+      key: "roi_pct",
+      label: <InfoTip label="Return" text="Profit as a percentage of the money invested in this pair." />,
+      align: "right",
+      mono: true,
+      render: (r) => {
+        if (r.roi_pct == null) return "—";
+        const pct = r.roi_pct * 100;
+        const cls = pct >= 0 ? "text-profit" : "text-loss";
+        return <span className={cls}>{pct >= 0 ? "+" : ""}{pct.toFixed(1)}%</span>;
+      },
+    },
+    {
+      key: "count",
+      label: "Trades",
+      align: "right",
+      mono: true,
+      render: (r) => r.count ?? "—",
+    },
+  ];
+
+  return (
+    <Table
+      columns={cols}
+      rows={rows}
+      emptyMessage="No closed trades yet — nothing has been invested per pair so far."
+      maxHeight="340px"
+    />
+  );
+}
+
 // ─── Summary stat strip ───────────────────────────────────────────────────────
 
 // Parse FreqTrade's avg_duration string → hours.
@@ -513,6 +587,19 @@ export default function Performance() {
           )}
         </Card>
       </div>
+
+      {/* Capital deployed per pair — invested vs returned, not just profit */}
+      <Card
+        title="Capital per Pair"
+        subtitle="How much was invested in each pair vs what came back"
+        lastUpdated={pairPerf.lastUpdated}
+      >
+        {pairPerf.error ? (
+          <p className="text-xs text-text-muted italic">Error: {pairPerf.error}</p>
+        ) : (
+          <PairCapitalTable data={pairPerf.data} />
+        )}
+      </Card>
     </div>
   );
 }

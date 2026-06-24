@@ -12,6 +12,7 @@ import Card from "../components/Card";
 import Stat from "../components/Stat";
 import Table from "../components/Table";
 import Badge from "../components/Badge";
+import InfoTip from "../components/InfoTip";
 import FundingFarmCard from "../components/FundingFarmCard";
 import { usePolling } from "../api/hooks";
 import {
@@ -35,6 +36,7 @@ import {
   formatUsdt,
   formatNumber,
   formatPct,
+  formatPrice,
   formatRelative,
   formatDuration,
 } from "../utils/format";
@@ -84,8 +86,22 @@ function fmtDurationShort(seconds) {
   return `${h}h ${m}m`;
 }
 
+// Compute current win/loss streak from newest-first closed trades
+function computeStreak(closed) {
+  if (!Array.isArray(closed) || closed.length === 0) return null;
+  const first = closed[0];
+  const firstWin = (first.profit_abs ?? 0) >= 0;
+  let n = 0;
+  for (const t of closed) {
+    const win = (t.profit_abs ?? 0) >= 0;
+    if (win === firstWin) n += 1;
+    else break;
+  }
+  return { count: n, win: firstWin };
+}
+
 // ─── Stat strip ───
-function StatStrip({ profit, openTrades, regime, dailyPerf, balance }) {
+function StatStrip({ profit, openTrades, regime, dailyPerf, balance, recentClosed }) {
   const dailyArr = Array.isArray(dailyPerf) ? dailyPerf : (dailyPerf?.data || []);
   // FreqTrade returns oldest-first — take the LAST entry for today
   const todayEntry = dailyArr.length > 0 ? dailyArr[dailyArr.length - 1] : null;
@@ -99,11 +115,25 @@ function StatStrip({ profit, openTrades, regime, dailyPerf, balance }) {
   const total = winning + losing;
   const wr = total > 0 ? (winning / total) * 100 : null;
 
-  const openCount = Array.isArray(openTrades) ? openTrades.length : 0;
+  const openArr = Array.isArray(openTrades) ? openTrades : [];
+  const openCount = openArr.length;
   const totalOpenProfit = Array.isArray(openTrades)
     ? openTrades.reduce((acc, t) => acc + (t.profit_abs || 0), 0)
     : null;
   const balanceTotal = safe(balance, "total_bot") ?? safe(balance, "total");
+
+  // Deployed %: how much of the wallet is currently tied up in open positions
+  const totalStaked = openArr.reduce((acc, t) => acc + (t.stake_amount || 0), 0);
+  const deployedPct = balanceTotal ? (totalStaked / balanceTotal) * 100 : null;
+
+  // Streak + avg duration from recent closed trades
+  const streak = computeStreak(recentClosed);
+  const durations = (Array.isArray(recentClosed) ? recentClosed : [])
+    .map((t) => t.duration_seconds)
+    .filter((d) => d != null && d >= 0);
+  const avgDuration = durations.length
+    ? durations.reduce((a, b) => a + b, 0) / durations.length
+    : null;
 
   const regimeName = safe(regime, "regime", "—");
   const regimeTone = REGIME_TONE[regimeName] || "default";
@@ -112,7 +142,7 @@ function StatStrip({ profit, openTrades, regime, dailyPerf, balance }) {
   const fundingRate = safe(regime, "btc_funding_rate");
 
   return (
-    <div className="grid grid-cols-3 md:grid-cols-5 xl:grid-cols-9 gap-2">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-2">
       <Stat
         label="P&L Today"
         value={today != null ? today.toFixed(2) : "—"}
@@ -149,6 +179,24 @@ function StatStrip({ profit, openTrades, regime, dailyPerf, balance }) {
         unit={balanceTotal != null ? "USDT" : ""}
       />
       <Stat
+        label="Streak"
+        value={streak ? streak.count : "—"}
+        unit={streak ? (streak.win ? "wins" : "losses") : ""}
+        tone={streak == null ? "default" : streak.win ? "profit" : "loss"}
+        mono={false}
+      />
+      <Stat
+        label="Deployed"
+        value={deployedPct != null ? deployedPct.toFixed(0) : "—"}
+        unit={deployedPct != null ? "%" : ""}
+        tone={deployedPct != null && deployedPct > 80 ? "warn" : "default"}
+      />
+      <Stat
+        label="Avg Hold"
+        value={avgDuration != null ? fmtDurationShort(avgDuration) : "—"}
+        mono={false}
+      />
+      <Stat
         label="Regime"
         value={regimeName}
         tone={regimeTone}
@@ -180,7 +228,7 @@ function StatStrip({ profit, openTrades, regime, dailyPerf, balance }) {
 }
 
 // ─── Open trades panel ───
-function OpenTradesPanel({ data, error, lastUpdated, loading }) {
+function OpenTradesPanel({ data, error, lastUpdated, loading, walletTotal }) {
   const rows = Array.isArray(data) ? data.slice(0, 8) : [];
   const columns = [
     { key: "pair", label: "Pair", mono: true },
@@ -189,19 +237,50 @@ function OpenTradesPanel({ data, error, lastUpdated, loading }) {
       label: "Side",
       render: (r) => {
         const isShort = r.is_short || r.trade_direction === "short";
+        const lev = r.leverage && r.leverage !== 1 ? ` ${r.leverage}x` : "";
         return (
           <Badge variant={isShort ? "short" : "long"} size="xs">
-            {isShort ? "SHORT" : "LONG"}
+            {isShort ? "SHORT" : "LONG"}{lev}
           </Badge>
         );
       },
     },
     {
-      key: "leverage",
-      label: "Lev",
+      key: "stake_amount",
+      label: <InfoTip label="Invested" text="How much money (USDT) is committed to this position right now." />,
       align: "right",
       mono: true,
-      render: (r) => (r.leverage ? `${r.leverage}x` : "—"),
+      render: (r) => {
+        const v = r.stake_amount;
+        return v == null ? "—" : v.toFixed(2);
+      },
+    },
+    {
+      key: "wallet_pct",
+      label: <InfoTip label="% Wallet" text="Share of your total balance tied up in this one position." />,
+      align: "right",
+      mono: true,
+      render: (r) => {
+        const v = r.stake_amount;
+        if (v == null || !walletTotal) return "—";
+        const pct = (v / walletTotal) * 100;
+        const cls = pct > 25 ? "text-warn" : "text-text-muted";
+        return <span className={cls}>{pct.toFixed(1)}%</span>;
+      },
+    },
+    {
+      key: "open_rate",
+      label: "Entry",
+      align: "right",
+      mono: true,
+      render: (r) => (r.open_rate != null ? formatPrice(r.open_rate) : "—"),
+    },
+    {
+      key: "current_rate",
+      label: "Now",
+      align: "right",
+      mono: true,
+      render: (r) => (r.current_rate != null ? formatPrice(r.current_rate) : "—"),
     },
     {
       key: "profit_pct",
@@ -238,16 +317,14 @@ function OpenTradesPanel({ data, error, lastUpdated, loading }) {
       },
     },
     {
-      key: "stop_dist",
-      label: "SL Dist",
+      key: "held",
+      label: "Held",
       align: "right",
       mono: true,
       render: (r) => {
-        const dist = r.stoploss_current_dist_ratio;
-        if (dist == null) return "—";
-        const pct = Math.abs(dist * 100);
-        const cls = pct < 0.5 ? "text-loss" : pct < 1.5 ? "text-warn" : "text-text-muted";
-        return <span className={cls}>{pct.toFixed(2)}%</span>;
+        const ts = r.open_timestamp;
+        if (!ts) return "—";
+        return fmtDurationShort((Date.now() - ts) / 1000);
       },
     },
   ];
@@ -265,7 +342,7 @@ function OpenTradesPanel({ data, error, lastUpdated, loading }) {
           columns={columns}
           rows={rows}
           loading={loading && !data}
-          emptyMessage="No open positions"
+          emptyMessage="No open positions — the bot is waiting for a strong enough signal."
         />
       )}
     </Card>
@@ -435,13 +512,51 @@ function RecentTradesPanel({ data, error, lastUpdated }) {
       ),
     },
     {
-      key: "close_reason",
+      key: "stake_amount",
+      label: <InfoTip label="Invested" text="How much money (USDT) was committed to this trade." />,
+      align: "right",
+      mono: true,
+      render: (r) => (r.stake_amount != null ? r.stake_amount.toFixed(2) : "—"),
+    },
+    {
+      key: "open_rate",
+      label: "Entry",
+      align: "right",
+      mono: true,
+      render: (r) => (r.open_rate != null ? formatPrice(r.open_rate) : "—"),
+    },
+    {
+      key: "close_rate",
       label: "Exit",
+      align: "right",
+      mono: true,
+      render: (r) => (r.close_rate != null ? formatPrice(r.close_rate) : "—"),
+    },
+    {
+      key: "close_reason",
+      label: "Why",
       render: (r) => {
         const reason = r.close_reason || "unknown";
         const label = EXIT_REASON_LABELS[reason] || reason.replace(/_/g, " ");
         const variant = EXIT_REASON_VARIANT[reason] || "unknown";
         return <Badge variant={variant} size="xs">{label}</Badge>;
+      },
+    },
+    {
+      key: "profit_pct",
+      label: "P&L %",
+      align: "right",
+      mono: true,
+      render: (r) => {
+        const p = r.profit_ratio;
+        if (p == null) return "—";
+        const cls = p >= 0 ? "text-profit" : "text-loss";
+        return (
+          <span className={cls}>
+            {p >= 0 ? "+" : ""}
+            {(p * 100).toFixed(2)}%
+          </span>
+        );
       },
     },
     {
@@ -463,7 +578,7 @@ function RecentTradesPanel({ data, error, lastUpdated }) {
     },
     {
       key: "duration",
-      label: "Duration",
+      label: "Held",
       align: "right",
       mono: true,
       render: (r) => fmtDurationShort(r.duration_seconds),
@@ -790,7 +905,7 @@ export default function Overview({ onNavigateTab }) {
   const balance = usePolling(getBalance, 60000);
   const dailyPerf = usePolling(() => getDailyPerformance(1), 60000);
   const exitReasons = usePolling(getExitReasons, 120000);
-  const recentTrades = usePolling(() => getRecentTrades(6), 30000);
+  const recentTrades = usePolling(() => getRecentTrades(30), 30000);
   const config = usePolling(getStrategyConfig, 120000);
 
   // Compute today's realized P&L for risk card
@@ -809,6 +924,7 @@ export default function Overview({ onNavigateTab }) {
         regime={regime.data}
         dailyPerf={dailyPerf.data}
         balance={balance.data}
+        recentClosed={recentTrades.data}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
@@ -817,6 +933,7 @@ export default function Overview({ onNavigateTab }) {
           error={trades.error}
           lastUpdated={trades.lastUpdated}
           loading={trades.loading}
+          walletTotal={safe(balance.data, "total_bot") ?? safe(balance.data, "total")}
         />
         <SystemHealthSummaryPanel
           cronData={cron.data}

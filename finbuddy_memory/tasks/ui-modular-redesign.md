@@ -25,26 +25,27 @@ Supporting rules:
 
 ---
 
-## Phase 0 — Data gaps (UI only, no new endpoints) ✅ ship first
+## Phase 0 — Data gaps (UI only) ✅ SHIPPED 2026-06-24 (checkpoint #1)
 
-All fields below are **already returned by the FreqTrade API** and just need to be
-displayed. Lowest risk, highest immediate value. No backend change.
+**Files:** `components/InfoTip.jsx` (new), `tabs/Overview.jsx`, `tabs/Performance.jsx`,
+`dashboard/streamer.py` (two small read-only enrichments).
 
-**Files:** `dashboard-ui/src/tabs/Overview.jsx`, `Trades.jsx`, `Performance.jsx`
+- [x] `InfoTip` component — hover/tap/focus `?` → 1-line plain definition. Reused.
+- [x] Open Positions table — added `Invested` (stake_amount), `% Wallet`, `Entry`
+  (open_rate), `Now` (current_rate), `Held` (now − open_timestamp). Leverage folded
+  into the side badge. Empty-state explains *why* it's empty.
+- [x] Recent Trades panel — added `Invested`, `Entry`, `Exit`, `P&L %`. Required
+  enriching `/api/trades/recent` (open_rate/close_rate/stake_amount/leverage).
+- [x] Overview stat strip — added `Streak`, `Deployed %`, `Avg Hold` (client-side from
+  open trades + last-30 closed via `getRecentTrades(30)`). Grid → `xl:grid-cols-6`.
+- [x] Performance tab — "Capital per Pair" table (Invested / Returned / Net / Return% /
+  Trades), directly answering "how much did we put into each pair vs profit." Enriched
+  `/api/performance/pair` with invested/returned/roi_pct.
+- [ ] Deferred to a Phase-3 increment: Best/Worst day, P&L-by-exit-reason bar,
+  long-vs-short split (needs the side-split endpoint).
 
-- [ ] Open Positions table — add columns: `Invested` (stake_amount USDT),
-  `Entry` (open_rate), `Now` (current_rate), `Held` (time since open_date),
-  `% wallet` (stake / total balance).
-- [ ] Recent Trades table — add: `P&L %` (profit_pct), `Entry`/`Exit` price,
-  `Invested` (stake_amount).
-- [ ] Overview stat strip — add: `Streak` (N wins / N losses in a row),
-  `Deployed %` (Σ open stakes / wallet), `Avg duration` (last 30 closed).
-- [ ] Performance tab — add: Best/Worst single day, P&L-by-exit-reason bar,
-  per-pair invested-vs-returned, long-vs-short split.
-- [ ] Tooltip component (`components/InfoTip.jsx`) — reused everywhere for the
-  plain-English definitions. Build once here.
-
-**Acceptance:** a stranger can read every number on Overview without asking what it means.
+**Verified:** UI build passes; streamer restarted; both enriched endpoints return the new
+fields with a minted token. User must hard-refresh once (no-cache index.html).
 
 ---
 
