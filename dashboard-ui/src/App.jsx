@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import {
-  LayoutDashboard,
   TrendingUp,
-  Radar,
-  LineChart,
+  Coins,
+  ArrowLeftRight,
+  Grid3x3,
   Brain as BrainIcon,
   Repeat,
   Server,
@@ -14,30 +14,42 @@ import Layout from "./components/Layout";
 import LoginGate from "./components/LoginGate";
 import { getToken, whoami } from "./api/client";
 
-import Overview from "./tabs/Overview";
-import Trades from "./tabs/Trades";
-import Signals from "./tabs/Signals";
-import Performance from "./tabs/Performance";
+import DirectionalModule from "./tabs/modules/Directional";
+import FundingFarmModule from "./tabs/modules/FundingFarm";
+import PairsTradingModule from "./tabs/modules/PairsTrading";
+import GridTradingModule from "./tabs/modules/GridTrading";
 import Brain from "./tabs/Brain";
 import WalkForward from "./tabs/WalkForward";
 import SystemHealth from "./tabs/SystemHealth";
 import Settings from "./tabs/Settings";
 
+// Two-group nav: "Modules" are the sellable trading products (each with a
+// Live/Paper/Soon status); "System" is the shared engine room.
 const TABS = [
-  { id: "overview", label: "Overview", icon: LayoutDashboard, Component: Overview },
-  { id: "trades", label: "Trades", icon: TrendingUp, Component: Trades },
-  { id: "signals", label: "Signals", icon: Radar, Component: Signals },
-  { id: "performance", label: "Performance", icon: LineChart, Component: Performance },
-  { id: "brain", label: "Brain", icon: BrainIcon, Component: Brain },
-  { id: "wf", label: "Walk-Forward", icon: Repeat, Component: WalkForward },
-  { id: "system", label: "System Health", icon: Server, Component: SystemHealth },
-  { id: "settings", label: "Settings", icon: SettingsIcon, Component: Settings },
+  { id: "directional", label: "Directional", icon: TrendingUp, group: "Modules", status: "live", Component: DirectionalModule },
+  { id: "funding", label: "Funding Farm", icon: Coins, group: "Modules", status: "paper", Component: FundingFarmModule },
+  { id: "pairs", label: "Pairs Trading", icon: ArrowLeftRight, group: "Modules", status: "soon", Component: PairsTradingModule },
+  { id: "grid", label: "Grid Trading", icon: Grid3x3, group: "Modules", status: "soon", Component: GridTradingModule },
+  { id: "brain", label: "Brain", icon: BrainIcon, group: "System", Component: Brain },
+  { id: "wf", label: "Walk-Forward", icon: Repeat, group: "System", Component: WalkForward },
+  { id: "system", label: "System Health", icon: Server, group: "System", Component: SystemHealth },
+  { id: "settings", label: "Settings", icon: SettingsIcon, group: "System", Component: Settings },
 ];
 
-// Persist active tab in URL hash so refresh / share keeps you on the same tab
+// Persist active tab in URL hash so refresh / share keeps you on the same tab.
+// Legacy hashes from the old flat-tab layout map onto the new module layout.
+const LEGACY_HASH_MAP = {
+  overview: "directional",
+  trades: "directional",
+  signals: "directional",
+  performance: "directional",
+};
+
 function readTabFromHash() {
   const h = window.location.hash.replace(/^#\/?/, "");
-  return TABS.find((t) => t.id === h)?.id || "overview";
+  if (TABS.find((t) => t.id === h)) return h;
+  if (LEGACY_HASH_MAP[h]) return LEGACY_HASH_MAP[h];
+  return "directional";
 }
 
 function writeTabToHash(id) {
@@ -98,7 +110,7 @@ export default function App() {
     return <LoginGate onAuthed={() => setAuthed(true)} />;
   }
 
-  const ActiveComponent = TABS.find((t) => t.id === activeTab)?.Component || Overview;
+  const ActiveComponent = TABS.find((t) => t.id === activeTab)?.Component || DirectionalModule;
 
   return (
     <Layout tabs={TABS} activeTab={activeTab} onTabChange={handleTabChange}>

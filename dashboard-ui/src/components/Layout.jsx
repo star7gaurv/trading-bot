@@ -1,5 +1,6 @@
 import { Activity, LogOut } from "lucide-react";
 import Tab from "./Tab";
+import StatusBadge from "./StatusBadge";
 import { logout } from "../api/client";
 
 /**
@@ -57,19 +58,33 @@ export default function Layout({ tabs, activeTab, onTabChange, children, globalS
           </div>
         </div>
 
-        {/* Tab bar */}
+        {/* Grouped tab bar — "Modules" (products) vs "System" (engine room) */}
         <nav className="max-w-[1400px] mx-auto px-6">
           <div className="flex items-center gap-1 overflow-x-auto -mb-px">
-            {tabs.map((t) => (
-              <Tab
-                key={t.id}
-                label={t.label}
-                icon={t.icon}
-                badge={t.badge}
-                active={t.id === activeTab}
-                onClick={() => onTabChange(t.id)}
-              />
-            ))}
+            {tabs.map((t, i) => {
+              const prev = tabs[i - 1];
+              const newGroup = t.group && t.group !== prev?.group;
+              return (
+                <div key={t.id} className="flex items-center">
+                  {newGroup && (
+                    <span
+                      className={`text-[10px] font-semibold uppercase tracking-wider text-text-muted whitespace-nowrap select-none
+                        ${i === 0 ? "pr-3" : "pl-4 pr-3 ml-2 border-l border-border"}`}
+                    >
+                      {t.group}
+                    </span>
+                  )}
+                  <Tab
+                    label={t.label}
+                    icon={t.icon}
+                    badge={t.badge}
+                    statusBadge={t.status ? <StatusBadge status={t.status} size="xs" /> : null}
+                    active={t.id === activeTab}
+                    onClick={() => onTabChange(t.id)}
+                  />
+                </div>
+              );
+            })}
           </div>
         </nav>
       </header>

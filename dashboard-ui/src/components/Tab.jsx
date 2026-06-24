@@ -1,7 +1,7 @@
 /**
  * Individual tab button. Active tab gets an underline + accent color.
  */
-export default function Tab({ label, icon: Icon, badge, active, onClick }) {
+export default function Tab({ label, icon: Icon, badge, statusBadge, active, onClick }) {
   return (
     <button
       onClick={onClick}
@@ -14,6 +14,7 @@ export default function Tab({ label, icon: Icon, badge, active, onClick }) {
     >
       {Icon && <Icon className="w-3.5 h-3.5" />}
       <span>{label}</span>
+      {statusBadge}
       {badge != null && (
         <span
           className={`text-[10px] font-semibold rounded px-1.5 py-0.5 ml-0.5
