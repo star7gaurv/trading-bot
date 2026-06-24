@@ -9,16 +9,19 @@ import Overview from "../../Overview";
 import Trades from "../../Trades";
 import Signals from "../../Signals";
 import Performance from "../../Performance";
+import Insights from "./Insights";
 
 /**
  * Directional Trading module — the Live ML strategy that predicts price
  * direction and trades long or short. Wraps the existing Overview / Trades /
- * Signals / Performance views as sub-tabs inside the self-explanatory shell.
+ * Signals / Performance views as sub-tabs inside the self-explanatory shell,
+ * plus an Insights sub-tab with long/short split and exit-reason analysis.
  */
 const SUB_TABS = [
   { id: "dashboard", label: "Dashboard" },
   { id: "trades", label: "Trades" },
   { id: "performance", label: "Performance" },
+  { id: "insights", label: "Insights" },
   { id: "signals", label: "Signals" },
 ];
 
@@ -46,6 +49,7 @@ export default function DirectionalModule({ onNavigateTab }) {
       {sub === "dashboard" && <Overview onNavigateTab={onNavigateTab} />}
       {sub === "trades" && <Trades />}
       {sub === "performance" && <Performance />}
+      {sub === "insights" && <Insights />}
       {sub === "signals" && <Signals />}
     </ModuleShell>
   );

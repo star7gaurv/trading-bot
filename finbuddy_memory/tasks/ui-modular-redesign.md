@@ -97,25 +97,22 @@ the nav. A user can see at a glance which modules are real vs. roadmap.
 
 ## Phase 2 — Module pages
 
-### 2a. Directional Trading module `[Live]`
-Absorbs today's Overview / Trades / Signals / Performance as **sub-tabs** under one
-module. Header one-liner: *"Predicts price direction and trades long or short."*
-- [ ] `tabs/modules/Directional/index.jsx` with sub-tabs: Dashboard / Trades / Performance / Signals.
-- [ ] Move existing Overview/Trades/Signals/Performance content under it (mostly file moves).
-- [ ] New: Long-vs-Short equity curves (needs Phase 3 `/api/performance/side-split`).
-- [ ] New: per-pair exposure heatmap (capital in each pair right now).
-- [ ] New: exit-reason waterfall (signal wins vs SL losses → net) — make the
-  "exits are the edge, entries are coin flips" story legible to a stranger.
+### 2a. Directional Trading module `[Live]` — SHIPPED 2026-06-24 (checkpoint #3)
+- [x] `tabs/modules/Directional/index.jsx` sub-tabs: Dashboard / Trades / Performance /
+  Insights / Signals (reuse existing components — no logic change).
+- [x] New `Insights` sub-tab (`Directional/Insights.jsx`): Long-vs-Short scorecard +
+  mini equity curves; exit-reason **waterfall** ("where the edge is" — signal exits earn,
+  stop-losses bleed, net line); current per-pair **exposure** bars from open trades.
+- [x] New read-only endpoint `/api/performance/side-split` (long/short summary + daily
+  cumulative series). Verified live: long 209 trades −32.9 USDT / 42.6% WR, short 604
+  +41.9 / 40.4% — matches the known asymmetry. `getSideSplit` added to client.
+- Note: per-pair exposure lives in Insights (not a separate "heatmap"); bars convey it clearly.
 
-### 2b. Funding Farm module `[Paper]`
-Currently a small card → becomes a full page. Header one-liner:
-*"Collects funding fees with no bet on price direction — market-neutral."*
-- [ ] `tabs/modules/FundingFarm/index.jsx`.
-- [ ] Opportunities table: pair, current APR, 7d-avg APR, threshold status (from
-  existing `/api/funding-farm`).
-- [ ] Active paper positions: pair, entry date, accumulated funding earned, est. APR
-  (needs Phase 3 `/api/funding-farm/positions` reading `finbuddy_memory/funding_farm/ledger.jsonl`).
-- [ ] Daily funding-income chart from the ledger.
+### 2b. Funding Farm module `[Paper]` — page SHIPPED in Phase 1; chart DEFERRED
+- [x] Full page with Opportunities + Active Positions tables on existing `/api/funding-farm`
+  (already returns positions — the planned `/positions` endpoint was unnecessary).
+- [ ] Daily funding-income chart — DEFERRED: ledger `credit` values are currently all 0
+  (accruals crediting 0), so a chart adds nothing yet. Revisit when real funding accrues.
 
 ### 2c. Pairs Trading module `[Coming Soon]`
 - [ ] `tabs/modules/PairsTrading/index.jsx` — locked overlay, plain-English explainer

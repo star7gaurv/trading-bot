@@ -1387,6 +1387,62 @@ async def exit_reasons_stats(_: dict = Depends(require_auth)):
     return await cached_async("exit_reasons", 60.0, compute)
 
 
+@app.get("/api/performance/side-split")
+async def performance_side_split(_: dict = Depends(require_auth)):
+    """Split closed-trade performance into LONG-only vs SHORT-only.
+
+    The directional strategy bleeds asymmetrically (longs vs shorts behave very
+    differently in a given regime). This makes that split visible: per-side P&L,
+    win-rate, trade count, avg P&L, plus a daily cumulative series per side for
+    two equity curves.
+    """
+    async def compute():
+        result = await ft_get("/trades", params={"limit": 1000, "offset": 0})
+        all_trades = result.get("trades", []) if isinstance(result, dict) else []
+        closed = [t for t in all_trades if t.get("close_timestamp")]
+
+        def side_summary(trades: list) -> dict:
+            n = len(trades)
+            profits = [float(t.get("profit_abs") or 0.0) for t in trades]
+            wins = sum(1 for p in profits if p > 0)
+            total = sum(profits)
+            return {
+                "count": n,
+                "wins": wins,
+                "losses": n - wins,
+                "wr": round(wins / n, 4) if n else None,
+                "profit": round(total, 4),
+                "avg_profit": round(total / n, 4) if n else None,
+            }
+
+        longs = [t for t in closed if not t.get("is_short")]
+        shorts = [t for t in closed if t.get("is_short")]
+
+        # Daily cumulative P&L per side (for two equity curves)
+        def daily_series(trades: list) -> list:
+            by_day: dict[str, float] = {}
+            for t in trades:
+                cd = str(t.get("close_date") or "")[:10]
+                if not cd:
+                    continue
+                by_day[cd] = by_day.get(cd, 0.0) + float(t.get("profit_abs") or 0.0)
+            cum = 0.0
+            out = []
+            for day in sorted(by_day):
+                cum += by_day[day]
+                out.append({"date": day, "value": round(cum, 4)})
+            return out
+
+        return {
+            "long": side_summary(longs),
+            "short": side_summary(shorts),
+            "long_series": daily_series(longs),
+            "short_series": daily_series(shorts),
+        }
+
+    return await cached_async("side_split", 60.0, compute)
+
+
 @app.get("/api/trades/recent")
 async def trades_recent(
     limit: int = Query(10, ge=1, le=50), _: dict = Depends(require_auth)

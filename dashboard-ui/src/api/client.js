@@ -132,6 +132,9 @@ export async function getMonthlyPerformance(months = 6) {
 export async function getPairPerformance() {
   return request("/api/performance/pair");
 }
+export async function getSideSplit() {
+  return request("/api/performance/side-split");
+}
 export async function getProfitSummary() {
   return request("/api/profit");
 }
