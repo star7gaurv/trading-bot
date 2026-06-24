@@ -54,11 +54,30 @@ fields with a minted token. User must hard-refresh once (no-cache index.html).
 Replace 8 flat tabs with a **2-group** sidebar: `Modules` (the products) and
 `System` (the engine room). Each module shows its status badge in the nav itself.
 
-**Files:** `dashboard-ui/src/App.jsx`, `components/Layout.jsx`
+## Phase 1 SHIPPED 2026-06-24 (checkpoint #2)
 
-- [ ] New nav model: array of `{ group, id, label, status, icon, Component }`.
-- [ ] `Layout.jsx` renders two labeled sections with the module badges inline.
-- [ ] Module shell component (`components/ModuleShell.jsx`) — renders the mandatory
+**Files:** `App.jsx`, `components/{Layout,Tab,StatusBadge,ModuleShell,SubTabs,ComingSoon}.jsx`,
+`tabs/modules/{Directional,FundingFarm,PairsTrading,GridTrading}/index.jsx`.
+
+- [x] Grouped nav model `{ group, id, label, status, icon, Component }` in `App.jsx`.
+  Legacy hashes (#overview/#trades/#signals/#performance) map → directional.
+- [x] `Layout.jsx` renders inline group labels ("MODULES" / "SYSTEM") with a divider;
+  `Tab.jsx` gained a `statusBadge` slot; `StatusBadge.jsx` = Live/Paper/Soon pill.
+- [x] `ModuleShell.jsx` — mandatory header (one-liner + status + "how it earns" + hero
+  number). Every module wraps in it → self-explanatory header is structural.
+- [x] `Directional` [Live] module = ModuleShell + `SubTabs` (Dashboard/Trades/Performance/
+  Signals) reusing the existing tab components. Hero = total closed P&L.
+- [x] `FundingFarm` [Paper] = full page: opportunities + active-positions tables (existing
+  `/api/funding-farm` already returns positions — NO new endpoint needed) + status explainer.
+- [x] `PairsTrading` / `GridTrading` [Soon] = ModuleShell + `ComingSoon` explainer (live
+  preview scanners deferred to Phase 2 — no backend scanner exists yet).
+- Build passes (no backend change this phase → no streamer restart). User hard-refreshes once.
+
+### Original spec (for reference)
+
+- New nav model: array of `{ group, id, label, status, icon, Component }`.
+- `Layout.jsx` renders two labeled sections with the module badges inline.
+- Module shell component (`components/ModuleShell.jsx`) — renders the mandatory
   header (one-liner + status badge + "how it makes money" + hero number) above any
   module's body. Every module page wraps its content in this shell so the
   self-explanatory header is **structurally guaranteed**, not optional.
