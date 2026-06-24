@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-24T14:00:01.618952+00:00",
+  "updated": "2026-06-24T14:30:01.546016+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "FIL/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 2,
-        "losses": 3,
-        "wr": 0.4,
-        "pf": 1.708,
-        "profit_usdt": 1.96,
-        "avg_profit_pct": 0.272
-      },
-      "BEAR": {
-        "n": 3,
-        "wins": 2,
-        "losses": 1,
-        "wr": 0.6667,
-        "pf": 3.027,
-        "profit_usdt": 3.0,
-        "avg_profit_pct": 1.0
-      }
-    },
     "DOT/USDT:USDT": {
       "NEUTRAL": {
         "n": 2,
@@ -148,6 +128,26 @@
         "avg_profit_pct": -0.56
       }
     },
+    "FIL/USDT:USDT": {
+      "BEAR": {
+        "n": 3,
+        "wins": 2,
+        "losses": 1,
+        "wr": 0.6667,
+        "pf": 3.027,
+        "profit_usdt": 3.0,
+        "avg_profit_pct": 1.0
+      },
+      "NEUTRAL": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 1.354,
+        "profit_usdt": 0.98,
+        "avg_profit_pct": 0.093
+      }
+    },
     "1000PEPE/USDT:USDT": {
       "BEAR": {
         "n": 5,
@@ -250,13 +250,13 @@
         "avg_profit_pct": -0.162
       },
       "BEAR": {
-        "n": 5,
-        "wins": 2,
+        "n": 6,
+        "wins": 3,
         "losses": 3,
-        "wr": 0.4,
-        "pf": 1.408,
-        "profit_usdt": 0.51,
-        "avg_profit_pct": 0.194
+        "wr": 0.5,
+        "pf": 2.76,
+        "profit_usdt": 2.2,
+        "avg_profit_pct": 0.665
       }
     },
     "APT/USDT:USDT": {
@@ -332,13 +332,13 @@
     },
     "BTC/USDT:USDT": {
       "BEAR": {
-        "n": 3,
-        "wins": 2,
+        "n": 4,
+        "wins": 3,
         "losses": 1,
-        "wr": 0.6667,
-        "pf": 3.615,
-        "profit_usdt": 0.34,
-        "avg_profit_pct": 0.35
+        "wr": 0.75,
+        "pf": 15.231,
+        "profit_usdt": 1.85,
+        "avg_profit_pct": 1.468
       }
     },
     "NEAR/USDT:USDT": {
@@ -396,13 +396,13 @@
     },
     "RENDER/USDT:USDT": {
       "BEAR": {
-        "n": 19,
-        "wins": 12,
+        "n": 20,
+        "wins": 13,
         "losses": 7,
-        "wr": 0.6316,
-        "pf": 1.312,
-        "profit_usdt": 2.16,
-        "avg_profit_pct": 0.204
+        "wr": 0.65,
+        "pf": 1.521,
+        "profit_usdt": 3.61,
+        "avg_profit_pct": 0.323
       }
     },
     "SUI/USDT:USDT": {
