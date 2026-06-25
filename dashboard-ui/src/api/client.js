@@ -138,6 +138,9 @@ export async function getSideSplit() {
 export async function getPairsScan() {
   return request("/api/pairs/scan");
 }
+export async function getGridScan() {
+  return request("/api/grid/scan");
+}
 export async function getProfitSummary() {
   return request("/api/profit");
 }

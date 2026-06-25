@@ -1528,6 +1528,71 @@ async def pairs_scan(_: dict = Depends(require_auth)):
     )
 
 
+@app.get("/api/grid/scan")
+async def grid_scan(_: dict = Depends(require_auth)):
+    """Live preview for the (not-yet-live) Grid Trading module.
+
+    Read-only scanner ranking whitelist coins by how grid-friendly they are right
+    now: a grid earns from oscillation inside a range, so the ideal coin is
+    RANGING (no strong trend) but still moving. Per coin over 14 days of 1h:
+      - efficiency ratio (Kaufman): |net move| / total path. Low = choppy/ranging
+        (good for grid), high = trending (bad — price walks out of the grid).
+      - hourly volatility % (the swing a grid harvests).
+      - range width % (how wide to set the grid).
+    grid_score = volatility · (1 − efficiency_ratio). Pure pandas/numpy.
+    """
+    LOOK = 336  # ~14 days of 1h candles
+
+    def compute():
+        import pandas as pd
+        import numpy as np
+        try:
+            cfg = json.loads((REPO_ROOT / "freqtrade/user_data/config.json").read_text())
+            wl = cfg.get("exchange", {}).get("pair_whitelist", [])
+            rows = []
+            for p in wl:
+                base = p.split("/")[0]
+                f = DATA_FUTURES_DIR / f"{base}_USDT_USDT-1h-futures.feather"
+                if not f.exists():
+                    continue
+                try:
+                    close = pd.read_feather(f).set_index("date")["close"].tail(LOOK)
+                except Exception:
+                    continue
+                if len(close) < LOOK * 0.8:
+                    continue
+                net = abs(float(close.iloc[-1]) - float(close.iloc[0]))
+                path = float(close.diff().abs().sum())
+                er = (net / path) if path > 0 else 1.0
+                vol = float(close.pct_change().std() * 100)
+                mean = float(close.mean())
+                rng = float((close.max() - close.min()) / mean * 100) if mean else 0.0
+                score = vol * (1 - er)
+                if er < 0.3 and vol > 0.5:
+                    verdict = "ranging — good"
+                elif er > 0.5:
+                    verdict = "trending — skip"
+                else:
+                    verdict = "mixed"
+                rows.append({
+                    "symbol": base,
+                    "efficiency_ratio": round(er, 3),
+                    "volatility_pct": round(vol, 2),
+                    "range_pct": round(rng, 1),
+                    "grid_score": round(score, 2),
+                    "verdict": verdict,
+                })
+            rows.sort(key=lambda r: r["grid_score"], reverse=True)
+            return {"coins": rows, "scanned": len(rows), "lookback_h": LOOK}
+        except Exception as e:
+            return {"error": str(e), "coins": []}
+
+    return await cached_async(
+        "grid_scan", 900.0,
+        lambda: asyncio.get_event_loop().run_in_executor(None, compute),
+    )
+
+
 @app.get("/api/trades/recent")
 async def trades_recent(
     limit: int = Query(10, ge=1, le=50), _: dict = Depends(require_auth)

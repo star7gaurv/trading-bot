@@ -121,11 +121,13 @@ the nav. A user can see at a glance which modules are real vs. roadmap.
   (720h), correlation on log-returns, OLS hedge ratio beta, current spread z-score, AR(1)
   mean-reversion half-life. Pure pandas/numpy (no statsmodels). Cached 15min, runs in
   executor, fails soft. `getPairsScan` in client. Verified: DOT/FIL z=−3.0, hl 24h.
-- [ ] Grid Trading live preview (volatility scanner) — still placeholder; needs its own scanner.
-
-### 2d. Grid Trading module `[Coming Soon]`
-- [ ] `tabs/modules/GridTrading/index.jsx` — same locked pattern. Explainer:
-  *"Profits from a coin bouncing inside a range — no direction guess needed."*
+### 2d. Grid Trading module `[Coming Soon]` — SHIPPED 2026-06-24 (checkpoint #5)
+- [x] `tabs/modules/GridTrading/index.jsx` — explainer + **live grid-suitability scanner
+  preview**. Ranks coins by grid-friendliness (ranging but still swinging).
+- [x] New read-only endpoint `/api/grid/scan` (streamer.py): per coin over 14d of 1h —
+  Kaufman efficiency ratio (trendiness), hourly volatility %, range %, grid_score =
+  vol·(1−ER). Pure pandas/numpy, cached 15min, executor, fails soft. `getGridScan` in client.
+  Verified: ENA/UNI/NEAR top "ranging — good".
 
 **Acceptance:** opening any module page, a stranger understands what it does and
 whether it's making money, without scrolling or clicking.
