@@ -135,6 +135,9 @@ export async function getPairPerformance() {
 export async function getSideSplit() {
   return request("/api/performance/side-split");
 }
+export async function getPairsScan() {
+  return request("/api/pairs/scan");
+}
 export async function getProfitSummary() {
   return request("/api/profit");
 }

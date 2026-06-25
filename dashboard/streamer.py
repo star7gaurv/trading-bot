@@ -1443,6 +1443,91 @@ async def performance_side_split(_: dict = Depends(require_auth)):
     return await cached_async("side_split", 60.0, compute)
 
 
+@app.get("/api/pairs/scan")
+async def pairs_scan(_: dict = Depends(require_auth)):
+    """Live preview for the (not-yet-live) Pairs Trading module.
+
+    Read-only cointegration-lite scanner over the whitelist's 1h closes: finds
+    highly-correlated coin pairs whose price spread has drifted far from its mean
+    (a mean-reversion candidate). Pure pandas/numpy — no statsmodels, no trading.
+
+    For each correlated pair (corr>0.8): hedge ratio beta (OLS on log prices),
+    current spread z-score, and a mean-reversion half-life (AR(1)). |z|>=2 is the
+    classic entry zone. This sells the module's vision with real, current data.
+    """
+    LOOK = 720  # ~30 days of 1h candles
+
+    def compute():
+        import pandas as pd
+        import numpy as np
+        try:
+            cfg = json.loads((REPO_ROOT / "freqtrade/user_data/config.json").read_text())
+            wl = cfg.get("exchange", {}).get("pair_whitelist", [])
+            closes: dict[str, "pd.Series"] = {}
+            for p in wl:
+                base = p.split("/")[0]
+                f = DATA_FUTURES_DIR / f"{base}_USDT_USDT-1h-futures.feather"
+                if not f.exists():
+                    continue
+                try:
+                    s = pd.read_feather(f).set_index("date")["close"].tail(LOOK)
+                except Exception:
+                    continue
+                if len(s) >= LOOK * 0.8:
+                    closes[base] = s
+            if len(closes) < 2:
+                return {"pairs": [], "scanned": len(closes), "candidates": 0,
+                        "lookback_h": LOOK, "note": "not enough price data"}
+
+            px = pd.DataFrame(closes).dropna()
+            logp = np.log(px)
+            corr = logp.diff().dropna().corr()
+            syms = list(px.columns)
+            out = []
+            for i in range(len(syms)):
+                for j in range(i + 1, len(syms)):
+                    a, b = syms[i], syms[j]
+                    cc = float(corr.loc[a, b])
+                    if cc < 0.8:
+                        continue
+                    beta = float(np.polyfit(logp[b].values, logp[a].values, 1)[0])
+                    if beta <= 0:
+                        continue
+                    spread = logp[a] - beta * logp[b]
+                    sd = float(spread.std())
+                    if sd == 0:
+                        continue
+                    z = float((spread.iloc[-1] - float(spread.mean())) / sd)
+                    # Mean-reversion half-life via AR(1): Δs = λ·s_{t-1} + c
+                    sv = spread.values
+                    lam = float(np.polyfit(sv[:-1], np.diff(sv), 1)[0])
+                    hl = -np.log(2) / lam if lam < 0 else None
+                    if z <= -2:
+                        signal = f"long {a} / short {b}"
+                    elif z >= 2:
+                        signal = f"short {a} / long {b}"
+                    else:
+                        signal = "in range"
+                    out.append({
+                        "a": a, "b": b,
+                        "corr": round(cc, 3),
+                        "beta": round(beta, 3),
+                        "z": round(z, 2),
+                        "half_life_h": round(hl, 1) if (hl and 0 < hl < 2000) else None,
+                        "signal": signal,
+                    })
+            out.sort(key=lambda r: abs(r["z"]), reverse=True)
+            return {"pairs": out[:25], "scanned": len(closes),
+                    "candidates": len(out), "lookback_h": LOOK}
+        except Exception as e:  # never break the dashboard
+            return {"error": str(e), "pairs": []}
+
+    return await cached_async(
+        "pairs_scan", 900.0,
+        lambda: asyncio.get_event_loop().run_in_executor(None, compute),
+    )
+
+
 @app.get("/api/trades/recent")
 async def trades_recent(
     limit: int = Query(10, ge=1, le=50), _: dict = Depends(require_auth)

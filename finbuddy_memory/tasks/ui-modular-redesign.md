@@ -114,10 +114,14 @@ the nav. A user can see at a glance which modules are real vs. roadmap.
 - [ ] Daily funding-income chart — DEFERRED: ledger `credit` values are currently all 0
   (accruals crediting 0), so a chart adds nothing yet. Revisit when real funding accrues.
 
-### 2c. Pairs Trading module `[Coming Soon]`
-- [ ] `tabs/modules/PairsTrading/index.jsx` — locked overlay, plain-English explainer
-  (*"Bets that two related coins drift back together — wins whether the market goes
-  up or down"*), optional live cointegration-scanner preview, "Notify me" static CTA.
+### 2c. Pairs Trading module `[Coming Soon]` — SHIPPED 2026-06-24 (checkpoint #4)
+- [x] `tabs/modules/PairsTrading/index.jsx` — explainer + **live cointegration-lite scanner
+  preview** under the locked overlay. Real current data: 26 coins, 112 correlated candidates.
+- [x] New read-only endpoint `/api/pairs/scan` (streamer.py): loads whitelist 1h closes
+  (720h), correlation on log-returns, OLS hedge ratio beta, current spread z-score, AR(1)
+  mean-reversion half-life. Pure pandas/numpy (no statsmodels). Cached 15min, runs in
+  executor, fails soft. `getPairsScan` in client. Verified: DOT/FIL z=−3.0, hl 24h.
+- [ ] Grid Trading live preview (volatility scanner) — still placeholder; needs its own scanner.
 
 ### 2d. Grid Trading module `[Coming Soon]`
 - [ ] `tabs/modules/GridTrading/index.jsx` — same locked pattern. Explainer:
