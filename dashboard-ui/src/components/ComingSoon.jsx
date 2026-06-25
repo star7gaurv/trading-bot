@@ -10,16 +10,19 @@ import { Lock } from "lucide-react";
  *   - preview?: React node — optional live data preview (scanner, etc.)
  *   - previewTitle?: string
  */
-export default function ComingSoon({ bullets = [], preview, previewTitle }) {
+export default function ComingSoon({
+  bullets = [],
+  preview,
+  previewTitle,
+  intro = "This module is on the roadmap. Here's what it will do:",
+}) {
   return (
     <div className="space-y-4">
       <section className="bg-surface border border-border rounded-md shadow-soft px-5 py-6 text-center">
         <div className="w-10 h-10 rounded-full bg-elevated border border-border flex items-center justify-center mx-auto mb-3">
           <Lock className="w-4 h-4 text-text-tertiary" />
         </div>
-        <p className="text-sm text-text-secondary max-w-md mx-auto">
-          This module is on the roadmap. Here's what it will do:
-        </p>
+        <p className="text-sm text-text-secondary max-w-md mx-auto">{intro}</p>
         {bullets.length > 0 && (
           <ul className="mt-3 space-y-1.5 max-w-md mx-auto text-left">
             {bullets.map((b, i) => (
@@ -34,7 +37,7 @@ export default function ComingSoon({ bullets = [], preview, previewTitle }) {
           disabled
           className="mt-5 px-4 py-1.5 rounded-md text-xs font-medium border border-border text-text-tertiary cursor-not-allowed"
         >
-          Notify me when live
+          {preview ? "Auto-trading not enabled yet" : "Notify me when live"}
         </button>
       </section>
 

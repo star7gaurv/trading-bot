@@ -81,13 +81,18 @@ export default function GridTradingModule() {
       hero={{ label: "Status", value: "Preview" }}
     >
       <ComingSoon
+        intro={
+          "The scanner below is LIVE — it's ranking real coins by grid-friendliness right now. " +
+          "What's not built yet is the executor that lays the grid and places the orders. " +
+          "That's what “Soon” means. Here's the full picture:"
+        }
         bullets={[
-          "Detects coins trading sideways inside a stable range (where directional bets bleed).",
-          "Lays a grid of buy and sell orders across that range.",
+          "Detects coins trading sideways inside a stable range (where directional bets bleed). ✓ live below",
+          "Lays a grid of buy and sell orders across that range. ⏳ executor not built yet",
           "Each up-and-down swing books a small profit — the choppier the range, the more it earns.",
           "Complements directional trading: it makes money in exactly the flat markets that hurt the ML strategy.",
         ]}
-        previewTitle="Live scanner preview — best grid candidates right now"
+        previewTitle="Live scanner — best grid candidates right now"
         preview={<ScannerPreview />}
       />
     </ModuleShell>

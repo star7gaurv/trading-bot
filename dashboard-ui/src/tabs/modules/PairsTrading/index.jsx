@@ -97,13 +97,18 @@ export default function PairsTradingModule() {
       hero={{ label: "Status", value: "Preview" }}
     >
       <ComingSoon
+        intro={
+          "The scanner below is LIVE — it's analysing real markets right now. " +
+          "What's not built yet is the executor that automatically places and manages these trades. " +
+          "That's what “Soon” means. Here's the full picture:"
+        }
         bullets={[
-          "Continuously scans every coin pair to find ones that historically move together (correlation / cointegration).",
-          "When their price spread drifts far from its normal range, opens a market-neutral long/short trade.",
+          "Continuously scans every coin pair to find ones that historically move together (correlation / cointegration). ✓ live below",
+          "When their price spread drifts far from its normal range, opens a market-neutral long/short trade. ⏳ executor not built yet",
           "Earns when the spread reverts — no dependence on the overall market direction.",
           "This is where the ML brain has a genuine edge: spreads are mathematically mean-reverting, unlike raw price.",
         ]}
-        previewTitle="Live scanner preview — what it would be watching"
+        previewTitle="Live scanner — what it's watching right now"
         preview={<ScannerPreview />}
       />
     </ModuleShell>
