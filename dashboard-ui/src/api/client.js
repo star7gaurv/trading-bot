@@ -144,6 +144,9 @@ export async function getPairsPortfolio() {
 export async function getGridScan() {
   return request("/api/grid/scan");
 }
+export async function getGridPortfolio() {
+  return request("/api/grid/portfolio");
+}
 export async function getProfitSummary() {
   return request("/api/profit");
 }

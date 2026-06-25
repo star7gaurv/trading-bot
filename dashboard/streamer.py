@@ -1594,6 +1594,7 @@ async def grid_scan(_: dict = Depends(require_auth)):
 
 
 PAIRS_STATE = REPO_ROOT / "finbuddy_memory/pairs_trading/state.json"
+GRID_STATE = REPO_ROOT / "finbuddy_memory/grid_trading/state.json"
 
 
 @app.get("/api/pairs/portfolio")
@@ -1652,6 +1653,78 @@ async def pairs_portfolio(_: dict = Depends(require_auth)):
 
     return await cached_async(
         "pairs_portfolio", 30.0,
+        lambda: asyncio.get_event_loop().run_in_executor(None, compute),
+    )
+
+
+@app.get("/api/grid/portfolio")
+async def grid_portfolio(_: dict = Depends(require_auth)):
+    """Paper Grid Trading portfolio: active virtual grids with accumulated P&L.
+
+    Each grid is a ladder of orders on a ranging coin.  The paper executor
+    tallies fill P&L each hourly scan based on how many grid levels price crossed.
+    This endpoint returns live grid state + net P&L.  Read-only.
+    """
+    def compute():
+        import pandas as pd
+        if not GRID_STATE.exists():
+            return {
+                "grids": [], "open_count": 0,
+                "realized_pnl": 0.0, "open_pnl": 0.0,
+                "last_update": None,
+                "note": "no paper grids yet — scanner runs hourly at :40",
+            }
+        try:
+            state = json.loads(GRID_STATE.read_text())
+        except (OSError, json.JSONDecodeError):
+            return {"grids": [], "open_count": 0, "realized_pnl": 0.0,
+                    "open_pnl": 0.0, "last_update": None}
+
+        def last_close(sym: str):
+            f = DATA_FUTURES_DIR / f"{sym}_USDT_USDT-1h-futures.feather"
+            if not f.exists():
+                return None
+            try:
+                return float(pd.read_feather(f)["close"].iloc[-1])
+            except Exception:
+                return None
+
+        rows = []
+        open_pnl = 0.0
+        for sym, g in (state.get("grids") or {}).items():
+            price = last_close(sym)
+            net = round(g.get("accrued_pnl", 0.0) - g.get("fees_paid", 0.0), 4)
+            open_pnl += net
+            # Is price inside the range?
+            in_range = None
+            if price is not None:
+                in_range = g["low"] <= price <= g["high"]
+            rows.append({
+                "symbol": sym,
+                "low": g["low"],
+                "high": g["high"],
+                "spacing_pct": g.get("spacing_pct"),
+                "er": g.get("er"),
+                "vol_pct": g.get("vol_pct"),
+                "total_crossings": g.get("total_crossings", 0),
+                "accrued_pnl": round(g.get("accrued_pnl", 0.0), 4),
+                "fees_paid": round(g.get("fees_paid", 0.0), 4),
+                "net_pnl": net,
+                "deployed_at": g.get("deployed_at"),
+                "last_price": price,
+                "in_range": in_range,
+            })
+        rows.sort(key=lambda r: (r["net_pnl"] is None, -(r["net_pnl"] or 0)))
+        return {
+            "grids": rows,
+            "open_count": len(rows),
+            "realized_pnl": round(state.get("realized_pnl", 0.0), 4),
+            "open_pnl": round(open_pnl, 4),
+            "last_update": state.get("last_update"),
+        }
+
+    return await cached_async(
+        "grid_portfolio", 30.0,
         lambda: asyncio.get_event_loop().run_in_executor(None, compute),
     )
 
