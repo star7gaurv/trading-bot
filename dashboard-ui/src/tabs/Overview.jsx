@@ -1,11 +1,12 @@
 /**
- * Overview tab — at-a-glance dashboard.
+ * Directional dashboard — at-a-glance view of the live directional strategy.
+ * (Engine-room cards — Brain, Walk-Forward, System Health, Funding Farm — live
+ * in their own modules/tabs, not here.)
  *
  * Rows:
- *   1. Stat strip (P&L today/closed, W/L, WR, positions, profit, balance, regime, F&G)
- *   2. Open positions + System health summary
- *   3. Exit reasons (diagnostic) + Recent closed trades
- *   4. Risk card + Brain status + Walk-forward status
+ *   1. Stat strip (P&L today/closed, W/L, WR, streak, deployed, regime…)
+ *   2. Open positions + Recent closed trades
+ *   3. Risk + Signal quality + Timeframe switcher
  */
 import React from "react";
 import Card from "../components/Card";
@@ -13,19 +14,13 @@ import Stat from "../components/Stat";
 import Table from "../components/Table";
 import Badge from "../components/Badge";
 import InfoTip from "../components/InfoTip";
-import FundingFarmCard from "../components/FundingFarmCard";
 import { usePolling } from "../api/hooks";
 import {
   getProfitSummary,
   getOpenTrades,
   getRegimeCurrent,
-  getCronStatus,
-  getSystemHealth,
-  getBrainQueue,
-  getWfLatest,
   getBalance,
   getDailyPerformance,
-  getExitReasons,
   getRecentTrades,
   getStrategyConfig,
   getSignalQuality,
@@ -341,154 +336,6 @@ function OpenTradesPanel({ data, error, lastUpdated, loading, walletTotal }) {
   );
 }
 
-// ─── System health summary ───
-function SystemHealthSummaryPanel({ cronData, cronLastUpdated, sysData, onNavigateTab }) {
-  const summary = safe(cronData, "summary", {});
-  const overall = summary.overall || "unknown";
-  const ok = summary.ok || 0;
-  const stale = summary.stale || 0;
-
-  const load = safe(sysData, "load", {});
-  const disk = safe(sysData, "disk", {});
-  const mem = safe(sysData, "memory", {});
-
-  const overallVariant = overall === "ok" ? "ok" : overall === "warn" ? "stale" : "dead";
-
-  return (
-    <Card
-      title="System Health"
-      lastUpdated={cronLastUpdated}
-      actions={
-        <button
-          onClick={() => (onNavigateTab || (() => {}))("system")}
-          className="text-xxs text-accent hover:underline"
-        >
-          View all →
-        </button>
-      }
-    >
-      <div className="flex items-center justify-between mb-3">
-        <Badge variant={overallVariant} size="sm">
-          {overall.toUpperCase()}
-        </Badge>
-        <span className="text-xxs text-text-tertiary font-mono">
-          {ok} ok · {stale} stale
-        </span>
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        <MiniStat
-          label="Load 1m"
-          value={load.load_1m != null ? load.load_1m.toFixed(2) : "—"}
-          sub={load.cores ? `/ ${load.cores}` : ""}
-          tone={
-            load.utilization_pct == null ? "default"
-              : load.utilization_pct > 150 ? "loss"
-              : load.utilization_pct > 100 ? "warn"
-              : "default"
-          }
-        />
-        <MiniStat
-          label="Mem"
-          value={mem.used_pct != null ? `${mem.used_pct.toFixed(0)}%` : "—"}
-          sub={mem.used_gb != null ? `${mem.used_gb.toFixed(1)} GB` : ""}
-          tone={
-            mem.used_pct == null ? "default"
-              : mem.used_pct > 90 ? "loss"
-              : mem.used_pct > 80 ? "warn"
-              : "default"
-          }
-        />
-        <MiniStat
-          label="Disk"
-          value={disk.used_pct != null ? `${disk.used_pct.toFixed(0)}%` : "—"}
-          sub={disk.free_gb != null ? `${disk.free_gb.toFixed(0)} GB free` : ""}
-          tone={
-            disk.used_pct == null ? "default"
-              : disk.used_pct > 90 ? "loss"
-              : disk.used_pct > 80 ? "warn"
-              : "default"
-          }
-        />
-        <MiniStat
-          label="Crons"
-          value={`${ok}/${(ok || 0) + (stale || 0)}`}
-          sub={stale > 0 ? `${stale} stale` : "all ok"}
-          tone={stale > 0 ? "warn" : "default"}
-        />
-      </div>
-    </Card>
-  );
-}
-
-// ─── Exit reasons panel ───
-function ExitReasonsPanel({ data, error, lastUpdated }) {
-  const items = safe(data, "items", []) || [];
-  const columns = [
-    {
-      key: "reason",
-      label: "Reason",
-      render: (r) => {
-        const label = EXIT_REASON_LABELS[r.reason] || r.reason.replace(/_/g, " ");
-        const variant = EXIT_REASON_VARIANT[r.reason] || "unknown";
-        return <Badge variant={variant} size="xs">{label}</Badge>;
-      },
-    },
-    { key: "count", label: "Count", align: "right", mono: true },
-    {
-      key: "wl",
-      label: "W/L",
-      align: "right",
-      mono: true,
-      render: (r) => (
-        <span>
-          <span className="text-profit">{r.wins}</span>
-          <span className="text-text-muted">/</span>
-          <span className="text-loss">{r.losses}</span>
-        </span>
-      ),
-    },
-    {
-      key: "wr",
-      label: "WR",
-      align: "right",
-      mono: true,
-      render: (r) => {
-        const pct = (r.wr * 100).toFixed(1);
-        const cls = r.wr >= 0.5 ? "text-profit" : "text-loss";
-        return <span className={cls}>{pct}%</span>;
-      },
-    },
-    {
-      key: "profit",
-      label: "P&L",
-      align: "right",
-      mono: true,
-      render: (r) => {
-        const v = r.profit;
-        const cls = v >= 0 ? "text-profit" : "text-loss";
-        return (
-          <span className={cls}>
-            {v >= 0 ? "+" : ""}
-            {v.toFixed(2)}
-          </span>
-        );
-      },
-    },
-  ];
-
-  return (
-    <Card title="Exit Reasons" subtitle="diagnostic — why trades closed" lastUpdated={lastUpdated}>
-      {error ? (
-        <p className="text-xs text-text-muted italic">Error: {error}</p>
-      ) : items.length === 0 ? (
-        <p className="text-xs text-text-muted italic">No closed trades yet</p>
-      ) : (
-        <Table columns={columns} rows={items.map((r, i) => ({ ...r, id: i }))} />
-      )}
-    </Card>
-  );
-}
-
 // ─── Recent closed trades panel ───
 function RecentTradesPanel({ data, error, lastUpdated }) {
   const trades = Array.isArray(data) ? data.slice(0, 6) : [];
@@ -636,100 +483,6 @@ function RiskCard({ openTrades, dailyPnl, config }) {
           />
         </div>
       </div>
-    </Card>
-  );
-}
-
-// ─── Brain panel ───
-function BrainPanel({ data, error, lastUpdated }) {
-  const total = safe(data, "total", 0);
-  const byStatus = safe(data, "by_status", {}) || {};
-  const queued = byStatus.queued || 0;
-  const completed = byStatus.completed || 0;
-  const failed = byStatus.failed || 0;
-  const running = byStatus.running || 0;
-  const oldestTs = safe(data, "oldest_queued_ts");
-  const oldestAgeS = oldestTs ? Date.now() / 1000 - oldestTs : null;
-
-  return (
-    <Card title="Brain" lastUpdated={lastUpdated}>
-      {error ? (
-        <p className="text-xs text-text-muted italic">Error: {error}</p>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <MiniStat label="Total" value={total} />
-          <MiniStat
-            label="Queued"
-            value={queued}
-            sub={oldestAgeS != null ? `${formatDuration(oldestAgeS)} oldest` : ""}
-            tone={queued > 0 ? "warn" : "default"}
-          />
-          <MiniStat label="Running" value={running} tone={running > 0 ? "profit" : "default"} />
-          <MiniStat
-            label="Completed"
-            value={completed}
-            sub={failed > 0 ? `${failed} failed` : ""}
-            tone={failed > 0 ? "warn" : "default"}
-          />
-        </div>
-      )}
-    </Card>
-  );
-}
-
-// ─── Walk-forward panel ───
-function WfPanel({ data, error, lastUpdated }) {
-  const available = safe(data, "available", false);
-  const name = safe(data, "name", "");
-  const summary = safe(data, "summary") || {};
-  const agg = summary.aggregate || {};
-  const passed = !!summary.pass;
-
-  const gates = [
-    { label: "WR", value: agg.weighted_win_rate, ok: agg.weighted_win_rate > 0.5, fmt: formatPct },
-    { label: "Sharpe", value: agg.weighted_sharpe || agg.sharpe, ok: (agg.weighted_sharpe || agg.sharpe) > 0.5, fmt: (v) => v.toFixed(3) },
-    { label: "DD", value: agg.worst_drawdown, ok: Math.abs(agg.worst_drawdown || 0) < 0.2, fmt: (v) => formatPct(Math.abs(v)) },
-    { label: "PF", value: agg.weighted_profit_factor, ok: agg.weighted_profit_factor > 1.2, fmt: (v) => v.toFixed(2) },
-  ];
-
-  return (
-    <Card title="Walk-Forward" lastUpdated={lastUpdated}>
-      {error ? (
-        <p className="text-xs text-text-muted italic">Error: {error}</p>
-      ) : !available ? (
-        <p className="text-xs text-text-muted italic">No WF runs found</p>
-      ) : (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <div className="text-xs font-mono text-text-secondary truncate">{name}</div>
-              <div className="text-xxs text-text-tertiary">
-                {summary.verdict || "Latest run"}
-              </div>
-            </div>
-            <Badge variant={passed ? "ok" : "dead"} size="sm">
-              {passed ? "PASS" : "FAIL"}
-            </Badge>
-          </div>
-          <div className="grid grid-cols-4 gap-2">
-            {gates.map((g) => (
-              <div
-                key={g.label}
-                className="bg-elevated border border-border rounded px-2 py-1.5 text-center"
-              >
-                <div className="text-xxs uppercase tracking-wider text-text-tertiary">{g.label}</div>
-                <div
-                  className={`text-sm font-mono font-semibold ${
-                    g.value == null ? "text-text-muted" : g.ok ? "text-profit" : "text-loss"
-                  }`}
-                >
-                  {g.value != null ? g.fmt(g.value) : "—"}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </Card>
   );
 }
@@ -883,13 +636,8 @@ export default function Overview({ onNavigateTab }) {
   const profit = usePolling(getProfitSummary, 15000);
   const trades = usePolling(getOpenTrades, 5000);
   const regime = usePolling(getRegimeCurrent, 60000);
-  const cron = usePolling(getCronStatus, 30000);
-  const sys = usePolling(getSystemHealth, 30000);
-  const brain = usePolling(getBrainQueue, 30000);
-  const wf = usePolling(getWfLatest, 60000);
   const balance = usePolling(getBalance, 60000);
   const dailyPerf = usePolling(() => getDailyPerformance(1), 60000);
-  const exitReasons = usePolling(getExitReasons, 120000);
   const recentTrades = usePolling(() => getRecentTrades(30), 30000);
   const config = usePolling(getStrategyConfig, 120000);
 
@@ -912,6 +660,7 @@ export default function Overview({ onNavigateTab }) {
         recentClosed={recentTrades.data}
       />
 
+      {/* Current activity — open positions + recent closes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <OpenTradesPanel
           data={trades.data}
@@ -920,20 +669,6 @@ export default function Overview({ onNavigateTab }) {
           loading={trades.loading}
           walletTotal={safe(balance.data, "total_bot") ?? safe(balance.data, "total")}
         />
-        <SystemHealthSummaryPanel
-          cronData={cron.data}
-          cronLastUpdated={cron.lastUpdated}
-          sysData={sys.data}
-          onNavigateTab={onNavigateTab}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <ExitReasonsPanel
-          data={exitReasons.data}
-          error={exitReasons.error}
-          lastUpdated={exitReasons.lastUpdated}
-        />
         <RecentTradesPanel
           data={recentTrades.data}
           error={recentTrades.error}
@@ -941,23 +676,13 @@ export default function Overview({ onNavigateTab }) {
         />
       </div>
 
+      {/* Directional health — risk, model signal, timeframe */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <RiskCard
           openTrades={trades.data}
           dailyPnl={todayPnl}
           config={config.data}
         />
-        <BrainPanel
-          data={brain.data}
-          error={brain.error}
-          lastUpdated={brain.lastUpdated}
-        />
-        <WfPanel data={wf.data} error={wf.error} lastUpdated={wf.lastUpdated} />
-      </div>
-
-      {/* Row 5: Funding farm + Signal quality + TF mini-switcher */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <FundingFarmCard />
         <SignalQualityCard />
         <TFMiniSwitcher onNavigateTab={onNavigateTab} />
       </div>

@@ -12,7 +12,6 @@ import Badge from "../components/Badge";
 import LogStream from "../components/LogStream";
 import { usePolling } from "../api/hooks";
 import { getSystemHealth, getCronStatus } from "../api/client";
-import FundingFarmCard from "../components/FundingFarmCard";
 import { formatRelative, formatDuration } from "../utils/format";
 
 function safe(obj, key, fallback = null) {
@@ -312,7 +311,6 @@ export default function SystemHealth() {
         <ContainersPanel sys={sys.data} lastUpdated={sys.lastUpdated} />
         <WatchdogPanel sys={sys.data} />
       </div>
-      <FundingFarmCard />
     </div>
   );
 }
