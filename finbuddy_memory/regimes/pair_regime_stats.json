@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-25T04:00:01.386999+00:00",
+  "updated": "2026-06-25T04:30:01.873133+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -332,13 +332,13 @@
     },
     "BTC/USDT:USDT": {
       "BEAR": {
-        "n": 4,
-        "wins": 3,
+        "n": 5,
+        "wins": 4,
         "losses": 1,
-        "wr": 0.75,
-        "pf": 15.231,
-        "profit_usdt": 1.85,
-        "avg_profit_pct": 1.468
+        "wr": 0.8,
+        "pf": 16.923,
+        "profit_usdt": 2.07,
+        "avg_profit_pct": 1.244
       }
     },
     "NEAR/USDT:USDT": {
@@ -374,13 +374,13 @@
     },
     "WIF/USDT:USDT": {
       "BEAR": {
-        "n": 12,
-        "wins": 8,
+        "n": 13,
+        "wins": 9,
         "losses": 4,
-        "wr": 0.6667,
-        "pf": 1.202,
-        "profit_usdt": 0.55,
-        "avg_profit_pct": 0.078
+        "wr": 0.6923,
+        "pf": 1.29,
+        "profit_usdt": 0.79,
+        "avg_profit_pct": 0.105
       }
     },
     "TAO/USDT:USDT": {
