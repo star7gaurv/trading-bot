@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-25T17:30:01.406406+00:00",
+  "updated": "2026-06-25T18:00:01.404994+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,17 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "OP/USDT:USDT": {
-      "BEAR": {
-        "n": 5,
-        "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
-        "pf": 0.435,
-        "profit_usdt": -2.08,
-        "avg_profit_pct": -0.618
-      }
-    },
     "FIL/USDT:USDT": {
       "BEAR": {
         "n": 3,
@@ -117,6 +106,17 @@
         "pf": 0.891,
         "profit_usdt": -0.29,
         "avg_profit_pct": -0.032
+      }
+    },
+    "OP/USDT:USDT": {
+      "BEAR": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.93,
+        "profit_usdt": -0.12,
+        "avg_profit_pct": -0.033
       }
     },
     "LDO/USDT:USDT": {
@@ -470,14 +470,6 @@
       "n": 5,
       "wr": 0.2,
       "pf": 0.23
-    },
-    {
-      "pair": "OP/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=20% PF=0.43 n=5 profit=-2.08",
-      "n": 5,
-      "wr": 0.2,
-      "pf": 0.435
     },
     {
       "pair": "1000PEPE/USDT:USDT",
