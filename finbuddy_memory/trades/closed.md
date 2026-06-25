@@ -583,3 +583,4 @@
 | 2026-06-25 03:10:45 | SOL/USDT:USDT | SHORT | 6h00m | -0.59% | -0.33 | time_limit_exit | BEAR | freqai_regression_v23_sh |
 | 2026-06-25 04:00:35 | BTC/USDT:USDT | SHORT | 6h00m | +0.35% | +0.22 | time_limit_exit | BEAR | freqai_regression_v23_sh |
 | 2026-06-25 04:03:20 | WIF/USDT:USDT | SHORT | 6h03m | +0.42% | +0.24 | time_limit_exit | BEAR | freqai_regression_v23_sh |
+| 2026-06-25 04:57:45 | SOL/USDT:USDT | SHORT | 0h47m | -2.60% | -1.46 | stop_loss | BEAR | freqai_regression_v23_sh |
