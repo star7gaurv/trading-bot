@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-25T10:30:01.593265+00:00",
+  "updated": "2026-06-25T11:00:01.548338+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,46 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "OP/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 2,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 2.04,
-        "avg_profit_pct": 1.03
-      },
-      "BEAR": {
-        "n": 5,
-        "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
-        "pf": 0.435,
-        "profit_usdt": -2.08,
-        "avg_profit_pct": -0.618
-      }
-    },
-    "ADA/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 11,
-        "wins": 7,
-        "losses": 4,
-        "wr": 0.6364,
-        "pf": 0.797,
-        "profit_usdt": -0.74,
-        "avg_profit_pct": -0.067
-      },
-      "BEAR": {
-        "n": 13,
-        "wins": 5,
-        "losses": 8,
-        "wr": 0.3846,
-        "pf": 0.514,
-        "profit_usdt": -2.61,
-        "avg_profit_pct": -0.342
-      }
-    },
     "LDO/USDT:USDT": {
       "NEUTRAL": {
         "n": 4,
@@ -86,6 +46,46 @@
         "pf": 0.191,
         "profit_usdt": -1.65,
         "avg_profit_pct": -0.56
+      }
+    },
+    "OP/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 0.41,
+        "avg_profit_pct": 0.42
+      },
+      "BEAR": {
+        "n": 5,
+        "wins": 1,
+        "losses": 4,
+        "wr": 0.2,
+        "pf": 0.435,
+        "profit_usdt": -2.08,
+        "avg_profit_pct": -0.618
+      }
+    },
+    "ADA/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 10,
+        "wins": 6,
+        "losses": 4,
+        "wr": 0.6,
+        "pf": 0.652,
+        "profit_usdt": -1.27,
+        "avg_profit_pct": -0.127
+      },
+      "BEAR": {
+        "n": 13,
+        "wins": 5,
+        "losses": 8,
+        "wr": 0.3846,
+        "pf": 0.514,
+        "profit_usdt": -2.61,
+        "avg_profit_pct": -0.342
       }
     },
     "FIL/USDT:USDT": {
