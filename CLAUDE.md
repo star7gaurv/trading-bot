@@ -223,6 +223,8 @@ Standard layer 4 features include 3 funding-rate features (`%-funding_rate`, `%-
 30 6 * * 1   ic_monitor.py                      # weekly OOS IC report → analytics/pair_ic.json
 45 6 * * 1   feature_importance_report.py       # weekly importance report → analytics/feature_importance.json
 5 * * * *    funding_farm/scanner.py            # Phase D paper funding farm (hourly)
+20 * * * *   pairs_trading/scanner.py           # paper pairs (stat-arb, hourly)
+40 * * * *   grid_trading/scanner.py            # paper grid (oscillation harvest, hourly)
 30 2 * * *   brain/llm_hypothesis.py            # nightly LLM research proposals
 15 */6 * * * data_sentinel.py                   # silent-failure detector (freshness/constancy/liveness)
 40 1 * * *   build_historical_oi_perpair.py     # per-pair OI daily incremental
@@ -415,6 +417,40 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 ---
 
 ## Session History Summary
+
+### June 24–25, 2026 — Modular UI redesign + Pairs & Grid paper executors shipped
+
+**Full modular UI overhaul.** Dashboard restructured from 8 flat tabs into **Modules vs System** groups:
+Directional `[Live]`, Funding Farm `[Paper]`, Pairs Trading `[Paper]`, Grid Trading `[Paper]` + System
+(Brain/WF/Health/Settings). Each module page leads with a plain-English one-liner, `StatusBadge`, "how it
+earns", and a hero number — enforced via `ModuleShell`. Supporting: `InfoTip` for every jargon term,
+`SubTabs` for intra-module nav, `ComingSoon` with preview slot.
+
+**Data gaps closed (Phase 0):** Open Positions + Recent Trades now show Invested/Entry/Now/Held/%Wallet/P&L%.
+Stat strip gained Streak/Deployed%/Avg-Hold. Performance tab gained "Capital per Pair" table. Streamer
+enriched `/api/trades/recent` + `/api/performance/pair`.
+
+**Directional de-cluttered:** removed Funding Farm, Brain, WF, System-Health-summary, Exit-Reasons
+cards from the Directional dashboard (each lives in its own module/tab now). Dead pollers removed.
+Funding Farm card removed from System Health too.
+
+**Pairs Trading `[Soon → Paper]` (commit `50ed0435`):**
+- `scripts/pairs_trading/paper_executor.py` — beta-weighted long/short, 200 USDT/pair, max 3, 0.05% fee.
+  state.json + ledger.jsonl.
+- `scripts/pairs_trading/scanner.py` — hourly cron `20 * * * *`. Open |z|≥2 & corr≥0.85; close on revert/
+  diverge/14d stop. 3 initial positions: DOT/FIL, SOL/XRP, ETH/1000PEPE.
+- `/api/pairs/portfolio` (streamer), `getPairsPortfolio` (client), PairsTrading rewritten as Paper module.
+
+**Grid Trading `[Soon → Paper]` (commit `a55b5cae`):**
+- `scripts/grid_trading/paper_executor.py` — 10-level virtual grid, 300 USDT each, max 3. Counts price
+  crossings each hourly tick; earns cell-width per crossing minus fee. state.json + ledger.jsonl.
+- `scripts/grid_trading/scanner.py` — hourly cron `40 * * * *`. Opens on ER<0.30 & vol>0.5%; closes on
+  breakout/ER>0.50/14d stop. 3 initial grids: ENA/UNI/NEAR.
+- `/api/grid/portfolio` (streamer), `getGridPortfolio` (client), GridTrading rewritten as Paper module.
+
+**Dashboard layout now:** Modules group = 4 self-contained products (1 live, 3 paper). System group =
+engine room (untouched). Both new paper modules verified: endpoint returns live state, all 3 positions
+in-range, fees deducted correctly. Hard-refresh required once for the new build.
 
 ### June 19, 2026 — Meta-labeling NO-GO + honest brain windows + dashboard pagination root-caused
 
