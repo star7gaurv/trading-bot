@@ -1593,6 +1593,69 @@ async def grid_scan(_: dict = Depends(require_auth)):
     )
 
 
+PAIRS_STATE = REPO_ROOT / "finbuddy_memory/pairs_trading/state.json"
+
+
+@app.get("/api/pairs/portfolio")
+async def pairs_portfolio(_: dict = Depends(require_auth)):
+    """Paper Pairs Trading portfolio: open market-neutral positions with live
+    mark-to-market, plus realized P&L. Read-only — mirrors the funding farm."""
+    def compute():
+        import pandas as pd
+        if not PAIRS_STATE.exists():
+            return {"positions": [], "realized_pnl": 0.0, "open_count": 0,
+                    "last_update": None, "note": "no paper positions yet"}
+        try:
+            state = json.loads(PAIRS_STATE.read_text())
+        except (OSError, json.JSONDecodeError):
+            return {"positions": [], "realized_pnl": 0.0, "open_count": 0, "last_update": None}
+
+        def last_close(sym: str):
+            f = DATA_FUTURES_DIR / f"{sym}_USDT_USDT-1h-futures.feather"
+            if not f.exists():
+                return None
+            try:
+                return float(pd.read_feather(f)["close"].iloc[-1])
+            except Exception:
+                return None
+
+        rows = []
+        unreal_total = 0.0
+        for key, p in (state.get("positions") or {}).items():
+            pa, pb = last_close(p["a"]), last_close(p["b"])
+            unreal = None
+            if pa and pb:
+                ret_a = pa / p["entry_price_a"] - 1.0
+                ret_b = pb / p["entry_price_b"] - 1.0
+                long_a = p["side"] == 1
+                unreal = (p["notional_a"] * (ret_a if long_a else -ret_a)
+                          + p["notional_b"] * (-ret_b if long_a else ret_b)
+                          - p["fees_paid"])
+                unreal_total += unreal
+            rows.append({
+                "pair": key, "a": p["a"], "b": p["b"], "side": p["side"],
+                "trade": (f"long {p['a']} / short {p['b']}" if p["side"] == 1
+                          else f"short {p['a']} / long {p['b']}"),
+                "entry_z": p.get("entry_z"), "corr": p.get("corr"),
+                "beta": p.get("beta"), "notional": round(p["notional_a"] + p["notional_b"], 1),
+                "opened_at": p.get("opened_at"),
+                "unrealized": round(unreal, 4) if unreal is not None else None,
+            })
+        rows.sort(key=lambda r: (r["unrealized"] is None, -(r["unrealized"] or 0)))
+        return {
+            "positions": rows,
+            "open_count": len(rows),
+            "realized_pnl": round(state.get("realized_pnl", 0.0), 4),
+            "unrealized_pnl": round(unreal_total, 4),
+            "last_update": state.get("last_update"),
+        }
+
+    return await cached_async(
+        "pairs_portfolio", 30.0,
+        lambda: asyncio.get_event_loop().run_in_executor(None, compute),
+    )
+
+
 @app.get("/api/trades/recent")
 async def trades_recent(
     limit: int = Query(10, ge=1, le=50), _: dict = Depends(require_auth)

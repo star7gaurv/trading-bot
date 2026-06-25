@@ -28,7 +28,7 @@ import Settings from "./tabs/Settings";
 const TABS = [
   { id: "directional", label: "Directional", icon: TrendingUp, group: "Modules", status: "live", Component: DirectionalModule },
   { id: "funding", label: "Funding Farm", icon: Coins, group: "Modules", status: "paper", Component: FundingFarmModule },
-  { id: "pairs", label: "Pairs Trading", icon: ArrowLeftRight, group: "Modules", status: "soon", Component: PairsTradingModule },
+  { id: "pairs", label: "Pairs Trading", icon: ArrowLeftRight, group: "Modules", status: "paper", Component: PairsTradingModule },
   { id: "grid", label: "Grid Trading", icon: Grid3x3, group: "Modules", status: "soon", Component: GridTradingModule },
   { id: "brain", label: "Brain", icon: BrainIcon, group: "System", Component: Brain },
   { id: "wf", label: "Walk-Forward", icon: Repeat, group: "System", Component: WalkForward },
