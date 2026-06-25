@@ -1,8 +1,9 @@
 {
-  "generated_at": "2026-06-25T12:30:01.778569+00:00",
+  "generated_at": "2026-06-25T18:30:02.688121+00:00",
   "findings": {
     "dead_timeframes": [
       "1h",
+      "5m",
       "30m",
       "4h"
     ],
@@ -15,10 +16,10 @@
     "near_breakeven": false,
     "best_bear": {
       "schema_version": 1,
-      "hypothesis_id": "8dc7928ad58b",
+      "hypothesis_id": "d885e69a8f0e",
       "parent_id": null,
       "band": "safe",
-      "rationale": "safe [v23]: short_threshold +0.25 (looser short entries)",
+      "rationale": "safe [v23]: short_threshold -0.25 (tighter short entries)",
       "window": "bear_2025Q1",
       "timerange": "20250101-20250401",
       "config": {
@@ -28,7 +29,7 @@
         "config_file": "v23_regression_15m_di_config.json",
         "timeframe": "15m",
         "long_threshold": 0.55,
-        "short_threshold": -0.75,
+        "short_threshold": -1.0,
         "k_sl": 3.0,
         "k_tp": 4.0,
         "stability_n": 1,
@@ -42,77 +43,33 @@
         "target_version": "zscore"
       },
       "status": "completed",
-      "created_at": "2026-06-25T12:00:02.470817+00:00",
-      "started_at": "2026-06-25T12:10:01.983126+00:00",
-      "completed_at": "2026-06-25T12:11:27.652393+00:00",
+      "created_at": "2026-06-25T18:00:03.717579+00:00",
+      "started_at": "2026-06-25T18:20:02.194206+00:00",
+      "completed_at": "2026-06-25T18:21:29.121334+00:00",
       "metrics": {
-        "trades": 785,
-        "wr": 0.6433,
-        "sharpe": 2.218,
-        "pf": 1.181,
-        "profit_pct": 6.441,
-        "max_dd": 4.308,
+        "trades": 678,
+        "wr": 0.6637,
+        "sharpe": 2.891,
+        "pf": 1.237,
+        "profit_pct": 6.751,
+        "max_dd": 3.35,
         "long_count": 0,
-        "short_count": 785,
-        "exit_signal_count": 471,
-        "exit_signal_wr": 0.966,
-        "stop_loss_count": 234,
-        "elapsed_s": 62
+        "short_count": 678,
+        "exit_signal_count": 413,
+        "exit_signal_wr": 0.9758,
+        "stop_loss_count": 196,
+        "elapsed_s": 63
       },
       "error": null
     },
     "best_bull": {
       "schema_version": 1,
-      "hypothesis_id": "1fa838de3eac",
-      "parent_id": "cbede8e8b3d9",
-      "band": "aggressive",
-      "rationale": "guided [v23]: derived from cbede8 (profit=0.577% WR=60.3%)",
-      "window": "bull_2024Q2",
-      "timerange": "20240401-20240701",
-      "config": {
-        "strategy": "FinBuddyFreqAI_v23",
-        "freqaimodel": "LightGBMRegressor",
-        "config_file": "v23_regression_15m_di_config.json",
-        "timeframe": "15m",
-        "long_threshold": 3.25,
-        "short_threshold": -3.0,
-        "k_sl": 2.5,
-        "k_tp": 2.0,
-        "stability_n": 1,
-        "label_period_candles": 12,
-        "filter_di": true,
-        "filter_svm": true,
-        "arch": "v23",
-        "target_version": "zscore"
-      },
-      "status": "completed",
-      "created_at": "2026-06-08T12:00:02.862356+00:00",
-      "started_at": "2026-06-08T16:40:02.182693+00:00",
-      "completed_at": "2026-06-08T17:22:27.053571+00:00",
-      "metrics": {
-        "trades": 15,
-        "wr": 0.8,
-        "sharpe": 71.892,
-        "pf": 2.604,
-        "profit_pct": 0.589,
-        "max_dd": 0.207,
-        "long_count": 0,
-        "short_count": 15,
-        "exit_signal_count": 11,
-        "exit_signal_wr": 1.0,
-        "stop_loss_count": 2,
-        "elapsed_s": 1955
-      },
-      "error": null
-    },
-    "best_overall": {
-      "schema_version": 1,
-      "hypothesis_id": "8dc7928ad58b",
-      "parent_id": null,
+      "hypothesis_id": "8bee38f63a14",
+      "parent_id": "8dc7928ad58b",
       "band": "safe",
-      "rationale": "safe [v23]: short_threshold +0.25 (looser short entries)",
-      "window": "bear_2025Q1",
-      "timerange": "20250101-20250401",
+      "rationale": "cross-window: derived from 8dc7928a (profit=+6.44% WR=64.3%) on bear_2025Q1",
+      "window": "bull_2024Q1",
+      "timerange": "20240101-20240401",
       "config": {
         "arch": "v23",
         "strategy": "FinBuddyFreqAI_v23",
@@ -134,35 +91,83 @@
         "target_version": "zscore"
       },
       "status": "completed",
-      "created_at": "2026-06-25T12:00:02.470817+00:00",
-      "started_at": "2026-06-25T12:10:01.983126+00:00",
-      "completed_at": "2026-06-25T12:11:27.652393+00:00",
+      "created_at": "2026-06-25T12:11:27.711654+00:00",
+      "started_at": "2026-06-25T13:20:01.505112+00:00",
+      "completed_at": "2026-06-25T13:21:07.715481+00:00",
       "metrics": {
-        "trades": 785,
-        "wr": 0.6433,
-        "sharpe": 2.218,
-        "pf": 1.181,
-        "profit_pct": 6.441,
-        "max_dd": 4.308,
+        "trades": 215,
+        "wr": 0.6605,
+        "sharpe": 2.032,
+        "pf": 1.13,
+        "profit_pct": 0.84,
+        "max_dd": 0.775,
         "long_count": 0,
-        "short_count": 785,
-        "exit_signal_count": 471,
-        "exit_signal_wr": 0.966,
-        "stop_loss_count": 234,
-        "elapsed_s": 62
+        "short_count": 215,
+        "exit_signal_count": 139,
+        "exit_signal_wr": 0.9209,
+        "stop_loss_count": 57,
+        "elapsed_s": 44
+      },
+      "error": null
+    },
+    "best_overall": {
+      "schema_version": 1,
+      "hypothesis_id": "d885e69a8f0e",
+      "parent_id": null,
+      "band": "safe",
+      "rationale": "safe [v23]: short_threshold -0.25 (tighter short entries)",
+      "window": "bear_2025Q1",
+      "timerange": "20250101-20250401",
+      "config": {
+        "arch": "v23",
+        "strategy": "FinBuddyFreqAI_v23",
+        "freqaimodel": "LightGBMRegressor",
+        "config_file": "v23_regression_15m_di_config.json",
+        "timeframe": "15m",
+        "long_threshold": 0.55,
+        "short_threshold": -1.0,
+        "k_sl": 3.0,
+        "k_tp": 4.0,
+        "stability_n": 1,
+        "label_period_candles": 48,
+        "filter_di": true,
+        "filter_svm": true,
+        "num_leaves": 15,
+        "learning_rate": 0.01,
+        "feature_set": "no_regime",
+        "n_estimators": 100,
+        "target_version": "zscore"
+      },
+      "status": "completed",
+      "created_at": "2026-06-25T18:00:03.717579+00:00",
+      "started_at": "2026-06-25T18:20:02.194206+00:00",
+      "completed_at": "2026-06-25T18:21:29.121334+00:00",
+      "metrics": {
+        "trades": 678,
+        "wr": 0.6637,
+        "sharpe": 2.891,
+        "pf": 1.237,
+        "profit_pct": 6.751,
+        "max_dd": 3.35,
+        "long_count": 0,
+        "short_count": 678,
+        "exit_signal_count": 413,
+        "exit_signal_wr": 0.9758,
+        "stop_loss_count": 196,
+        "elapsed_s": 63
       },
       "error": null
     },
     "window_stats": {
       "bear_2025Q1": {
-        "n": 154,
-        "avg_wr": 0.442,
-        "avg_pf": 0.855
+        "n": 155,
+        "avg_wr": 0.444,
+        "avg_pf": 0.857
       },
       "bull_2024Q1": {
-        "n": 139,
-        "avg_wr": 0.349,
-        "avg_pf": 0.524
+        "n": 142,
+        "avg_wr": 0.355,
+        "avg_pf": 0.535
       },
       "bull_2024Q2": {
         "n": 109,
@@ -180,9 +185,9 @@
         "avg_pf": 0.549
       },
       "bull_2021": {
-        "n": 4,
-        "avg_wr": 0.626,
-        "avg_pf": 1.114
+        "n": 5,
+        "avg_wr": 0.617,
+        "avg_pf": 1.071
       },
       "crash_2022": {
         "n": 2,
@@ -207,16 +212,16 @@
     },
     "tf_stats": {
       "15m": {
-        "n": 490,
-        "avg_pf": 0.695,
-        "avg_wr": 0.423,
-        "avg_trades_day": 7.35
+        "n": 494,
+        "avg_pf": 0.698,
+        "avg_wr": 0.424,
+        "avg_trades_day": 7.32
       },
       "1h": {
-        "n": 50,
-        "avg_pf": 0.548,
-        "avg_wr": 0.384,
-        "avg_trades_day": 2.47
+        "n": 51,
+        "avg_pf": 0.555,
+        "avg_wr": 0.389,
+        "avg_trades_day": 2.43
       },
       "5m": {
         "n": 18,
@@ -238,9 +243,7 @@
       }
     }
   },
-  "pruned": 19,
-  "actions": [
-    "Queued \u00d73 dead-TF cross-validate: best bear config on bull windows (WR=64% PF=1.18)"
-  ],
+  "pruned": 16,
+  "actions": [],
   "llm_insight": ""
 }
