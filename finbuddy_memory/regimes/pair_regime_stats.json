@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-25T14:00:01.705143+00:00",
+  "updated": "2026-06-25T14:30:01.531803+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -199,13 +199,13 @@
         "avg_profit_pct": -1.1
       },
       "BEAR": {
-        "n": 8,
-        "wins": 5,
+        "n": 9,
+        "wins": 6,
         "losses": 3,
-        "wr": 0.625,
-        "pf": 1.389,
-        "profit_usdt": 0.84,
-        "avg_profit_pct": 0.179
+        "wr": 0.6667,
+        "pf": 3.921,
+        "profit_usdt": 6.31,
+        "avg_profit_pct": 1.246
       }
     },
     "FET/USDT:USDT": {
@@ -270,13 +270,13 @@
         "avg_profit_pct": -0.319
       },
       "BEAR": {
-        "n": 28,
-        "wins": 13,
+        "n": 29,
+        "wins": 14,
         "losses": 15,
-        "wr": 0.4643,
-        "pf": 0.47,
-        "profit_usdt": -6.63,
-        "avg_profit_pct": -0.416
+        "wr": 0.4828,
+        "pf": 1.145,
+        "profit_usdt": 1.82,
+        "avg_profit_pct": 0.118
       }
     },
     "AVAX/USDT:USDT": {
@@ -290,13 +290,13 @@
         "avg_profit_pct": -1.03
       },
       "BEAR": {
-        "n": 26,
-        "wins": 11,
+        "n": 27,
+        "wins": 12,
         "losses": 15,
-        "wr": 0.4231,
-        "pf": 0.731,
-        "profit_usdt": -2.74,
-        "avg_profit_pct": -0.193
+        "wr": 0.4444,
+        "pf": 1.257,
+        "profit_usdt": 2.62,
+        "avg_profit_pct": 0.181
       }
     },
     "ENA/USDT:USDT": {
@@ -310,13 +310,13 @@
         "avg_profit_pct": -1.057
       },
       "BEAR": {
-        "n": 9,
-        "wins": 4,
+        "n": 10,
+        "wins": 5,
         "losses": 5,
-        "wr": 0.4444,
-        "pf": 0.435,
-        "profit_usdt": -3.39,
-        "avg_profit_pct": -0.657
+        "wr": 0.5,
+        "pf": 0.978,
+        "profit_usdt": -0.13,
+        "avg_profit_pct": -0.01
       }
     },
     "ONDO/USDT:USDT": {
