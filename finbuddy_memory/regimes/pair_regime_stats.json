@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-26T03:00:01.741218+00:00",
+  "updated": "2026-06-26T03:30:01.103078+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -323,13 +323,13 @@
     },
     "BTC/USDT:USDT": {
       "BEAR": {
-        "n": 5,
-        "wins": 4,
+        "n": 6,
+        "wins": 5,
         "losses": 1,
-        "wr": 0.8,
-        "pf": 16.923,
-        "profit_usdt": 2.07,
-        "avg_profit_pct": 1.244
+        "wr": 0.8333,
+        "pf": 28.692,
+        "profit_usdt": 3.6,
+        "avg_profit_pct": 1.46
       }
     },
     "NEAR/USDT:USDT": {
