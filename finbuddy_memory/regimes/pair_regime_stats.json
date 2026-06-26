@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-26T13:00:01.306954+00:00",
+  "updated": "2026-06-26T13:30:01.480685+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,46 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "ETH/USDT:USDT": {
-      "BEAR": {
-        "n": 5,
-        "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
-        "pf": 0.191,
-        "profit_usdt": -1.65,
-        "avg_profit_pct": -0.56
-      },
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -0.56,
-        "avg_profit_pct": -0.79
-      }
-    },
-    "ADA/USDT:USDT": {
-      "BEAR": {
-        "n": 13,
-        "wins": 5,
-        "losses": 8,
-        "wr": 0.3846,
-        "pf": 0.514,
-        "profit_usdt": -2.61,
-        "avg_profit_pct": -0.342
-      },
-      "NEUTRAL": {
-        "n": 9,
-        "wins": 6,
-        "losses": 3,
-        "wr": 0.6667,
-        "pf": 0.891,
-        "profit_usdt": -0.29,
-        "avg_profit_pct": -0.032
-      }
-    },
     "ARB/USDT:USDT": {
       "BEAR": {
         "n": 5,
@@ -137,6 +97,26 @@
         "pf": 0.635,
         "profit_usdt": -0.57,
         "avg_profit_pct": -0.128
+      }
+    },
+    "ADA/USDT:USDT": {
+      "BEAR": {
+        "n": 12,
+        "wins": 5,
+        "losses": 7,
+        "wr": 0.4167,
+        "pf": 0.568,
+        "profit_usdt": -2.1,
+        "avg_profit_pct": -0.306
+      },
+      "NEUTRAL": {
+        "n": 9,
+        "wins": 6,
+        "losses": 3,
+        "wr": 0.6667,
+        "pf": 0.891,
+        "profit_usdt": -0.29,
+        "avg_profit_pct": -0.032
       }
     },
     "SOL/USDT:USDT": {
@@ -332,6 +312,26 @@
         "avg_profit_pct": 2.646
       }
     },
+    "ETH/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.56,
+        "avg_profit_pct": -0.79
+      },
+      "BEAR": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.244,
+        "profit_usdt": -1.21,
+        "avg_profit_pct": -0.53
+      }
+    },
     "DOT/USDT:USDT": {
       "BEAR": {
         "n": 17,
@@ -439,14 +439,6 @@
       "pf": 0.085
     },
     {
-      "pair": "ETH/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=20% PF=0.19 n=5 profit=-1.65",
-      "n": 5,
-      "wr": 0.2,
-      "pf": 0.191
-    },
-    {
       "pair": "NEAR/USDT:USDT",
       "regime": "BEAR",
       "reason": "WR=20% PF=0.20 n=5 profit=-5.69",
@@ -533,14 +525,6 @@
       "n": 8,
       "wr": 0.375,
       "pf": 0.639
-    },
-    {
-      "pair": "ADA/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=38% PF=0.51 n=13 profit=-2.61",
-      "n": 13,
-      "wr": 0.3846,
-      "pf": 0.514
     }
   ]
 }
