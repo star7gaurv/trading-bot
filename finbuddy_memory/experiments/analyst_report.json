@@ -1,8 +1,7 @@
 {
-  "generated_at": "2026-06-25T18:30:02.688121+00:00",
+  "generated_at": "2026-06-26T00:30:01.797090+00:00",
   "findings": {
     "dead_timeframes": [
-      "1h",
       "5m",
       "30m",
       "4h"
@@ -64,10 +63,10 @@
     },
     "best_bull": {
       "schema_version": 1,
-      "hypothesis_id": "8bee38f63a14",
-      "parent_id": "8dc7928ad58b",
+      "hypothesis_id": "9f838b8003f7",
+      "parent_id": "d885e69a8f0e",
       "band": "safe",
-      "rationale": "cross-window: derived from 8dc7928a (profit=+6.44% WR=64.3%) on bear_2025Q1",
+      "rationale": "cross-window: derived from d885e69a (profit=+6.75% WR=66.4%) on bear_2025Q1",
       "window": "bull_2024Q1",
       "timerange": "20240101-20240401",
       "config": {
@@ -77,7 +76,7 @@
         "config_file": "v23_regression_15m_di_config.json",
         "timeframe": "15m",
         "long_threshold": 0.55,
-        "short_threshold": -0.75,
+        "short_threshold": -1.0,
         "k_sl": 3.0,
         "k_tp": 4.0,
         "stability_n": 1,
@@ -91,22 +90,22 @@
         "target_version": "zscore"
       },
       "status": "completed",
-      "created_at": "2026-06-25T12:11:27.711654+00:00",
-      "started_at": "2026-06-25T13:20:01.505112+00:00",
-      "completed_at": "2026-06-25T13:21:07.715481+00:00",
+      "created_at": "2026-06-25T18:21:29.179384+00:00",
+      "started_at": "2026-06-25T19:10:02.173139+00:00",
+      "completed_at": "2026-06-25T19:11:07.989407+00:00",
       "metrics": {
-        "trades": 215,
-        "wr": 0.6605,
-        "sharpe": 2.032,
-        "pf": 1.13,
-        "profit_pct": 0.84,
-        "max_dd": 0.775,
+        "trades": 169,
+        "wr": 0.6391,
+        "sharpe": 2.152,
+        "pf": 1.165,
+        "profit_pct": 0.866,
+        "max_dd": 0.668,
         "long_count": 0,
-        "short_count": 215,
-        "exit_signal_count": 139,
-        "exit_signal_wr": 0.9209,
-        "stop_loss_count": 57,
-        "elapsed_s": 44
+        "short_count": 169,
+        "exit_signal_count": 106,
+        "exit_signal_wr": 0.9151,
+        "stop_loss_count": 48,
+        "elapsed_s": 42
       },
       "error": null
     },
@@ -160,14 +159,14 @@
     },
     "window_stats": {
       "bear_2025Q1": {
-        "n": 155,
+        "n": 156,
         "avg_wr": 0.444,
-        "avg_pf": 0.857
+        "avg_pf": 0.854
       },
       "bull_2024Q1": {
-        "n": 142,
-        "avg_wr": 0.355,
-        "avg_pf": 0.535
+        "n": 144,
+        "avg_wr": 0.359,
+        "avg_pf": 0.543
       },
       "bull_2024Q2": {
         "n": 109,
@@ -212,16 +211,16 @@
     },
     "tf_stats": {
       "15m": {
-        "n": 494,
-        "avg_pf": 0.698,
-        "avg_wr": 0.424,
-        "avg_trades_day": 7.32
+        "n": 495,
+        "avg_pf": 0.699,
+        "avg_wr": 0.425,
+        "avg_trades_day": 7.31
       },
       "1h": {
-        "n": 51,
-        "avg_pf": 0.555,
-        "avg_wr": 0.389,
-        "avg_trades_day": 2.43
+        "n": 53,
+        "avg_pf": 0.562,
+        "avg_wr": 0.396,
+        "avg_trades_day": 2.37
       },
       "5m": {
         "n": 18,
@@ -243,7 +242,7 @@
       }
     }
   },
-  "pruned": 16,
+  "pruned": 8,
   "actions": [],
   "llm_insight": ""
 }
