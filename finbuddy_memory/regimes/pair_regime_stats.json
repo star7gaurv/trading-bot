@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-27T01:00:01.151994+00:00",
+  "updated": "2026-06-27T01:30:01.187896+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "FET/USDT:USDT": {
-      "BEAR": {
-        "n": 6,
-        "wins": 2,
-        "losses": 4,
-        "wr": 0.3333,
-        "pf": 0.199,
-        "profit_usdt": -4.28,
-        "avg_profit_pct": -1.223
-      },
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -2.14,
-        "avg_profit_pct": -2.59
-      }
-    },
     "TON/USDT:USDT": {
       "BEAR": {
         "n": 4,
@@ -57,6 +37,26 @@
         "pf": 1.293,
         "profit_usdt": 0.54,
         "avg_profit_pct": 0.087
+      }
+    },
+    "FET/USDT:USDT": {
+      "BEAR": {
+        "n": 5,
+        "wins": 2,
+        "losses": 3,
+        "wr": 0.4,
+        "pf": 0.284,
+        "profit_usdt": -2.67,
+        "avg_profit_pct": -0.916
+      },
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -2.14,
+        "avg_profit_pct": -2.59
       }
     },
     "OP/USDT:USDT": {
@@ -112,13 +112,13 @@
         "avg_profit_pct": -0.319
       },
       "BEAR": {
-        "n": 29,
-        "wins": 14,
+        "n": 30,
+        "wins": 15,
         "losses": 15,
-        "wr": 0.4828,
-        "pf": 1.145,
-        "profit_usdt": 1.82,
-        "avg_profit_pct": 0.118
+        "wr": 0.5,
+        "pf": 1.208,
+        "profit_usdt": 2.6,
+        "avg_profit_pct": 0.159
       }
     },
     "1000PEPE/USDT:USDT": {
@@ -443,14 +443,6 @@
       "n": 15,
       "wr": 0.2667,
       "pf": 0.553
-    },
-    {
-      "pair": "FET/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=33% PF=0.20 n=6 profit=-4.28",
-      "n": 6,
-      "wr": 0.3333,
-      "pf": 0.199
     },
     {
       "pair": "LINK/USDT:USDT",
