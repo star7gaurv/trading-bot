@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-27T11:30:01.548798+00:00",
+  "updated": "2026-06-27T12:00:01.926333+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,17 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "TON/USDT:USDT": {
-      "BEAR": {
-        "n": 4,
-        "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 1.152,
-        "profit_usdt": 0.24,
-        "avg_profit_pct": 0.093
-      }
-    },
     "ADA/USDT:USDT": {
       "BEAR": {
         "n": 11,
@@ -367,6 +356,17 @@
         "pf": 1.521,
         "profit_usdt": 3.61,
         "avg_profit_pct": 0.323
+      }
+    },
+    "TON/USDT:USDT": {
+      "BEAR": {
+        "n": 3,
+        "wins": 1,
+        "losses": 2,
+        "wr": 0.3333,
+        "pf": 0.386,
+        "profit_usdt": -0.97,
+        "avg_profit_pct": -0.57
       }
     },
     "SUI/USDT:USDT": {
