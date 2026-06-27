@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-27T16:30:01.982789+00:00",
+  "updated": "2026-06-27T17:00:01.767594+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -8,26 +8,6 @@
     "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
   },
   "stats": {
-    "ADA/USDT:USDT": {
-      "BEAR": {
-        "n": 11,
-        "wins": 4,
-        "losses": 7,
-        "wr": 0.3636,
-        "pf": 0.558,
-        "profit_usdt": -2.15,
-        "avg_profit_pct": -0.342
-      },
-      "NEUTRAL": {
-        "n": 8,
-        "wins": 6,
-        "losses": 2,
-        "wr": 0.75,
-        "pf": 1.293,
-        "profit_usdt": 0.54,
-        "avg_profit_pct": 0.087
-      }
-    },
     "FET/USDT:USDT": {
       "BEAR": {
         "n": 5,
@@ -68,6 +48,26 @@
         "pf": 1.047,
         "profit_usdt": 0.31,
         "avg_profit_pct": 0.037
+      }
+    },
+    "ADA/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 8,
+        "wins": 6,
+        "losses": 2,
+        "wr": 0.75,
+        "pf": 1.293,
+        "profit_usdt": 0.54,
+        "avg_profit_pct": 0.087
+      },
+      "BEAR": {
+        "n": 10,
+        "wins": 3,
+        "losses": 7,
+        "wr": 0.3,
+        "pf": 0.475,
+        "profit_usdt": -2.55,
+        "avg_profit_pct": -0.445
       }
     },
     "UNI/USDT:USDT": {
@@ -453,20 +453,20 @@
       "pf": 0.553
     },
     {
+      "pair": "ADA/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=30% PF=0.47 n=10 profit=-2.55",
+      "n": 10,
+      "wr": 0.3,
+      "pf": 0.475
+    },
+    {
       "pair": "LINK/USDT:USDT",
       "regime": "BEAR",
       "reason": "WR=36% PF=0.37 n=11 profit=-2.33",
       "n": 11,
       "wr": 0.3636,
       "pf": 0.369
-    },
-    {
-      "pair": "ADA/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=36% PF=0.56 n=11 profit=-2.15",
-      "n": 11,
-      "wr": 0.3636,
-      "pf": 0.558
     },
     {
       "pair": "ONDO/USDT:USDT",
