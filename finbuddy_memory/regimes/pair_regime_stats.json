@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-27T14:30:01.112307+00:00",
+  "updated": "2026-06-27T15:00:01.939977+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -121,13 +121,13 @@
         "avg_profit_pct": 0.56
       },
       "BEAR": {
-        "n": 4,
+        "n": 5,
         "wins": 1,
-        "losses": 3,
-        "wr": 0.25,
-        "pf": 0.63,
-        "profit_usdt": -0.74,
-        "avg_profit_pct": -0.32
+        "losses": 4,
+        "wr": 0.2,
+        "pf": 0.37,
+        "profit_usdt": -2.15,
+        "avg_profit_pct": -0.752
       }
     },
     "AVAX/USDT:USDT": {
@@ -427,6 +427,14 @@
       "n": 5,
       "wr": 0.2,
       "pf": 0.199
+    },
+    {
+      "pair": "1000PEPE/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=20% PF=0.37 n=5 profit=-2.15",
+      "n": 5,
+      "wr": 0.2,
+      "pf": 0.37
     },
     {
       "pair": "TAO/USDT:USDT",
