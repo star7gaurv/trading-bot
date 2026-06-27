@@ -1,5 +1,5 @@
 # FinBuddy — Master Context
-Last updated: 2026-06-27 13:45 UTC
+Last updated: 2026-06-27 14:00 UTC
 
 ## Current Regime
 Regime: **BEAR** | Confidence: 80.0% | Since: 2026-06-27
@@ -13,7 +13,7 @@ News Sentiment: 95.8% bullish
 Total Trades: 847 | Win Rate: 41.3% | Total P&L: 2.29%
 
 ## Open Trades (1)
-- 1000PEPE/USDT:USDT: Entry 0.00 | Current 0.00 | P&L: -1.14%
+- 1000PEPE/USDT:USDT: Entry 0.00 | Current 0.00 | P&L: -1.15%
 ## Risk Flags
 - None
 
