@@ -596,3 +596,4 @@
 | 2026-06-26 07:05:13 | UNI/USDT:USDT | SHORT | 3h04m | -3.85% | -2.15 | stop_loss | BEAR | freqai_regression_v23_sh |
 | 2026-06-26 08:00:24 | BTC/USDT:USDT | SHORT | 1h00m | -0.40% | -0.24 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-06-26 14:10:31 | DOT/USDT:USDT | SHORT | 6h00m | -0.52% | -0.29 | time_limit_exit | BEAR | freqai_regression_v23_sh |
+| 2026-06-27 00:01:30 | ARB/USDT:USDT | SHORT | 6h01m | -0.09% | -0.05 | time_limit_exit | BEAR | freqai_regression_v23_sh |
