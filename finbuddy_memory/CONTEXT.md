@@ -1,5 +1,5 @@
 # FinBuddy — Master Context
-Last updated: 2026-06-27 00:15 UTC
+Last updated: 2026-06-27 00:30 UTC
 
 ## Current Regime
 Regime: **BEAR** | Confidence: 80.0% | Since: 2026-06-27
@@ -13,7 +13,7 @@ News Sentiment: 95.5% bullish
 Total Trades: 846 | Win Rate: 41.3% | Total P&L: 2.37%
 
 ## Open Trades (1)
-- APT/USDT:USDT: Entry 0.60 | Current 0.60 | P&L: 1.61%
+- APT/USDT:USDT: Entry 0.60 | Current 0.60 | P&L: 1.64%
 ## Risk Flags
 - None
 
