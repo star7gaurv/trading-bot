@@ -1,26 +1,33 @@
 {
-  "proposed_at": "2026-06-17T07:00:01.522218+00:00",
-  "config_hash": "cfb916eed4a9",
+  "proposed_at": "2026-06-28T07:00:01.851097+00:00",
+  "config_hash": "3e3a98b76f8c",
   "config": {
+    "arch": "v23",
     "strategy": "FinBuddyFreqAI_v23",
     "freqaimodel": "LightGBMRegressor",
-    "config_file": "v23_regression_15m_di_config.json",
-    "timeframe": "15m",
-    "long_threshold": 4.0,
-    "short_threshold": -3.0,
-    "k_sl": 2.5,
-    "k_tp": 2.0,
-    "stability_n": 1,
+    "config_file": "v23_regression_1h_config.json",
+    "timeframe": "1h",
+    "long_threshold": 0.3,
+    "short_threshold": -0.3,
+    "k_sl": 3.0,
+    "k_tp": 4.0,
+    "stability_n": 2,
     "label_period_candles": 12,
     "filter_di": true,
     "filter_svm": true,
-    "arch": "v23"
+    "feature_set": "all",
+    "n_estimators": 100,
+    "entry_mode": "quantile",
+    "entry_quantile": 0.85,
+    "bounce_guard": true,
+    "prune_indicators": true,
+    "target_version": "zscore"
   },
   "metrics_summary": {
-    "avg_profit": 0.463,
-    "avg_sharpe": 1.893,
-    "total_trades": 53,
-    "improvement": 0.463
+    "avg_profit": 0.142,
+    "avg_sharpe": 1.643,
+    "total_trades": 253,
+    "improvement": 0.142
   },
-  "approval_command": "python scripts/brain/promote.py --apply cfb916eed4a9"
+  "approval_command": "python scripts/brain/promote.py --apply 3e3a98b76f8c"
 }
