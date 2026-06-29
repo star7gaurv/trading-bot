@@ -1,5 +1,5 @@
 # FinBuddy — Master Context
-Last updated: 2026-06-29 09:00 UTC
+Last updated: 2026-06-29 09:15 UTC
 
 ## Current Regime
 Regime: **BEAR** | Confidence: 80.0% | Since: 2026-06-29
@@ -13,7 +13,7 @@ News Sentiment: 95.8% bullish
 Total Trades: 848 | Win Rate: 41.3% | Total P&L: 2.21%
 
 ## Open Trades (1)
-- RENDER/USDT:USDT: Entry 1.55 | Current 1.55 | P&L: 0.02%
+- RENDER/USDT:USDT: Entry 1.55 | Current 1.55 | P&L: -0.04%
 ## Risk Flags
 - None
 
