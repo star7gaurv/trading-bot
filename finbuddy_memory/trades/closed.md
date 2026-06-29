@@ -599,3 +599,4 @@
 | 2026-06-27 00:01:30 | ARB/USDT:USDT | SHORT | 6h01m | -0.09% | -0.05 | time_limit_exit | BEAR | freqai_regression_v23_sh |
 | 2026-06-27 01:01:04 | APT/USDT:USDT | SHORT | 6h00m | +1.37% | +0.78 | time_limit_exit | BEAR | freqai_regression_v23_sh |
 | 2026-06-27 14:49:24 | 1000PEPE/USDT:USDT | SHORT | 4h49m | -2.48% | -1.41 | stop_loss | BEAR | freqai_regression_v23_sh |
+| 2026-06-29 10:00:43 | RENDER/USDT:USDT | SHORT | 6h00m | -0.75% | -0.43 | time_limit_exit | BEAR | freqai_regression_v23_sh |
