@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-29T06:30:02.305922+00:00",
+  "generated_at": "2026-06-29T12:30:01.612133+00:00",
   "findings": {
     "dead_timeframes": [
       "5m",
@@ -159,9 +159,9 @@
     },
     "window_stats": {
       "bear_2025Q1": {
-        "n": 180,
-        "avg_wr": 0.468,
-        "avg_pf": 0.899
+        "n": 183,
+        "avg_wr": 0.469,
+        "avg_pf": 0.9
       },
       "bull_2024Q1": {
         "n": 158,
@@ -194,9 +194,9 @@
         "avg_pf": 0.623
       },
       "bull_2024Q4": {
-        "n": 42,
-        "avg_wr": 0.386,
-        "avg_pf": 0.976
+        "n": 45,
+        "avg_wr": 0.388,
+        "avg_pf": 0.999
       },
       "bear_2024Q2": {
         "n": 2,
@@ -211,16 +211,16 @@
     },
     "tf_stats": {
       "15m": {
-        "n": 524,
-        "avg_pf": 0.724,
-        "avg_wr": 0.436,
-        "avg_trades_day": 7.23
+        "n": 527,
+        "avg_pf": 0.726,
+        "avg_wr": 0.438,
+        "avg_trades_day": 7.24
       },
       "1h": {
-        "n": 98,
-        "avg_pf": 0.746,
-        "avg_wr": 0.382,
-        "avg_trades_day": 1.66
+        "n": 101,
+        "avg_pf": 0.758,
+        "avg_wr": 0.381,
+        "avg_trades_day": 1.65
       },
       "5m": {
         "n": 18,
