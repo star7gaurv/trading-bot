@@ -607,6 +607,16 @@ def _direction_status(side: str, row: dict, regime: str, gated: bool,
     return "threshold"
 
 
+def _strategy_timeframe(default: str = "1h") -> str:
+    """Live strategy base timeframe from config.json. The bot flipped 15m→1h on
+    2026-06-21; /pair_candles only returns the analysed dataframe for the timeframe
+    the strategy actually runs, so the signals monitor must request the live one."""
+    try:
+        return json.loads(CONFIG_JSON.read_text()).get("timeframe") or default
+    except (OSError, json.JSONDecodeError, ValueError):
+        return default
+
+
 @app.get("/api/signals")
 async def signals(_: dict = Depends(require_auth)):
     """Live per-pair signal monitor: for every whitelisted pair, report the current
@@ -616,11 +626,12 @@ async def signals(_: dict = Depends(require_auth)):
         wl = await ft_get("/whitelist")
         pairs = wl.get("whitelist", []) if isinstance(wl, dict) else (wl or [])
         blocks = _load_pair_regime_blocks_map()
+        tf = _strategy_timeframe()
 
         async def one(pair: str) -> Optional[dict]:
             try:
                 cd = await ft_get("/pair_candles", params={
-                    "pair": pair, "timeframe": "15m", "limit": 3,
+                    "pair": pair, "timeframe": tf, "limit": 3,
                 })
             except Exception:
                 return None
