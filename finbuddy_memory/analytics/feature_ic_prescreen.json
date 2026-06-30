@@ -1,0 +1,135 @@
+{
+  "horizon": 12,
+  "since": "2024-06-01",
+  "n_pairs": 26,
+  "features": [
+    {
+      "feature": "dist_ema200",
+      "mean_ic": -0.0343,
+      "abs_ic": 0.0343,
+      "median_ic": -0.0299,
+      "same_sign_%": 96.0,
+      "n_pairs": 26
+    },
+    {
+      "feature": "ret_24",
+      "mean_ic": -0.0333,
+      "abs_ic": 0.0333,
+      "median_ic": -0.0331,
+      "same_sign_%": 96.0,
+      "n_pairs": 26
+    },
+    {
+      "feature": "dist_ema50",
+      "mean_ic": -0.0283,
+      "abs_ic": 0.0283,
+      "median_ic": -0.027,
+      "same_sign_%": 92.0,
+      "n_pairs": 26
+    },
+    {
+      "feature": "oi_chg_6",
+      "mean_ic": -0.0209,
+      "abs_ic": 0.0209,
+      "median_ic": -0.0216,
+      "same_sign_%": 92.0,
+      "n_pairs": 26
+    },
+    {
+      "feature": "vol_z",
+      "mean_ic": 0.0182,
+      "abs_ic": 0.0182,
+      "median_ic": 0.0176,
+      "same_sign_%": 92.0,
+      "n_pairs": 26
+    },
+    {
+      "feature": "funding_z",
+      "mean_ic": -0.0171,
+      "abs_ic": 0.0171,
+      "median_ic": -0.0179,
+      "same_sign_%": 73.0,
+      "n_pairs": 26
+    },
+    {
+      "feature": "oi_z30d",
+      "mean_ic": -0.0127,
+      "abs_ic": 0.0127,
+      "median_ic": -0.0151,
+      "same_sign_%": 77.0,
+      "n_pairs": 26
+    },
+    {
+      "feature": "rsi_14",
+      "mean_ic": -0.0103,
+      "abs_ic": 0.0103,
+      "median_ic": -0.0116,
+      "same_sign_%": 73.0,
+      "n_pairs": 26
+    },
+    {
+      "feature": "funding_extreme",
+      "mean_ic": 0.0096,
+      "abs_ic": 0.0096,
+      "median_ic": 0.008,
+      "same_sign_%": 65.0,
+      "n_pairs": 26
+    },
+    {
+      "feature": "funding_mom",
+      "mean_ic": -0.0073,
+      "abs_ic": 0.0073,
+      "median_ic": -0.0039,
+      "same_sign_%": 65.0,
+      "n_pairs": 26
+    },
+    {
+      "feature": "ret_6",
+      "mean_ic": -0.007,
+      "abs_ic": 0.007,
+      "median_ic": -0.0075,
+      "same_sign_%": 65.0,
+      "n_pairs": 26
+    },
+    {
+      "feature": "oi_up_price_dn",
+      "mean_ic": 0.0043,
+      "abs_ic": 0.0043,
+      "median_ic": 0.0057,
+      "same_sign_%": 65.0,
+      "n_pairs": 26
+    },
+    {
+      "feature": "atr_z",
+      "mean_ic": 0.0042,
+      "abs_ic": 0.0042,
+      "median_ic": 0.0027,
+      "same_sign_%": 58.0,
+      "n_pairs": 26
+    },
+    {
+      "feature": "vol_ret",
+      "mean_ic": -0.0041,
+      "abs_ic": 0.0041,
+      "median_ic": -0.0044,
+      "same_sign_%": 62.0,
+      "n_pairs": 26
+    },
+    {
+      "feature": "vol_of_vol",
+      "mean_ic": 0.004,
+      "abs_ic": 0.004,
+      "median_ic": 0.0022,
+      "same_sign_%": 54.0,
+      "n_pairs": 26
+    },
+    {
+      "feature": "oi_price_div",
+      "mean_ic": -0.0019,
+      "abs_ic": 0.0019,
+      "median_ic": -0.0008,
+      "same_sign_%": 54.0,
+      "n_pairs": 26
+    }
+  ]
+}
