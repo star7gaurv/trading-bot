@@ -2056,6 +2056,28 @@ class FinBuddyFreqAI_v23(IStrategy):
             except Exception as e:
                 logger.warning(f"[meta dump] {metadata.get('pair')}: {e}")
 
+        # RAW PREDICTION DUMP (2026-06-30, default OFF). When FREQAI_DUMP_PREDICTIONS=1
+        # this writes the model's OOS prediction (&-future_return), do_predict and close
+        # per pair to a parquet for the whole backtest window. Feeds
+        # scripts/research/cross_sectional_backtest.py with clean, multi-regime,
+        # do_predict==1 predictions (the live historic_predictions.pkl only has ~9 days).
+        # Write-only, touches no entry decision; env unset in live → byte-identical.
+        if os.getenv("FREQAI_DUMP_PREDICTIONS", "0") == "1" and "&-future_return" in dataframe.columns:
+            try:
+                from pathlib import Path as _P
+                pdump = pd.DataFrame({
+                    "date_pred":       dataframe["date"],
+                    "&-future_return": dataframe["&-future_return"],
+                    "do_predict":      dataframe.get("do_predict", 1),
+                    "close_price":     dataframe["close"],
+                })
+                outdir = _P("/freqtrade/user_data/pred_dump")
+                outdir.mkdir(parents=True, exist_ok=True)
+                safe = metadata["pair"].replace("/", "_").replace(":", "_")
+                pdump.to_parquet(outdir / f"{safe}.parquet")
+            except Exception as e:
+                logger.warning(f"[pred dump] {metadata.get('pair')}: {e}")
+
         return dataframe
 
     def populate_exit_trend(

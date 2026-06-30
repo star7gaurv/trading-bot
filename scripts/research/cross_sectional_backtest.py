@@ -25,6 +25,7 @@ Pure pandas/numpy. No live impact, no orders. Read-only.
 from __future__ import annotations
 
 import pickle
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -32,6 +33,7 @@ import pandas as pd
 
 ROOT = Path("/home/ubuntu/var/www/html/trade")
 PKL = ROOT / "freqtrade/user_data/models/finbuddy_v23_tf1h_1782044602/historic_predictions.pkl"
+DUMP_DIR = ROOT / "freqtrade/user_data/pred_dump"   # backtest bench output (--dump)
 
 TAKER_FEE = 0.0005       # 0.05% per transaction (futures taker)
 HOLD_CANDLES = 12        # holding period = label horizon (12h on 1h)
@@ -40,18 +42,30 @@ IC_GATE = 0.05           # positive-IC universe threshold
 ANNUALIZE = np.sqrt(365 * 24 / HOLD_CANDLES)   # non-overlapping H-candle periods/yr
 
 
-def load_panel():
+def _iter_sources(use_dump: bool):
+    """Yield (pair, dataframe) from either the backtest dump dir or the live pkl."""
+    if use_dump:
+        files = sorted(DUMP_DIR.glob("*.parquet"))
+        if not files:
+            sys.exit(f"no dump parquets in {DUMP_DIR} — run run_prediction_bench.sh first")
+        for f in files:
+            yield f.stem, pd.read_parquet(f)
+    else:
+        for pair, df in pickle.load(open(PKL, "rb")).items():
+            yield pair, df
+
+
+def load_panel(use_dump: bool = False):
     """Return (pred_wide, close_wide) aligned on a common hourly index.
 
     CRITICAL (2026-06-30): only do_predict==1 rows are trustworthy. The
-    do_predict==0 rows (DI/SVM outliers, the bulk of stored history) carry
+    do_predict==0 rows (DI/SVM outliers, the bulk of live pkl history) carry
     lookahead that fabricates a +0.55 IC — confirmed against ic_monitor.py which
     filters the same way. Predictions on do_predict==0 candles are set to NaN so
-    they can never enter a book or a rank.
+    they can never enter a book or a rank. (The bench dump is SVM-off ⇒ all 1.)
     """
-    d = pickle.load(open(PKL, "rb"))
     preds, closes = {}, {}
-    for pair, df in d.items():
+    for pair, df in _iter_sources(use_dump):
         if "&-future_return" not in df.columns or "date_pred" not in df.columns:
             continue
         s = df.copy()
@@ -188,7 +202,9 @@ def fmt(name, s):
 
 
 def main():
-    P, C = load_panel()
+    use_dump = "--dump" in sys.argv
+    P, C = load_panel(use_dump=use_dump)
+    print(f"Source: {'backtest dump' if use_dump else 'live historic_predictions.pkl'}")
     F = forward_returns(C, HOLD_CANDLES)
     print(f"Panel: {P.shape[1]} pairs · {P.shape[0]} hourly preds · "
           f"{P.index.min()} → {P.index.max()}")
