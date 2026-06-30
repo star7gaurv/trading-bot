@@ -1,13 +1,13 @@
 # FinBuddy — Master Context
-Last updated: 2026-06-30 07:15 UTC
+Last updated: 2026-06-30 07:30 UTC
 
 ## Current Regime
 Regime: **BEAR** | Confidence: 80.0% | Since: 2026-06-30
 
 ## Market Sentiment
 Fear & Greed: 15 (Extreme Fear)
-BTC Dominance: 55.53%
-News Sentiment: 90.5% bullish
+BTC Dominance: 55.52%
+News Sentiment: 95.0% bullish
 
 ## Bot Performance
 Total Trades: 848 | Win Rate: 41.3% | Total P&L: 2.17%
