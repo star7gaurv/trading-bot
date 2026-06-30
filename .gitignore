@@ -51,3 +51,6 @@ freqtrade/user_data/executor.sqlite
 freqtrade/user_data/executor.sqlite-*
 walkforward_results/
 finbuddy_memory/historical/orderflow/
+
+# Brain API secrets (Coinalyze etc.) — never commit
+scripts/.secrets.env
