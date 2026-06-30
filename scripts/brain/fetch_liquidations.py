@@ -27,16 +27,28 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "finbuddy_memory" / "historical" / "liquidations_perpair.parquet"
+SECRETS = ROOT / "scripts" / ".secrets.env"
 API = "https://api.coinalyze.net/v1"
-KEY = os.environ.get("COINALYZE_API_KEY", "").strip()
 
 INTERVAL = sys.argv[1] if len(sys.argv) > 1 else "1hour"
 FROM_ISO = sys.argv[2] if len(sys.argv) > 2 else "2024-01-01"
 
 
-def _get(path: str, params: dict) -> list | dict:
+def load_key() -> str:
+    """Key from env, falling back to the gitignored scripts/.secrets.env (for cron)."""
+    k = os.environ.get("COINALYZE_API_KEY", "").strip()
+    if not k and SECRETS.exists():
+        for line in SECRETS.read_text().splitlines():
+            if line.strip().startswith("COINALYZE_API_KEY="):
+                k = line.split("=", 1)[1].strip()
+                break
+    return k
+
+
+def _get(path: str, params: dict, key: str | None = None) -> list | dict:
     url = f"{API}{path}?" + urllib.parse.urlencode(params)
-    req = urllib.request.Request(url, headers={"api_key": KEY, "User-Agent": "FinBuddy/1.0"})
+    req = urllib.request.Request(url, headers={"api_key": key or load_key(),
+                                               "User-Agent": "FinBuddy/1.0"})
     return json.loads(urllib.request.urlopen(req, timeout=30).read())
 
 
@@ -64,9 +76,27 @@ def _binance_perp_map(bases: list[str]) -> dict[str, str]:
     return out
 
 
+def fetch_liq_history(cz_sym: str, interval: str, t_from: int, t_to: int) -> pd.DataFrame:
+    """Reusable: liquidation history for one Coinalyze symbol -> DataFrame[date,liq_long_usd,liq_short_usd].
+
+    Used by the historical builder (main) and the liq_capitulation paper scanner.
+    """
+    resp = _get("/liquidation-history", {
+        "symbols": cz_sym, "interval": interval,
+        "from": t_from, "to": t_to, "convert_to_usd": "true",
+    })
+    hist = resp[0]["history"] if resp else []
+    if not hist:
+        return pd.DataFrame(columns=["date", "liq_long_usd", "liq_short_usd"])
+    df = pd.DataFrame(hist)
+    df["date"] = pd.to_datetime(df["t"], unit="s", utc=True)
+    return df.rename(columns={"l": "liq_long_usd", "s": "liq_short_usd"})[
+        ["date", "liq_long_usd", "liq_short_usd"]]
+
+
 def main() -> int:
-    if not KEY:
-        print("ERROR: COINALYZE_API_KEY not set in environment.", file=sys.stderr)
+    if not load_key():
+        print("ERROR: COINALYZE_API_KEY not set (env or scripts/.secrets.env).", file=sys.stderr)
         return 2
     bases = _bases()
     try:
@@ -83,19 +113,11 @@ def main() -> int:
     frames = []
     for base, cz_sym in sym_map.items():
         try:
-            # convert_to_usd so long/short liq are comparable across pairs
-            resp = _get("/liquidation-history", {
-                "symbols": cz_sym, "interval": INTERVAL,
-                "from": t_from, "to": t_to, "convert_to_usd": "true",
-            })
-            hist = resp[0]["history"] if resp else []
-            if not hist:
+            df = fetch_liq_history(cz_sym, INTERVAL, t_from, t_to)  # convert_to_usd inside
+            if df.empty:
                 print(f"  {base:10s} no history")
                 continue
-            df = pd.DataFrame(hist)  # columns: t (unix s), l (long liq), s (short liq)
-            df["date"] = pd.to_datetime(df["t"], unit="s", utc=True)
             df["symbol"] = base + "USDT"
-            df = df.rename(columns={"l": "liq_long_usd", "s": "liq_short_usd"})
             frames.append(df[["date", "symbol", "liq_long_usd", "liq_short_usd"]])
             print(f"  {base:10s} {len(df):6d} buckets  {df['date'].min().date()} → {df['date'].max().date()}")
             time.sleep(0.3)  # stay under 40 req/min

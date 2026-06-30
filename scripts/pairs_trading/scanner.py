@@ -41,7 +41,9 @@ EXIT_Z = 0.5
 STOP_Z = 4.0
 MIN_CORR = 0.85
 MIN_HALFLIFE_H = 2
-MAX_HALFLIFE_H = 480     # 20 days
+MAX_HALFLIFE_H = 72      # 3 days — reject slow-reverting pairs that won't mean-revert in a
+                        # tradeable window (e.g. the 213h SOL/XRP pick that sat open for days).
+                        # Half-life must be << MAX_HOLD_DAYS or the position can't resolve.
 MAX_HOLD_DAYS = 14
 
 
