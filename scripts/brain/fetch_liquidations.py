@@ -46,15 +46,20 @@ def _bases() -> list[str]:
 
 
 def _binance_perp_map(bases: list[str]) -> dict[str, str]:
-    """Map our base assets -> Coinalyze Binance USDT-perp symbol codes via /future-markets."""
+    """Map our base assets -> Coinalyze Binance USDT-perp symbol codes via /future-markets.
+
+    Coinalyze: exchange is a 1-char code (Binance = 'A', confirmed via /exchanges); Binance
+    USDT-M perps look like 'BTCUSDT_PERP.A' (quote USDT, is_perpetual, margined STABLE).
+    """
     markets = _get("/future-markets", {})
     want = {b.upper() for b in bases}
     out: dict[str, str] = {}
     for m in markets:
-        exch = str(m.get("exchange", "")).lower()
         base = str(m.get("base_asset", "")).upper()
-        quote = str(m.get("quote_asset", "")).upper()
-        if "binance" in exch and m.get("is_perpetual") and quote == "USDT" and base in want:
+        if (m.get("exchange") == "A" and m.get("is_perpetual")
+                and str(m.get("quote_asset", "")).upper() == "USDT"
+                and str(m.get("margined", "")).upper() == "STABLE"
+                and base in want):
             out.setdefault(base, m["symbol"])  # first match wins
     return out
 

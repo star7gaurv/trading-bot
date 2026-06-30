@@ -1,0 +1,135 @@
+{
+  "n_pairs": 26,
+  "window": "liquidation-covered span per pair (~2026-04-25\u219206-23)",
+  "horizons": {
+    "1": {
+      "liq_long_z": {
+        "pooled_ic": 0.0182,
+        "n": 70043,
+        "pair_agreement": 0.88,
+        "n_pairs": 26
+      },
+      "liq_short_z": {
+        "pooled_ic": -0.0111,
+        "n": 102529,
+        "pair_agreement": 0.77,
+        "n_pairs": 26
+      },
+      "liq_total_z": {
+        "pooled_ic": 0.0021,
+        "n": 102537,
+        "pair_agreement": 0.65,
+        "n_pairs": 26
+      },
+      "liq_imbalance": {
+        "pooled_ic": 0.0226,
+        "n": 59992,
+        "pair_agreement": 0.88,
+        "n_pairs": 26
+      },
+      "liq_spike": {
+        "pooled_ic": -0.0,
+        "n": 102537,
+        "pair_agreement": 0.46,
+        "n_pairs": 26
+      }
+    },
+    "3": {
+      "liq_long_z": {
+        "pooled_ic": 0.0142,
+        "n": 69991,
+        "pair_agreement": 0.85,
+        "n_pairs": 26
+      },
+      "liq_short_z": {
+        "pooled_ic": -0.0072,
+        "n": 102477,
+        "pair_agreement": 0.73,
+        "n_pairs": 26
+      },
+      "liq_total_z": {
+        "pooled_ic": 0.0002,
+        "n": 102485,
+        "pair_agreement": 0.5,
+        "n_pairs": 26
+      },
+      "liq_imbalance": {
+        "pooled_ic": 0.0161,
+        "n": 59965,
+        "pair_agreement": 0.85,
+        "n_pairs": 26
+      },
+      "liq_spike": {
+        "pooled_ic": -0.0025,
+        "n": 102485,
+        "pair_agreement": 0.62,
+        "n_pairs": 26
+      }
+    },
+    "6": {
+      "liq_long_z": {
+        "pooled_ic": 0.0187,
+        "n": 69913,
+        "pair_agreement": 0.85,
+        "n_pairs": 26
+      },
+      "liq_short_z": {
+        "pooled_ic": -0.0023,
+        "n": 102399,
+        "pair_agreement": 0.54,
+        "n_pairs": 26
+      },
+      "liq_total_z": {
+        "pooled_ic": 0.0063,
+        "n": 102407,
+        "pair_agreement": 0.58,
+        "n_pairs": 26
+      },
+      "liq_imbalance": {
+        "pooled_ic": 0.0191,
+        "n": 59921,
+        "pair_agreement": 0.81,
+        "n_pairs": 26
+      },
+      "liq_spike": {
+        "pooled_ic": 0.0063,
+        "n": 102407,
+        "pair_agreement": 0.58,
+        "n_pairs": 26
+      }
+    },
+    "12": {
+      "liq_long_z": {
+        "pooled_ic": 0.0159,
+        "n": 69757,
+        "pair_agreement": 0.77,
+        "n_pairs": 26
+      },
+      "liq_short_z": {
+        "pooled_ic": -0.0065,
+        "n": 102243,
+        "pair_agreement": 0.65,
+        "n_pairs": 26
+      },
+      "liq_total_z": {
+        "pooled_ic": 0.0005,
+        "n": 102251,
+        "pair_agreement": 0.42,
+        "n_pairs": 26
+      },
+      "liq_imbalance": {
+        "pooled_ic": 0.0274,
+        "n": 59806,
+        "pair_agreement": 0.81,
+        "n_pairs": 26
+      },
+      "liq_spike": {
+        "pooled_ic": 0.0042,
+        "n": 102251,
+        "pair_agreement": 0.54,
+        "n_pairs": 26
+      }
+    }
+  },
+  "graduated": []
+}
