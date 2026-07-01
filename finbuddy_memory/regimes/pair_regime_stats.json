@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-01T21:30:01.087801+00:00",
+  "updated": "2026-07-01T22:00:01.786469+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -10,13 +10,13 @@
   "stats": {
     "UNI/USDT:USDT": {
       "BEAR": {
-        "n": 8,
+        "n": 7,
         "wins": 3,
-        "losses": 5,
-        "wr": 0.375,
-        "pf": 0.639,
-        "profit_usdt": -1.95,
-        "avg_profit_pct": -0.429
+        "losses": 4,
+        "wr": 0.4286,
+        "pf": 0.665,
+        "profit_usdt": -1.74,
+        "avg_profit_pct": -0.436
       },
       "NEUTRAL": {
         "n": 2,
@@ -437,14 +437,6 @@
       "n": 8,
       "wr": 0.375,
       "pf": 0.587
-    },
-    {
-      "pair": "UNI/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=38% PF=0.64 n=8 profit=-1.95",
-      "n": 8,
-      "wr": 0.375,
-      "pf": 0.639
     },
     {
       "pair": "DOT/USDT:USDT",
