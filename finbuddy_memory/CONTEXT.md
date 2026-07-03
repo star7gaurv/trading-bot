@@ -1,5 +1,5 @@
 # FinBuddy — Master Context
-Last updated: 2026-07-03 07:00 UTC
+Last updated: 2026-07-03 07:15 UTC
 
 ## Current Regime
 Regime: **BEAR** | Confidence: 80.0% | Since: 2026-07-03
@@ -12,8 +12,8 @@ News Sentiment: 90.0% bullish
 ## Bot Performance
 Total Trades: 850 | Win Rate: 41.2% | Total P&L: 2.04%
 
-## Open Trades (1)
-- WIF/USDT:USDT: Entry 0.17 | Current 0.17 | P&L: -1.03%
+## Open Trades (0)
+- No open trades
 ## Risk Flags
 - None
 
