@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-03T07:00:01.554667+00:00",
+  "updated": "2026-07-03T07:30:01.885705+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -234,13 +234,13 @@
     },
     "WIF/USDT:USDT": {
       "BEAR": {
-        "n": 14,
+        "n": 15,
         "wins": 10,
-        "losses": 4,
-        "wr": 0.7143,
-        "pf": 1.408,
-        "profit_usdt": 1.11,
-        "avg_profit_pct": 0.137
+        "losses": 5,
+        "wr": 0.6667,
+        "pf": 1.147,
+        "profit_usdt": 0.49,
+        "avg_profit_pct": 0.056
       }
     },
     "TAO/USDT:USDT": {
