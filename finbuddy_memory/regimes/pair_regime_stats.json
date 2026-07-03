@@ -1,11 +1,12 @@
 {
-  "updated": "2026-07-03T13:30:01.982379+00:00",
+  "updated": "2026-07-03T14:00:01.237763+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
     "max_wr": 0.4,
     "max_pf": 0.7,
-    "description": "Block pair-regime if n>=5 AND WR<40% AND PF<0.7"
+    "mode": "and",
+    "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
     "FIL/USDT:USDT": {
