@@ -1,19 +1,19 @@
 # FinBuddy — Master Context
-Last updated: 2026-07-03 22:30 UTC
+Last updated: 2026-07-03 22:45 UTC
 
 ## Current Regime
 Regime: **NEUTRAL** | Confidence: 70.0% | Since: 2026-07-03
 
 ## Market Sentiment
 Fear & Greed: 21 (Extreme Fear)
-BTC Dominance: 55.67%
+BTC Dominance: 55.7%
 News Sentiment: 90.0% bullish
 
 ## Bot Performance
-Total Trades: 852 | Win Rate: 41.2% | Total P&L: 2.16%
+Total Trades: 852 | Win Rate: 41.2% | Total P&L: 2.14%
 
 ## Open Trades (1)
-- TAO/USDT:USDT: Entry 214.62 | Current 215.74 | P&L: 0.48%
+- TAO/USDT:USDT: Entry 214.62 | Current 215.44 | P&L: 0.34%
 ## Risk Flags
 - None
 
