@@ -603,3 +603,4 @@
 | 2026-06-30 20:00:33 | SOL/USDT:USDT | SHORT | 6h00m | -1.16% | -0.66 | time_limit_exit | BEAR | freqai_regression_v23_sh |
 | 2026-07-03 07:00:23 | WIF/USDT:USDT | SHORT | 6h00m | -1.08% | -0.62 | time_limit_exit | BEAR | freqai_regression_v23_sh |
 | 2026-07-03 11:00:31 | TAO/USDT:USDT | LONG | 3h00m | +0.94% | +0.76 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
+| 2026-07-04 01:10:24 | TAO/USDT:USDT | LONG | 6h10m | -0.78% | -0.63 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
