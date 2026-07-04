@@ -607,3 +607,4 @@
 | 2026-07-04 08:00:25 | TAO/USDT:USDT | LONG | 6h00m | -0.10% | -0.08 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-07-04 15:01:50 | TAO/USDT:USDT | LONG | 6h01m | +0.23% | +0.19 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-07-04 16:04:46 | POL/USDT:USDT | LONG | 3h04m | +0.59% | +0.48 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
+| 2026-07-04 18:10:25 | TAO/USDT:USDT | LONG | 2h10m | +1.29% | +1.03 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
