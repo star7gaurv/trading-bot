@@ -176,6 +176,31 @@ def find_candidates() -> list[dict]:
                 except Exception:
                     pass
 
+    # Load rejected promotion keys — configs a human explicitly Skipped (Telegram
+    # button → skipped_*.json) or that were investigated and proven fake (rejected.jsonl).
+    # Root cause fixed 2026-07-01: find_candidates() previously only checked applied.jsonl,
+    # so a Skipped config had no memory — it could (and did — hash 3e3a98b76f8c, proven
+    # bear-beta short noise with OOS WF -441/-3526 USDT on 2026-06-30) resurface as a
+    # "new" promotion candidate on the next daily scan. Both sources feed the same set.
+    rejected_promo_keys: set[str] = set()
+    for skip_file in PROMOTIONS_DIR.glob("skipped_*.json"):
+        try:
+            rec = json.loads(skip_file.read_text())
+            pk = rec.get("promotion_key") or _promotion_key(rec.get("config", {}))
+            rejected_promo_keys.add(pk)
+        except Exception:
+            pass
+    rejected_log = PROMOTIONS_DIR / "rejected.jsonl"
+    if rejected_log.exists():
+        for line in rejected_log.read_text().splitlines():
+            if line.strip():
+                try:
+                    rec = json.loads(line)
+                    pk = rec.get("promotion_key") or _promotion_key(rec.get("config", {}))
+                    rejected_promo_keys.add(pk)
+                except Exception:
+                    pass
+
     # Group by promotion key (not full config hash) so training hyperparam variants
     # (num_leaves, learning_rate, n_estimators) vote toward the same candidate.
     # Representative config = the experiment with highest profit in the group.
@@ -201,6 +226,10 @@ def find_candidates() -> list[dict]:
     for h, g in groups.items():
         # Skip strategy-param sets already promoted (check promo key, not full hash).
         if h in applied_promo_keys:
+            continue
+        # Skip strategy-param sets already Skipped/rejected — never resurface a
+        # proven-fake candidate just because it accumulates more runs.
+        if h in rejected_promo_keys:
             continue
         # Statistical-significance gate: require enough runs in each regime
         if len(g["bull_runs"]) < MIN_BULL_RUNS or len(g["bear_runs"]) < MIN_BEAR_RUNS:
@@ -569,14 +598,47 @@ def apply_promotion(config_hash: str) -> int:
     return 0 if restart_ok else 2
 
 
+def reject_promotion(config_hash: str, reason: str) -> int:
+    """Permanently block a promotion_key from resurfacing as a candidate.
+
+    For candidates proven fake via investigation (not just a Telegram Skip tap) —
+    e.g. a config that passes find_candidates()'s gates in-sample but fails
+    walk-forward OOS. Appends to rejected.jsonl, consulted by find_candidates().
+    Also clears pending.json if it currently holds this hash.
+    """
+    PROMOTIONS_DIR.mkdir(parents=True, exist_ok=True)
+    config = {}
+    if PENDING_FILE.exists():
+        pending = json.loads(PENDING_FILE.read_text())
+        if pending.get("config_hash") == config_hash:
+            config = pending.get("config", {})
+            PENDING_FILE.unlink()
+            print(f"cleared pending.json ({config_hash})")
+    rejected_log = PROMOTIONS_DIR / "rejected.jsonl"
+    with rejected_log.open("a") as f:
+        f.write(json.dumps({
+            "rejected_at":   datetime.now(timezone.utc).isoformat(),
+            "config_hash":   config_hash,
+            "promotion_key": _promotion_key(config) if config else None,
+            "config":        config,
+            "reason":        reason,
+        }) + "\n")
+    print(f"rejected {config_hash} → {rejected_log} ({reason})")
+    return 0
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="FinBuddy Brain promotion engine")
     p.add_argument("--apply", metavar="CONFIG_HASH", help="Apply a pending promotion")
+    p.add_argument("--reject", metavar="CONFIG_HASH", help="Permanently block a candidate from resurfacing")
+    p.add_argument("--reason", default="", help="Reason for --reject (recorded in rejected.jsonl)")
     p.add_argument("--scan",  action="store_true", help="Scan log for candidates (default)")
     args = p.parse_args()
 
     if args.apply:
         return apply_promotion(args.apply)
+    if args.reject:
+        return reject_promotion(args.reject, args.reason)
 
     candidates = find_candidates()
     if not candidates:

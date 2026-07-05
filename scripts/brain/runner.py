@@ -183,7 +183,7 @@ def _compute_metrics_from_raw_trades(trades: list[dict]) -> dict:
             "profit_pct": 0.0, "max_dd": 0.0,
             "long_count": 0, "short_count": 0,
             "exit_signal_count": 0, "exit_signal_wr": 0.0,
-            "stop_loss_count": 0,
+            "stop_loss_count": 0, "stop_loss_exit_rate": 0.0,
         }
 
     wins = sum(1 for t in trades if float(t.get("profit_abs") or 0) > 0)
@@ -244,6 +244,7 @@ def _compute_metrics_from_raw_trades(trades: list[dict]) -> dict:
         "exit_signal_count": exit_signal_count,
         "exit_signal_wr":    round(exit_signal_wr, 4),
         "stop_loss_count":   stop_loss_count,
+        "stop_loss_exit_rate": round(stop_loss_count / n, 4),
     }
 
 
@@ -276,7 +277,7 @@ def parse_zip(zip_path: Path) -> dict | None:
                 "profit_pct": 0.0, "max_dd": 0.0,
                 "long_count": 0, "short_count": 0,
                 "exit_signal_count": 0, "exit_signal_wr": 0.0,
-                "stop_loss_count": 0,
+                "stop_loss_count": 0, "stop_loss_exit_rate": 0.0,
             }
         raw_wr = s.get("winrate") or (s.get("wins", 0) / trades)
 
@@ -324,6 +325,7 @@ def parse_zip(zip_path: Path) -> dict | None:
             "exit_signal_count": exit_signal_count,
             "exit_signal_wr":    round(exit_signal_wr, 4),
             "stop_loss_count":   stop_loss_count,
+            "stop_loss_exit_rate": round(stop_loss_count / trades, 4) if trades else 0.0,
         }
     except Exception as e:
         print(f"[parse] error: {e}", file=sys.stderr)

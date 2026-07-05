@@ -131,8 +131,17 @@ def compute_stats(trades: list[dict], lookback_days: int) -> dict:
     return dict(stats)
 
 
-def find_blocked(stats: dict, min_trades: int, max_wr: float, max_pf: float) -> list[dict]:
-    """Apply the block rule to find pair-regime combos that should be blocked."""
+def find_blocked(stats: dict, min_trades: int, max_wr: float, max_pf: float,
+                  mode: str = "and") -> list[dict]:
+    """Apply the block rule to find pair-regime combos that should be blocked.
+
+    mode="and" (default, current live behaviour): block only if WR<max_wr AND PF<max_pf.
+    mode="or": block if EITHER WR<max_wr OR PF<max_pf — catches combos that fail on
+    just one axis (e.g. WR=42%/PF=0.5, which the AND rule lets through). Untested
+    live; see finbuddy_memory/reports/pair_regime_gate_comparison.md before flipping
+    the cron's --mode default.
+    """
+    assert mode in ("and", "or"), f"unknown mode: {mode}"
     blocked = []
     for pair, by_regime in stats.items():
         for regime, s in by_regime.items():
@@ -141,7 +150,10 @@ def find_blocked(stats: dict, min_trades: int, max_wr: float, max_pf: float) -> 
             # PF=None means infinite (all wins) — never block infinite-PF combos
             if s["pf"] is None:
                 continue
-            if s["wr"] < max_wr and s["pf"] < max_pf:
+            wr_fail = s["wr"] < max_wr
+            pf_fail = s["pf"] < max_pf
+            should_block = (wr_fail and pf_fail) if mode == "and" else (wr_fail or pf_fail)
+            if should_block:
                 blocked.append({
                     "pair":   pair,
                     "regime": regime,
@@ -157,8 +169,10 @@ def find_blocked(stats: dict, min_trades: int, max_wr: float, max_pf: float) -> 
 # ── Output ─────────────────────────────────────────────────────────────────
 
 def write_json(stats: dict, blocked: list[dict], lookback_days: int,
-               min_trades: int, max_wr: float, max_pf: float) -> None:
-    OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
+               min_trades: int, max_wr: float, max_pf: float,
+               mode: str = "and", out_path: Path = OUT_JSON) -> None:
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    joiner = "AND" if mode == "and" else "OR"
     payload = {
         "updated":       datetime.now(timezone.utc).isoformat(),
         "lookback_days": lookback_days,
@@ -166,12 +180,13 @@ def write_json(stats: dict, blocked: list[dict], lookback_days: int,
             "min_trades": min_trades,
             "max_wr":     max_wr,
             "max_pf":     max_pf,
-            "description": f"Block pair-regime if n>={min_trades} AND WR<{max_wr*100:.0f}% AND PF<{max_pf}",
+            "mode":       mode,
+            "description": f"Block pair-regime if n>={min_trades} AND (WR<{max_wr*100:.0f}% {joiner} PF<{max_pf})",
         },
         "stats":   stats,
         "blocked": blocked,
     }
-    OUT_JSON.write_text(json.dumps(payload, indent=2, default=str))
+    out_path.write_text(json.dumps(payload, indent=2, default=str))
 
 
 def print_table(stats: dict, blocked: list[dict]) -> None:
@@ -206,6 +221,11 @@ def main() -> int:
     p.add_argument("--min-trades",    type=int,   default=DEFAULT_MIN_TRADES)
     p.add_argument("--max-wr",        type=float, default=DEFAULT_MAX_WR)
     p.add_argument("--max-pf",        type=float, default=DEFAULT_MAX_PF)
+    p.add_argument("--mode",          choices=["and", "or"], default="and",
+                   help="'and' = current live rule (block only if WR AND PF both fail). "
+                        "'or' = tightened rule, untested live (block if EITHER fails).")
+    p.add_argument("--out",           type=Path, default=OUT_JSON,
+                   help="output path — override for dry-run comparisons without touching the live file")
     p.add_argument("--quiet",         action="store_true", help="suppress table, just write JSON")
     args = p.parse_args()
 
@@ -215,17 +235,19 @@ def main() -> int:
         return 1
 
     stats   = compute_stats(trades, args.lookback_days)
-    blocked = find_blocked(stats, args.min_trades, args.max_wr, args.max_pf)
+    blocked = find_blocked(stats, args.min_trades, args.max_wr, args.max_pf, mode=args.mode)
 
-    write_json(stats, blocked, args.lookback_days, args.min_trades, args.max_wr, args.max_pf)
+    write_json(stats, blocked, args.lookback_days, args.min_trades, args.max_wr, args.max_pf,
+               mode=args.mode, out_path=args.out)
 
     if not args.quiet:
+        joiner = "AND" if args.mode == "and" else "OR"
         print(f"Parsed {len(trades)} closed trades. "
               f"Lookback: {args.lookback_days}d. "
-              f"Block rule: n>={args.min_trades} AND WR<{args.max_wr*100:.0f}% AND PF<{args.max_pf}")
+              f"Block rule: n>={args.min_trades} AND (WR<{args.max_wr*100:.0f}% {joiner} PF<{args.max_pf})")
         print_table(stats, blocked)
 
-    print(f"→ wrote {OUT_JSON}")
+    print(f"→ wrote {args.out}")
     return 0
 
 
