@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-05T18:00:02.076382+00:00",
+  "updated": "2026-07-05T18:30:01.829716+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -20,13 +20,13 @@
         "avg_profit_pct": 1.72
       },
       "NEUTRAL": {
-        "n": 5,
+        "n": 6,
         "wins": 2,
-        "losses": 3,
-        "wr": 0.4,
-        "pf": 0.625,
-        "profit_usdt": -1.04,
-        "avg_profit_pct": -0.258
+        "losses": 4,
+        "wr": 0.3333,
+        "pf": 0.452,
+        "profit_usdt": -2.1,
+        "avg_profit_pct": -0.433
       }
     },
     "ARB/USDT:USDT": {
@@ -379,6 +379,15 @@
         "pf": 0.051,
         "profit_usdt": -1.67,
         "avg_profit_pct": -0.482
+      },
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.57,
+        "avg_profit_pct": -0.7
       }
     },
     "OP/USDT:USDT": {
@@ -441,6 +450,14 @@
       "n": 10,
       "wr": 0.3,
       "pf": 0.475
+    },
+    {
+      "pair": "FIL/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=33% PF=0.45 n=6 profit=-2.10",
+      "n": 6,
+      "wr": 0.3333,
+      "pf": 0.452
     },
     {
       "pair": "LINK/USDT:USDT",
