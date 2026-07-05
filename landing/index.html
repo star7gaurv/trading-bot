@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinBuddy — An autonomous AI brain for crypto trading</title>
+<meta name="description" content="FinBuddy is a self-evolving AI trading brain built on FreqTrade/FreqAI — long &amp; short futures signals, walk-forward validated, built by a solo developer.">
+<style>
+  :root {
+    --bg: #0b0f14;
+    --bg-alt: #10151d;
+    --border: #1f2733;
+    --text: #e6edf3;
+    --text-dim: #8b96a5;
+    --accent: #4fd1c5;
+    --accent-dim: #2c6e68;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  a { color: var(--accent); }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+
+  header {
+    padding: 96px 0 64px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .badge {
+    display: inline-block;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent-dim);
+    border-radius: 999px;
+    padding: 4px 14px;
+    margin-bottom: 20px;
+  }
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    margin: 0 0 16px;
+    letter-spacing: -0.02em;
+  }
+  .sub {
+    font-size: 1.15rem;
+    color: var(--text-dim);
+    max-width: 640px;
+    margin: 0 auto 32px;
+  }
+  .cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-block;
+    padding: 12px 26px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 0.95rem;
+  }
+  .btn-primary { background: var(--accent); color: #04201d; }
+  .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+  section { padding: 64px 0; border-bottom: 1px solid var(--border); }
+  section:last-of-type { border-bottom: none; }
+  h2 {
+    font-size: 1.6rem;
+    margin: 0 0 12px;
+  }
+  .section-lead {
+    color: var(--text-dim);
+    max-width: 640px;
+    margin-bottom: 40px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+  }
+  .card {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+  }
+  .card h3 {
+    margin: 0 0 8px;
+    font-size: 1.05rem;
+  }
+  .card p {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 0.92rem;
+  }
+  .status-tag {
+    display: inline-block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 5px;
+    padding: 2px 8px;
+    margin-bottom: 10px;
+  }
+  .tag-live { background: #133d2e; color: #4fd18a; }
+  .tag-paper { background: #2b2b13; color: #d1c04f; }
+  .tag-research { background: #1a2233; color: #6f9ade; }
+
+  .honest-box {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 20px 24px;
+  }
+  .honest-box p { margin: 0 0 10px; }
+  .honest-box p:last-child { margin-bottom: 0; }
+
+  footer {
+    padding: 48px 0 80px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+
+  <header>
+    <div class="wrap">
+      <span class="badge">Solo-built &middot; Self-evolving &middot; Research-first</span>
+      <h1>An autonomous AI brain for crypto trading.</h1>
+      <p class="sub">
+        FinBuddy isn't a bot that follows fixed rules — it's a system that observes markets,
+        forms hypotheses, tests them out-of-sample, and promotes only what actually clears
+        the bar. Built on FreqTrade + FreqAI, running long &amp; short on futures perpetuals.
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="mailto:hello@star7gaurav.in?subject=FinBuddy%20waitlist">Join the waitlist</a>
+        <a class="btn btn-secondary" href="/dashboard">View the live dashboard</a>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="wrap">
+      <h2>What it actually does</h2>
+      <p class="section-lead">One brain, several ways it looks for edge. Each module is independently measured before it's trusted with anything.</p>
+      <div class="grid">
+        <div class="card">
+          <span class="status-tag tag-live">Live (dry-run)</span>
+          <h3>Directional (long/short)</h3>
+          <p>FreqAI-driven regression model on Binance Futures USDT-M, long and short, with regime-aware entry gating and confidence-based leverage.</p>
+        </div>
+        <div class="card">
+          <span class="status-tag tag-paper">Paper</span>
+          <h3>Funding-Rate Farming</h3>
+          <p>Cash-and-carry style funding capture, tracked with honest fees before any real capital is considered.</p>
+        </div>
+        <div class="card">
+          <span class="status-tag tag-paper">Paper</span>
+          <h3>Pairs Trading</h3>
+          <p>Beta-weighted statistical-arbitrage pairs, opened on divergence and closed on mean reversion.</p>
+        </div>
+        <div class="card">
+          <span class="status-tag tag-paper">Paper</span>
+          <h3>Grid Trading</h3>
+          <p>Range-bound oscillation harvesting on pairs identified as low-trend, high-efficiency-ratio candidates.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>How it's actually validated</h2>
+      <p class="section-lead">Nothing gets promoted to live on a good-looking backtest alone.</p>
+      <div class="grid">
+        <div class="card">
+          <h3>Walk-forward, not just backtest</h3>
+          <p>Every candidate config is evaluated out-of-sample across rolling folds before it's even considered for promotion.</p>
+        </div>
+        <div class="card">
+          <h3>Hard statistical gates</h3>
+          <p>Minimum trade counts, minimum profit factor, and win-rate floors on both bull and bear windows — not just "profit &gt; 0".</p>
+        </div>
+        <div class="card">
+          <h3>Self-evolving hypothesis engine</h3>
+          <p>The brain generates, tests, and prunes its own experiments continuously — hundreds of them — and the honest failures get written down, not hidden.</p>
+        </div>
+        <div class="card">
+          <h3>Non-custodial by design</h3>
+          <p>The planned service model never touches your funds — a thin executor runs against your own exchange API keys, scoped to trading only.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Where things honestly stand</h2>
+      <div class="honest-box">
+        <p>
+          FinBuddy is <strong>dry-run only</strong> right now — no real capital is being traded.
+          The research process has been unusually rigorous for a solo project: every failed
+          hypothesis is written down, not swept under the rug, and nothing gets promoted without
+          clearing real out-of-sample bars.
+        </p>
+        <p>
+          That rigor is the point. A system that tells you the truth about what isn't working yet
+          is worth more than one that hides it — and it's how we'll know the moment something
+          genuinely is.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <p>FinBuddy — built and operated by one person, from a phone, on a $5/month server.</p>
+      <p><a href="mailto:hello@star7gaurav.in">hello@star7gaurav.in</a></p>
+    </div>
+  </footer>
+
+</body>
+</html>
