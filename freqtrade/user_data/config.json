@@ -85,7 +85,7 @@
     ],
     "telegram": {
         "enabled": true,
-        "token": "REDACTED-FREQTRADE__TELEGRAM__TOKEN",
+        "token": "REPLACED_BY_ENV__see_freqtrade/.env",
         "chat_id": "5622292536"
     },
     "api_server": {
@@ -94,9 +94,9 @@
         "listen_port": 8080,
         "verbosity": "error",
         "enable_openapi": true,
-        "jwt_secret_key": "REDACTED-FREQTRADE__API_SERVER__JWT_SECRET_KEY",
-        "username": "bot",
-        "password": "REDACTED-FREQTRADE__API_SERVER__PASSWORD"
+        "jwt_secret_key": "REPLACED_BY_ENV__see_freqtrade/.env",
+        "username": "REPLACED_BY_ENV",
+        "password": "REPLACED_BY_ENV"
     },
     "bot_name": "freqtrade",
     "initial_state": "running",

@@ -29,12 +29,14 @@ from base64 import b64encode
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent / "lib"))
+from ft_creds import get_ft_auth, read_freqtrade_env
+
 CONFIG_PATH = Path("/home/ubuntu/var/www/html/trade/freqtrade/user_data/config.json")
 REGIME_PATH = Path("/home/ubuntu/var/www/html/trade/finbuddy_memory/regimes/current.json")
 FILE_LOG    = Path("/home/ubuntu/var/www/html/trade/freqtrade/user_data/logs/freqtrade.log")
-API_BASE    = "http://localhost:8080/api/v1"
-API_USER    = os.environ.get("FT_USER", "bot")
-API_PASS    = os.environ.get("FT_API_PASS", "REDACTED-FREQTRADE__API_SERVER__PASSWORD")
+API_BASE    = "http://127.0.0.1:8080/api/v1"
+API_USER, API_PASS = get_ft_auth()
 LOG_TS_RE   = re.compile(r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})")
 
 
@@ -73,10 +75,13 @@ def telegram_send(token: str, chat_id: str, msg: str) -> bool:
 
 
 def load_telegram_creds() -> tuple[str, str] | None:
+    # 2026-07-05: config.json's telegram.token is now a placeholder (real value
+    # moved to freqtrade/.env FREQTRADE__TELEGRAM__TOKEN) — read from there instead.
     try:
         cfg = json.loads(CONFIG_PATH.read_text())
-        tg = cfg.get("telegram") or {}
-        return tg.get("token"), tg.get("chat_id")
+        chat_id = (cfg.get("telegram") or {}).get("chat_id")
+        token = read_freqtrade_env().get("FREQTRADE__TELEGRAM__TOKEN")
+        return token, chat_id
     except Exception:
         return None, None
 

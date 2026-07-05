@@ -23,7 +23,17 @@ log = logging.getLogger(__name__)
 REPO_ROOT = Path("/home/ubuntu/var/www/html/trade")
 RESULTS_CSV = REPO_ROOT / "_autobacktest_v23_results.csv"
 COMPOSE_FILE = REPO_ROOT / "freqtrade" / "docker-compose.yml"
-TELEGRAM_TOKEN = "REDACTED-FREQTRADE__TELEGRAM__TOKEN"
+def _load_telegram_token():
+    # 2026-07-05: was a hardcoded literal (committed to git); read from freqtrade/.env instead.
+    try:
+        for _line in open("/home/ubuntu/var/www/html/trade/freqtrade/.env"):
+            if _line.startswith("BRAIN_TELEGRAM_TOKEN="):
+                return _line.strip().split("=", 1)[1]
+    except Exception:
+        pass
+    return None
+
+TELEGRAM_TOKEN = _load_telegram_token()
 TELEGRAM_CHAT  = "5622292536"
 
 def _tg(msg: str) -> None:

@@ -151,7 +151,7 @@ pip install pytrends --break-system-packages
 ```
 TradingView Pine Script alert fires
     ↓
-Webhook POST to http://REDACTED-SERVER_IP:9999/tradingview
+Webhook POST to http://<server IP — see freqtrade/.env>:9999/tradingview
     ↓
 Lightweight Flask/FastAPI receiver on server (port 9999)
     ↓

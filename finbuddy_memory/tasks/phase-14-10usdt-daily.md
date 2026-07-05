@@ -167,7 +167,7 @@ Also update `docker-compose.yml` environment block defaults to match.
 
 ```bash
 # P&L + WR + trades
-curl -s -u bot:REDACTED-FREQTRADE__API_SERVER__PASSWORD http://localhost:8080/api/v1/profit | python3 -c "
+curl -s -u bot:$FT_PASS  # see freqtrade/.env http://localhost:8080/api/v1/profit | python3 -c "
 import json,sys; d=json.load(sys.stdin); tc=max(d.get('trade_count') or 1,1)
 print(f'P&L: +{d[\"profit_closed_coin\"]:.2f} USDT | WR: {d[\"winning_trades\"]*100/tc:.0f}% | PF: {d[\"profit_factor\"]:.2f} | Trades: {tc}')
 "

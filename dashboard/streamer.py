@@ -50,9 +50,11 @@ from pydantic import BaseModel
 
 # Local modules (same directory)
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts" / "lib"))
 from auth import check_password, issue_token, verify_token, extract_bearer  # noqa: E402
 from cron_status import parse_crontab, summarize as summarize_crons  # noqa: E402
 from system_health import full_snapshot as system_snapshot  # noqa: E402
+from ft_creds import get_ft_auth  # noqa: E402
 
 
 # ─────────────────────────── Paths ───────────────────────────
@@ -73,8 +75,7 @@ ACTIVE_STALE_S = 12 * 3600
 
 # FreqTrade API
 FT_BASE = "http://127.0.0.1:8080/api/v1"
-FT_USER = os.environ.get("FT_USER", "bot")
-FT_PASS = os.environ.get("FT_PASS", "REDACTED-FREQTRADE__API_SERVER__PASSWORD")
+FT_USER, FT_PASS = get_ft_auth()
 FT_AUTH = "Basic " + base64.b64encode(f"{FT_USER}:{FT_PASS}".encode()).decode()
 
 
@@ -101,9 +102,16 @@ _preflight()
 
 app = FastAPI(title="FinBuddy Dashboard Streamer")
 
+# 2026-07-05: server IP moved out of source into an env var (DASHBOARD_EXTRA_ORIGIN,
+# optional) instead of being hardcoded and committed to git.
+_extra_origin = os.environ.get("DASHBOARD_EXTRA_ORIGIN")
+_cors_origins = ["https://trade.star7gaurav.in", "http://localhost:5173", "http://localhost:8502"]
+if _extra_origin:
+    _cors_origins.append(_extra_origin)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://trade.star7gaurav.in", "http://localhost:5173", "http://localhost:8502", "http://REDACTED-SERVER_IP:5173"],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

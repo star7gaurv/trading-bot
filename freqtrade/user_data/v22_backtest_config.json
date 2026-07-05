@@ -74,9 +74,9 @@
         "listen_port": 8080,
         "verbosity": "error",
         "enable_openapi": true,
-        "jwt_secret_key": "REDACTED-FREQTRADE__API_SERVER__JWT_SECRET_KEY",
+        "jwt_secret_key": "disabled",
         "username": "bot",
-        "password": "REDACTED-FREQTRADE__API_SERVER__PASSWORD"
+        "password": "disabled"
     },
     "bot_name": "freqtrade",
     "initial_state": "running",

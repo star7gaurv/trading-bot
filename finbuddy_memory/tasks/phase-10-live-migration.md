@@ -73,11 +73,11 @@ set -e
 echo "🛑 KILL SWITCH ACTIVATED — $(date)" | tee -a /home/ubuntu/.finbuddy/logs/kill_switch.log
 
 # Stop FreqTrade from opening new trades
-curl -s -X POST -u bot:REDACTED-FREQTRADE__API_SERVER__PASSWORD http://localhost:8080/api/v1/stopbuy
+curl -s -X POST -u bot:$FT_PASS  # see freqtrade/.env http://localhost:8080/api/v1/stopbuy
 echo "New trade entries: BLOCKED"
 
 # Cancel all open orders
-curl -s -X POST -u bot:REDACTED-FREQTRADE__API_SERVER__PASSWORD http://localhost:8080/api/v1/forceexit/all -H 'Content-Type: application/json' -d '{"ordertype": "market"}'
+curl -s -X POST -u bot:$FT_PASS  # see freqtrade/.env http://localhost:8080/api/v1/forceexit/all -H 'Content-Type: application/json' -d '{"ordertype": "market"}'
 echo "All open positions: FORCE EXITED"
 
 # Stop the container
@@ -152,10 +152,10 @@ Run through this list manually on go-live day:
 PRE-FLIGHT CHECKLIST — LIVE TRADING DAY 1
 
 SECURITY
-[ ] Futures API key IP-whitelisted to REDACTED-SERVER_IP only
+[ ] Futures API key IP-whitelisted to <server IP — see freqtrade/.env> only
 [ ] No withdrawal permissions on API key
 [ ] .env file NOT committed to git (verify: git status)
-[ ] All passwords changed from defaults (bot:REDACTED-FREQTRADE__API_SERVER__PASSWORD → unique password)
+[ ] All passwords changed from defaults (bot:$FT_PASS  # see freqtrade/.env → unique password)
 
 RISK
 [ ] Circuit breaker tested and confirmed working on dry-run
@@ -200,7 +200,7 @@ ONCE LIVE
 
 Command for quick daily check from phone (Termius):
 ```bash
-curl -s -u bot:REDACTED-FREQTRADE__API_SERVER__PASSWORD http://localhost:8080/api/v1/profit | python3 -m json.tool | grep -E 'profit_all|trade_count|winning_trades|max_drawdown'
+curl -s -u bot:$FT_PASS  # see freqtrade/.env http://localhost:8080/api/v1/profit | python3 -m json.tool | grep -E 'profit_all|trade_count|winning_trades|max_drawdown'
 ```
 
 ---

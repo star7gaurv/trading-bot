@@ -19,7 +19,7 @@
 > **Note:** The workflow showed `n8n.workflow.failed` on 2026-04-26 — this is a runtime execution error inside the workflow logic, not a configuration problem. The wiring is correct. The failure should be investigated in the N8N execution log.
 
 ### Steps
-1. SSH into server: `ssh ubuntu@REDACTED-SERVER_IP`
+1. SSH into server: `ssh ubuntu@<server IP — see freqtrade/.env>`
 2. Open N8N at `https://n8n.star7gaurav.in`
 3. Find the "Trade Event Handler" workflow
 4. Click the FreqTrade Webhook node → copy the **Production URL**
@@ -97,7 +97,7 @@ All suspicious/pump-and-dump tokens are now permanently blocked from trading.
 ### Steps
 1. Check current whitelist:
    ```bash
-   curl -s -u bot:REDACTED-FREQTRADE__API_SERVER__PASSWORD http://localhost:8080/api/v1/whitelist | python3 -m json.tool
+   curl -s -u bot:$FT_PASS  # see freqtrade/.env http://localhost:8080/api/v1/whitelist | python3 -m json.tool
    ```
 2. Identify suspicious pairs (Chinese characters, random strings, very low volume)
 3. Edit `config.json` → `exchange.pair_whitelist` — remove suspicious pairs

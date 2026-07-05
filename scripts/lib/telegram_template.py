@@ -48,14 +48,20 @@ import urllib.request
 from enum import Enum
 from typing import Any
 
-# Telegram credentials — env vars take precedence over hardcoded fallback.
-# To rotate the token: set TELEGRAM_TOKEN in environment (e.g. /etc/environment
-# or freqtrade/.env) and remove the hardcoded fallback once verified.
+# Telegram credentials — env vars take precedence, then freqtrade/.env (2026-07-05:
+# removed the hardcoded literal fallback that used to live here; rotate by editing
+# freqtrade/.env only, no source file needs to change).
 import os as _os
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).parent))
+from ft_creds import read_freqtrade_env as _read_ft_env
+
+_ft_env = _read_ft_env()
 TELEGRAM_TOKEN = (
     _os.getenv("BRAIN_TELEGRAM_TOKEN")
     or _os.getenv("TELEGRAM_TOKEN")
-    or "REDACTED-BRAIN_TELEGRAM_TOKEN"
+    or _ft_env.get("BRAIN_TELEGRAM_TOKEN")
 )
 TELEGRAM_CHAT  = _os.getenv("TELEGRAM_CHAT_ID") or "5622292536"
 

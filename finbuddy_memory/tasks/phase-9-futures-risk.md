@@ -103,7 +103,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 
 FT_API = "http://localhost:8080/api/v1"
-FT_AUTH = ("bot", os.getenv("FT_API_PASSWORD", "REDACTED-FREQTRADE__API_SERVER__PASSWORD"))
+FT_AUTH = ("bot", os.getenv("FT_API_PASSWORD", "<see freqtrade/.env>"))
 FLAG_FILE = Path("/home/ubuntu/.finbuddy/TRADING_PAUSED")
 DD_THRESHOLD = 0.10  # 10% daily drawdown
 

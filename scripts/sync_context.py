@@ -40,6 +40,9 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent / "lib"))
+from ft_creds import get_ft_auth
+
 # ---------- paths ----------
 REPO = Path("/home/ubuntu/var/www/html/trade")
 STRATEGY_FILE = REPO / "freqtrade/user_data/strategies/FinBuddyFreqAI.py"
@@ -51,11 +54,8 @@ WF_RESULTS_DIR = REPO / "walkforward_results"
 LOG_FILE = REPO / "freqtrade/user_data/logs/freqtrade.log"
 STATE_FILE = Path("/home/ubuntu/.finbuddy/state/sync_context_prev.json")
 
-FREQTRADE_API = "http://localhost:8080/api/v1"
-FREQTRADE_AUTH = (
-    os.environ.get("FT_USER", "bot"),
-    os.environ.get("FT_API_PASS", "REDACTED-FREQTRADE__API_SERVER__PASSWORD"),
-)
+FREQTRADE_API = "http://127.0.0.1:8080/api/v1"
+FREQTRADE_AUTH = get_ft_auth()
 
 SYNC_START = "<!-- AUTO-SYNC-START -->"
 SYNC_END = "<!-- AUTO-SYNC-END -->"

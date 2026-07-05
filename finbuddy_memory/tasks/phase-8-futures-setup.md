@@ -19,7 +19,7 @@ Create a **dedicated Futures API key** on Binance with restricted permissions.
 1. Log into Binance → Account → API Management
 2. Create new API key labeled `finbuddy-futures-trading`
 3. Permissions: ✅ Enable Futures Trading | ❌ No Spot | ❌ No Withdrawals | ❌ No Transfer
-4. IP Whitelist: Add `REDACTED-SERVER_IP` (server IP) — **mandatory**
+4. IP Whitelist: Add `<server IP — see freqtrade/.env>` (server IP) — **mandatory**
 5. Store securely on server:
    ```bash
    echo 'BINANCE_FUTURES_API_KEY=your_key_here' >> /home/ubuntu/var/www/html/trade/freqtrade/.env

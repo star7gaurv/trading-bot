@@ -88,7 +88,7 @@ def print_instructions():
     print()
     print("  2. Restart bot:  cd /home/ubuntu/var/www/html/trade/freqtrade && docker-compose up -d")
     print()
-    print("  3. Confirm live: curl -s -u bot:REDACTED-FREQTRADE__API_SERVER__PASSWORD http://localhost:8080/api/v1/status | grep dry_run")
+    print("  3. Confirm live: curl -s -u \"$FT_USER:$FT_PASS\" http://127.0.0.1:8080/api/v1/status | grep dry_run  # creds in freqtrade/.env")
     print()
     print(f"  {RED}{BOLD}NEVER run with real capital until walk-forward PROMOTES.{RESET}")
     print(f"  {RED}Current walk-forward must show Verdict: PROMOTE before going live.{RESET}")

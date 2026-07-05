@@ -25,6 +25,9 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
+from ft_creds import get_ft_auth
+
 # --- Paths ---
 REPO_ROOT   = Path(os.getenv("REPO_ROOT",   "/home/ubuntu/var/www/html/trade/freqtrade"))
 VAULT_ROOT  = REPO_ROOT / "finbuddy_memory"
@@ -33,9 +36,8 @@ REGIME_FILE = VAULT_ROOT / "regimes" / "current.md"
 RESEARCH_DIR = VAULT_ROOT / "research"
 
 # FreqTrade API (local)
-FT_API_BASE = os.getenv("FT_API_BASE", "http://localhost:8080")
-FT_USER     = os.getenv("FT_API_USER", "bot")
-FT_PASS     = os.getenv("FT_API_PASS", "REDACTED-FREQTRADE__API_SERVER__PASSWORD")
+FT_API_BASE = os.getenv("FT_API_BASE", "http://127.0.0.1:8080")
+FT_USER, FT_PASS = get_ft_auth()
 
 # External data file (Phase 2 output)
 EXT_DATA    = Path("/tmp/finbuddy_ext_data.json")

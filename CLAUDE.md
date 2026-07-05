@@ -97,7 +97,7 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 | Component | Detail |
 |---|---|
 | Server | Oracle Free Tier, Ubuntu 24.04 ARM64, 4 vCPU, 24GB RAM |
-| Server IP | `REDACTED-SERVER_IP` |
+| Server IP | (see `freqtrade/.env` — not committed) |
 | Server user | `ubuntu` (SSH), sometimes seen as `opc` for older files |
 | Docker Compose root | `/home/ubuntu/var/www/html/trade/` |
 | FreqTrade version | 2026.3, Docker container |
@@ -126,7 +126,7 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 - FreqAI model: **LightGBMRegressor** (predicts z-scored `&-future_return`, N(0,1) distribution). **DI disabled (DI_threshold=0)** and **SVM disabled** (verified live config 2026-06-12 — the datasieve "could not find step di" log line is cosmetic).
 - **1000 USDT** virtual wallet, max 8 open trades
 - **Confidence-based leverage** (commit `60d4fb4`): 1x / 2x / 3x tiers based on `centered_pred / threshold` ratio. Fallback LOW (1x).
-- API: `http://localhost:8080/api/v1` — user: `bot`, pass: `REDACTED-FREQTRADE__API_SERVER__PASSWORD`
+- API: `http://127.0.0.1:8080/api/v1` (loopback-only since 2026-07-05 — see docker-compose.yml port binding) — credentials in `freqtrade/.env` (not committed), not documented here
 - Whitelist: **26 pairs** (trimmed from 37 on 2026-05-24 — removed DASH/ZEC/BCH/DOGE/AAVE/TRX/1000SHIB/BNB/INJ/HBAR/ATOM), **1h timeframe** (switched from 15m 2026-06-21; informative TFs ['4h','1d']; each pair has historical data on 15m + 30m + 1h + 4h + 1d)
 - **Per-pair-per-regime gate active** — `pair_regime_stats.json` blocks pair-regime combos with rolling 30d (n≥5, WR<40%, PF<0.7)
 - Strategy env vars (live): K_TP=3.0, K_SL=2.0, **LONG_THRESHOLD=0.7, SHORT_THRESHOLD=-0.6, STABILITY_N=1** (RAISED 2026-06-17 from 0.3/-0.3 — Phase-1 stop-the-bleed: per-trade expectancy is negative and profit is monotonic in trade frequency, so fewer/more-selective entries reduce stop-loss bleed. Asymmetric: longs are the worse side. Source: `freqtrade/.env`. See 2026-06-17 session note.)
@@ -367,13 +367,12 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 
 | Item | Value |
 |---|---|
-| Server IP | `REDACTED-SERVER_IP` |
-| FreqTrade API | `http://localhost:8080/api/v1` |
-| FreqTrade API user | `bot` |
-| FreqTrade API password | `REDACTED-FREQTRADE__API_SERVER__PASSWORD` |
+| Server IP | (see `freqtrade/.env` — not committed) |
+| FreqTrade API | `http://127.0.0.1:8080/api/v1` (loopback-only since 2026-07-05) |
+| FreqTrade API user/password | see `freqtrade/.env` — not committed (was hardcoded here + in config.json until 2026-07-05 security pass) |
 | FreqTrade UI | `https://trade.star7gaurav.in` |
 | N8N | `https://n8n.star7gaurav.in` (disabled) |
-| N8N admin | `admin` / `REDACTED-N8N_ADMIN_PASSWORD` |
+| N8N admin | see server — not documented here (was hardcoded until 2026-07-05 security pass) |
 | Telegram Chat ID | `5622292536` |
 | Docker Compose path | `/home/ubuntu/var/www/html/trade/` |
 | Active strategy | `freqtrade/user_data/strategies/FinBuddyFreqAI_v23.py` |

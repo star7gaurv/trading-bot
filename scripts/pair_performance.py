@@ -9,13 +9,18 @@ Usage:
 """
 
 import argparse
+import os
+import sys
 import requests
 from collections import defaultdict
 from datetime import datetime
+from pathlib import Path
 
-API = "http://localhost:8080/api/v1"
-import os
-AUTH = (os.environ.get("FT_USER", "bot"), os.environ.get("FT_API_PASS", "REDACTED-FREQTRADE__API_SERVER__PASSWORD"))
+sys.path.insert(0, str(Path(__file__).parent / "lib"))
+from ft_creds import get_ft_auth
+
+API = "http://127.0.0.1:8080/api/v1"
+AUTH = get_ft_auth()
 
 
 def fetch_trades(since_date=None):

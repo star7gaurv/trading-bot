@@ -54,3 +54,9 @@ finbuddy_memory/historical/orderflow/
 
 # Brain API secrets (Coinalyze etc.) — never commit
 scripts/.secrets.env
+
+# Config backups made by promote.py's apply_promotion() before each promotion —
+# these are point-in-time snapshots for local rollback only, not history worth
+# tracking (and pre-2026-07-05 ones contain real secrets baked in from before
+# the api_server/telegram secrets were moved to freqtrade/.env).
+freqtrade/user_data/config.json.bak-*

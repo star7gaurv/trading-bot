@@ -29,6 +29,13 @@ services:
       - GROQ_API_KEY=${GROQ_API_KEY:-}
       - FREQTRADE__EXCHANGE__KEY=${FREQTRADE__EXCHANGE__KEY}
       - FREQTRADE__EXCHANGE__SECRET=${FREQTRADE__EXCHANGE__SECRET}
+      # API server auth (2026-07-05): moved out of config.json (which is git-tracked) into
+      # .env (gitignored) — same values, just no longer committed in plaintext. Also now
+      # only reachable via the loopback-only port publish above.
+      - FREQTRADE__API_SERVER__JWT_SECRET_KEY=${FREQTRADE__API_SERVER__JWT_SECRET_KEY}
+      - FREQTRADE__API_SERVER__USERNAME=${FREQTRADE__API_SERVER__USERNAME}
+      - FREQTRADE__API_SERVER__PASSWORD=${FREQTRADE__API_SERVER__PASSWORD}
+      - FREQTRADE__TELEGRAM__TOKEN=${FREQTRADE__TELEGRAM__TOKEN}
       # FREQAI_* strategy knobs (brain's promote.apply_promotion writes these to .env;
       # without explicit mapping here, restarts wouldn't propagate the new values to the
       # strategy. Defaults match the strategy's defaults so missing vars are safe.)
@@ -84,11 +91,15 @@ services:
       # Without this mount the strategy silently falls back to wr=0.50 (WR feedback disabled).
       # Added 2026-05-27 to re-enable the bidirectional threshold adjustment (Fix 8).
       - "/home/ubuntu/.finbuddy:/home/ubuntu/.finbuddy:ro"
-    # Expose api on port 8080 (localhost only)
+    # Expose api on port 8080, bound to the HOST's loopback interface only (127.0.0.1) —
+    # not reachable from outside the server. Fixed 2026-07-05: was "8080:8080" which
+    # published on 0.0.0.0 (all interfaces), confirmed reachable externally. Host-side
+    # scripts (streamer.py, daily_summary.py, etc.) already call 127.0.0.1/localhost,
+    # so nothing else needs to change.
     # Please read the https://www.freqtrade.io/en/stable/rest-api/ documentation
     # for more information.
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     # Default command used when running `docker compose up`
     command: >
       trade

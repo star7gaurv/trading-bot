@@ -60,7 +60,7 @@ def main():
     print("[ ] USDT-M Futures activated on Binance account")
     print("[ ] Futures permission enabled on the API key")
     print("[ ] Withdrawal permission DISABLED on the API key (security)")
-    print("[ ] IP whitelist set on API key to Oracle server (REDACTED-SERVER_IP)")
+    print("[ ] IP whitelist set on API key to this server's IP (see freqtrade/.env)")
     print("[ ] Hedge mode OFF (one-way mode) — Freqtrade expects one-way")
     print("[ ] Initial isolated margin per pair set to a sane value")
 
