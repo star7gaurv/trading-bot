@@ -1,7 +1,7 @@
 """ft_creds.py — Single source of truth for FreqTrade REST API credentials.
 
-Added 2026-07-05 security pass: several scripts previously hardcoded the literal
-password as an os.environ.get(..., "REDACTED-FREQTRADE__API_SERVER__PASSWORD") fallback, which meant the real
+Added 2026-07-05 security pass: several scripts previously hardcoded the real
+password as an os.environ.get(..., <literal>) fallback, which meant the real
 credential lived in tracked source files even when unused. This resolves the
 same way those scripts always intended (env var first) but falls back to
 reading freqtrade/.env directly instead of a hardcoded literal, so rotating
