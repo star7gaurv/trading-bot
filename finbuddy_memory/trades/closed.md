@@ -615,3 +615,4 @@
 | 2026-07-05 14:03:14 | SUI/USDT:USDT | SHORT | 6h02m | -0.90% | -0.73 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-05 18:10:58 | XRP/USDT:USDT | SHORT | 6h00m | -0.70% | -0.57 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-05 18:14:28 | FIL/USDT:USDT | SHORT | 6h04m | -1.31% | -1.06 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-05 21:10:31 | POL/USDT:USDT | LONG | 3h10m | +0.83% | +0.67 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
