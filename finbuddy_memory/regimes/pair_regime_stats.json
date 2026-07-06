@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-06T20:00:01.813444+00:00",
+  "updated": "2026-07-06T20:30:01.264847+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ARB/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 1,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 0.28,
-        "avg_profit_pct": 0.34
-      },
-      "BEAR": {
-        "n": 4,
-        "wins": 1,
-        "losses": 3,
-        "wr": 0.25,
-        "pf": 0.218,
-        "profit_usdt": -0.93,
-        "avg_profit_pct": -0.41
-      }
-    },
     "FIL/USDT:USDT": {
       "NEUTRAL": {
         "n": 5,
@@ -284,6 +264,17 @@
         "pf": 0.0,
         "profit_usdt": -1.88,
         "avg_profit_pct": -2.34
+      }
+    },
+    "ARB/USDT:USDT": {
+      "BEAR": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.218,
+        "profit_usdt": -0.93,
+        "avg_profit_pct": -0.41
       }
     },
     "1000PEPE/USDT:USDT": {
