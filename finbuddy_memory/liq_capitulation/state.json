@@ -1,28 +1,7 @@
 {
-  "positions": {
-    "OPUSDT": {
-      "symbol": "OPUSDT",
-      "side": "long",
-      "entry_price": 0.1077,
-      "notional": 200.0,
-      "entry_liq_z": 2.119,
-      "entry_liq_long_usd": 338052.0,
-      "opened_at": "2026-07-06T13:50:18.233060+00:00",
-      "fees_paid": 0.04
-    },
-    "FETUSDT": {
-      "symbol": "FETUSDT",
-      "side": "long",
-      "entry_price": 0.1733,
-      "notional": 200.0,
-      "entry_liq_z": 2.015,
-      "entry_liq_long_usd": 124870.0,
-      "opened_at": "2026-07-06T13:50:18.818599+00:00",
-      "fees_paid": 0.04
-    }
-  },
-  "realized_pnl": 0.0,
+  "positions": {},
+  "realized_pnl": -0.16,
   "wins": 0,
-  "losses": 0,
-  "last_update": "2026-07-06T19:50:16.528779+00:00"
+  "losses": 2,
+  "last_update": "2026-07-06T20:50:18.541479+00:00"
 }
