@@ -621,3 +621,6 @@
 | 2026-07-06 06:00:35 | SUI/USDT:USDT | SHORT | 2h00m | +3.23% | +2.61 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-06 10:11:15 | OP/USDT:USDT | SHORT | 4h10m | +0.44% | +0.35 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-06 13:02:36 | SUI/USDT:USDT | SHORT | 5h02m | +2.27% | +1.83 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-06 21:10:24 | ADA/USDT:USDT | SHORT | 6h10m | -2.75% | -2.23 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-06 21:09:18 | SUI/USDT:USDT | SHORT | 5h08m | -2.17% | -1.75 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-06 21:09:53 | FET/USDT:USDT | SHORT | 5h09m | -2.84% | -2.29 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
