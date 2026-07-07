@@ -625,3 +625,4 @@
 | 2026-07-06 21:09:18 | SUI/USDT:USDT | SHORT | 5h08m | -2.17% | -1.75 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-06 21:09:53 | FET/USDT:USDT | SHORT | 5h09m | -2.84% | -2.29 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-07 03:24:22 | LDO/USDT:USDT | LONG | 4h24m | -3.13% | -2.52 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-07-07 08:31:27 | APT/USDT:USDT | SHORT | 5h31m | -2.34% | -1.88 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
