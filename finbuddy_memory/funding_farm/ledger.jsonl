@@ -42,3 +42,4 @@
 {"ts": "2026-07-06T16:05:02.389684+00:00", "event": "accrue", "symbol": "TONUSDT", "events": 1, "rate": 0.0, "credit": 0.0}
 {"ts": "2026-07-07T00:05:02.107408+00:00", "event": "accrue", "symbol": "TONUSDT", "events": 1, "rate": 0.0, "credit": 0.0}
 {"ts": "2026-07-07T08:05:01.681500+00:00", "event": "accrue", "symbol": "TONUSDT", "events": 1, "rate": 0.0, "credit": 0.0}
+{"ts": "2026-07-07T16:05:02.325730+00:00", "event": "accrue", "symbol": "TONUSDT", "events": 1, "rate": 0.0, "credit": 0.0}
