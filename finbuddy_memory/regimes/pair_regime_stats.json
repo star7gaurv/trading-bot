@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-07T19:00:01.378937+00:00",
+  "updated": "2026-07-07T19:30:01.172223+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -295,6 +295,15 @@
         "pf": 1.432,
         "profit_usdt": 3.18,
         "avg_profit_pct": 0.272
+      },
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 1.02,
+        "avg_profit_pct": 1.28
       }
     },
     "TON/USDT:USDT": {
@@ -390,13 +399,13 @@
         "avg_profit_pct": -1.64
       },
       "NEUTRAL": {
-        "n": 1,
-        "wins": 1,
+        "n": 2,
+        "wins": 2,
         "losses": 0,
         "wr": 1.0,
         "pf": null,
-        "profit_usdt": 0.35,
-        "avg_profit_pct": 0.44
+        "profit_usdt": 1.55,
+        "avg_profit_pct": 0.965
       }
     },
     "FIL/USDT:USDT": {
