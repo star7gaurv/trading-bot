@@ -629,3 +629,4 @@
 | 2026-07-07 09:23:51 | FIL/USDT:USDT | SHORT | 6h23m | +0.45% | +0.36 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-07 10:10:40 | LINK/USDT:USDT | SHORT | 6h10m | -0.58% | -0.47 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-07 11:00:41 | ADA/USDT:USDT | SHORT | 5h00m | +3.38% | +2.72 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-07 12:01:06 | FET/USDT:USDT | SHORT | 6h00m | +0.01% | +0.01 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
