@@ -647,3 +647,4 @@
 | 2026-07-08 09:01:09 | ENA/USDT:USDT | SHORT | 1h00m | +2.41% | +1.96 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-08 09:00:29 | 1000PEPE/USDT:USDT | SHORT | 1h00m | +2.02% | +1.64 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-08 14:01:02 | 1000PEPE/USDT:USDT | SHORT | 1h00m | -2.79% | -2.30 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-08 15:29:30 | POL/USDT:USDT | SHORT | 0h29m | -2.27% | -1.86 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
