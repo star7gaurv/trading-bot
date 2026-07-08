@@ -1,5 +1,5 @@
 # FinBuddy — Master Context
-Last updated: 2026-07-08 20:45 UTC
+Last updated: 2026-07-08 21:00 UTC
 
 ## Current Regime
 Regime: **NEUTRAL** | Confidence: 70.0% | Since: 2026-07-08
@@ -10,17 +10,17 @@ BTC Dominance: 55.96%
 News Sentiment: 90.5% bullish
 
 ## Bot Performance
-Total Trades: 922 | Win Rate: 42.3% | Total P&L: 3.76%
+Total Trades: 922 | Win Rate: 42.3% | Total P&L: 3.91%
 
 ## Open Trades (8)
-- ARB/USDT:USDT: Entry 0.08 | Current 0.08 | P&L: -0.89%
-- BTC/USDT:USDT: Entry 62063.00 | Current 62160.90 | P&L: -0.20%
-- ADA/USDT:USDT: Entry 0.17 | Current 0.17 | P&L: 0.32%
-- FET/USDT:USDT: Entry 0.16 | Current 0.16 | P&L: -0.21%
-- ENA/USDT:USDT: Entry 0.07 | Current 0.07 | P&L: 0.19%
-- RENDER/USDT:USDT: Entry 1.53 | Current 1.53 | P&L: -0.04%
-- SUI/USDT:USDT: Entry 0.71 | Current 0.71 | P&L: -0.09%
-- TAO/USDT:USDT: Entry 204.44 | Current 204.00 | P&L: 0.11%
+- ARB/USDT:USDT: Entry 0.08 | Current 0.08 | P&L: -0.81%
+- BTC/USDT:USDT: Entry 62063.00 | Current 62076.20 | P&L: -0.06%
+- ADA/USDT:USDT: Entry 0.17 | Current 0.17 | P&L: 0.56%
+- FET/USDT:USDT: Entry 0.16 | Current 0.16 | P&L: -0.08%
+- ENA/USDT:USDT: Entry 0.07 | Current 0.07 | P&L: 0.33%
+- RENDER/USDT:USDT: Entry 1.53 | Current 1.52 | P&L: 0.23%
+- SUI/USDT:USDT: Entry 0.71 | Current 0.71 | P&L: 0.22%
+- TAO/USDT:USDT: Entry 204.44 | Current 202.72 | P&L: 0.74%
 ## Risk Flags
 - None
 
