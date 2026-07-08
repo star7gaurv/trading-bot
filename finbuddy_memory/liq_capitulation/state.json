@@ -1,15 +1,5 @@
 {
   "positions": {
-    "AVAXUSDT": {
-      "symbol": "AVAXUSDT",
-      "side": "long",
-      "entry_price": 6.388,
-      "notional": 200.0,
-      "entry_liq_z": 2.041,
-      "entry_liq_long_usd": 359154.0,
-      "opened_at": "2026-07-08T04:50:20.312534+00:00",
-      "fees_paid": 0.04
-    },
     "LINKUSDT": {
       "symbol": "LINKUSDT",
       "side": "long",
@@ -21,8 +11,8 @@
       "fees_paid": 0.04
     }
   },
-  "realized_pnl": -12.357647,
+  "realized_pnl": -12.437647,
   "wins": 0,
-  "losses": 3,
-  "last_update": "2026-07-08T10:50:16.916815+00:00"
+  "losses": 4,
+  "last_update": "2026-07-08T11:50:18.633477+00:00"
 }
