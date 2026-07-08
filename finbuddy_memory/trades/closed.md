@@ -637,3 +637,4 @@
 | 2026-07-07 19:00:45 | OP/USDT:USDT | SHORT | 2h00m | +1.49% | +1.20 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-08 01:18:38 | SOL/USDT:USDT | SHORT | 6h00m | +0.80% | +0.64 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-08 01:31:33 | LINK/USDT:USDT | SHORT | 6h00m | +1.73% | +1.39 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-08 01:46:03 | FIL/USDT:USDT | SHORT | 1h52m | +1.99% | +1.60 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_sh |
