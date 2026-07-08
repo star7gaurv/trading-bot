@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-08T09:00:02.015207+00:00",
+  "updated": "2026-07-08T09:30:01.234012+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -31,13 +31,13 @@
     },
     "ENA/USDT:USDT": {
       "NEUTRAL": {
-        "n": 4,
-        "wins": 2,
+        "n": 5,
+        "wins": 3,
         "losses": 2,
-        "wr": 0.5,
-        "pf": 0.205,
-        "profit_usdt": -3.6,
-        "avg_profit_pct": -1.057
+        "wr": 0.6,
+        "pf": 0.638,
+        "profit_usdt": -1.64,
+        "avg_profit_pct": -0.364
       },
       "BEAR": {
         "n": 10,
@@ -129,6 +129,15 @@
         "pf": 10.081,
         "profit_usdt": 3.36,
         "avg_profit_pct": 1.194
+      },
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 0.87,
+        "avg_profit_pct": 1.38
       }
     },
     "NEAR/USDT:USDT": {
@@ -304,13 +313,13 @@
         "avg_profit_pct": -0.752
       },
       "NEUTRAL": {
-        "n": 1,
-        "wins": 1,
+        "n": 2,
+        "wins": 2,
         "losses": 0,
         "wr": 1.0,
         "pf": null,
-        "profit_usdt": 1.79,
-        "avg_profit_pct": 2.22
+        "profit_usdt": 3.43,
+        "avg_profit_pct": 2.12
       }
     },
     "RENDER/USDT:USDT": {
@@ -355,13 +364,13 @@
         "avg_profit_pct": -0.294
       },
       "NEUTRAL": {
-        "n": 5,
-        "wins": 3,
+        "n": 6,
+        "wins": 4,
         "losses": 2,
-        "wr": 0.6,
-        "pf": 2.218,
-        "profit_usdt": 3.02,
-        "avg_profit_pct": 0.75
+        "wr": 0.6667,
+        "pf": 3.565,
+        "profit_usdt": 6.36,
+        "avg_profit_pct": 1.308
       }
     },
     "AVAX/USDT:USDT": {
@@ -437,24 +446,24 @@
     },
     "FIL/USDT:USDT": {
       "NEUTRAL": {
-        "n": 5,
-        "wins": 4,
+        "n": 6,
+        "wins": 5,
         "losses": 1,
-        "wr": 0.8,
-        "pf": 3.481,
-        "profit_usdt": 2.63,
-        "avg_profit_pct": 0.656
+        "wr": 0.8333,
+        "pf": 5.34,
+        "profit_usdt": 4.6,
+        "avg_profit_pct": 0.95
       }
     },
     "FET/USDT:USDT": {
       "NEUTRAL": {
-        "n": 4,
-        "wins": 2,
+        "n": 5,
+        "wins": 3,
         "losses": 2,
-        "wr": 0.5,
-        "pf": 0.353,
-        "profit_usdt": -2.75,
-        "avg_profit_pct": -0.853
+        "wr": 0.6,
+        "pf": 1.329,
+        "profit_usdt": 1.4,
+        "avg_profit_pct": 0.34
       }
     }
   },
