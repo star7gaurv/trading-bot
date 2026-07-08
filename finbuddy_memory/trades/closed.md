@@ -640,3 +640,9 @@
 | 2026-07-08 01:46:03 | FIL/USDT:USDT | SHORT | 1h52m | +1.99% | +1.60 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-08 02:00:20 | 1000PEPE/USDT:USDT | SHORT | 1h00m | +2.22% | +1.79 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-08 07:31:32 | ARB/USDT:USDT | SHORT | 2h31m | -2.55% | -2.07 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-08 09:12:14 | FIL/USDT:USDT | SHORT | 4h11m | +2.42% | +1.97 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-08 09:02:24 | FET/USDT:USDT | SHORT | 3h51m | +5.11% | +4.15 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-08 09:00:25 | BTC/USDT:USDT | SHORT | 1h00m | +1.38% | +0.87 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-08 09:11:49 | SUI/USDT:USDT | SHORT | 1h11m | +4.10% | +3.34 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-08 09:01:09 | ENA/USDT:USDT | SHORT | 1h00m | +2.41% | +1.96 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-08 09:00:29 | 1000PEPE/USDT:USDT | SHORT | 1h00m | +2.02% | +1.64 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
