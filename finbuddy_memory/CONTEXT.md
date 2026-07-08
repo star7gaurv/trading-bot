@@ -1,5 +1,5 @@
 # FinBuddy — Master Context
-Last updated: 2026-07-08 04:30 UTC
+Last updated: 2026-07-08 04:45 UTC
 
 ## Current Regime
 Regime: **NEUTRAL** | Confidence: 70.0% | Since: 2026-07-08
@@ -13,7 +13,7 @@ News Sentiment: 85.7% bullish
 Total Trades: 899 | Win Rate: 42.3% | Total P&L: 3.26%
 
 ## Open Trades (1)
-- UNI/USDT:USDT: Entry 3.19 | Current 3.25 | P&L: 1.71%
+- UNI/USDT:USDT: Entry 3.19 | Current 3.25 | P&L: 1.74%
 ## Risk Flags
 - None
 
