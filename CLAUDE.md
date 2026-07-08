@@ -127,9 +127,11 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 - **1000 USDT** virtual wallet, max 8 open trades
 - **Confidence-based leverage** (commit `60d4fb4`): 1x / 2x / 3x tiers based on `centered_pred / threshold` ratio. Fallback LOW (1x).
 - API: `http://127.0.0.1:8080/api/v1` (loopback-only since 2026-07-05 — see docker-compose.yml port binding) — credentials in `freqtrade/.env` (not committed), not documented here
-- Whitelist: **26 pairs** (trimmed from 37 on 2026-05-24 — removed DASH/ZEC/BCH/DOGE/AAVE/TRX/1000SHIB/BNB/INJ/HBAR/ATOM), **1h timeframe** (switched from 15m 2026-06-21; informative TFs ['4h','1d']; each pair has historical data on 15m + 30m + 1h + 4h + 1d)
+- Whitelist: **25 pairs** (26→25 on 2026-07-08: TON removed — Binance perp went SETTLING/delisted ~06-23; earlier trimmed from 37 on 2026-05-24 — removed DASH/ZEC/BCH/DOGE/AAVE/TRX/1000SHIB/BNB/INJ/HBAR/ATOM), **1h timeframe** (switched from 15m 2026-06-21; informative TFs ['4h','1d']; each pair has historical data on 15m + 30m + 1h + 4h + 1d)
 - **Per-pair-per-regime gate active** — `pair_regime_stats.json` blocks pair-regime combos with rolling 30d (n≥5, WR<40%, PF<0.7)
-- Strategy env vars (live): K_TP=3.0, K_SL=2.0, **LONG_THRESHOLD=0.7, SHORT_THRESHOLD=-0.6, STABILITY_N=1** (RAISED 2026-06-17 from 0.3/-0.3 — Phase-1 stop-the-bleed: per-trade expectancy is negative and profit is monotonic in trade frequency, so fewer/more-selective entries reduce stop-loss bleed. Asymmetric: longs are the worse side. Source: `freqtrade/.env`. See 2026-06-17 session note.)
+- Strategy env vars (live): **K_TP=3.0, K_SL=3.5** (K_SL RAISED 2.0→3.5 on 2026-07-08 — Lever 1 geometry sweep 2026-07-01: WR 41→54%, stop_loss_exit_rate 38→18.5%, replicated), **LONG_THRESHOLD=0.7, SHORT_THRESHOLD=-0.6, STABILITY_N=1** (RAISED 2026-06-17 from 0.3/-0.3 — Phase-1 stop-the-bleed: per-trade expectancy is negative and profit is monotonic in trade frequency, so fewer/more-selective entries reduce stop-loss bleed. Asymmetric: longs are the worse side. Source: `freqtrade/.env`. See 2026-06-17 session note.)
+- **Threshold floor active** (2026-07-08, `FREQAI_THRESHOLD_FLOOR=1` default): effective entry threshold can never drop below the nominal .env value — regime/std multipliers only tighten. Fixes the measured 2026-06-19 absorption (nominal −0.6 → effective −0.38 in BEAR).
+- **`position_adjustment_enable: true`** in config.json (2026-07-08) — needed for `adjust_trade_position`; all its branches (`FREQAI_PROBE_SCALE`, `FREQAI_PARTIAL_TP`) default OFF, so no live behavior change until a Lever 3 A/B passes.
 - **Time-limit exit horizon = model `label_period_candles`** (FIXED 2026-06-21): `custom_exit` now derives the time-limit from `config.json freqai.feature_parameters.label_period_candles` via `_label_period_candles()` — single source of truth, the same value the brain tunes and `apply_timeframe.py` sets per TF. The old standalone `FREQAI_LABEL_CANDLES` env var was removed (it went stale at 12 after the 1h switch moved the model to 6). Live exit is now 6 candles (6h@1h).
 - **`_GLOBAL_STD = 0.30`** in strategy (FIXED 2026-06-08: was 0.95 from raw-% era; z-score model has std≈0.13–0.30)
 - **`std_factor = (pair_pred_std / 0.30).clip(lower=0.5, upper=1.0)`** (FIXED: cap was 3.0 — was penalizing pairs with better prediction variance, making their threshold harder)
@@ -259,7 +261,7 @@ Standard layer 4 features include 3 funding-rate features (`%-funding_rate`, `%-
 ## Current Strategy
 
 ### ✅ Active: `FinBuddyFreqAI_v23.py` v23 — Regression + Per-Pair-Per-Regime Gate
-- Binance Futures USDT-M (perpetual, isolated margin), **1h base TF** (switched from 15m 2026-06-21; switchable via the dashboard timeframe switcher), **26 pairs** (trimmed 2026-05-24), `can_short=True`
+- Binance Futures USDT-M (perpetual, isolated margin), **1h base TF** (switched from 15m 2026-06-21; switchable via the dashboard timeframe switcher), **25 pairs** (TON removed 2026-07-08, delisted; trimmed 2026-05-24), `can_short=True`
 - **LightGBMRegressor**: predicts `&-future_return` (regression target, no classifier bias)
 - **2x Leverage**: Implemented via `leverage()` callback.
 - **Max Open Trades**: 8.
@@ -267,7 +269,7 @@ Standard layer 4 features include 3 funding-rate features (`%-funding_rate`, `%-
 - **Per-pair-per-regime gate** (2026-05-19): blocks (pair, regime) combos with rolling 30d WR<40% AND PF<0.7
 - **Stability filter**: requires N=2 consecutive candles past threshold
 - FreqAI identifier: `finbuddy_v23_live_*` — bumped on each brain promotion
-- `custom_stoploss()`: ATR-based asymmetric (K_TP=3.0, K_SL=2.0 — live `.env` 2026-06-21)
+- `custom_stoploss()`: ATR-based asymmetric (K_TP=3.0, K_SL=3.5 — live `.env` 2026-07-08, Lever 1 applied)
 - **Status**: Live since 2026-05-19. Awaiting brain to find profitable config + auto-promote.
 
 ### 🗄️ Retired (on disk for history, not referenced by live config or brain)
@@ -416,6 +418,51 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 ---
 
 ## Session History Summary
+
+### July 8, 2026 — Lever 1 live + threshold floor + Lever 3 built + TON delisting cleanup
+
+**Context:** Gaurav asked for full status + "stop the stop-loss bleed" + why paper modules underperform.
+Live P&L structure unchanged since 06-17 diagnosis: signal exits +406.87 (91% WR) vs stop_loss −394.10 (0% WR).
+
+**1. Lever 1 APPLIED LIVE:** `.env` `FREQAI_K_SL` 2.0→**3.5** (K_TP=3.0 unchanged). Measured basis: 2026-07-01
+geometry sweep — WR 41.2→53.8%, stop_loss_exit_rate 38→18.5%, replicated. Container recreated (`up -d`), env
+verified. Existing open trades keep old stops (FreqTrade never widens a live stop); new entries get 3.5×ATR.
+Known limitation: sweep PF capped ~0.57–0.69 — this stops bleed rate, does not create profit alone.
+
+**2. Threshold floor (strategy, LIVE):** `_compute_dynamic_thresholds` now clips the FINAL effective threshold
+at the nominal base (`FREQAI_THRESHOLD_FLOOR=1` default; env-gated for brain A/B). Fixes measured 2026-06-19
+absorption: BEAR short_mult(0.7)×std_factor(≤1.0) made nominal −0.6 an effective −0.38 — the "trade less"
+lever was never actually pulled. Multipliers can now only TIGHTEN entries past nominal.
+
+**3. Lever 3 BUILT (partial take-profit, default OFF, A/B queued):** new branch in `adjust_trade_position` —
+`FREQAI_PARTIAL_TP=1` banks `FRACTION` (0.5) of the position once profit ≥ `TRIGGER` (0.5) × (K_TP×entry-ATR),
+once per trade; remainder rides to signal/trail. `position_adjustment_enable: true` added to config.json (safe:
+all adjust branches env-gated OFF). Plumbing completed everywhere the 06-12 "3-layer gap" audit demands:
+docker-compose env forwarding, runner `_build_env_args` (threshold_floor/progress_cut/partial_tp* — all
+serve-time, NOT in `_TRAIN_SHAPE_KEYS` → family cache hits; also found PROGRESS_CUT/PROBE_SCALE had NEVER been
+forwarded to brain containers), promote.py `env_keys` (a promoted partial-TP winner now deploys correctly).
+**6 A/B experiments queued** via `queue_hypothesis()` on bull_2024Q4 + bear_2026Q1: baseline (k_sl 3.5, floor on)
+vs partial_tp vs partial_tp+progress_cut. Apply live ONLY on PASS.
+
+**4. Funding farm TON zombie FIXED:** TONUSDT perp went **SETTLING** (delisted) ~06-23 — the day after the farm
+opened it at 199% APR. Funding stopped (rate pinned 0, history frozen 06-23) → 47 accruals × 0 = 0 collected;
+and the decay-close rule `if mean7 is not None and apr7 < EXIT_APR` could never fire (no history rows → None).
+Fixes: scanner now fetches exchangeInfo contract status, closes any position on a non-TRADING contract (TON
+closed: −0.75 net, all fees), and refuses to open on non-TRADING symbols (fail-open on API error so an outage
+can't mass-close). Streamer `/api/funding-farm` now drops symbols with funding history staler than 48h — TON's
+frozen +387% APR row was rendering as a live QUALIFIES opportunity.
+
+**5. TON also removed from the directional whitelist** (26→25 pairs) — data feed already failing
+(`No data found for TON/USDT 1d`); no open TON trade. Config edited via Python json, container recreated
+(note: config.json is volume-mounted — `up -d` alone sees no change, needs `--force-recreate`).
+
+**6. Paper modules verdict (no code change needed):** Pairs' −26.84 = 3 positions opened 06-25 under the old
+480h max-half-life rule (SOL/XRP hl=213h would be rejected under today's 72h filter); the 14d time stop flushes
+them 07-09 — post-filter positions are the real test. Grid (+13.71) healthy, untouched.
+
+**What to watch:** the 6 Lever 3 A/Bs complete over ~1-2 days (brain cron */10) → if partial_tp lifts PF with
+WR held, sweep trigger/fraction then consider live. Live effect of K_SL 3.5 + floor: expect fewer entries,
+higher WR, smaller stop_loss share — judge after ≥1 week, not day-by-day.
 
 ### June 24–25, 2026 — Modular UI redesign + Pairs & Grid paper executors shipped
 

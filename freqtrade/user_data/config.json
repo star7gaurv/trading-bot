@@ -53,7 +53,6 @@
             "APT/USDT:USDT",
             "SUI/USDT:USDT",
             "UNI/USDT:USDT",
-            "TON/USDT:USDT",
             "ENA/USDT:USDT",
             "TAO/USDT:USDT",
             "ONDO/USDT:USDT",
@@ -176,5 +175,6 @@
     "minimal_roi": {
         "0": 0.99
     },
-    "startup_candle_count": 600
+    "startup_candle_count": 600,
+    "position_adjustment_enable": true
 }

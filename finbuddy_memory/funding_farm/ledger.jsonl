@@ -46,3 +46,4 @@
 {"ts": "2026-07-08T00:05:02.080457+00:00", "event": "accrue", "symbol": "TONUSDT", "events": 1, "rate": 0.0, "credit": 0.0}
 {"ts": "2026-07-08T08:05:02.046930+00:00", "event": "accrue", "symbol": "TONUSDT", "events": 1, "rate": 0.0, "credit": 0.0}
 {"ts": "2026-07-08T16:05:02.366980+00:00", "event": "accrue", "symbol": "TONUSDT", "events": 1, "rate": 0.0, "credit": 0.0}
+{"ts": "2026-07-08T19:03:39.549711+00:00", "event": "close", "symbol": "TONUSDT", "reason": "contract SETTLING \u2014 funding halted", "funding_collected": 0.0, "fees_total": 0.75, "net_pnl": -0.75, "held_hours": 377.0, "caveat": "basis drift not modeled"}

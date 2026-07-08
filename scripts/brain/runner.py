@@ -412,6 +412,22 @@ def _build_env_args(cfg: dict, identifier: str) -> list[str]:
         # _TRAIN_SHAPE_KEYS. A/B-able on cached predictions (same family as the base experiment).
         if cfg.get("trend_filter") is not None:
             env_args += ["-e", f"FREQAI_TREND_FILTER={'1' if cfg['trend_filter'] else '0'}"]
+        # Lever 3 exit-side knobs (2026-07-08) — all serve-time (trading-only), so
+        # NOT in _TRAIN_SHAPE_KEYS: A/B variants reuse the same cached family model.
+        if cfg.get("threshold_floor") is not None:
+            env_args += ["-e", f"FREQAI_THRESHOLD_FLOOR={'1' if cfg['threshold_floor'] else '0'}"]
+        if cfg.get("progress_cut") is not None:
+            env_args += ["-e", f"FREQAI_PROGRESS_CUT={'1' if cfg['progress_cut'] else '0'}"]
+        if cfg.get("progress_cut_candles") is not None:
+            env_args += ["-e", f"FREQAI_PROGRESS_CUT_CANDLES={cfg['progress_cut_candles']}"]
+        if cfg.get("partial_tp") is not None:
+            env_args += ["-e", f"FREQAI_PARTIAL_TP={'1' if cfg['partial_tp'] else '0'}"]
+            # adjust_trade_position is only called when position adjustment is on.
+            env_args += ["-e", "FREQTRADE__POSITION_ADJUSTMENT_ENABLE=true"]
+        if cfg.get("partial_tp_trigger") is not None:
+            env_args += ["-e", f"FREQAI_PARTIAL_TP_TRIGGER={cfg['partial_tp_trigger']}"]
+        if cfg.get("partial_tp_fraction") is not None:
+            env_args += ["-e", f"FREQAI_PARTIAL_TP_FRACTION={cfg['partial_tp_fraction']}"]
     return env_args
 
 

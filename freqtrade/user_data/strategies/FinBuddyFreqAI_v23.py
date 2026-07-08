@@ -1000,6 +1000,29 @@ class FinBuddyFreqAI_v23(IStrategy):
         remaining size — backing the trades the market has shown are working. Losers are
         never added to; they stay at the small probe size and exit via stop/progress/signal.
         """
+        # ── Partial take-profit (Lever 3, 2026-07-08; env-gated, default OFF) ──
+        # Live measurement: signal exits +406.87 (91% WR) vs stop_loss −394.10 (0% WR)
+        # — the exit side is the edge, entries are coin flips. Lever 1 (K_SL 3.5)
+        # cuts the stop-bleed rate but PF stayed <1 across the whole sweep. This
+        # banks PARTIAL_TP_FRACTION of the position once profit reaches
+        # PARTIAL_TP_TRIGGER × (K_TP × entry-ATR) — locking in the winners the
+        # exit alpha finds before they can round-trip — while the remainder rides
+        # to signal/trail. Fires once per trade. Brain A/B queued before any live use.
+        if (os.environ.get("FREQAI_PARTIAL_TP", "0") == "1"
+                and trade.nr_of_successful_exits == 0):
+            entry_atr_pct = trade.get_custom_data("entry_atr_pct")
+            if entry_atr_pct:
+                trigger = float(os.environ.get("FREQAI_PARTIAL_TP_TRIGGER", "0.5"))
+                fraction = float(os.environ.get("FREQAI_PARTIAL_TP_FRACTION", "0.5"))
+                # current_profit is leverage-inclusive while ATR% is a raw price
+                # move — same convention as the custom_stoploss trail trigger
+                # (documented 2026-06-12); the two stay coherent.
+                tp_pct = self.K_TP * float(entry_atr_pct)
+                if current_profit >= tp_pct * trigger:
+                    reduce_stake = round(trade.stake_amount * fraction, 2)
+                    if reduce_stake > 0:
+                        return -reduce_stake
+
         if os.environ.get("FREQAI_PROBE_SCALE", "0") != "1":
             return None
         # Add only once (initial probe = 1 entry; after add = 2).
@@ -1731,6 +1754,18 @@ class FinBuddyFreqAI_v23(IStrategy):
         MAX_EFFECTIVE_THRESHOLD = float(os.getenv("FREQAI_MAX_EFFECTIVE_THRESHOLD", "2.5"))
         dataframe["dynamic_long_threshold"]  = dataframe["dynamic_long_threshold"].clip(upper=MAX_EFFECTIVE_THRESHOLD)
         dataframe["dynamic_short_threshold"] = dataframe["dynamic_short_threshold"].clip(lower=-MAX_EFFECTIVE_THRESHOLD)
+
+        # 2026-07-08: Floor the FINAL effective threshold at the nominal base value.
+        # Measured 2026-06-19 (Phase-1 post-mortem): raising .env thresholds
+        # 0.3→0.7/−0.6 did NOT cut trade frequency — regime scaling (BEAR
+        # short_mult 0.7) × std_factor (≤1.0) absorbed the raise, leaving the
+        # effective short threshold ≈ −0.38. The "trade less" lever was never
+        # actually pulled. With this floor, multipliers may only make entries
+        # STRICTER than the nominal env threshold, never easier — the nominal
+        # value means what it says. Env-gated so the brain can A/B floor-off.
+        if os.environ.get("FREQAI_THRESHOLD_FLOOR", "1") == "1":
+            dataframe["dynamic_long_threshold"]  = dataframe["dynamic_long_threshold"].clip(lower=base_long)
+            dataframe["dynamic_short_threshold"] = dataframe["dynamic_short_threshold"].clip(upper=-base_short)
         return dataframe
 
     def _quantile_thresholds(

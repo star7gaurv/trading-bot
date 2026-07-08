@@ -1127,6 +1127,12 @@ async def funding_farm(_: dict = Depends(require_auth)):
                 df = pd.read_parquet(FUNDING_PARQUET)
                 # Latest row per symbol → annualize (8h rate × 3 events/day × 365 days)
                 latest = df.sort_values("date").groupby("symbol").last().reset_index()
+                # 2026-07-08: drop symbols whose funding history is stale (>48h).
+                # A delisted contract (TON, SETTLING since 06-23) stops producing
+                # funding events — its frozen last row (+387% APR) was shown as a
+                # live QUALIFIES opportunity while the real current rate was 0.
+                cutoff = pd.Timestamp.now(tz="UTC") - pd.Timedelta(hours=48)
+                latest = latest[pd.to_datetime(latest["date"], utc=True) >= cutoff]
                 for _, r in latest.iterrows():
                     rate = float(r.get("funding_rate") or 0.0)
                     apr = rate * 3 * 365  # Binance 8h funding → APR

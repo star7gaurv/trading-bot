@@ -78,6 +78,15 @@ services:
       # the per-candle prediction is too noisy to use as a real-time abandon signal.
       - FREQAI_PRED_DECAY_EXIT=${FREQAI_PRED_DECAY_EXIT:-0}
       - FREQAI_PRED_DECAY_LEVEL=${FREQAI_PRED_DECAY_LEVEL:-0.0}
+      # Threshold floor (2026-07-08): effective entry threshold can never drop below
+      # the nominal .env value — regime/std multipliers may only tighten. Fixes the
+      # measured 2026-06-19 absorption (nominal −0.6 → effective −0.38 in BEAR).
+      - FREQAI_THRESHOLD_FLOOR=${FREQAI_THRESHOLD_FLOOR:-1}
+      # Lever 3 partial take-profit (2026-07-08): DEFAULT OFF pending brain A/B.
+      # Banks FRACTION of the position at TRIGGER × (K_TP×ATR) profit, once per trade.
+      - FREQAI_PARTIAL_TP=${FREQAI_PARTIAL_TP:-0}
+      - FREQAI_PARTIAL_TP_TRIGGER=${FREQAI_PARTIAL_TP_TRIGGER:-0.5}
+      - FREQAI_PARTIAL_TP_FRACTION=${FREQAI_PARTIAL_TP_FRACTION:-0.5}
       # Time-limit exit horizon is now derived from config.json's label_period_candles
       # (single source of truth) inside the strategy — FREQAI_LABEL_CANDLES env var
       # removed 2026-06-21 (went stale at 12 after the 1h switch). See

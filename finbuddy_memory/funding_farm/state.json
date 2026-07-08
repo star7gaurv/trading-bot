@@ -1,15 +1,5 @@
 {
-  "positions": {
-    "TONUSDT": {
-      "notional": 250.0,
-      "opened_at": "2026-06-23T02:05:02.184328+00:00",
-      "entry_funding_rate": 0.00182227,
-      "entry_apr": 1.99538565,
-      "funding_collected": 0.0,
-      "fees_paid": 0.375,
-      "accruals": 47
-    }
-  },
-  "realized_pnl": 0.0,
-  "last_accrual": "2026-07-08T18:05:02.537760+00:00"
+  "positions": {},
+  "realized_pnl": -0.75,
+  "last_accrual": "2026-07-08T19:05:08.154732+00:00"
 }

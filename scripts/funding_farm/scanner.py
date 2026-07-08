@@ -51,6 +51,26 @@ def fetch_current_funding() -> dict[str, float]:
     return {d["symbol"]: float(d["lastFundingRate"]) for d in data}
 
 
+def fetch_contract_status() -> dict[str, str]:
+    """symbol -> contract status from exchangeInfo (TRADING / SETTLING / ...).
+
+    2026-07-08: TONUSDT went SETTLING (delisting) the day after the farm opened
+    it — funding stopped (rate pinned 0.0), the 7d-mean went None (no history
+    rows), and the None-guarded decay rule could never close it. A non-TRADING
+    contract pays no funding: close it, and never open one.
+    On API failure returns {} — callers must treat missing status as TRADING
+    (fail open) so a transient outage can't mass-close healthy positions.
+    """
+    url = "https://fapi.binance.com/fapi/v1/exchangeInfo"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "FinBuddy/1.0"})
+        with urllib.request.urlopen(req, timeout=15) as r:
+            data = json.load(r)
+        return {s["symbol"]: s.get("status", "TRADING") for s in data.get("symbols", [])}
+    except Exception:
+        return {}
+
+
 def seven_day_mean_rate(symbol: str) -> float | None:
     try:
         df = pd.read_parquet(FUNDING_PARQUET)
@@ -69,12 +89,24 @@ def seven_day_mean_rate(symbol: str) -> float | None:
 def main() -> int:
     symbols = set(_whitelist_symbols())
     rates = {s: r for s, r in fetch_current_funding().items() if s in symbols}
+    statuses = fetch_contract_status()
     state = px.load_state()
 
     # 1) accrue funding on open paper positions
     px.accrue(state, rates)
 
-    # 2) close decayed positions
+    # 2a) close positions on delisted/settling contracts (funding halted — the
+    #     decay rule below can't fire for them: no history rows → mean7 is None)
+    for symbol in list(state["positions"].keys()):
+        status = statuses.get(symbol, "TRADING")
+        if status != "TRADING":
+            px.close_position(state, symbol, reason=f"contract {status} — funding halted")
+            send(Subsystem.BRAIN_CYCLE, Status.WARN,
+                 f"Funding farm (paper): closed {symbol}",
+                 fields={"Reason": f"contract status {status} (delisting) — no funding accrues"},
+                 silent=True)
+
+    # 2b) close decayed positions
     for symbol in list(state["positions"].keys()):
         mean7 = seven_day_mean_rate(symbol)
         apr7 = (mean7 or 0.0) * px.FUNDING_EVENTS_PER_DAY * 365
@@ -93,6 +125,8 @@ def main() -> int:
         apr = rate * EVENTS_PER_YEAR
         if apr < MIN_APR:
             break  # sorted desc — nothing further qualifies
+        if statuses.get(symbol, "TRADING") != "TRADING":
+            continue  # delisting/settling contract — funding will stop
         mean7 = seven_day_mean_rate(symbol)
         if mean7 is None or mean7 <= 0:
             continue

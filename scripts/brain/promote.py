@@ -501,6 +501,15 @@ def apply_promotion(config_hash: str) -> int:
         "FREQAI_BOUNCE_GUARD":       _bool_env(new_cfg.get("bounce_guard")),
         "FREQAI_PRUNE_INDICATORS":   _bool_env(new_cfg.get("prune_indicators")),
         "FREQAI_PERPAIR_OI":         _bool_env(new_cfg.get("perpair_oi")),
+        # Lever 3 exit-side knobs (2026-07-08): WITHOUT these a promoted
+        # partial-TP/progress-cut winner would silently deploy with both OFF
+        # (same 3-layer-gap class as the 2026-06-12 quantile-mode bug).
+        "FREQAI_THRESHOLD_FLOOR":       _bool_env(new_cfg.get("threshold_floor")),
+        "FREQAI_PROGRESS_CUT":          _bool_env(new_cfg.get("progress_cut")),
+        "FREQAI_PROGRESS_CUT_CANDLES":  new_cfg.get("progress_cut_candles"),
+        "FREQAI_PARTIAL_TP":            _bool_env(new_cfg.get("partial_tp")),
+        "FREQAI_PARTIAL_TP_TRIGGER":    new_cfg.get("partial_tp_trigger"),
+        "FREQAI_PARTIAL_TP_FRACTION":   new_cfg.get("partial_tp_fraction"),
     }
     env_keys = {k: v for k, v in env_keys.items() if v is not None}
     if env_keys:
