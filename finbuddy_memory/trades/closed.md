@@ -639,3 +639,4 @@
 | 2026-07-08 01:31:33 | LINK/USDT:USDT | SHORT | 6h00m | +1.73% | +1.39 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-08 01:46:03 | FIL/USDT:USDT | SHORT | 1h52m | +1.99% | +1.60 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-08 02:00:20 | 1000PEPE/USDT:USDT | SHORT | 1h00m | +2.22% | +1.79 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-08 07:31:32 | ARB/USDT:USDT | SHORT | 2h31m | -2.55% | -2.07 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
