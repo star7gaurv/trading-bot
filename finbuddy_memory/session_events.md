@@ -250,3 +250,4 @@ um_threads=2** added to both config.json and 23_regression_15m_di_config.json. 
 - **2026-06-21 12:00 UTC** — FreqAI identifier changed: finbuddy_v23_nosvm_1780729988 → finbuddy_v23_tf1h_1782038210
 - **2026-06-21 16:00 UTC** — FreqAI identifier changed: finbuddy_v23_tf1h_1782038210 → finbuddy_v23_tf1h_1782044602
 - **2026-07-03 12:00 UTC** — Regime changed: BEAR → NEUTRAL
+- **2026-07-08 20:00 UTC** — Pair whitelist changed: 26 → 25 pairs
