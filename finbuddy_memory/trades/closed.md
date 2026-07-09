@@ -661,3 +661,4 @@
 | 2026-07-09 11:49:09 | FET/USDT:USDT | SHORT | 4h48m | +2.02% | +1.64 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-09 16:31:42 | DOT/USDT:USDT | SHORT | 6h00m | +0.18% | +0.15 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-09 17:04:43 | ADA/USDT:USDT | SHORT | 0h32m | +0.32% | +0.26 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-09 23:08:41 | DOT/USDT:USDT | SHORT | 6h03m | -0.16% | -0.13 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
