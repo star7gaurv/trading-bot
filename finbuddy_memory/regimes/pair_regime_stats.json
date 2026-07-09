@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-09T06:00:01.210010+00:00",
+  "updated": "2026-07-09T06:30:01.210822+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -71,13 +71,13 @@
         "avg_profit_pct": -0.445
       },
       "NEUTRAL": {
-        "n": 5,
+        "n": 6,
         "wins": 3,
-        "losses": 2,
-        "wr": 0.6,
-        "pf": 1.225,
-        "profit_usdt": 0.71,
-        "avg_profit_pct": 0.186
+        "losses": 3,
+        "wr": 0.5,
+        "pf": 0.963,
+        "profit_usdt": -0.15,
+        "avg_profit_pct": -0.022
       }
     },
     "BTC/USDT:USDT": {
@@ -446,24 +446,24 @@
     },
     "FIL/USDT:USDT": {
       "NEUTRAL": {
-        "n": 6,
+        "n": 7,
         "wins": 5,
-        "losses": 1,
-        "wr": 0.8333,
-        "pf": 5.34,
-        "profit_usdt": 4.6,
-        "avg_profit_pct": 0.95
+        "losses": 2,
+        "wr": 0.7143,
+        "pf": 1.377,
+        "profit_usdt": 1.55,
+        "avg_profit_pct": 0.28
       }
     },
     "FET/USDT:USDT": {
       "NEUTRAL": {
-        "n": 6,
+        "n": 7,
         "wins": 3,
-        "losses": 3,
-        "wr": 0.5,
-        "pf": 0.914,
-        "profit_usdt": -0.53,
-        "avg_profit_pct": -0.11
+        "losses": 4,
+        "wr": 0.4286,
+        "pf": 0.767,
+        "profit_usdt": -1.72,
+        "avg_profit_pct": -0.303
       }
     }
   },
