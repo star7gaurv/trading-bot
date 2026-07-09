@@ -1,3 +1,7 @@
 {"ts": "2026-06-25T08:41:49.732563+00:00", "event": "open", "pair": "DOT/FIL", "side": 1, "trade": "long DOT / short FIL", "z": -3.02, "beta": 0.901, "corr": 0.853, "notional": 200.0, "entry_fee": 0.1}
 {"ts": "2026-06-25T08:41:50.372773+00:00", "event": "open", "pair": "SOL/XRP", "side": -1, "trade": "short SOL / long XRP", "z": 2.37, "beta": 1.291, "corr": 0.908, "notional": 200.0, "entry_fee": 0.1}
 {"ts": "2026-06-25T08:41:50.969554+00:00", "event": "open", "pair": "ETH/1000PEPE", "side": -1, "trade": "short ETH / long 1000PEPE", "z": 2.03, "beta": 0.935, "corr": 0.879, "notional": 200.0, "entry_fee": 0.1}
+{"ts": "2026-07-09T09:20:01.722617+00:00", "event": "close", "pair": "DOT/FIL", "reason": "time stop (14d)", "exit_z": -1.79, "gross_pnl": -8.7725, "fees_total": 0.2, "net_pnl": -8.9725, "held_hours": 336.6, "caveat": "slippage/borrow not modeled"}
+{"ts": "2026-07-09T09:20:02.342794+00:00", "event": "close", "pair": "SOL/XRP", "reason": "time stop (14d)", "exit_z": 0.91, "gross_pnl": -10.524, "fees_total": 0.2, "net_pnl": -10.724, "held_hours": 336.6, "caveat": "slippage/borrow not modeled"}
+{"ts": "2026-07-09T09:20:02.943353+00:00", "event": "close", "pair": "ETH/1000PEPE", "reason": "time stop (14d)", "exit_z": 1.38, "gross_pnl": -7.9445, "fees_total": 0.2, "net_pnl": -8.1445, "held_hours": 336.6, "caveat": "slippage/borrow not modeled"}
+{"ts": "2026-07-09T09:20:03.869633+00:00", "event": "open", "pair": "DOT/ARB", "side": 1, "trade": "long DOT / short ARB", "z": -3.69, "beta": 1.269, "corr": 0.871, "notional": 200.0, "entry_fee": 0.1}

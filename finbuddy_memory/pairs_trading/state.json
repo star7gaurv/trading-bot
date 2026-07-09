@@ -1,51 +1,21 @@
 {
   "positions": {
-    "DOT/FIL": {
+    "DOT/ARB": {
       "a": "DOT",
-      "b": "FIL",
+      "b": "ARB",
       "side": 1,
-      "beta": 0.9007,
-      "entry_z": -3.02,
-      "corr": 0.853,
-      "entry_price_a": 0.937,
-      "entry_price_b": 0.802,
-      "notional_a": 105.2257,
-      "notional_b": 94.7743,
-      "opened_at": "2026-06-25T08:41:49.732317+00:00",
+      "beta": 1.2691,
+      "entry_z": -3.693,
+      "corr": 0.871,
+      "entry_price_a": 0.825,
+      "entry_price_b": 0.08058,
+      "notional_a": 88.1388,
+      "notional_b": 111.8612,
+      "opened_at": "2026-07-09T09:20:03.869507+00:00",
       "fees_paid": 0.1,
-      "half_life_h": 24.0
-    },
-    "SOL/XRP": {
-      "a": "SOL",
-      "b": "XRP",
-      "side": -1,
-      "beta": 1.2905,
-      "entry_z": 2.369,
-      "corr": 0.908,
-      "entry_price_a": 71.94,
-      "entry_price_b": 1.1269,
-      "notional_a": 87.3163,
-      "notional_b": 112.6837,
-      "opened_at": "2026-06-25T08:41:50.372631+00:00",
-      "fees_paid": 0.1,
-      "half_life_h": 213.8
-    },
-    "ETH/1000PEPE": {
-      "a": "ETH",
-      "b": "1000PEPE",
-      "side": -1,
-      "beta": 0.9347,
-      "entry_z": 2.031,
-      "corr": 0.879,
-      "entry_price_a": 1729.1,
-      "entry_price_b": 0.0028143,
-      "notional_a": 103.3757,
-      "notional_b": 96.6243,
-      "opened_at": "2026-06-25T08:41:50.969424+00:00",
-      "fees_paid": 0.1,
-      "half_life_h": 15.7
+      "half_life_h": 47.3
     }
   },
-  "realized_pnl": 0.0,
-  "last_update": "2026-07-09T08:20:02.737700+00:00"
+  "realized_pnl": -27.840976740633785,
+  "last_update": "2026-07-09T09:20:04.462880+00:00"
 }
