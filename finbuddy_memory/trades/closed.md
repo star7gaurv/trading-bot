@@ -651,3 +651,6 @@
 | 2026-07-08 17:00:23 | LDO/USDT:USDT | LONG | 0h14m | +0.02% | +0.02 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-07-08 23:00:39 | BTC/USDT:USDT | SHORT | 6h00m | -0.39% | -0.24 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-08 23:02:34 | FET/USDT:USDT | SHORT | 6h02m | -2.36% | -1.93 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-09 00:01:29 | ENA/USDT:USDT | SHORT | 6h01m | -1.18% | -0.97 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-09 00:02:49 | RENDER/USDT:USDT | SHORT | 6h02m | -0.56% | -0.46 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-09 00:00:39 | UNI/USDT:USDT | LONG | 2h07m | +1.52% | +1.23 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
