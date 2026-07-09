@@ -654,3 +654,5 @@
 | 2026-07-09 00:01:29 | ENA/USDT:USDT | SHORT | 6h01m | -1.18% | -0.97 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-09 00:02:49 | RENDER/USDT:USDT | SHORT | 6h02m | -0.56% | -0.46 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-09 00:00:39 | UNI/USDT:USDT | LONG | 2h07m | +1.52% | +1.23 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
+| 2026-07-09 06:00:47 | ADA/USDT:USDT | SHORT | 6h00m | -1.06% | -0.86 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-09 06:00:47 | FET/USDT:USDT | SHORT | 6h00m | -1.46% | -1.19 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
