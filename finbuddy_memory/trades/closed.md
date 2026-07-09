@@ -657,3 +657,4 @@
 | 2026-07-09 06:00:47 | ADA/USDT:USDT | SHORT | 6h00m | -1.06% | -0.86 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-09 06:00:47 | FET/USDT:USDT | SHORT | 6h00m | -1.46% | -1.19 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-09 06:27:57 | FIL/USDT:USDT | SHORT | 5h30m | -3.74% | -3.05 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-09 10:01:06 | XRP/USDT:USDT | SHORT | 6h00m | -0.62% | -0.50 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
