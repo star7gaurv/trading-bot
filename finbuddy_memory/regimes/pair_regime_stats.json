@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-09T00:00:01.762521+00:00",
+  "updated": "2026-07-09T00:30:01.414500+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "LTC/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 3,
-        "wins": 2,
-        "losses": 1,
-        "wr": 0.6667,
-        "pf": 1.042,
-        "profit_usdt": 0.04,
-        "avg_profit_pct": 0.073
-      },
-      "BEAR": {
-        "n": 3,
-        "wins": 0,
-        "losses": 3,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -1.33,
-        "avg_profit_pct": -0.767
-      }
-    },
     "APT/USDT:USDT": {
       "NEUTRAL": {
         "n": 7,
@@ -51,13 +31,13 @@
     },
     "ENA/USDT:USDT": {
       "NEUTRAL": {
-        "n": 4,
+        "n": 5,
         "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 0.47,
-        "profit_usdt": -2.4,
-        "avg_profit_pct": -0.72
+        "losses": 3,
+        "wr": 0.4,
+        "pf": 0.387,
+        "profit_usdt": -3.37,
+        "avg_profit_pct": -0.812
       },
       "BEAR": {
         "n": 10,
@@ -138,6 +118,26 @@
         "pf": 9.619,
         "profit_usdt": 9.05,
         "avg_profit_pct": 2.646
+      }
+    },
+    "LTC/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 0.863,
+        "profit_usdt": -0.13,
+        "avg_profit_pct": -0.005
+      },
+      "BEAR": {
+        "n": 3,
+        "wins": 0,
+        "losses": 3,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -1.33,
+        "avg_profit_pct": -0.767
       }
     },
     "ETH/USDT:USDT": {
@@ -313,13 +313,13 @@
         "avg_profit_pct": 0.272
       },
       "NEUTRAL": {
-        "n": 1,
+        "n": 2,
         "wins": 1,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 1.02,
-        "avg_profit_pct": 1.28
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 2.217,
+        "profit_usdt": 0.56,
+        "avg_profit_pct": 0.36
       }
     },
     "UNI/USDT:USDT": {
@@ -331,6 +331,15 @@
         "pf": 0.757,
         "profit_usdt": -1.11,
         "avg_profit_pct": -0.322
+      },
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 1.23,
+        "avg_profit_pct": 1.52
       }
     },
     "TON/USDT:USDT": {
