@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-10T15:30:01.192862+00:00",
+  "updated": "2026-07-10T16:00:01.477525+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -10,15 +10,6 @@
   },
   "stats": {
     "NEAR/USDT:USDT": {
-      "BEAR": {
-        "n": 5,
-        "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
-        "pf": 0.199,
-        "profit_usdt": -5.69,
-        "avg_profit_pct": -1.986
-      },
       "NEUTRAL": {
         "n": 5,
         "wins": 4,
@@ -27,6 +18,15 @@
         "pf": 9.619,
         "profit_usdt": 9.05,
         "avg_profit_pct": 2.646
+      },
+      "BEAR": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.272,
+        "profit_usdt": -3.77,
+        "avg_profit_pct": -1.65
       }
     },
     "LTC/USDT:USDT": {
@@ -484,14 +484,6 @@
       "n": 6,
       "wr": 0.1667,
       "pf": 0.051
-    },
-    {
-      "pair": "NEAR/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=20% PF=0.20 n=5 profit=-5.69",
-      "n": 5,
-      "wr": 0.2,
-      "pf": 0.199
     },
     {
       "pair": "1000PEPE/USDT:USDT",
