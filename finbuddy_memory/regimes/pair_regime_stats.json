@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-10T21:00:01.487118+00:00",
+  "updated": "2026-07-10T21:30:01.292995+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,35 +9,15 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ADA/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 8,
-        "wins": 5,
-        "losses": 3,
-        "wr": 0.625,
-        "pf": 1.333,
-        "profit_usdt": 1.34,
-        "avg_profit_pct": 0.202
-      },
-      "BEAR": {
-        "n": 8,
-        "wins": 2,
-        "losses": 6,
-        "wr": 0.25,
-        "pf": 0.213,
-        "profit_usdt": -3.18,
-        "avg_profit_pct": -0.695
-      }
-    },
     "NEAR/USDT:USDT": {
       "NEUTRAL": {
-        "n": 3,
-        "wins": 2,
+        "n": 2,
+        "wins": 1,
         "losses": 1,
-        "wr": 0.6667,
-        "pf": 4.457,
-        "profit_usdt": 3.63,
-        "avg_profit_pct": 1.707
+        "wr": 0.5,
+        "pf": 0.59,
+        "profit_usdt": -0.43,
+        "avg_profit_pct": -0.255
       },
       "BEAR": {
         "n": 4,
@@ -127,6 +107,26 @@
         "pf": 0.244,
         "profit_usdt": -1.21,
         "avg_profit_pct": -0.53
+      }
+    },
+    "ADA/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 7,
+        "wins": 4,
+        "losses": 3,
+        "wr": 0.5714,
+        "pf": 1.162,
+        "profit_usdt": 0.65,
+        "avg_profit_pct": 0.096
+      },
+      "BEAR": {
+        "n": 8,
+        "wins": 2,
+        "losses": 6,
+        "wr": 0.25,
+        "pf": 0.213,
+        "profit_usdt": -3.18,
+        "avg_profit_pct": -0.695
       }
     },
     "DOT/USDT:USDT": {
@@ -466,13 +466,13 @@
     },
     "FET/USDT:USDT": {
       "NEUTRAL": {
-        "n": 9,
-        "wins": 5,
+        "n": 10,
+        "wins": 6,
         "losses": 4,
-        "wr": 0.5556,
-        "pf": 1.075,
-        "profit_usdt": 0.55,
-        "avg_profit_pct": 0.076
+        "wr": 0.6,
+        "pf": 1.103,
+        "profit_usdt": 0.76,
+        "avg_profit_pct": 0.094
       }
     }
   },
