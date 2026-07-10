@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-10T08:00:01.695121+00:00",
+  "updated": "2026-07-10T08:30:01.995956+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "APT/USDT:USDT": {
-      "BEAR": {
-        "n": 28,
-        "wins": 14,
-        "losses": 14,
-        "wr": 0.5,
-        "pf": 1.232,
-        "profit_usdt": 2.75,
-        "avg_profit_pct": 0.18
-      },
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 2,
-        "losses": 3,
-        "wr": 0.4,
-        "pf": 0.256,
-        "profit_usdt": -3.19,
-        "avg_profit_pct": -0.842
-      }
-    },
     "ADA/USDT:USDT": {
       "BEAR": {
         "n": 10,
@@ -40,13 +20,33 @@
         "avg_profit_pct": -0.445
       },
       "NEUTRAL": {
-        "n": 7,
-        "wins": 4,
+        "n": 8,
+        "wins": 5,
         "losses": 3,
-        "wr": 0.5714,
-        "pf": 1.027,
-        "profit_usdt": 0.11,
-        "avg_profit_pct": 0.027
+        "wr": 0.625,
+        "pf": 1.226,
+        "profit_usdt": 0.91,
+        "avg_profit_pct": 0.146
+      }
+    },
+    "APT/USDT:USDT": {
+      "BEAR": {
+        "n": 27,
+        "wins": 14,
+        "losses": 13,
+        "wr": 0.5185,
+        "pf": 1.242,
+        "profit_usdt": 2.85,
+        "avg_profit_pct": 0.193
+      },
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 2,
+        "losses": 3,
+        "wr": 0.4,
+        "pf": 0.256,
+        "profit_usdt": -3.19,
+        "avg_profit_pct": -0.842
       }
     },
     "BTC/USDT:USDT": {
