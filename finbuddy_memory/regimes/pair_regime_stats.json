@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-10T08:30:01.995956+00:00",
+  "updated": "2026-07-10T09:00:02.055972+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,46 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ADA/USDT:USDT": {
-      "BEAR": {
-        "n": 10,
-        "wins": 3,
-        "losses": 7,
-        "wr": 0.3,
-        "pf": 0.475,
-        "profit_usdt": -2.55,
-        "avg_profit_pct": -0.445
-      },
-      "NEUTRAL": {
-        "n": 8,
-        "wins": 5,
-        "losses": 3,
-        "wr": 0.625,
-        "pf": 1.226,
-        "profit_usdt": 0.91,
-        "avg_profit_pct": 0.146
-      }
-    },
-    "APT/USDT:USDT": {
-      "BEAR": {
-        "n": 27,
-        "wins": 14,
-        "losses": 13,
-        "wr": 0.5185,
-        "pf": 1.242,
-        "profit_usdt": 2.85,
-        "avg_profit_pct": 0.193
-      },
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 2,
-        "losses": 3,
-        "wr": 0.4,
-        "pf": 0.256,
-        "profit_usdt": -3.19,
-        "avg_profit_pct": -0.842
-      }
-    },
     "BTC/USDT:USDT": {
       "BEAR": {
         "n": 7,
@@ -67,6 +27,26 @@
         "pf": 3.625,
         "profit_usdt": 0.63,
         "avg_profit_pct": 0.495
+      }
+    },
+    "ADA/USDT:USDT": {
+      "BEAR": {
+        "n": 9,
+        "wins": 2,
+        "losses": 7,
+        "wr": 0.2222,
+        "pf": 0.177,
+        "profit_usdt": -4.0,
+        "avg_profit_pct": -0.774
+      },
+      "NEUTRAL": {
+        "n": 8,
+        "wins": 5,
+        "losses": 3,
+        "wr": 0.625,
+        "pf": 1.226,
+        "profit_usdt": 0.91,
+        "avg_profit_pct": 0.146
       }
     },
     "ONDO/USDT:USDT": {
@@ -138,6 +118,26 @@
         "pf": 1.4,
         "profit_usdt": 1.67,
         "avg_profit_pct": 0.375
+      }
+    },
+    "APT/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 2,
+        "losses": 3,
+        "wr": 0.4,
+        "pf": 0.256,
+        "profit_usdt": -3.19,
+        "avg_profit_pct": -0.842
+      },
+      "BEAR": {
+        "n": 26,
+        "wins": 13,
+        "losses": 13,
+        "wr": 0.5,
+        "pf": 1.197,
+        "profit_usdt": 2.32,
+        "avg_profit_pct": 0.165
       }
     },
     "ETH/USDT:USDT": {
@@ -512,10 +512,10 @@
     {
       "pair": "ADA/USDT:USDT",
       "regime": "BEAR",
-      "reason": "WR=30% PF=0.47 n=10 profit=-2.55",
-      "n": 10,
-      "wr": 0.3,
-      "pf": 0.475
+      "reason": "WR=22% PF=0.18 n=9 profit=-4.00",
+      "n": 9,
+      "wr": 0.2222,
+      "pf": 0.177
     },
     {
       "pair": "ONDO/USDT:USDT",
