@@ -665,3 +665,4 @@
 | 2026-07-10 01:00:40 | XRP/USDT:USDT | SHORT | 6h00m | +0.09% | +0.07 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-10 01:01:20 | FET/USDT:USDT | SHORT | 6h00m | +0.78% | +0.63 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-10 03:01:39 | OP/USDT:USDT | LONG | 5h01m | +2.58% | +2.09 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
+| 2026-07-10 03:41:09 | DOT/USDT:USDT | SHORT | 3h30m | -2.71% | -2.20 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
