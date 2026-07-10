@@ -1,21 +1,36 @@
 {
   "positions": {
-    "DOT/ARB": {
-      "a": "DOT",
-      "b": "ARB",
-      "side": 1,
-      "beta": 1.2691,
-      "entry_z": -3.693,
-      "corr": 0.871,
-      "entry_price_a": 0.825,
-      "entry_price_b": 0.08058,
-      "notional_a": 88.1388,
-      "notional_b": 111.8612,
-      "opened_at": "2026-07-09T09:20:03.869507+00:00",
+    "BTC/XRP": {
+      "a": "BTC",
+      "b": "XRP",
+      "side": -1,
+      "beta": 0.6402,
+      "entry_z": 2.669,
+      "corr": 0.862,
+      "entry_price_a": 63917.2,
+      "entry_price_b": 1.1065,
+      "notional_a": 121.935,
+      "notional_b": 78.065,
+      "opened_at": "2026-07-10T05:20:02.868743+00:00",
       "fees_paid": 0.1,
-      "half_life_h": 47.3
+      "half_life_h": 24.1
+    },
+    "DOT/APT": {
+      "a": "DOT",
+      "b": "APT",
+      "side": 1,
+      "beta": 1.315,
+      "entry_z": -2.174,
+      "corr": 0.881,
+      "entry_price_a": 0.844,
+      "entry_price_b": 0.6323,
+      "notional_a": 86.3935,
+      "notional_b": 113.6065,
+      "opened_at": "2026-07-10T05:20:03.463761+00:00",
+      "fees_paid": 0.1,
+      "half_life_h": 37.2
     }
   },
-  "realized_pnl": -27.840976740633785,
-  "last_update": "2026-07-10T04:20:02.229758+00:00"
+  "realized_pnl": -41.29520147982016,
+  "last_update": "2026-07-10T05:20:04.051612+00:00"
 }
