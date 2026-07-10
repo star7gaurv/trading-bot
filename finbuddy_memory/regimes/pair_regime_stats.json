@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-10T12:30:01.463907+00:00",
+  "updated": "2026-07-10T13:00:01.950391+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ADA/USDT:USDT": {
-      "BEAR": {
-        "n": 9,
-        "wins": 2,
-        "losses": 7,
-        "wr": 0.2222,
-        "pf": 0.177,
-        "profit_usdt": -4.0,
-        "avg_profit_pct": -0.774
-      },
-      "NEUTRAL": {
-        "n": 8,
-        "wins": 5,
-        "losses": 3,
-        "wr": 0.625,
-        "pf": 1.226,
-        "profit_usdt": 0.91,
-        "avg_profit_pct": 0.146
-      }
-    },
     "ONDO/USDT:USDT": {
       "BEAR": {
         "n": 15,
@@ -78,6 +58,26 @@
         "pf": 0.0,
         "profit_usdt": -1.33,
         "avg_profit_pct": -0.767
+      }
+    },
+    "ADA/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 8,
+        "wins": 5,
+        "losses": 3,
+        "wr": 0.625,
+        "pf": 1.226,
+        "profit_usdt": 0.91,
+        "avg_profit_pct": 0.146
+      },
+      "BEAR": {
+        "n": 8,
+        "wins": 2,
+        "losses": 6,
+        "wr": 0.25,
+        "pf": 0.213,
+        "profit_usdt": -3.18,
+        "avg_profit_pct": -0.695
       }
     },
     "ENA/USDT:USDT": {
@@ -512,10 +512,10 @@
     {
       "pair": "ADA/USDT:USDT",
       "regime": "BEAR",
-      "reason": "WR=22% PF=0.18 n=9 profit=-4.00",
-      "n": 9,
-      "wr": 0.2222,
-      "pf": 0.177
+      "reason": "WR=25% PF=0.21 n=8 profit=-3.18",
+      "n": 8,
+      "wr": 0.25,
+      "pf": 0.213
     },
     {
       "pair": "ONDO/USDT:USDT",
