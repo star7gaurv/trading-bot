@@ -669,3 +669,4 @@
 | 2026-07-10 07:00:29 | 1000PEPE/USDT:USDT | SHORT | 6h00m | -1.47% | -1.19 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-10 08:00:41 | ADA/USDT:USDT | SHORT | 6h00m | +0.98% | +0.80 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-10 09:00:55 | LDO/USDT:USDT | SHORT | 6h00m | +1.14% | +0.93 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-10 15:11:37 | ADA/USDT:USDT | SHORT | 6h11m | +1.09% | +0.89 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
