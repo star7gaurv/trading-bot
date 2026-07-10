@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-10T03:30:01.786198+00:00",
+  "updated": "2026-07-10T04:00:01.575140+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -171,13 +171,13 @@
         "avg_profit_pct": -0.359
       },
       "NEUTRAL": {
-        "n": 2,
+        "n": 3,
         "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 1.154,
-        "profit_usdt": 0.02,
-        "avg_profit_pct": 0.01
+        "losses": 2,
+        "wr": 0.3333,
+        "pf": 0.064,
+        "profit_usdt": -2.18,
+        "avg_profit_pct": -0.897
       }
     },
     "LINK/USDT:USDT": {
