@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-11T08:00:02.062945+00:00",
+  "updated": "2026-07-11T08:30:01.791694+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -366,13 +366,13 @@
         "avg_profit_pct": -0.482
       },
       "NEUTRAL": {
-        "n": 4,
+        "n": 5,
         "wins": 1,
-        "losses": 3,
-        "wr": 0.25,
-        "pf": 0.052,
-        "profit_usdt": -1.27,
-        "avg_profit_pct": -0.39
+        "losses": 4,
+        "wr": 0.2,
+        "pf": 0.041,
+        "profit_usdt": -1.64,
+        "avg_profit_pct": -0.402
       }
     },
     "OP/USDT:USDT": {
@@ -466,6 +466,14 @@
       "n": 6,
       "wr": 0.1667,
       "pf": 0.051
+    },
+    {
+      "pair": "XRP/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=20% PF=0.04 n=5 profit=-1.64",
+      "n": 5,
+      "wr": 0.2,
+      "pf": 0.041
     },
     {
       "pair": "1000PEPE/USDT:USDT",
