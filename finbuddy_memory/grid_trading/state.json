@@ -12,11 +12,11 @@
       "er": 0.001,
       "vol_pct": 1.22,
       "deployed_at": "2026-06-30T13:40:02.357764+00:00",
-      "last_price": 0.1602,
-      "last_price_ts": "2026-07-11T03:40:01.998578+00:00",
-      "total_crossings": 5,
-      "fees_paid": 0.375,
-      "accrued_pnl": 4.598335
+      "last_price": 0.1538,
+      "last_price_ts": "2026-07-11T04:40:01.968585+00:00",
+      "total_crossings": 6,
+      "fees_paid": 0.39,
+      "accrued_pnl": 5.518002
     },
     "NEAR": {
       "symbol": "NEAR",
@@ -30,8 +30,8 @@
       "er": 0.011,
       "vol_pct": 1.02,
       "deployed_at": "2026-07-09T09:40:02.809379+00:00",
-      "last_price": 1.941,
-      "last_price_ts": "2026-07-11T03:40:01.999358+00:00",
+      "last_price": 1.909,
+      "last_price_ts": "2026-07-11T04:40:01.969363+00:00",
       "total_crossings": 1,
       "fees_paid": 0.315,
       "accrued_pnl": 0.558
@@ -48,13 +48,13 @@
       "er": 0.103,
       "vol_pct": 1.09,
       "deployed_at": "2026-07-09T09:40:03.401337+00:00",
-      "last_price": 0.3092,
-      "last_price_ts": "2026-07-11T03:40:02.000080+00:00",
+      "last_price": 0.3049,
+      "last_price_ts": "2026-07-11T04:40:01.970047+00:00",
       "total_crossings": 1,
       "fees_paid": 0.315,
       "accrued_pnl": 0.985
     }
   },
   "realized_pnl": 10.454001,
-  "last_update": "2026-07-11T03:40:02.013940+00:00"
+  "last_update": "2026-07-11T04:40:01.983827+00:00"
 }
