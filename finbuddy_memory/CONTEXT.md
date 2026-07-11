@@ -1,5 +1,5 @@
 # FinBuddy — Master Context
-Last updated: 2026-07-11 03:15 UTC
+Last updated: 2026-07-11 03:30 UTC
 
 ## Current Regime
 Regime: **NEUTRAL** | Confidence: 70.0% | Since: 2026-07-11
@@ -10,11 +10,11 @@ BTC Dominance: 56.32%
 News Sentiment: 95.7% bullish
 
 ## Bot Performance
-Total Trades: 952 | Win Rate: 42.8% | Total P&L: 3.09%
+Total Trades: 952 | Win Rate: 42.8% | Total P&L: 3.08%
 
 ## Open Trades (2)
-- XRP/USDT:USDT: Entry 1.10 | Current 1.11 | P&L: -0.46%
-- LDO/USDT:USDT: Entry 0.31 | Current 0.31 | P&L: -0.30%
+- XRP/USDT:USDT: Entry 1.10 | Current 1.11 | P&L: -0.36%
+- LDO/USDT:USDT: Entry 0.31 | Current 0.31 | P&L: -0.56%
 ## Risk Flags
 - None
 
