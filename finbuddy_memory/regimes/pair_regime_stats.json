@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-12T06:00:01.545455+00:00",
+  "updated": "2026-07-12T06:30:01.858256+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,37 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "APT/USDT:USDT": {
-      "BEAR": {
-        "n": 25,
-        "wins": 13,
-        "losses": 12,
-        "wr": 0.52,
-        "pf": 1.287,
-        "profit_usdt": 3.14,
-        "avg_profit_pct": 0.229
-      },
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -1.88,
-        "avg_profit_pct": -2.34
-      }
-    },
-    "WIF/USDT:USDT": {
-      "BEAR": {
-        "n": 15,
-        "wins": 10,
-        "losses": 5,
-        "wr": 0.6667,
-        "pf": 1.147,
-        "profit_usdt": 0.49,
-        "avg_profit_pct": 0.056
-      }
-    },
     "NEAR/USDT:USDT": {
       "BEAR": {
         "n": 4,
@@ -82,6 +51,26 @@
         "avg_profit_pct": -0.433
       }
     },
+    "APT/USDT:USDT": {
+      "BEAR": {
+        "n": 24,
+        "wins": 12,
+        "losses": 12,
+        "wr": 0.5,
+        "pf": 1.234,
+        "profit_usdt": 2.56,
+        "avg_profit_pct": 0.197
+      },
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -1.88,
+        "avg_profit_pct": -2.34
+      }
+    },
     "TAO/USDT:USDT": {
       "BEAR": {
         "n": 5,
@@ -100,6 +89,17 @@
         "pf": 0.64,
         "profit_usdt": -1.14,
         "avg_profit_pct": -0.176
+      }
+    },
+    "WIF/USDT:USDT": {
+      "BEAR": {
+        "n": 14,
+        "wins": 9,
+        "losses": 5,
+        "wr": 0.6429,
+        "pf": 1.045,
+        "profit_usdt": 0.15,
+        "avg_profit_pct": 0.017
       }
     },
     "LINK/USDT:USDT": {
