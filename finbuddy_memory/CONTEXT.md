@@ -1,19 +1,19 @@
 # FinBuddy — Master Context
-Last updated: 2026-07-12 14:00 UTC
+Last updated: 2026-07-12 14:15 UTC
 
 ## Current Regime
 Regime: **NEUTRAL** | Confidence: 70.0% | Since: 2026-07-12
 
 ## Market Sentiment
 Fear & Greed: 26 (Fear)
-BTC Dominance: 56.24%
+BTC Dominance: 56.22%
 News Sentiment: 95.7% bullish
 
 ## Bot Performance
-Total Trades: 960 | Win Rate: 42.7% | Total P&L: 2.76%
+Total Trades: 960 | Win Rate: 42.7% | Total P&L: 2.78%
 
 ## Open Trades (1)
-- FIL/USDT:USDT: Entry 0.79 | Current 0.78 | P&L: 0.52%
+- FIL/USDT:USDT: Entry 0.79 | Current 0.78 | P&L: 0.67%
 ## Risk Flags
 - None
 
