@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-12T20:30:01.936004+00:00",
+  "updated": "2026-07-12T21:00:01.590452+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "LINK/USDT:USDT": {
-      "BEAR": {
-        "n": 7,
-        "wins": 2,
-        "losses": 5,
-        "wr": 0.2857,
-        "pf": 0.212,
-        "profit_usdt": -2.05,
-        "avg_profit_pct": -0.516
-      },
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 2.957,
-        "profit_usdt": 0.92,
-        "avg_profit_pct": 0.575
-      }
-    },
     "DOT/USDT:USDT": {
       "BEAR": {
         "n": 17,
@@ -89,6 +69,26 @@
         "pf": 0.0,
         "profit_usdt": -1.88,
         "avg_profit_pct": -2.34
+      }
+    },
+    "LINK/USDT:USDT": {
+      "BEAR": {
+        "n": 6,
+        "wins": 1,
+        "losses": 5,
+        "wr": 0.1667,
+        "pf": 0.085,
+        "profit_usdt": -2.38,
+        "avg_profit_pct": -0.698
+      },
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 2.957,
+        "profit_usdt": 0.92,
+        "avg_profit_pct": 0.575
       }
     },
     "SOL/USDT:USDT": {
@@ -467,6 +467,14 @@
       "pf": 0.069
     },
     {
+      "pair": "LINK/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=17% PF=0.09 n=6 profit=-2.38",
+      "n": 6,
+      "wr": 0.1667,
+      "pf": 0.085
+    },
+    {
       "pair": "XRP/USDT:USDT",
       "regime": "NEUTRAL",
       "reason": "WR=20% PF=0.04 n=5 profit=-1.64",
@@ -481,14 +489,6 @@
       "n": 5,
       "wr": 0.2,
       "pf": 0.37
-    },
-    {
-      "pair": "LINK/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=29% PF=0.21 n=7 profit=-2.05",
-      "n": 7,
-      "wr": 0.2857,
-      "pf": 0.212
     },
     {
       "pair": "ONDO/USDT:USDT",
