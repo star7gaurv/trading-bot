@@ -1,7 +1,28 @@
 {
-  "positions": {},
+  "positions": {
+    "LINKUSDT": {
+      "symbol": "LINKUSDT",
+      "side": "long",
+      "entry_price": 7.993,
+      "notional": 200.0,
+      "entry_liq_z": 2.038,
+      "entry_liq_long_usd": 188506.0,
+      "opened_at": "2026-07-12T01:50:17.286949+00:00",
+      "fees_paid": 0.04
+    },
+    "OPUSDT": {
+      "symbol": "OPUSDT",
+      "side": "long",
+      "entry_price": 0.1046,
+      "notional": 200.0,
+      "entry_liq_z": 2.011,
+      "entry_liq_long_usd": 185518.0,
+      "opened_at": "2026-07-12T01:50:18.187163+00:00",
+      "fees_paid": 0.04
+    }
+  },
   "realized_pnl": -12.517647,
   "wins": 0,
   "losses": 5,
-  "last_update": "2026-07-12T00:50:15.681967+00:00"
+  "last_update": "2026-07-12T01:50:18.841297+00:00"
 }
