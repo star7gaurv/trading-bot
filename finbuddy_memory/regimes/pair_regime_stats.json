@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-12T11:00:01.761125+00:00",
+  "updated": "2026-07-12T11:30:01.327001+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -122,13 +122,13 @@
         "avg_profit_pct": -0.314
       },
       "NEUTRAL": {
-        "n": 3,
-        "wins": 1,
+        "n": 4,
+        "wins": 2,
         "losses": 2,
-        "wr": 0.3333,
-        "pf": 0.064,
-        "profit_usdt": -2.18,
-        "avg_profit_pct": -0.897
+        "wr": 0.5,
+        "pf": 0.416,
+        "profit_usdt": -1.36,
+        "avg_profit_pct": -0.42
       }
     },
     "WIF/USDT:USDT": {
@@ -224,13 +224,13 @@
         "avg_profit_pct": -0.752
       },
       "NEUTRAL": {
-        "n": 4,
+        "n": 5,
         "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 0.983,
-        "profit_usdt": -0.06,
-        "avg_profit_pct": -0.005
+        "losses": 3,
+        "wr": 0.4,
+        "pf": 0.948,
+        "profit_usdt": -0.19,
+        "avg_profit_pct": -0.038
       }
     },
     "RENDER/USDT:USDT": {
