@@ -683,3 +683,4 @@
 | 2026-07-11 21:17:32 | OP/USDT:USDT | LONG | 3h07m | +0.24% | +0.20 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-07-12 11:07:42 | DOT/USDT:USDT | SHORT | 6h07m | +1.01% | +0.82 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-12 11:00:27 | 1000PEPE/USDT:USDT | SHORT | 6h00m | -0.17% | -0.13 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-12 17:00:38 | FIL/USDT:USDT | SHORT | 6h00m | +1.23% | +0.99 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
