@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-12T07:30:02.058943+00:00",
+  "updated": "2026-07-12T08:00:01.940009+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,15 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ETH/USDT:USDT": {
-      "BEAR": {
-        "n": 3,
-        "wins": 1,
-        "losses": 2,
-        "wr": 0.3333,
-        "pf": 0.345,
-        "profit_usdt": -0.74,
-        "avg_profit_pct": -0.433
-      }
-    },
     "APT/USDT:USDT": {
       "BEAR": {
-        "n": 24,
-        "wins": 12,
+        "n": 23,
+        "wins": 11,
         "losses": 12,
-        "wr": 0.5,
-        "pf": 1.234,
-        "profit_usdt": 2.56,
-        "avg_profit_pct": 0.197
+        "wr": 0.4783,
+        "pf": 1.185,
+        "profit_usdt": 2.02,
+        "avg_profit_pct": 0.165
       },
       "NEUTRAL": {
         "n": 1,
@@ -38,26 +27,6 @@
         "pf": 0.0,
         "profit_usdt": -1.88,
         "avg_profit_pct": -2.34
-      }
-    },
-    "TAO/USDT:USDT": {
-      "BEAR": {
-        "n": 5,
-        "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
-        "pf": 0.513,
-        "profit_usdt": -2.09,
-        "avg_profit_pct": -0.728
-      },
-      "NEUTRAL": {
-        "n": 8,
-        "wins": 4,
-        "losses": 4,
-        "wr": 0.5,
-        "pf": 0.64,
-        "profit_usdt": -1.14,
-        "avg_profit_pct": -0.176
       }
     },
     "WIF/USDT:USDT": {
@@ -224,6 +193,26 @@
         "avg_profit_pct": -2.55
       }
     },
+    "TAO/USDT:USDT": {
+      "BEAR": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.623,
+        "profit_usdt": -1.33,
+        "avg_profit_pct": -0.583
+      },
+      "NEUTRAL": {
+        "n": 8,
+        "wins": 4,
+        "losses": 4,
+        "wr": 0.5,
+        "pf": 0.64,
+        "profit_usdt": -1.14,
+        "avg_profit_pct": -0.176
+      }
+    },
     "1000PEPE/USDT:USDT": {
       "BEAR": {
         "n": 5,
@@ -366,6 +355,17 @@
         "avg_profit_pct": -0.402
       }
     },
+    "ETH/USDT:USDT": {
+      "BEAR": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 0.629,
+        "profit_usdt": -0.23,
+        "avg_profit_pct": -0.21
+      }
+    },
     "OP/USDT:USDT": {
       "BEAR": {
         "n": 3,
@@ -481,14 +481,6 @@
       "n": 5,
       "wr": 0.2,
       "pf": 0.37
-    },
-    {
-      "pair": "TAO/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=20% PF=0.51 n=5 profit=-2.09",
-      "n": 5,
-      "wr": 0.2,
-      "pf": 0.513
     },
     {
       "pair": "LINK/USDT:USDT",
