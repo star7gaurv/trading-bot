@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-12T12:00:01.434306+00:00",
+  "updated": "2026-07-12T12:30:01.577370+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "NEAR/USDT:USDT": {
-      "BEAR": {
-        "n": 2,
-        "wins": 0,
-        "losses": 2,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -3.75,
-        "avg_profit_pct": -3.285
-      }
-    },
     "SOL/USDT:USDT": {
       "BEAR": {
         "n": 11,
@@ -333,6 +322,17 @@
         "pf": 0.618,
         "profit_usdt": -0.71,
         "avg_profit_pct": -0.283
+      }
+    },
+    "NEAR/USDT:USDT": {
+      "BEAR": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -2.16,
+        "avg_profit_pct": -3.81
       }
     },
     "XRP/USDT:USDT": {
