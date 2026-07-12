@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-12T04:00:01.788752+00:00",
+  "updated": "2026-07-12T04:30:01.109819+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "DOT/USDT:USDT": {
-      "BEAR": {
-        "n": 18,
-        "wins": 7,
-        "losses": 11,
-        "wr": 0.3889,
-        "pf": 0.513,
-        "profit_usdt": -3.69,
-        "avg_profit_pct": -0.359
-      },
-      "NEUTRAL": {
-        "n": 3,
-        "wins": 1,
-        "losses": 2,
-        "wr": 0.3333,
-        "pf": 0.064,
-        "profit_usdt": -2.18,
-        "avg_profit_pct": -0.897
-      }
-    },
     "LINK/USDT:USDT": {
       "BEAR": {
         "n": 11,
@@ -171,6 +151,26 @@
         "pf": 0.412,
         "profit_usdt": -5.69,
         "avg_profit_pct": -0.709
+      }
+    },
+    "DOT/USDT:USDT": {
+      "BEAR": {
+        "n": 17,
+        "wins": 7,
+        "losses": 10,
+        "wr": 0.4118,
+        "pf": 0.561,
+        "profit_usdt": -3.04,
+        "avg_profit_pct": -0.314
+      },
+      "NEUTRAL": {
+        "n": 3,
+        "wins": 1,
+        "losses": 2,
+        "wr": 0.3333,
+        "pf": 0.064,
+        "profit_usdt": -2.18,
+        "avg_profit_pct": -0.897
       }
     },
     "LTC/USDT:USDT": {
@@ -513,14 +513,6 @@
       "n": 8,
       "wr": 0.375,
       "pf": 0.587
-    },
-    {
-      "pair": "DOT/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=39% PF=0.51 n=18 profit=-3.69",
-      "n": 18,
-      "wr": 0.3889,
-      "pf": 0.513
     }
   ]
 }
