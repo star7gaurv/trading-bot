@@ -685,3 +685,4 @@
 | 2026-07-12 11:00:27 | 1000PEPE/USDT:USDT | SHORT | 6h00m | -0.17% | -0.13 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-12 17:00:38 | FIL/USDT:USDT | SHORT | 6h00m | +1.23% | +0.99 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-12 21:11:32 | FET/USDT:USDT | SHORT | 6h11m | +0.31% | +0.25 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-12 23:00:22 | FIL/USDT:USDT | SHORT | 2h00m | +1.23% | +1.00 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
