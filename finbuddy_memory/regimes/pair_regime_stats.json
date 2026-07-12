@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-12T21:00:01.590452+00:00",
+  "updated": "2026-07-12T21:30:01.985501+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,37 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "DOT/USDT:USDT": {
-      "BEAR": {
-        "n": 17,
-        "wins": 7,
-        "losses": 10,
-        "wr": 0.4118,
-        "pf": 0.561,
-        "profit_usdt": -3.04,
-        "avg_profit_pct": -0.314
-      },
-      "NEUTRAL": {
-        "n": 4,
-        "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 0.416,
-        "profit_usdt": -1.36,
-        "avg_profit_pct": -0.42
-      }
-    },
-    "ONDO/USDT:USDT": {
-      "BEAR": {
-        "n": 12,
-        "wins": 4,
-        "losses": 8,
-        "wr": 0.3333,
-        "pf": 0.356,
-        "profit_usdt": -5.5,
-        "avg_profit_pct": -0.8
-      }
-    },
     "WIF/USDT:USDT": {
       "BEAR": {
         "n": 13,
@@ -91,6 +60,17 @@
         "avg_profit_pct": 0.575
       }
     },
+    "ONDO/USDT:USDT": {
+      "BEAR": {
+        "n": 11,
+        "wins": 3,
+        "losses": 8,
+        "wr": 0.2727,
+        "pf": 0.094,
+        "profit_usdt": -7.74,
+        "avg_profit_pct": -1.227
+      }
+    },
     "SOL/USDT:USDT": {
       "BEAR": {
         "n": 10,
@@ -140,6 +120,26 @@
         "pf": 0.0,
         "profit_usdt": -1.33,
         "avg_profit_pct": -0.767
+      }
+    },
+    "DOT/USDT:USDT": {
+      "BEAR": {
+        "n": 16,
+        "wins": 6,
+        "losses": 10,
+        "wr": 0.375,
+        "pf": 0.516,
+        "profit_usdt": -3.35,
+        "avg_profit_pct": -0.368
+      },
+      "NEUTRAL": {
+        "n": 4,
+        "wins": 2,
+        "losses": 2,
+        "wr": 0.5,
+        "pf": 0.416,
+        "profit_usdt": -1.36,
+        "avg_profit_pct": -0.42
       }
     },
     "LDO/USDT:USDT": {
@@ -439,13 +439,13 @@
     },
     "FET/USDT:USDT": {
       "NEUTRAL": {
-        "n": 11,
-        "wins": 6,
+        "n": 12,
+        "wins": 7,
         "losses": 5,
-        "wr": 0.5455,
-        "pf": 1.056,
-        "profit_usdt": 0.43,
-        "avg_profit_pct": 0.048
+        "wr": 0.5833,
+        "pf": 1.088,
+        "profit_usdt": 0.68,
+        "avg_profit_pct": 0.07
       }
     }
   },
@@ -493,10 +493,18 @@
     {
       "pair": "ONDO/USDT:USDT",
       "regime": "BEAR",
-      "reason": "WR=33% PF=0.36 n=12 profit=-5.50",
-      "n": 12,
-      "wr": 0.3333,
-      "pf": 0.356
+      "reason": "WR=27% PF=0.09 n=11 profit=-7.74",
+      "n": 11,
+      "wr": 0.2727,
+      "pf": 0.094
+    },
+    {
+      "pair": "DOT/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=38% PF=0.52 n=16 profit=-3.35",
+      "n": 16,
+      "wr": 0.375,
+      "pf": 0.516
     },
     {
       "pair": "SUI/USDT:USDT",
