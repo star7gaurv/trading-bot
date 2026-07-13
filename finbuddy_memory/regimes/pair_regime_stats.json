@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-13T12:00:01.896047+00:00",
+  "updated": "2026-07-13T12:30:01.907467+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -18,6 +18,15 @@
         "pf": 0.0,
         "profit_usdt": -1.33,
         "avg_profit_pct": -0.767
+      },
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 0.76,
+        "avg_profit_pct": 0.94
       }
     },
     "APT/USDT:USDT": {
@@ -62,13 +71,13 @@
         "avg_profit_pct": -1.07
       },
       "NEUTRAL": {
-        "n": 2,
-        "wins": 1,
+        "n": 3,
+        "wins": 2,
         "losses": 1,
-        "wr": 0.5,
-        "pf": 2.957,
-        "profit_usdt": 0.92,
-        "avg_profit_pct": 0.575
+        "wr": 0.6667,
+        "pf": 3.362,
+        "profit_usdt": 1.11,
+        "avg_profit_pct": 0.463
       }
     },
     "ADA/USDT:USDT": {
@@ -122,13 +131,13 @@
         "avg_profit_pct": 0.123
       },
       "NEUTRAL": {
-        "n": 8,
+        "n": 9,
         "wins": 4,
-        "losses": 4,
-        "wr": 0.5,
-        "pf": 0.353,
-        "profit_usdt": -5.93,
-        "avg_profit_pct": -0.919
+        "losses": 5,
+        "wr": 0.4444,
+        "pf": 0.331,
+        "profit_usdt": -6.56,
+        "avg_profit_pct": -0.903
       }
     },
     "ARB/USDT:USDT": {
