@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-13T04:30:01.661634+00:00",
+  "updated": "2026-07-13T05:00:01.863583+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ONDO/USDT:USDT": {
-      "BEAR": {
-        "n": 10,
-        "wins": 3,
-        "losses": 7,
-        "wr": 0.3,
-        "pf": 0.103,
-        "profit_usdt": -6.94,
-        "avg_profit_pct": -1.212
-      }
-    },
     "LINK/USDT:USDT": {
       "BEAR": {
         "n": 4,
@@ -109,6 +98,17 @@
         "pf": 0.0,
         "profit_usdt": -1.88,
         "avg_profit_pct": -2.34
+      }
+    },
+    "ONDO/USDT:USDT": {
+      "BEAR": {
+        "n": 9,
+        "wins": 2,
+        "losses": 7,
+        "wr": 0.2222,
+        "pf": 0.054,
+        "profit_usdt": -7.32,
+        "avg_profit_pct": -1.42
       }
     },
     "DOT/USDT:USDT": {
@@ -485,10 +485,10 @@
     {
       "pair": "ONDO/USDT:USDT",
       "regime": "BEAR",
-      "reason": "WR=30% PF=0.10 n=10 profit=-6.94",
-      "n": 10,
-      "wr": 0.3,
-      "pf": 0.103
+      "reason": "WR=22% PF=0.05 n=9 profit=-7.32",
+      "n": 9,
+      "wr": 0.2222,
+      "pf": 0.054
     },
     {
       "pair": "DOT/USDT:USDT",
