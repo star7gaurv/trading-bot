@@ -17,3 +17,4 @@
 {"ts": "2026-07-13T14:50:17.652873+00:00", "event": "open", "symbol": "LINKUSDT", "side": "long", "price": 7.917, "liq_long_z": 2.038, "liq_long_usd": 185366.0, "entry_fee": 0.04}
 {"ts": "2026-07-13T18:50:19.466946+00:00", "event": "open", "symbol": "OPUSDT", "side": "long", "price": 0.0992, "liq_long_z": 2.123, "liq_long_usd": 211974.0, "entry_fee": 0.04}
 {"ts": "2026-07-13T18:50:20.070809+00:00", "event": "open", "symbol": "FILUSDT", "side": "long", "price": 0.7604, "liq_long_z": 2.006, "liq_long_usd": 481129.0, "entry_fee": 0.04}
+{"ts": "2026-07-13T21:50:01.525684+00:00", "event": "close", "symbol": "LINKUSDT", "reason": "time stop (7.0h, +0.00%)", "exit_price": 7.917, "entry_price": 7.917, "gross_pnl": 0.0, "fees_total": 0.08, "net_pnl": -0.08, "held_hours": 7.0, "caveat": "maker fill modeled at close \u2014 optimistic vs real adverse selection"}
