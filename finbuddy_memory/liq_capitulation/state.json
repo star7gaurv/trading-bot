@@ -9,10 +9,30 @@
       "entry_liq_long_usd": 185366.0,
       "opened_at": "2026-07-13T14:50:17.652741+00:00",
       "fees_paid": 0.04
+    },
+    "OPUSDT": {
+      "symbol": "OPUSDT",
+      "side": "long",
+      "entry_price": 0.0992,
+      "notional": 200.0,
+      "entry_liq_z": 2.123,
+      "entry_liq_long_usd": 211974.0,
+      "opened_at": "2026-07-13T18:50:19.466744+00:00",
+      "fees_paid": 0.04
+    },
+    "FILUSDT": {
+      "symbol": "FILUSDT",
+      "side": "long",
+      "entry_price": 0.7604,
+      "notional": 200.0,
+      "entry_liq_z": 2.006,
+      "entry_liq_long_usd": 481129.0,
+      "opened_at": "2026-07-13T18:50:20.070682+00:00",
+      "fees_paid": 0.04
     }
   },
   "realized_pnl": -16.05439,
   "wins": 1,
   "losses": 7,
-  "last_update": "2026-07-13T17:50:18.498764+00:00"
+  "last_update": "2026-07-13T18:50:20.659744+00:00"
 }
