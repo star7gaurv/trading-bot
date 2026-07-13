@@ -692,3 +692,4 @@
 | 2026-07-13 12:00:29 | LINK/USDT:USDT | SHORT | 6h00m | +0.24% | +0.19 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-13 12:01:18 | LDO/USDT:USDT | SHORT | 6h00m | -0.78% | -0.63 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-13 13:34:33 | BTC/USDT:USDT | SHORT | 5h34m | +0.63% | +0.39 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-13 14:03:05 | 1000PEPE/USDT:USDT | SHORT | 6h02m | -0.94% | -0.76 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
