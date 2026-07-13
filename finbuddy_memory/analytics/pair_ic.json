@@ -1,310 +1,310 @@
 {
-  "generated": "2026-07-06T06:30:02.151798+00:00",
+  "generated": "2026-07-13T06:30:02.760862+00:00",
   "label_period_candles": 12,
   "pairs": {
     "BTC/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": 0.094,
-        "sign_hit": 0.6176
+        "n": 508,
+        "ic": 0.1207,
+        "sign_hit": 0.6083
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": 0.094,
-        "sign_hit": 0.6176
+        "n": 508,
+        "ic": 0.1207,
+        "sign_hit": 0.6083
       }
     },
     "ETH/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": 0.1038,
-        "sign_hit": 0.5559
+        "n": 508,
+        "ic": 0.1085,
+        "sign_hit": 0.5394
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": 0.1038,
-        "sign_hit": 0.5559
+        "n": 508,
+        "ic": 0.1085,
+        "sign_hit": 0.5394
       }
     },
     "SOL/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": -0.2351,
-        "sign_hit": 0.4735
+        "n": 508,
+        "ic": -0.1442,
+        "sign_hit": 0.4862
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": -0.2351,
-        "sign_hit": 0.4735
+        "n": 508,
+        "ic": -0.1442,
+        "sign_hit": 0.4862
       }
     },
     "XRP/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": -0.0965,
-        "sign_hit": 0.5265
+        "n": 508,
+        "ic": -0.0541,
+        "sign_hit": 0.5492
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": -0.0965,
-        "sign_hit": 0.5265
+        "n": 508,
+        "ic": -0.0541,
+        "sign_hit": 0.5492
       }
     },
     "LTC/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": 0.1998,
-        "sign_hit": 0.6412
+        "n": 508,
+        "ic": 0.2415,
+        "sign_hit": 0.5965
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": 0.1998,
-        "sign_hit": 0.6412
+        "n": 508,
+        "ic": 0.2415,
+        "sign_hit": 0.5965
       }
     },
     "DOT/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": 0.0401,
-        "sign_hit": 0.4618
+        "n": 508,
+        "ic": 0.0672,
+        "sign_hit": 0.4862
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": 0.0401,
-        "sign_hit": 0.4618
+        "n": 508,
+        "ic": 0.0672,
+        "sign_hit": 0.4862
       }
     },
     "ADA/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": -0.1688,
-        "sign_hit": 0.4794
+        "n": 508,
+        "ic": -0.0035,
+        "sign_hit": 0.4803
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": -0.1688,
-        "sign_hit": 0.4794
+        "n": 508,
+        "ic": -0.0035,
+        "sign_hit": 0.4803
       }
     },
     "AVAX/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": 0.4626,
-        "sign_hit": 0.6794
+        "n": 508,
+        "ic": 0.3801,
+        "sign_hit": 0.6437
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": 0.4626,
-        "sign_hit": 0.6794
+        "n": 508,
+        "ic": 0.3801,
+        "sign_hit": 0.6437
       }
     },
     "LINK/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": 0.0784,
-        "sign_hit": 0.5824
+        "n": 508,
+        "ic": 0.1395,
+        "sign_hit": 0.5925
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": 0.0784,
-        "sign_hit": 0.5824
+        "n": 508,
+        "ic": 0.1395,
+        "sign_hit": 0.5925
       }
     },
     "NEAR/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": -0.0704,
-        "sign_hit": 0.4941
+        "n": 508,
+        "ic": 0.045,
+        "sign_hit": 0.5354
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": -0.0704,
-        "sign_hit": 0.4941
+        "n": 508,
+        "ic": 0.045,
+        "sign_hit": 0.5354
       }
     },
     "ARB/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": 0.1107,
-        "sign_hit": 0.5412
+        "n": 508,
+        "ic": 0.0505,
+        "sign_hit": 0.5295
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": 0.1107,
-        "sign_hit": 0.5412
+        "n": 508,
+        "ic": 0.0505,
+        "sign_hit": 0.5295
       }
     },
     "OP/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": -0.1136,
-        "sign_hit": 0.5029
+        "n": 508,
+        "ic": 0.0608,
+        "sign_hit": 0.5295
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": -0.1136,
-        "sign_hit": 0.5029
+        "n": 508,
+        "ic": 0.0608,
+        "sign_hit": 0.5295
       }
     },
     "APT/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": 0.0589,
-        "sign_hit": 0.5412
+        "n": 508,
+        "ic": 0.1041,
+        "sign_hit": 0.5295
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": 0.0589,
-        "sign_hit": 0.5412
+        "n": 508,
+        "ic": 0.1041,
+        "sign_hit": 0.5295
       }
     },
     "SUI/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": -0.0133,
-        "sign_hit": 0.5853
+        "n": 508,
+        "ic": 0.0505,
+        "sign_hit": 0.563
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": -0.0133,
-        "sign_hit": 0.5853
+        "n": 508,
+        "ic": 0.0505,
+        "sign_hit": 0.563
       }
     },
     "UNI/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": 0.0302,
-        "sign_hit": 0.5588
+        "n": 508,
+        "ic": -0.0122,
+        "sign_hit": 0.5315
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": 0.0302,
-        "sign_hit": 0.5588
+        "n": 508,
+        "ic": -0.0122,
+        "sign_hit": 0.5315
       }
     },
     "ENA/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": 0.0254,
-        "sign_hit": 0.4765
+        "n": 508,
+        "ic": 0.0165,
+        "sign_hit": 0.4941
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": 0.0254,
-        "sign_hit": 0.4765
+        "n": 508,
+        "ic": 0.0165,
+        "sign_hit": 0.4941
       }
     },
     "TAO/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": 0.1957,
-        "sign_hit": 0.4441
+        "n": 508,
+        "ic": 0.1644,
+        "sign_hit": 0.4547
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": 0.1957,
-        "sign_hit": 0.4441
+        "n": 508,
+        "ic": 0.1644,
+        "sign_hit": 0.4547
       }
     },
     "ONDO/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": 0.2754,
-        "sign_hit": 0.4853
+        "n": 508,
+        "ic": 0.1059,
+        "sign_hit": 0.498
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": 0.2754,
-        "sign_hit": 0.4853
+        "n": 508,
+        "ic": 0.1059,
+        "sign_hit": 0.498
       }
     },
     "POL/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": 0.0714,
-        "sign_hit": 0.4853
+        "n": 508,
+        "ic": -0.038,
+        "sign_hit": 0.498
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": 0.0714,
-        "sign_hit": 0.4853
+        "n": 508,
+        "ic": -0.038,
+        "sign_hit": 0.498
       }
     },
     "1000PEPE/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": -0.0438,
-        "sign_hit": 0.4382
+        "n": 508,
+        "ic": -0.0362,
+        "sign_hit": 0.4724
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": -0.0438,
-        "sign_hit": 0.4382
+        "n": 508,
+        "ic": -0.0362,
+        "sign_hit": 0.4724
       }
     },
     "WIF/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": 0.2284,
-        "sign_hit": 0.5324
+        "n": 508,
+        "ic": 0.2562,
+        "sign_hit": 0.5
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": 0.2284,
-        "sign_hit": 0.5324
+        "n": 508,
+        "ic": 0.2562,
+        "sign_hit": 0.5
       }
     },
     "FET/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": 0.065,
-        "sign_hit": 0.4853
+        "n": 508,
+        "ic": 0.0879,
+        "sign_hit": 0.4764
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": 0.065,
-        "sign_hit": 0.4853
+        "n": 508,
+        "ic": 0.0879,
+        "sign_hit": 0.4764
       }
     },
     "RENDER/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": 0.031,
-        "sign_hit": 0.4176
+        "n": 508,
+        "ic": 0.0297,
+        "sign_hit": 0.4547
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": 0.031,
-        "sign_hit": 0.4176
+        "n": 508,
+        "ic": 0.0297,
+        "sign_hit": 0.4547
       }
     },
     "FIL/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": 0.0783,
-        "sign_hit": 0.4941
+        "n": 508,
+        "ic": 0.1007,
+        "sign_hit": 0.5157
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": 0.0783,
-        "sign_hit": 0.4941
+        "n": 508,
+        "ic": 0.1007,
+        "sign_hit": 0.5157
       }
     },
     "LDO/USDT:USDT": {
       "full": {
-        "n": 340,
-        "ic": -0.0074,
-        "sign_hit": 0.4853
+        "n": 508,
+        "ic": 0.0441,
+        "sign_hit": 0.5453
       },
       "rolling_30d": {
-        "n": 340,
-        "ic": -0.0074,
-        "sign_hit": 0.4853
+        "n": 508,
+        "ic": 0.0441,
+        "sign_hit": 0.5453
       }
     }
   },
   "pooled": {
-    "n": 8500,
-    "ic": 0.0149
+    "n": 12700,
+    "ic": 0.049
   }
 }
