@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-14T14:30:01.582057+00:00",
+  "updated": "2026-07-14T15:00:01.840944+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -11,13 +11,13 @@
   "stats": {
     "TAO/USDT:USDT": {
       "BEAR": {
-        "n": 4,
-        "wins": 1,
+        "n": 3,
+        "wins": 0,
         "losses": 3,
-        "wr": 0.25,
-        "pf": 0.623,
-        "profit_usdt": -1.33,
-        "avg_profit_pct": -0.583
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -3.53,
+        "avg_profit_pct": -2.053
       },
       "NEUTRAL": {
         "n": 8,
@@ -27,46 +27,6 @@
         "pf": 0.64,
         "profit_usdt": -1.14,
         "avg_profit_pct": -0.176
-      }
-    },
-    "1000PEPE/USDT:USDT": {
-      "BEAR": {
-        "n": 5,
-        "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
-        "pf": 0.37,
-        "profit_usdt": -2.15,
-        "avg_profit_pct": -0.752
-      },
-      "NEUTRAL": {
-        "n": 9,
-        "wins": 3,
-        "losses": 6,
-        "wr": 0.3333,
-        "pf": 0.551,
-        "profit_usdt": -3.46,
-        "avg_profit_pct": -0.471
-      }
-    },
-    "SOL/USDT:USDT": {
-      "BEAR": {
-        "n": 9,
-        "wins": 5,
-        "losses": 4,
-        "wr": 0.5556,
-        "pf": 1.891,
-        "profit_usdt": 3.94,
-        "avg_profit_pct": 0.782
-      },
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 1,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 0.64,
-        "avg_profit_pct": 0.8
       }
     },
     "LINK/USDT:USDT": {
@@ -180,6 +140,26 @@
         "avg_profit_pct": 0.327
       }
     },
+    "1000PEPE/USDT:USDT": {
+      "BEAR": {
+        "n": 4,
+        "wins": 0,
+        "losses": 4,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -3.41,
+        "avg_profit_pct": -1.488
+      },
+      "NEUTRAL": {
+        "n": 9,
+        "wins": 3,
+        "losses": 6,
+        "wr": 0.3333,
+        "pf": 0.551,
+        "profit_usdt": -3.46,
+        "avg_profit_pct": -0.471
+      }
+    },
     "TON/USDT:USDT": {
       "BEAR": {
         "n": 3,
@@ -271,6 +251,26 @@
         "pf": 1.257,
         "profit_usdt": 2.62,
         "avg_profit_pct": 0.181
+      }
+    },
+    "SOL/USDT:USDT": {
+      "BEAR": {
+        "n": 8,
+        "wins": 4,
+        "losses": 4,
+        "wr": 0.5,
+        "pf": 1.649,
+        "profit_usdt": 2.87,
+        "avg_profit_pct": 0.646
+      },
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 0.64,
+        "avg_profit_pct": 0.8
       }
     },
     "LTC/USDT:USDT": {
@@ -482,14 +482,6 @@
       "n": 5,
       "wr": 0.2,
       "pf": 0.041
-    },
-    {
-      "pair": "1000PEPE/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=20% PF=0.37 n=5 profit=-2.15",
-      "n": 5,
-      "wr": 0.2,
-      "pf": 0.37
     },
     {
       "pair": "DOT/USDT:USDT",
