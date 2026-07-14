@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-14T18:00:02.028168+00:00",
+  "updated": "2026-07-14T18:30:01.935051+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "RENDER/USDT:USDT": {
-      "BEAR": {
-        "n": 21,
-        "wins": 13,
-        "losses": 8,
-        "wr": 0.619,
-        "pf": 1.432,
-        "profit_usdt": 3.18,
-        "avg_profit_pct": 0.272
-      },
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 2.217,
-        "profit_usdt": 0.56,
-        "avg_profit_pct": 0.36
-      }
-    },
     "ONDO/USDT:USDT": {
       "BEAR": {
         "n": 4,
@@ -158,6 +138,26 @@
         "pf": 0.139,
         "profit_usdt": -2.41,
         "avg_profit_pct": -0.99
+      }
+    },
+    "RENDER/USDT:USDT": {
+      "BEAR": {
+        "n": 20,
+        "wins": 12,
+        "losses": 8,
+        "wr": 0.6,
+        "pf": 1.378,
+        "profit_usdt": 2.78,
+        "avg_profit_pct": 0.25
+      },
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 2.217,
+        "profit_usdt": 0.56,
+        "avg_profit_pct": 0.36
       }
     },
     "SUI/USDT:USDT": {
