@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-14T10:52:26.189561+00:00",
+  "generated_at": "2026-07-14T12:30:02.041704+00:00",
   "findings": {
     "dead_timeframes": [
       "5m",
@@ -159,9 +159,9 @@
     },
     "window_stats": {
       "bear_2025Q1": {
-        "n": 221,
+        "n": 222,
         "avg_wr": 0.471,
-        "avg_pf": 0.879
+        "avg_pf": 0.878
       },
       "bull_2024Q1": {
         "n": 184,
@@ -217,9 +217,9 @@
         "avg_trades_day": 7.27
       },
       "1h": {
-        "n": 197,
+        "n": 198,
         "avg_pf": 0.722,
-        "avg_wr": 0.366,
+        "avg_wr": 0.367,
         "avg_trades_day": 2.01
       },
       "5m": {
@@ -242,20 +242,20 @@
       }
     }
   },
-  "pruned": 0,
-  "actions": [
-    "[DRY-RUN] Would skip dead TFs: ['5m', '30m', '4h']"
-  ],
+  "pruned": 9,
+  "actions": [],
   "llm_insight": "",
   "manual_overrides": {
     "period_days": 7,
-    "force_exits": 3,
+    "force_exits": 5,
     "pauses": 2,
     "resumes": 2,
     "by_pair": {
       "LTC/USDT:USDT": 1,
       "FIL/USDT:USDT": 1,
-      "FET/USDT:USDT": 1
+      "FET/USDT:USDT": 1,
+      "BTC/USDT:USDT": 1,
+      "1000PEPE/USDT:USDT": 1
     }
   }
 }
