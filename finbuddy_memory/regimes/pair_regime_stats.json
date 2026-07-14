@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-14T07:30:02.097591+00:00",
+  "updated": "2026-07-14T08:00:01.715019+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -40,13 +40,13 @@
         "avg_profit_pct": -0.411
       },
       "NEUTRAL": {
-        "n": 4,
+        "n": 5,
         "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 0.416,
-        "profit_usdt": -1.36,
-        "avg_profit_pct": -0.42
+        "losses": 3,
+        "wr": 0.4,
+        "pf": 0.319,
+        "profit_usdt": -2.07,
+        "avg_profit_pct": -0.51
       }
     },
     "LDO/USDT:USDT": {
