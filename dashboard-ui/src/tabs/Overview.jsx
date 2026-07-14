@@ -15,6 +15,7 @@ import Table from "../components/Table";
 import Badge from "../components/Badge";
 import InfoTip from "../components/InfoTip";
 import PnlCell, { pnlPct } from "../components/PnlCell";
+import ForceExitButton from "../components/ForceExitButton";
 import { usePolling } from "../api/hooks";
 import {
   getProfitSummary,
@@ -27,6 +28,9 @@ import {
   getSignalQuality,
   getTimeframeInfo,
   switchTimeframe,
+  getTradingState,
+  pauseEntries,
+  resumeEntries,
 } from "../api/client";
 import {
   formatUsdt,
@@ -226,7 +230,7 @@ function StatStrip({ profit, openTrades, regime, dailyPerf, balance, recentClose
 }
 
 // ─── Open trades panel ───
-function OpenTradesPanel({ data, error, lastUpdated, loading, walletTotal }) {
+function OpenTradesPanel({ data, error, lastUpdated, loading, walletTotal, refresh }) {
   const rows = Array.isArray(data) ? data.slice(0, 8) : [];
   const columns = [
     { key: "pair", label: "Pair", mono: true },
@@ -286,6 +290,12 @@ function OpenTradesPanel({ data, error, lastUpdated, loading, walletTotal }) {
         if (!ts) return "—";
         return fmtDurationShort((Date.now() - ts) / 1000);
       },
+    },
+    {
+      key: "actions",
+      label: "",
+      align: "right",
+      render: (r) => <ForceExitButton trade={r} onClosed={refresh} />,
     },
   ];
 
@@ -385,8 +395,54 @@ function RecentTradesPanel({ data, error, lastUpdated }) {
   );
 }
 
+// ─── Manual pause/resume of new entries ───
+// No confirm dialog — unlike ForceExitButton, this is a reversible flag flip,
+// not a P&L-realizing action.
+function TradingStateControl({ state, onRefresh }) {
+  const [busy, setBusy] = React.useState(false);
+  const [err, setErr] = React.useState(null);
+  const isPaused = state === "paused";
+  const isStopped = state === "stopped";
+
+  async function toggle() {
+    setBusy(true);
+    setErr(null);
+    try {
+      await (isPaused ? resumeEntries() : pauseEntries());
+      onRefresh?.();
+    } catch (ex) {
+      setErr(ex.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex items-center justify-between mb-3 pb-2 border-b border-border">
+      <div className="flex items-center gap-2">
+        <span className={`live-dot ${isPaused ? "stale" : isStopped ? "dead" : ""}`} />
+        <span className="text-xxs font-mono uppercase tracking-wide text-text-secondary">
+          {isPaused ? "Entries Paused" : isStopped ? "Bot Stopped" : "Live · Accepting Entries"}
+        </span>
+        {err && <span className="text-xxs text-loss ml-1">{err}</span>}
+      </div>
+      <button
+        disabled={busy || isStopped || !state}
+        onClick={toggle}
+        className={`px-2.5 py-1 rounded text-xxs font-semibold border transition-colors disabled:opacity-40 ${
+          isPaused
+            ? "bg-profit/15 text-profit border-profit/40 hover:bg-profit/25"
+            : "bg-warn/15 text-warn border-warn/40 hover:bg-warn/25"
+        }`}
+      >
+        {busy ? "…" : isPaused ? "Resume Entries" : "Pause Entries"}
+      </button>
+    </div>
+  );
+}
+
 // ─── Risk card ───
-function RiskCard({ openTrades, dailyPnl, config }) {
+function RiskCard({ openTrades, dailyPnl, config, tradingState, onTradingStateRefresh }) {
   const dailyLimit = parseFloat(config?.env_vars?.FREQAI_DAILY_LOSS_LIMIT || "10");
   const todayPnl = typeof dailyPnl === "number" ? dailyPnl : 0;
   const limitUsed = Math.max(0, -todayPnl);
@@ -405,6 +461,7 @@ function RiskCard({ openTrades, dailyPnl, config }) {
 
   return (
     <Card title="Risk" subtitle="live circuit breaker + exposure">
+      <TradingStateControl state={tradingState} onRefresh={onTradingStateRefresh} />
       <div className="space-y-3">
         <div>
           <div className="flex items-center justify-between mb-1">
@@ -592,6 +649,7 @@ export default function Overview({ onNavigateTab }) {
   const dailyPerf = usePolling(() => getDailyPerformance(1), 60000);
   const recentTrades = usePolling(() => getRecentTrades(30), 30000);
   const config = usePolling(getStrategyConfig, 120000);
+  const tradingState = usePolling(getTradingState, 10000);
 
   // Compute today's realized P&L for risk card
   const dailyArr = Array.isArray(dailyPerf.data) ? dailyPerf.data : (dailyPerf.data?.data || []);
@@ -620,6 +678,7 @@ export default function Overview({ onNavigateTab }) {
           lastUpdated={trades.lastUpdated}
           loading={trades.loading}
           walletTotal={safe(balance.data, "total_bot") ?? safe(balance.data, "total")}
+          refresh={trades.refresh}
         />
         <RecentTradesPanel
           data={recentTrades.data}
@@ -634,6 +693,8 @@ export default function Overview({ onNavigateTab }) {
           openTrades={trades.data}
           dailyPnl={todayPnl}
           config={config.data}
+          tradingState={tradingState.data?.state}
+          onTradingStateRefresh={tradingState.refresh}
         />
         <SignalQualityCard />
         <TFMiniSwitcher onNavigateTab={onNavigateTab} />

@@ -9,12 +9,17 @@ Architecture:
 1. Runs as an infinite loop using Telegram long-polling (60s timeout per request).
 2. Processes callback_query events from inline-keyboard button taps.
 3. Dispatches actions by callback_data prefix:
-       apply:<hash>   → run promote --apply
-       skip:<hash>    → archive proposal without applying
-       details:<hash> → show config JSON
-       brain:pause    → disable brain cron
-       brain:resume   → re-enable brain cron
-       brain:status   → reply with brain status
+       apply:<hash>       → run promote --apply
+       skip:<hash>        → archive proposal without applying
+       details:<hash>     → show config JSON
+       brain:pause        → disable brain cron
+       brain:resume       → re-enable brain cron
+       brain:status       → reply with brain status
+       forceexit:<tid>    → close one open trade via FreqTrade's real /forceexit
+       trading:pause      → stop new entries (existing trades still managed)
+       trading:resume     → resume new entries
+4. Also handles plain text commands from the configured chat: /pause, /resume,
+   /trades (lists open trades, each with an inline "Close this trade" button).
 
 Idempotent — tracks last_update_id in state to prevent re-processing.
 Response latency: < 2s (long-poll + immediate dispatch).
@@ -26,19 +31,23 @@ import subprocess
 import sys
 import signal
 import time
+import requests
 from pathlib import Path
 from datetime import datetime, timezone
 
 ROOT = Path("/home/ubuntu/var/www/html/trade")
 sys.path.insert(0, str(ROOT / "scripts" / "lib"))
 from telegram_template import (
-    get_updates, answer_callback, edit_message, send, Subsystem, Status
+    get_updates, answer_callback, edit_message, send, Subsystem, Status, TELEGRAM_CHAT
 )
+from ft_creds import get_ft_auth
 
 STATE_FILE = Path("/home/ubuntu/.finbuddy/state/telegram_listener.json")
 PROMOTIONS_DIR = ROOT / "finbuddy_memory" / "promotions"
 LOCK_FILE = Path("/tmp/finbuddy_telegram_listener.lock")
 PID_FILE  = Path("/home/ubuntu/.finbuddy/state/telegram_listener.pid")
+MANUAL_OVERRIDE_LOG = ROOT / "finbuddy_memory" / "trades" / "manual_overrides.jsonl"
+FT_BASE = "http://127.0.0.1:8080/api/v1"
 
 _running = True
 
@@ -166,6 +175,84 @@ def handle_brain(action: str) -> tuple[bool, str]:
     return False, f"unknown brain action: {action}"
 
 
+def _append_override_log(entry: dict) -> None:
+    """Same schema/file as dashboard/streamer.py's _append_override_log, just
+    channel="telegram" instead of "dashboard" — the audit trail is unified
+    regardless of which surface the operator used."""
+    MANUAL_OVERRIDE_LOG.parent.mkdir(parents=True, exist_ok=True)
+    entry = {"ts": datetime.now(timezone.utc).isoformat(), **entry}
+    with open(MANUAL_OVERRIDE_LOG, "a") as f:
+        f.write(json.dumps(entry, separators=(",", ":"), default=str) + "\n")
+
+
+def handle_forceexit(trade_id: str) -> tuple[bool, str]:
+    """Manually close one open trade via FreqTrade's real /forceexit (places a
+    genuine market exit order) — mirrors dashboard/streamer.py's
+    force_exit_trade() endpoint so a Telegram tap and a dashboard tap do the
+    exact same thing."""
+    auth = get_ft_auth()
+    try:
+        status = requests.get(f"{FT_BASE}/status", auth=auth, timeout=10).json()
+        snapshot = next((t for t in status if t.get("trade_id") == int(trade_id)), None)
+    except Exception:
+        snapshot = None
+
+    try:
+        r = requests.post(
+            f"{FT_BASE}/forceexit", auth=auth, timeout=15,
+            json={"tradeid": str(trade_id), "ordertype": "market"},
+        )
+    except Exception as e:
+        _append_override_log({"action": "force_exit", "channel": "telegram",
+                               "trade_id": trade_id, "result": "error", "ft_response": str(e)})
+        return False, f"error: {e}"
+
+    if r.status_code != 200:
+        detail = r.text[:300]
+        already_closed = "invalid argument" in detail.lower()
+        _append_override_log({
+            "action": "force_exit", "channel": "telegram", "trade_id": trade_id,
+            "pair": snapshot.get("pair") if snapshot else None,
+            "result": "already_closed" if already_closed else "error",
+            "ft_response": detail, "snapshot": snapshot,
+        })
+        if already_closed:
+            return True, "Trade was already closed."
+        return False, detail
+
+    body = r.json()
+    _append_override_log({
+        "action": "force_exit", "channel": "telegram", "trade_id": trade_id,
+        "pair": snapshot.get("pair") if snapshot else None,
+        "result": "closed", "ft_response": body, "snapshot": snapshot,
+    })
+    return True, body.get("result", "Exit order submitted.")
+
+
+def handle_trading_toggle(action: str) -> tuple[bool, str]:
+    """arg is 'pause' or 'resume' — pause stops new entries only, existing
+    open trades keep being managed normally (SL/TP/exit_signal still fire)."""
+    if action not in ("pause", "resume"):
+        return False, f"unknown trading action: {action}"
+    auth = get_ft_auth()
+    path = "/pause" if action == "pause" else "/start"
+    try:
+        r = requests.post(f"{FT_BASE}{path}", auth=auth, timeout=15, json={})
+    except Exception as e:
+        _append_override_log({"action": f"{action}_entries", "channel": "telegram",
+                               "result": "error", "ft_response": str(e)})
+        return False, f"error: {e}"
+
+    ok = r.status_code == 200
+    body = r.json() if ok else {}
+    _append_override_log({"action": f"{action}_entries", "channel": "telegram",
+                           "result": "ok" if ok else "error",
+                           "ft_response": body or r.text[:300]})
+    if not ok:
+        return False, r.text[:300]
+    return True, body.get("status", action)
+
+
 # ── Dispatcher ───────────────────────────────────────────────────────────
 
 def dispatch_callback(update: dict) -> None:
@@ -234,8 +321,69 @@ def dispatch_callback(update: dict) -> None:
             fields={"Result": info[:500]},
         )
 
+    elif verb == "forceexit":
+        ok, info = handle_forceexit(arg)
+        answer_callback(cq_id, "✅ Closing…" if ok else f"❌ {info[:100]}", show_alert=True)
+        if message_id and chat_id:
+            label = "✅ CLOSED" if ok else "❌ CLOSE FAILED"
+            edit_message(message_id, chat_id,
+                         f"<b>{label}</b> · trade <code>{arg}</code>\n<i>{info[-200:]}</i>")
+
+    elif verb == "trading":
+        ok, info = handle_trading_toggle(arg)
+        label = "⏸️ PAUSED" if (ok and arg == "pause") else "▶️ RESUMED" if ok else "❌ FAILED"
+        answer_callback(cq_id, info[:200], show_alert=True)
+        if message_id and chat_id:
+            edit_message(message_id, chat_id, f"<b>{label}</b>\n<i>{info[-200:]}</i>")
+
     else:
         answer_callback(cq_id, f"unknown verb: {verb}")
+
+
+def dispatch_message(update: dict) -> None:
+    """Plain text commands — /pause, /resume, /trades. Only these three; button
+    taps (dispatch_callback) remain the primary interaction for everything
+    else. Restricted to the configured chat — this is a single-operator bot,
+    not a public one."""
+    msg = update.get("message", {})
+    text = (msg.get("text") or "").strip().lower()
+    chat_id = str(msg.get("chat", {}).get("id", ""))
+    if chat_id != str(TELEGRAM_CHAT) or not text.startswith("/"):
+        return
+
+    cmd = text.split()[0]
+
+    if cmd in ("/pause", "/resume"):
+        action = "pause" if cmd == "/pause" else "resume"
+        ok, info = handle_trading_toggle(action)
+        label = ("⏸️ PAUSED" if action == "pause" else "▶️ RESUMED") if ok else "❌ FAILED"
+        send(Subsystem.BRAIN_CYCLE, Status.OK if ok else Status.FAIL,
+             label, fields={"Result": info[:400]}, silent=False)
+
+    elif cmd == "/trades":
+        try:
+            status = requests.get(f"{FT_BASE}/status", auth=get_ft_auth(), timeout=10).json()
+        except Exception as e:
+            send(Subsystem.BRAIN_CYCLE, Status.FAIL, "Could not fetch open trades",
+                 fields={"Error": str(e)[:300]})
+            return
+        if not status:
+            send(Subsystem.BRAIN_CYCLE, Status.INFO, "No open trades", fields=None)
+            return
+        for t in status:
+            side = "SHORT" if t.get("is_short") else "LONG"
+            pnl = t.get("profit_abs")
+            send(
+                Subsystem.BRAIN_CYCLE, Status.INFO,
+                f"{t.get('pair')} · {side}",
+                fields={
+                    "Entry": t.get("open_rate"),
+                    "Current": t.get("current_rate"),
+                    "P&L": f"{pnl:+.2f} USDT" if pnl is not None else "—",
+                },
+                buttons=[[{"text": "❌ Close this trade", "callback_data": f"forceexit:{t['trade_id']}"}]],
+                silent=True,
+            )
 
 
 # ── Daemon loop ───────────────────────────────────────────────────────────
@@ -286,6 +434,8 @@ def run_daemon() -> None:
             try:
                 if "callback_query" in update:
                     dispatch_callback(update)
+                elif "message" in update:
+                    dispatch_message(update)
             except Exception as e:
                 print(f"[{_now()}] ERR update {uid}: {e}", file=sys.stderr)
             state["last_update_id"] = max(state.get("last_update_id", 0), uid)

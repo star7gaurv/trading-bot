@@ -72,6 +72,7 @@ WF_RESULTS_DIR = REPO_ROOT / "walkforward_results"
 CONFIG_JSON = REPO_ROOT / "freqtrade/user_data/config.json"
 WF_RUN_PATTERN = re.compile(r"^[A-Za-z0-9_-]+_\d{8}T\d{6}$")
 ACTIVE_STALE_S = 12 * 3600
+MANUAL_OVERRIDE_LOG = REPO_ROOT / "finbuddy_memory/trades/manual_overrides.jsonl"
 
 # FreqTrade API
 FT_BASE = "http://127.0.0.1:8080/api/v1"
@@ -165,6 +166,27 @@ async def ft_get(path: str, params: dict | None = None) -> Any:
             return r.json()
     except (httpx.HTTPError, httpx.TimeoutException) as e:
         raise HTTPException(status_code=502, detail=f"FreqTrade API error: {e}") from e
+
+
+async def ft_post(path: str, json_body: dict | None = None) -> httpx.Response:
+    """Like ft_get but for state-changing calls — returns the raw Response so
+    callers can inspect status_code/body themselves (e.g. to treat FreqTrade's
+    "invalid argument" RPCException, surfaced as HTTP 502, as a soft-success
+    when it just means the trade was already closed by something else)."""
+    url = f"{FT_BASE}{path}"
+    headers = {"Authorization": FT_AUTH}
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        return await client.post(url, headers=headers, json=json_body or {})
+
+
+def _append_override_log(entry: dict) -> None:
+    """Append-only audit trail for manual trade overrides (force-exit, pause/resume).
+    No flock — these are rare, human-paced actions, unlike the brain's queue.jsonl
+    which needs locking for concurrent worker writes."""
+    MANUAL_OVERRIDE_LOG.parent.mkdir(parents=True, exist_ok=True)
+    entry = {"ts": datetime.utcnow().isoformat() + "Z", **entry}
+    with open(MANUAL_OVERRIDE_LOG, "a") as f:
+        f.write(json.dumps(entry, separators=(",", ":"), default=str) + "\n")
 
 
 # ───────────────────── Auth routes ─────────────────────
@@ -689,6 +711,120 @@ async def signals(_: dict = Depends(require_auth)):
 @app.get("/api/trades/open")
 async def trades_open(_: dict = Depends(require_auth)):
     return await ft_get("/status")
+
+
+# In-memory per-trade cooldown so a double-tap on the Close button can't fire
+# two forceexit calls back to back. Resets on restart — acceptable, restarts
+# are rare and a stale guard only costs a few seconds of extra safety.
+_closing_trades: dict[int, float] = {}
+FORCE_EXIT_COOLDOWN_S = 5.0
+
+
+@app.post("/api/trades/{trade_id}/close")
+async def force_exit_trade(trade_id: int, _: dict = Depends(require_auth)):
+    """Manually close one open trade via FreqTrade's real /forceexit (places a
+    genuine market exit order) — NOT the DELETE /trades/{id} pattern used
+    elsewhere in this file (see flatten_trades below), which only deletes the
+    local DB row without ever exiting the exchange position."""
+    now = time.time()
+    last = _closing_trades.get(trade_id, 0.0)
+    if now - last < FORCE_EXIT_COOLDOWN_S:
+        raise HTTPException(status_code=429, detail="Already closing this trade — please wait a moment.")
+    _closing_trades[trade_id] = now
+
+    try:
+        open_trades = await ft_get("/status")
+        snapshot = next((t for t in open_trades if t.get("trade_id") == trade_id), None)
+    except HTTPException:
+        snapshot = None
+
+    if snapshot is None:
+        _closing_trades.pop(trade_id, None)
+        raise HTTPException(status_code=404, detail=f"Trade {trade_id} not found or already closed.")
+
+    try:
+        r = await ft_post("/forceexit", {"tradeid": str(trade_id), "ordertype": "market"})
+    except (httpx.HTTPError, httpx.TimeoutException) as e:
+        # Deliberately NOT popping _closing_trades here — leave the cooldown
+        # standing for its full FORCE_EXIT_COOLDOWN_S window even on failure,
+        # so a rapid double-tap after an error can't race a second forceexit
+        # call while the first might still be settling on FreqTrade's side.
+        # (Bug found in testing: this used to pop immediately in every path,
+        # which meant the cooldown only ever blocked truly-simultaneous
+        # in-flight requests, not a real time-based window.)
+        raise HTTPException(status_code=502, detail=f"FreqTrade API error: {e}") from e
+
+    snapshot_out = {
+        "direction": "short" if snapshot.get("is_short") else "long",
+        "open_rate": snapshot.get("open_rate"),
+        "current_rate": snapshot.get("current_rate"),
+        "profit_abs": snapshot.get("profit_abs"),
+        "profit_pct": snapshot.get("profit_pct") or snapshot.get("profit_ratio"),
+        "stake_amount": snapshot.get("stake_amount"),
+        "open_date": snapshot.get("open_date"),
+    }
+
+    if r.status_code != 200:
+        detail = r.text[:300]
+        # FreqTrade raises RPCException("invalid argument") — surfaced as HTTP 502
+        # by its own global handler — when the trade is no longer open. That's a
+        # legitimate race (the bot may exit it the same instant the user taps
+        # Close), not a real failure, so log it but don't scare the user with a
+        # 502 for something that resolved the way they wanted anyway.
+        already_closed = "invalid argument" in detail.lower()
+        _append_override_log({
+            "action": "force_exit", "channel": "dashboard", "trade_id": trade_id,
+            "pair": snapshot.get("pair"),
+            "result": "already_closed" if already_closed else "error",
+            "ft_response": detail, "snapshot": snapshot_out,
+        })
+        if already_closed:
+            return {"accepted": True, "trade_id": trade_id, "pair": snapshot.get("pair"),
+                    "status": "already_closed", "message": "Trade was already closed."}
+        raise HTTPException(status_code=502, detail=f"forceexit failed: {detail}")
+
+    body = r.json()
+    _append_override_log({
+        "action": "force_exit", "channel": "dashboard", "trade_id": trade_id,
+        "pair": snapshot.get("pair"), "result": "closed",
+        "ft_response": body, "snapshot": snapshot_out,
+    })
+    return {"accepted": True, "trade_id": trade_id, "pair": snapshot.get("pair"),
+            "status": "closing", "message": body.get("result", "Exit order submitted.")}
+
+
+# ───────────────────── Global trading state (pause/resume entries) ─────────────────────
+@app.get("/api/trading/state")
+async def trading_state(_: dict = Depends(require_auth)):
+    cfg = await ft_get("/show_config")
+    return {"state": cfg.get("state"), "dry_run": cfg.get("dry_run")}
+
+
+@app.post("/api/trading/pause")
+async def trading_pause(_: dict = Depends(require_auth)):
+    """Stop new entries. Existing open trades keep being managed normally —
+    stop-loss/take-profit/exit_signal all still fire. Reversible, no confirm
+    needed (unlike force-exit, this doesn't realize any P&L)."""
+    r = await ft_post("/pause")
+    ok = r.status_code == 200
+    body = r.json() if ok else {}
+    _append_override_log({"action": "pause_entries", "channel": "dashboard",
+                           "result": "ok" if ok else "error", "ft_response": body or r.text[:300]})
+    if not ok:
+        raise HTTPException(status_code=502, detail=r.text[:300])
+    return {"accepted": True, "message": body.get("status", "paused")}
+
+
+@app.post("/api/trading/resume")
+async def trading_resume(_: dict = Depends(require_auth)):
+    r = await ft_post("/start")
+    ok = r.status_code == 200
+    body = r.json() if ok else {}
+    _append_override_log({"action": "resume_entries", "channel": "dashboard",
+                           "result": "ok" if ok else "error", "ft_response": body or r.text[:300]})
+    if not ok:
+        raise HTTPException(status_code=502, detail=r.text[:300])
+    return {"accepted": True, "message": body.get("status", "running")}
 
 
 @app.get("/api/trades/closed")
@@ -1308,29 +1444,45 @@ async def wf_coverage(_: dict = Depends(require_auth)):
 
 @app.post("/api/timeframe/flatten")
 async def flatten_trades(_: dict = Depends(require_auth)):
-    """Close all open trades before a timeframe switch to avoid holding stale-model positions."""
+    """Close all open trades before a timeframe switch to avoid holding stale-model positions.
+
+    Fixed 2026-07-14: this used to call DELETE /trades/{id} per trade, which
+    cancels open orders and deletes the LOCAL DB ROW — it never fetches a price
+    or places an exit order. Invisible in dry-run (a "trade" is just a DB row
+    there); in live trading it would silently abandon a real exchange position
+    while FreqTrade forgets it ever existed. Uses FreqTrade's native
+    tradeid="all" support instead — one real forceexit call that atomically
+    exits every open trade under the exchange's own exit lock, same mechanism
+    as the new per-trade force_exit_trade() endpoint above.
+    """
     try:
         open_trades = await ft_get("/status")
-    except Exception:
-        open_trades = []
-    trade_ids = [t["trade_id"] for t in (open_trades if isinstance(open_trades, list) else [])]
-    closed = 0
-    errors = []
-    for tid in trade_ids:
-        try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                r = await client.delete(
-                    f"{FT_BASE}/trades/{tid}",
-                    headers={"Authorization": FT_AUTH},
-                )
-                if r.status_code in (200, 204):
-                    closed += 1
-                else:
-                    errors.append(f"trade {tid}: {r.status_code}")
-        except Exception as e:
-            errors.append(f"trade {tid}: {e}")
-    return {"closed": closed, "errors": errors,
-            "message": f"Closed {closed} trade{'s' if closed != 1 else ''} before timeframe switch."}
+        n_before = len(open_trades) if isinstance(open_trades, list) else 0
+    except HTTPException:
+        n_before = 0
+
+    if n_before == 0:
+        return {"closed": 0, "errors": [], "message": "No open trades to close."}
+
+    try:
+        r = await ft_post("/forceexit", {"tradeid": "all", "ordertype": "market"})
+    except (httpx.HTTPError, httpx.TimeoutException) as e:
+        _append_override_log({"action": "flatten_all", "channel": "dashboard",
+                               "result": "error", "ft_response": str(e)})
+        raise HTTPException(status_code=502, detail=f"FreqTrade API error: {e}") from e
+
+    ok = r.status_code == 200
+    body = r.json() if ok else {}
+    _append_override_log({
+        "action": "flatten_all", "channel": "dashboard",
+        "result": "ok" if ok else "error",
+        "trades_before": n_before,
+        "ft_response": body or r.text[:300],
+    })
+    if not ok:
+        return {"closed": 0, "errors": [r.text[:300]], "message": "Flatten failed — see errors."}
+    return {"closed": n_before, "errors": [],
+            "message": f"Closed {n_before} trade{'s' if n_before != 1 else ''} before timeframe switch."}
 
 
 class ParamsIn(BaseModel):

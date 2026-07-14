@@ -19,14 +19,25 @@ from __future__ import annotations
 import json
 import sqlite3
 import sys
+import requests
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent / "lib"))
+from ft_creds import get_ft_auth, read_freqtrade_env
 
 DB_PATH = Path("/home/ubuntu/var/www/html/trade/freqtrade/user_data/tradesv3.sqlite")
 TRADES_LOG = Path("/home/ubuntu/var/www/html/trade/finbuddy_memory/trades/closed.md")
 REGIME_FILE = Path("/home/ubuntu/var/www/html/trade/finbuddy_memory/regimes/current.json")
 STATE_FILE = Path("/home/ubuntu/.finbuddy/state/postmortem_state.json")
 ENV_PATH = Path("/home/ubuntu/var/www/html/trade/freqtrade/.env")
+FT_BASE = "http://127.0.0.1:8080/api/v1"
+
+# Proactive "trade going wrong" alert — env-configurable, sensible defaults.
+# MANUAL_ALERT_LOSS_PCT: unrealized loss (% of stake) that triggers a Telegram
+# alert with a one-tap Close button. Negative number, e.g. -3.0 = -3%.
+MANUAL_ALERT_LOSS_PCT_DEFAULT = -3.0
+MANUAL_ALERT_COOLDOWN_MIN_DEFAULT = 60   # per-trade — don't re-alert every 15min cron tick
 
 # Rolling WR window for FINBUDDY_RECENT_WR feedback signal
 WR_FEEDBACK_WINDOW = 50
@@ -181,6 +192,82 @@ def check_trade_bias(state: dict) -> None:
         print(f"BIAS ALERT: {ratio:.0%} {direction}")
 
 
+def check_manual_alert_threshold(state: dict) -> None:
+    """Proactive 'this trade is going wrong' alert — fires when an open trade's
+    unrealized loss crosses MANUAL_ALERT_LOSS_PCT (env-configurable via
+    freqtrade/.env, default -3.0%), with a one-tap Close button
+    (forceexit:<trade_id>, handled by scripts/telegram_listener.py). Matches
+    the user's own framing ("watching a trade going wrong") better than
+    proximity-to-stop-loss, which may fire too late to be useful.
+
+    Per-trade cooldown (default 60min) so a trade sitting past the threshold
+    doesn't re-alert every 15-minute cron tick.
+    """
+    env = read_freqtrade_env()
+    try:
+        threshold = float(env.get("MANUAL_ALERT_LOSS_PCT", MANUAL_ALERT_LOSS_PCT_DEFAULT))
+    except (TypeError, ValueError):
+        threshold = MANUAL_ALERT_LOSS_PCT_DEFAULT
+    try:
+        cooldown_min = float(env.get("MANUAL_ALERT_COOLDOWN_MIN", MANUAL_ALERT_COOLDOWN_MIN_DEFAULT))
+    except (TypeError, ValueError):
+        cooldown_min = MANUAL_ALERT_COOLDOWN_MIN_DEFAULT
+
+    try:
+        r = requests.get(f"{FT_BASE}/status", auth=get_ft_auth(), timeout=10)
+        r.raise_for_status()
+        open_trades = r.json()
+    except Exception as e:
+        print(f"WARN: manual-alert trade fetch failed: {e}", file=sys.stderr)
+        return
+
+    if not open_trades:
+        return
+
+    alerts = state.setdefault("manual_alerts", {})
+    now = datetime.now(timezone.utc)
+
+    for t in open_trades:
+        tid = str(t.get("trade_id"))
+        pct = t.get("profit_pct")
+        if pct is None:
+            pct = t.get("profit_ratio")
+            pct = pct * 100 if pct is not None else None
+        if pct is None or pct > threshold:
+            continue  # not crossed, or missing data
+
+        last_ts_str = alerts.get(tid)
+        if last_ts_str:
+            try:
+                last_ts = datetime.fromisoformat(last_ts_str)
+                if now - last_ts < timedelta(minutes=cooldown_min):
+                    continue  # still cooling down for this trade
+            except Exception:
+                pass
+
+        import sys as _sys
+        from pathlib import Path as _Path
+        _sys.path.insert(0, str(_Path(__file__).parent / "lib"))
+        from telegram_template import send as _tg_send, Subsystem, Status
+
+        sent = _tg_send(
+            subsystem=Subsystem.BRAIN_CYCLE,
+            status=Status.WARN,
+            title=f"{t.get('pair')} is going wrong ({pct:+.2f}%)",
+            fields={
+                "Side":    "SHORT" if t.get("is_short") else "LONG",
+                "Entry":   t.get("open_rate"),
+                "Current": t.get("current_rate"),
+                "P&L":     f"{t.get('profit_abs'):+.2f} USDT" if t.get("profit_abs") is not None else "—",
+            },
+            context=f"Unrealized loss crossed your {threshold:.1f}% alert threshold.",
+            buttons=[[{"text": "❌ Close this trade", "callback_data": f"forceexit:{tid}"}]],
+        )
+        if sent:
+            alerts[tid] = now.isoformat()
+            print(f"MANUAL ALERT: {t.get('pair')} at {pct:+.2f}% (threshold {threshold:.1f}%)")
+
+
 def update_recent_wr() -> None:
     """
     Layer 2 self-awareness: compute rolling WR of last WR_FEEDBACK_WINDOW trades,
@@ -254,6 +341,9 @@ def main() -> int:
 
     # Bias check runs every cycle — uses live trades + recent closed
     check_trade_bias(state)
+
+    # Proactive "trade going wrong" alert — every cycle, per-trade cooldown inside
+    check_manual_alert_threshold(state)
 
     # Layer 2: update rolling WR feedback for dynamic threshold adaptation
     update_recent_wr()

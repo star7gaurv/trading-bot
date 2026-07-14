@@ -217,3 +217,17 @@ export async function flattenTrades() {
 export async function updateParams(body) {
   return request("/api/params", { method: "POST", body });
 }
+
+// ─── Manual overrides ───
+export async function forceExitTrade(tradeId) {
+  return request(`/api/trades/${tradeId}/close`, { method: "POST" });
+}
+export async function getTradingState() {
+  return request("/api/trading/state");
+}
+export async function pauseEntries() {
+  return request("/api/trading/pause", { method: "POST" });
+}
+export async function resumeEntries() {
+  return request("/api/trading/resume", { method: "POST" });
+}

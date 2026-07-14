@@ -13,6 +13,7 @@ import Card from "../components/Card";
 import Table from "../components/Table";
 import Badge from "../components/Badge";
 import PnlCell, { pnlPct } from "../components/PnlCell";
+import ForceExitButton from "../components/ForceExitButton";
 import { usePolling } from "../api/hooks";
 import {
   getOpenTrades,
@@ -142,7 +143,7 @@ function TradeDrawer({ trade, onClose }) {
 // ─── Open trades ────────────────────────────────────────────────────────────
 
 function OpenTradesTable({ onSelectTrade }) {
-  const { data, error, loading, lastUpdated } = usePolling(getOpenTrades, 5000);
+  const { data, error, loading, lastUpdated, refresh } = usePolling(getOpenTrades, 5000);
   const trades = Array.isArray(data) ? data : [];
 
   const columns = [
@@ -209,6 +210,12 @@ function OpenTradesTable({ onSelectTrade }) {
         const cls = pct < 0.5 ? "text-loss font-semibold" : pct < 1.5 ? "text-warn" : "text-text-muted";
         return <span className={cls}>{pct.toFixed(2)}%</span>;
       },
+    },
+    {
+      key: "actions",
+      label: "",
+      align: "right",
+      render: (r) => <ForceExitButton trade={r} onClosed={refresh} />,
     },
   ];
 
