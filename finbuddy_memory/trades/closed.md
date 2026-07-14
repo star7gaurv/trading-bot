@@ -701,3 +701,4 @@
 | 2026-07-14 06:00:35 | 1000PEPE/USDT:USDT | SHORT | 6h00m | -0.67% | -0.55 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-14 06:03:20 | BTC/USDT:USDT | SHORT | 6h00m | -0.67% | -0.42 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-14 07:32:06 | DOT/USDT:USDT | SHORT | 6h21m | -0.87% | -0.71 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-14 08:00:34 | ARB/USDT:USDT | SHORT | 6h00m | +0.48% | +0.39 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
