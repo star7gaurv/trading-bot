@@ -419,6 +419,52 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 
 ## Session History Summary
 
+### July 14, 2026 — Manual trade-control: force-exit + pause/resume, dashboard + Telegram (commit `c0967af53`)
+
+**Context:** Gaurav asked to conclude the session's diagnosis and requested a human kill-switch —
+"buttons to start/stop trades... in case if AI not predicting correctly and user is watching
+trade and it is going wrong then user can stop trade." Live WR has been visibly degrading since
+K_SL=3.5 went live July 8 (`time_limit_exit` share climbing to 76% of exits at 19% WR — entries
+are known coin-flips, IC≈0.03–0.05, no entry alpha survives fees). This gives a human watching a
+bad trade a way to intervene without SSH.
+
+**Shipped (full plan: `project_20260714_manual_trade_control.md` in auto-memory):**
+- **Force-exit** (per-trade): dashboard Close button (Trades tab + Overview open-trades panel,
+  confirm-tap, 5s cooldown) + Telegram (`forceexit:<id>` button verb, new `/trades` text command
+  lists open trades with Close buttons). Both call real `POST /forceexit`.
+- **Pause/Resume** (global): dashboard toggle in RiskCard (polls every 10s) + Telegram
+  (`/pause`/`/resume` text commands + `trading:pause`/`trading:resume` button verbs).
+- **Proactive alert:** `trade_postmortem.py` (15-min cron) checks each open trade's profit_pct
+  vs `MANUAL_ALERT_LOSS_PCT` (default −3%, `.env`-configurable), sends Telegram warning with a
+  one-tap Close button, 60-min per-trade cooldown.
+- **Unified audit trail:** `finbuddy_memory/trades/manual_overrides.jsonl` — both `streamer.py`
+  and `telegram_listener.py` append to it with the same schema.
+
+**Bundled safety fix:** `flatten_trades` (fires before every timeframe switch) was calling
+`DELETE /trades/{id}` — this only deletes the local DB row (`RPC._rpc_delete()`), never fetches a
+price or places an exit order. Invisible in dry-run; would silently abandon a real exchange
+position if run live. Rewritten to `POST /forceexit {tradeid: "all"}` (FreqTrade natively
+supports `"all"`). Also satisfies one of Phase 10's 6 pre-live-capital checklist items
+(kill-switch tested and working) — the other five remain undone.
+
+**Bug found during testing:** the force-exit cooldown was defeated by `_closing_trades.pop()`
+calls in both the `except` and `finally` blocks of `force_exit_trade()` — only blocked truly
+simultaneous requests, not a real time window. Fixed by removing the pops; re-verified with
+genuine concurrent requests (200 + 429).
+
+**Verified end-to-end against the live dry-run bot** (not just unit-tested): force-exited 3 real
+trades across both channels (1015 LTC + 1016 FIL via dashboard, 1022 FET via Telegram) — each
+confirmed gone from `/status` and landed in `closed.md` with `exit_reason=force_exit` and real
+P&L, proving genuine market exit orders. Toggled pause→resume via both channels, confirmed
+`show_config.state` flips `running`↔`paused` for real on the live bot. Confirmed
+`manual_overrides.jsonl` has matching entries for both `channel: "dashboard"` and
+`channel: "telegram"`. Dashboard rebuilt and deployed — asset hashes verified matching between
+`dashboard-ui/dist/` and what nginx/Cloudflare actually serves.
+
+**Left for later:** feed "human overrode this trade" events back into the brain's learning loop;
+no UI display of the audit log yet; label-horizon decision (lp=6/9/12) and Phase 10's other 5
+checklist items still open.
+
 ### July 8, 2026 — Lever 1 live + threshold floor + Lever 3 built + TON delisting cleanup
 
 **Context:** Gaurav asked for full status + "stop the stop-loss bleed" + why paper modules underperform.
