@@ -25,7 +25,9 @@ import pandas as pd
 ROOT = Path("/home/ubuntu/var/www/html/trade")
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "scripts/pairs_trading"))
+sys.path.insert(0, str(ROOT / "scripts/lib"))
 import paper_executor as px  # noqa: E402
+from live_price import get_live_price  # noqa: E402
 try:
     from lib.telegram_template import Subsystem, Status, send  # noqa: E402
     _TG = True
@@ -65,8 +67,16 @@ def load_closes() -> pd.DataFrame:
     return pd.DataFrame(closes).dropna()
 
 
-def pair_stats(a: str, b: str, logp: pd.DataFrame):
-    """Return (corr, beta, z, half_life_h) for one pair, or None if undefined."""
+def pair_stats(a: str, b: str, logp: pd.DataFrame,
+                live_a: float | None = None, live_b: float | None = None):
+    """Return (corr, beta, z, half_life_h) for one pair, or None if undefined.
+
+    corr/beta/half-life come from the historical window (feather-based is fine —
+    they average over hundreds of points, so a stale tail barely moves them). The
+    z-score's CURRENT spread uses live_a/live_b when available (fixed 2026-07-14,
+    see scripts/lib/live_price.py) instead of the window's possibly-hours-stale
+    last row — z is exactly the number that drives entry/exit, so it matters most.
+    """
     if a not in logp.columns or b not in logp.columns:
         return None
     corr = float(logp[a].diff().corr(logp[b].diff()))
@@ -77,7 +87,11 @@ def pair_stats(a: str, b: str, logp: pd.DataFrame):
     sd = float(spread.std())
     if sd == 0:
         return None
-    z = float((spread.iloc[-1] - float(spread.mean())) / sd)
+    if live_a and live_a > 0 and live_b and live_b > 0:
+        cur_spread = np.log(live_a) - beta * np.log(live_b)
+    else:
+        cur_spread = float(spread.iloc[-1])
+    z = float((cur_spread - float(spread.mean())) / sd)
     sv = spread.values
     lam = float(np.polyfit(sv[:-1], np.diff(sv), 1)[0])
     hl = (-np.log(2) / lam) if lam < 0 else None
@@ -91,7 +105,14 @@ def main() -> int:
         print("[pairs] not enough price data")
         return 0
     logp = np.log(px_df)
-    latest = {s: float(px_df[s].iloc[-1]) for s in px_df.columns}
+    # Live price per symbol (fixed 2026-07-14) — one fetch per symbol, reused across
+    # every pairwise combination below. Falls back to the window's last close if the
+    # live fetch fails (get_live_price already gates its own feather fallback on
+    # freshness, so this stays consistent with "don't trade on stale data").
+    latest = {}
+    for s in px_df.columns:
+        lp = get_live_price(s)
+        latest[s] = lp if lp > 0 else float(px_df[s].iloc[-1])
     state = px.load_state()
     now = datetime.now(timezone.utc)
 
@@ -101,7 +122,7 @@ def main() -> int:
         a, b = pos["a"], pos["b"]
         if a not in latest or b not in latest:
             continue
-        st = pair_stats(a, b, logp)
+        st = pair_stats(a, b, logp, live_a=latest.get(a), live_b=latest.get(b))
         cur_z = st[2] if st else None
         held_days = (now - datetime.fromisoformat(pos["opened_at"])).total_seconds() / 86400
         reason = None
@@ -124,7 +145,7 @@ def main() -> int:
     for i in range(len(syms)):
         for j in range(i + 1, len(syms)):
             a, b = syms[i], syms[j]
-            st = pair_stats(a, b, logp)
+            st = pair_stats(a, b, logp, live_a=latest.get(a), live_b=latest.get(b))
             if not st:
                 continue
             corr, beta, z, hl = st

@@ -28,7 +28,9 @@ import pandas as pd
 ROOT = Path("/home/ubuntu/var/www/html/trade")
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "scripts/grid_trading"))
+sys.path.insert(0, str(ROOT / "scripts/lib"))
 import paper_executor as gx  # noqa: E402
+from live_price import get_live_price  # noqa: E402
 
 try:
     from lib.telegram_template import Subsystem, Status, send  # noqa: E402
@@ -65,7 +67,12 @@ def load_closes() -> pd.DataFrame:
     return df
 
 
-def coin_stats(close: pd.Series) -> dict:
+def coin_stats(close: pd.Series, live_price: float | None = None) -> dict:
+    """er/vol/range from the historical window (feather is fine here — only its
+    tail can be stale, and this needs the whole trailing window regardless).
+    `price` is the CURRENT price used for crossing/threshold checks — pass
+    live_price (fixed 2026-07-14, see scripts/lib/live_price.py) so it isn't
+    silently hours stale; falls back to the window's last close if omitted."""
     close = close.dropna()
     if len(close) < 10:
         return {"er": 1.0, "vol": 0.0, "range_pct": 0.0, "price": 0.0}
@@ -75,8 +82,9 @@ def coin_stats(close: pd.Series) -> dict:
     vol = float(close.pct_change().std() * 100)
     mean = float(close.mean())
     rng = float((close.max() - close.min()) / mean * 100) if mean else 0.0
+    price = live_price if live_price and live_price > 0 else float(close.iloc[-1])
     return {"er": round(er, 4), "vol": round(vol, 4),
-            "range_pct": round(rng, 2), "price": float(close.iloc[-1])}
+            "range_pct": round(rng, 2), "price": price}
 
 
 def main() -> int:
@@ -93,7 +101,7 @@ def main() -> int:
         g = state["grids"][sym]
         if sym not in px_df.columns:
             continue
-        s = coin_stats(px_df[sym])
+        s = coin_stats(px_df[sym], live_price=get_live_price(sym))
         price = s["price"]
         if price <= 0:
             continue
@@ -135,14 +143,15 @@ def main() -> int:
     for sym, s, _ in candidates:
         if len(state["grids"]) >= gx.MAX_GRIDS:
             break
-        if gx.open_grid(state, sym, s["price"], s["range_pct"], s["er"], s["vol"]):
-            print(f"[grid] opened {sym}  price={s['price']:.5g}  "
+        entry_price = get_live_price(sym) or s["price"]  # live at the moment of entry
+        if gx.open_grid(state, sym, entry_price, s["range_pct"], s["er"], s["vol"]):
+            print(f"[grid] opened {sym}  price={entry_price:.5g}  "
                   f"ER={s['er']:.2f}  vol={s['vol']:.2f}%  range={s['range_pct']:.1f}%")
             if _TG:
                 send(Subsystem.BRAIN_CYCLE, Status.OK,
                      f"Grid (paper): opened on {sym}",
                      fields={
-                         "Price": f"{s['price']:.5g}",
+                         "Price": f"{entry_price:.5g}",
                          "Range": f"±{s['range_pct']/2:.1f}%",
                          "ER": f"{s['er']:.2f}",
                          "Vol/h": f"{s['vol']:.2f}%",
