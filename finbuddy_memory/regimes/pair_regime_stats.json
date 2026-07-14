@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-14T19:00:01.714486+00:00",
+  "updated": "2026-07-14T19:30:01.418863+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ONDO/USDT:USDT": {
-      "BEAR": {
-        "n": 3,
-        "wins": 0,
-        "losses": 3,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -4.57,
-        "avg_profit_pct": -2.66
-      },
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -0.37,
-        "avg_profit_pct": -0.45
-      }
-    },
     "UNI/USDT:USDT": {
       "BEAR": {
         "n": 6,
@@ -98,6 +78,26 @@
         "pf": 0.386,
         "profit_usdt": -0.97,
         "avg_profit_pct": -0.57
+      }
+    },
+    "ONDO/USDT:USDT": {
+      "BEAR": {
+        "n": 2,
+        "wins": 0,
+        "losses": 2,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -3.92,
+        "avg_profit_pct": -3.43
+      },
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.37,
+        "avg_profit_pct": -0.45
       }
     },
     "TAO/USDT:USDT": {
