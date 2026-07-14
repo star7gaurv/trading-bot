@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-14T01:00:01.787113+00:00",
+  "updated": "2026-07-14T01:30:01.205046+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,37 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ADA/USDT:USDT": {
-      "BEAR": {
-        "n": 5,
-        "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
-        "pf": 0.085,
-        "profit_usdt": -2.38,
-        "avg_profit_pct": -0.834
-      },
-      "NEUTRAL": {
-        "n": 6,
-        "wins": 4,
-        "losses": 2,
-        "wr": 0.6667,
-        "pf": 1.511,
-        "profit_usdt": 1.58,
-        "avg_profit_pct": 0.327
-      }
-    },
-    "ONDO/USDT:USDT": {
-      "BEAR": {
-        "n": 8,
-        "wins": 2,
-        "losses": 6,
-        "wr": 0.25,
-        "pf": 0.062,
-        "profit_usdt": -6.33,
-        "avg_profit_pct": -1.381
-      }
-    },
     "APT/USDT:USDT": {
       "BEAR": {
         "n": 18,
@@ -78,6 +47,17 @@
         "pf": 0.416,
         "profit_usdt": -1.36,
         "avg_profit_pct": -0.42
+      }
+    },
+    "ONDO/USDT:USDT": {
+      "BEAR": {
+        "n": 7,
+        "wins": 2,
+        "losses": 5,
+        "wr": 0.2857,
+        "pf": 0.07,
+        "profit_usdt": -5.59,
+        "avg_profit_pct": -1.394
       }
     },
     "LTC/USDT:USDT": {
@@ -258,6 +238,26 @@
         "pf": null,
         "profit_usdt": 1.23,
         "avg_profit_pct": 1.52
+      }
+    },
+    "ADA/USDT:USDT": {
+      "BEAR": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.103,
+        "profit_usdt": -1.92,
+        "avg_profit_pct": -0.843
+      },
+      "NEUTRAL": {
+        "n": 6,
+        "wins": 4,
+        "losses": 2,
+        "wr": 0.6667,
+        "pf": 1.511,
+        "profit_usdt": 1.58,
+        "avg_profit_pct": 0.327
       }
     },
     "TON/USDT:USDT": {
@@ -476,14 +476,6 @@
       "pf": 0.041
     },
     {
-      "pair": "ADA/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=20% PF=0.09 n=5 profit=-2.38",
-      "n": 5,
-      "wr": 0.2,
-      "pf": 0.085
-    },
-    {
       "pair": "1000PEPE/USDT:USDT",
       "regime": "BEAR",
       "reason": "WR=20% PF=0.37 n=5 profit=-2.15",
@@ -494,10 +486,10 @@
     {
       "pair": "ONDO/USDT:USDT",
       "regime": "BEAR",
-      "reason": "WR=25% PF=0.06 n=8 profit=-6.33",
-      "n": 8,
-      "wr": 0.25,
-      "pf": 0.062
+      "reason": "WR=29% PF=0.07 n=7 profit=-5.59",
+      "n": 7,
+      "wr": 0.2857,
+      "pf": 0.07
     },
     {
       "pair": "DOT/USDT:USDT",
