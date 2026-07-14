@@ -56,6 +56,8 @@ from hypothesis_gen import WINDOWS, TF_CONFIG_MAP_V23, TF_CONFIG_MAP_V22
 from telegram_template import send as tg_send, Subsystem, Status
 
 ANALYST_REPORT = ROOT / "finbuddy_memory" / "experiments" / "analyst_report.json"
+MANUAL_OVERRIDE_LOG = ROOT / "finbuddy_memory" / "trades" / "manual_overrides.jsonl"
+MANUAL_OVERRIDE_WINDOW_DAYS = 7   # rolling window for the "human disagreed with the brain" summary
 
 # ─── Thresholds ────────────────────────────────────────────────────────────
 MIN_RUNS_TO_JUDGE    = 3      # need at least this many runs before judging a timeframe
@@ -80,6 +82,54 @@ def _completed(min_trades: int = 10) -> list[dict]:
         if r.get("status") == "completed"
         and r.get("metrics", {}).get("trades", 0) >= min_trades
     ]
+
+
+def manual_override_summary(days: int = MANUAL_OVERRIDE_WINDOW_DAYS) -> dict:
+    """Read finbuddy_memory/trades/manual_overrides.jsonl and summarise how often
+    Gaurav has stepped in on the brain's live trades in the last `days` days —
+    force-exits (disagreed with an open position) and pause/resume (distrusted
+    the entry signal entirely). This is the brain noticing when its human
+    operator overrode it, not just logging the event and moving on.
+
+    Deliberately does NOT feed into prune_queue/inject_targeted yet — with only
+    a handful of overrides recorded so far there isn't enough signal to safely
+    gate anything on it. It surfaces in the Telegram digest + analyst_report.json
+    so the pattern becomes visible before any automated response is built on it.
+    """
+    summary = {
+        "period_days": days, "force_exits": 0, "pauses": 0, "resumes": 0,
+        "by_pair": {},
+    }
+    if not MANUAL_OVERRIDE_LOG.exists():
+        return summary
+
+    cutoff = datetime.now(timezone.utc).timestamp() - days * 86400
+    with MANUAL_OVERRIDE_LOG.open() as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entry = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            ts = entry.get("ts", "")
+            try:
+                ts_epoch = datetime.fromisoformat(ts.replace("Z", "+00:00")).timestamp()
+            except ValueError:
+                continue
+            if ts_epoch < cutoff:
+                continue
+            action = entry.get("action")
+            if action == "force_exit":
+                summary["force_exits"] += 1
+                pair = entry.get("pair") or entry.get("snapshot", {}).get("pair", "?")
+                summary["by_pair"][pair] = summary["by_pair"].get(pair, 0) + 1
+            elif action == "pause_entries":
+                summary["pauses"] += 1
+            elif action == "resume_entries":
+                summary["resumes"] += 1
+    return summary
 
 
 # ─── Pattern detection ─────────────────────────────────────────────────────
@@ -645,7 +695,8 @@ def _pct(v: float) -> str:
     return f"{v*100:.0f}%"
 
 
-def send_report(findings: dict, pruned: int, actions: list[str], insight: str) -> None:
+def send_report(findings: dict, pruned: int, actions: list[str], insight: str,
+                 overrides: dict | None = None) -> None:
     best = findings.get("best_overall")
     best_str = "none"
     if best:
@@ -677,6 +728,13 @@ def send_report(findings: dict, pruned: int, actions: list[str], insight: str) -
         "Pruned":     f"{pruned} queued experiments removed",
         "Injected":   f"{len(actions)} targeted hypothesis batches",
     }
+    if overrides and (overrides["force_exits"] or overrides["pauses"] or overrides["resumes"]):
+        pairs_str = ", ".join(f"{p}×{n}" for p, n in overrides["by_pair"].items())
+        fields["Human overrides"] = (
+            f"{overrides['force_exits']} force-exit, {overrides['pauses']} pause, "
+            f"{overrides['resumes']} resume in last {overrides['period_days']}d"
+            + (f" ({pairs_str})" if pairs_str else "")
+        )
     tf_ctx = {k: "pf={:.2f} n={}".format(v["avg_pf"], v["n"]) for k, v in findings.get("tf_stats", {}).items()}
     context = "TF stats: " + json.dumps(tf_ctx)
     action_text = insight if insight else None
@@ -718,6 +776,12 @@ def analyse(dry_run: bool = False, no_llm: bool = False) -> dict:
         if insight:
             print(f"[analyst] LLM insight: {insight}")
 
+    overrides = manual_override_summary()
+    if overrides["force_exits"] or overrides["pauses"] or overrides["resumes"]:
+        print(f"[analyst] human overrides last {overrides['period_days']}d: "
+              f"{overrides['force_exits']} force-exit, {overrides['pauses']} pause, "
+              f"{overrides['resumes']} resume, by_pair={overrides['by_pair']}")
+
     # Save report
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -725,6 +789,7 @@ def analyse(dry_run: bool = False, no_llm: bool = False) -> dict:
         "pruned":       pruned,
         "actions":      actions,
         "llm_insight":  insight,
+        "manual_overrides": overrides,
     }
     # Serialise non-serialisable objects (experiment dicts can have nested structure)
     def _default(o):
@@ -738,7 +803,7 @@ def analyse(dry_run: bool = False, no_llm: bool = False) -> dict:
     print(f"[analyst] report saved → {ANALYST_REPORT}")
 
     if not dry_run:
-        send_report(findings, pruned, actions, insight)
+        send_report(findings, pruned, actions, insight, overrides=overrides)
 
     return report
 

@@ -62,7 +62,21 @@ If ANY criteria fail → do NOT go live. Fix and re-run 30 days.
 ---
 
 ## Task 10.2 — Kill Switch
-**Status:** ⬜ Pending
+**Status:** 🟡 Functionally covered by a different implementation (2026-07-14) — not yet signed off
+
+The 2026-07-14 manual trade-control feature (dashboard + Telegram) provides the same
+capability this task originally specified, via a different route than the standalone script
+below: `flatten_trades` now calls `POST /forceexit {tradeid: "all"}` (real market exit on every
+open position, not the DB-delete it silently used before), reachable from the dashboard's
+Timeframe card and equivalent per-trade force-exit buttons/`  /trades` command on Telegram.
+Pause/resume (`/pause`, `/resume`, dashboard toggle) covers "stop new entries." All of it was
+verified end-to-end against the live dry-run bot (see `project_20260714_manual_trade_control.md`
+in auto-memory) — trades genuinely closed via `POST /forceexit`, not just deleted from FreqTrade's
+DB. What's still missing versus this task's original spec: a single one-command script that also
+stops the Docker container (the dashboard/Telegram route only stops trading, not the process) and
+a machine check that zero positions remain open after firing. Gaurav should treat this as
+"the mechanism exists and was tested" rather than "signed off" — the checkbox below stays
+unchecked until he's exercised it himself once.
 
 One command to stop ALL trading instantly, close open positions, and send Telegram confirmation.
 
@@ -84,9 +98,10 @@ echo "All open positions: FORCE EXITED"
 docker stop freqtrade-futures
 echo "FreqTrade futures container: STOPPED"
 
-# Telegram alert
-TOKEN="8557119080:AAH9KPMIZSGP7Gsn9wbJGVNaNRyEQHISR_o"
-CHAT="5622292536"
+# Telegram alert — source token from freqtrade/.env, never hardcode
+source /home/ubuntu/var/www/html/trade/freqtrade/.env
+TOKEN="$FREQTRADE__TELEGRAM__TOKEN"
+CHAT="${TELEGRAM_CHAT_ID:-5622292536}"   # chat ID is not secret (documented in CLAUDE.md); token is
 curl -s -X POST "https://api.telegram.org/bot$TOKEN/sendMessage" \
   -d chat_id="$CHAT" \
   -d text="🛑 FinBuddy KILL SWITCH activated. All positions closed. Container stopped. $(date)"

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-14T06:30:01.933000+00:00",
+  "generated_at": "2026-07-14T10:52:26.189561+00:00",
   "findings": {
     "dead_timeframes": [
       "5m",
@@ -242,7 +242,20 @@
       }
     }
   },
-  "pruned": 12,
-  "actions": [],
-  "llm_insight": ""
+  "pruned": 0,
+  "actions": [
+    "[DRY-RUN] Would skip dead TFs: ['5m', '30m', '4h']"
+  ],
+  "llm_insight": "",
+  "manual_overrides": {
+    "period_days": 7,
+    "force_exits": 3,
+    "pauses": 2,
+    "resumes": 2,
+    "by_pair": {
+      "LTC/USDT:USDT": 1,
+      "FIL/USDT:USDT": 1,
+      "FET/USDT:USDT": 1
+    }
+  }
 }
