@@ -706,3 +706,4 @@
 | 2026-07-14 10:13:02 | FIL/USDT:USDT | SHORT | 5h12m | +0.66% | +0.54 | force_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-14 10:21:22 | FET/USDT:USDT | SHORT | 0h20m | -0.39% | -0.32 | force_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-14 12:31:48 | BTC/USDT:USDT | SHORT | 0h31m | -1.73% | -1.08 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-14 13:20:42 | 1000PEPE/USDT:USDT | SHORT | 1h10m | -3.45% | -2.78 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
