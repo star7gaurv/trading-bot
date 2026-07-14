@@ -7,14 +7,19 @@ Each run:
   2. Compute live liq_long_z per whitelist pair (Coinalyze recent history, 1-week z-window).
   3. Open a paper LONG where 2.0 <= liq_long_z <= 3.0 (capitulation, skip the >3 knife-catch tail).
 
-Signal source: scripts/brain/fetch_liquidations.py helpers (Coinalyze REST). Price: 1h feathers
-(same as the grid/pairs modules). PAPER MODE ONLY. Cron: hourly at :50.
+Signal source: scripts/brain/fetch_liquidations.py helpers (Coinalyze REST). Price: live Binance
+futures ticker (see price_for() — fixed 2026-07-14; was reading the same 1h feathers as the
+grid/pairs modules, which are only refreshed once daily and were found 4+ hours stale. Grid/pairs
+hold positions for days so that lag is noise; this module's 7h time-stop meant a position could
+open and close inside a single stale window, producing fake 0%-move "losses" that were pure fee
+drag, not real signal). PAPER MODE ONLY. Cron: hourly at :50.
 """
 from __future__ import annotations
 
 import json
 import sys
 import time
+import urllib.request
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
@@ -79,12 +84,45 @@ def latest_liq_z(cz_sym: str, t_from: int, t_to: int) -> tuple[float, float] | N
     return float(zv), float(df["liq_long_usd"].iloc[-1])
 
 
+FEATHER_STALE_H = 2.0   # max age to trust the feather fallback below
+
+
 def price_for(base: str) -> float:
+    """Live price, with a freshness-gated feather fallback.
+
+    Fixed 2026-07-14: this used to read only the local 1h feather's last row, which
+    is refreshed once daily and was found 4+ hours stale — for this module's 7h
+    time-stop, that meant entry and exit could read the identical stale "current"
+    price, producing fake 0.00%-move closes (8 of 11 in the ledger at the time this
+    was found). Try a live public ticker first; fall back to the feather only if
+    it's fresh enough to trust, else return 0.0 so callers correctly skip (treat as
+    "no reliable price this cycle") instead of trading on stale data.
+    """
+    try:
+        req = urllib.request.Request(
+            f"https://fapi.binance.com/fapi/v1/ticker/price?symbol={base}USDT",
+            headers={"User-Agent": "Mozilla/5.0"},
+        )
+        with urllib.request.urlopen(req, timeout=8) as r:
+            data = json.loads(r.read())
+        return float(data["price"])
+    except Exception as e:
+        print(f"[liq_cap] live price fetch failed for {base}: {type(e).__name__}: {e}", file=sys.stderr)
+
     f = DATA_DIR / f"{base}_USDT_USDT-1h-futures.feather"
     if not f.exists():
         return 0.0
     try:
-        return float(pd.read_feather(f)["close"].iloc[-1])
+        df = pd.read_feather(f)
+        last_ts = df["date"].iloc[-1]
+        if hasattr(last_ts, "tzinfo") and last_ts.tzinfo is None:
+            last_ts = last_ts.tz_localize("UTC")
+        age_h = (datetime.now(timezone.utc) - last_ts.to_pydatetime()).total_seconds() / 3600
+        if age_h > FEATHER_STALE_H:
+            print(f"[liq_cap] feather for {base} is {age_h:.1f}h stale (>{FEATHER_STALE_H}h) — "
+                  f"skipping rather than trading on it", file=sys.stderr)
+            return 0.0
+        return float(df["close"].iloc[-1])
     except Exception:
         return 0.0
 
