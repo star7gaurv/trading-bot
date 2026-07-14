@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-14T14:00:01.866209+00:00",
+  "updated": "2026-07-14T14:30:01.582057+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ARB/USDT:USDT": {
-      "BEAR": {
-        "n": 4,
-        "wins": 1,
-        "losses": 3,
-        "wr": 0.25,
-        "pf": 0.218,
-        "profit_usdt": -0.93,
-        "avg_profit_pct": -0.41
-      },
-      "NEUTRAL": {
-        "n": 3,
-        "wins": 1,
-        "losses": 2,
-        "wr": 0.3333,
-        "pf": 0.139,
-        "profit_usdt": -2.41,
-        "avg_profit_pct": -0.99
-      }
-    },
     "TAO/USDT:USDT": {
       "BEAR": {
         "n": 4,
@@ -209,6 +189,26 @@
         "pf": 0.386,
         "profit_usdt": -0.97,
         "avg_profit_pct": -0.57
+      }
+    },
+    "ARB/USDT:USDT": {
+      "BEAR": {
+        "n": 3,
+        "wins": 0,
+        "losses": 3,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -1.19,
+        "avg_profit_pct": -0.697
+      },
+      "NEUTRAL": {
+        "n": 3,
+        "wins": 1,
+        "losses": 2,
+        "wr": 0.3333,
+        "pf": 0.139,
+        "profit_usdt": -2.41,
+        "avg_profit_pct": -0.99
       }
     },
     "SUI/USDT:USDT": {
