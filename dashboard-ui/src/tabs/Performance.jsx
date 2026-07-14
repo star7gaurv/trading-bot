@@ -12,6 +12,7 @@ import Card from "../components/Card";
 import Table from "../components/Table";
 import Stat from "../components/Stat";
 import InfoTip from "../components/InfoTip";
+import PnlCell from "../components/PnlCell";
 import { usePolling } from "../api/hooks";
 import {
   getDailyPerformance,
@@ -226,37 +227,15 @@ function periodColumns(labelKey, labelTitle) {
   return [
     { key: labelKey, label: labelTitle, mono: true },
     {
-      key: "abs_profit",
-      label: "P&L (USDT)",
+      key: "pnl",
+      label: "P&L",
       align: "right",
       render: (r) => {
-        const v = absProfit(r);
-        if (v == null) return <span className="text-text-muted font-mono">—</span>;
-        const cls = v >= 0 ? "text-profit" : "text-loss";
-        return (
-          <span className={`font-mono ${cls}`}>
-            {v >= 0 ? "+" : ""}
-            {v.toFixed(2)}
-          </span>
-        );
-      },
-    },
-    {
-      key: "rel_profit",
-      label: "P&L %",
-      align: "right",
-      render: (r) => {
-        const v = relProfit(r);
-        if (v == null) return <span className="text-text-muted font-mono">—</span>;
-        const cls = v >= 0 ? "text-profit" : "text-loss";
+        const abs = absProfit(r);
+        const rel = relProfit(r);
         // rel_profit is already a ratio (0.05 = 5%) in newer FreqTrade versions
-        const pct = Math.abs(v) < 1 ? v * 100 : v;
-        return (
-          <span className={`font-mono ${cls}`}>
-            {v >= 0 ? "+" : ""}
-            {pct.toFixed(2)}%
-          </span>
-        );
+        const pct = rel == null ? null : Math.abs(rel) < 1 ? rel * 100 : rel;
+        return <PnlCell pct={pct} abs={abs} />;
       },
     },
     {
@@ -389,27 +368,15 @@ function PairCapitalTable({ data }) {
       render: (r) => (r.returned != null ? r.returned.toFixed(0) : "—"),
     },
     {
-      key: "profit_abs",
-      label: "Net P&L",
+      key: "pnl",
+      label: <InfoTip label="P&L" text="Net profit, and return as a percentage of the money invested in this pair." />,
       align: "right",
-      mono: true,
-      render: (r) => {
-        const v = r.profit_abs ?? 0;
-        const cls = v >= 0 ? "text-profit" : "text-loss";
-        return <span className={cls}>{v >= 0 ? "+" : ""}{v.toFixed(2)}</span>;
-      },
-    },
-    {
-      key: "roi_pct",
-      label: <InfoTip label="Return" text="Profit as a percentage of the money invested in this pair." />,
-      align: "right",
-      mono: true,
-      render: (r) => {
-        if (r.roi_pct == null) return "—";
-        const pct = r.roi_pct * 100;
-        const cls = pct >= 0 ? "text-profit" : "text-loss";
-        return <span className={cls}>{pct >= 0 ? "+" : ""}{pct.toFixed(1)}%</span>;
-      },
+      render: (r) => (
+        <PnlCell
+          pct={r.roi_pct != null ? r.roi_pct * 100 : null}
+          abs={r.profit_abs}
+        />
+      ),
     },
     {
       key: "count",

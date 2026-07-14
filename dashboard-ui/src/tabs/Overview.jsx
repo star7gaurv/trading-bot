@@ -14,6 +14,7 @@ import Stat from "../components/Stat";
 import Table from "../components/Table";
 import Badge from "../components/Badge";
 import InfoTip from "../components/InfoTip";
+import PnlCell, { pnlPct } from "../components/PnlCell";
 import { usePolling } from "../api/hooks";
 import {
   getProfitSummary,
@@ -270,38 +271,10 @@ function OpenTradesPanel({ data, error, lastUpdated, loading, walletTotal }) {
       render: (r) => (r.current_rate != null ? formatPrice(r.current_rate) : "—"),
     },
     {
-      key: "profit_pct",
-      label: "P&L %",
-      align: "right",
-      mono: true,
-      render: (r) => {
-        const p = r.profit_pct ?? r.profit_ratio;
-        if (p == null) return "—";
-        const cls = p >= 0 ? "text-profit" : "text-loss";
-        return (
-          <span className={cls}>
-            {p >= 0 ? "+" : ""}
-            {p.toFixed(2)}%
-          </span>
-        );
-      },
-    },
-    {
-      key: "profit_abs",
+      key: "pnl",
       label: "P&L",
       align: "right",
-      mono: true,
-      render: (r) => {
-        const v = r.profit_abs;
-        if (v == null) return "—";
-        const cls = v >= 0 ? "text-profit" : "text-loss";
-        return (
-          <span className={cls}>
-            {v >= 0 ? "+" : ""}
-            {v.toFixed(2)}
-          </span>
-        );
-      },
+      render: (r) => <PnlCell pct={pnlPct(r)} abs={r.profit_abs} />,
     },
     {
       key: "held",
@@ -375,38 +348,17 @@ function RecentTradesPanel({ data, error, lastUpdated }) {
       },
     },
     {
-      key: "profit_pct",
-      label: "P&L %",
-      align: "right",
-      mono: true,
-      render: (r) => {
-        const p = r.profit_ratio;
-        if (p == null) return "—";
-        const cls = p >= 0 ? "text-profit" : "text-loss";
-        return (
-          <span className={cls}>
-            {p >= 0 ? "+" : ""}
-            {(p * 100).toFixed(2)}%
-          </span>
-        );
-      },
-    },
-    {
-      key: "profit_abs",
+      key: "pnl",
       label: "P&L",
       align: "right",
-      mono: true,
-      render: (r) => {
-        const v = r.profit_abs;
-        if (v == null) return "—";
-        const cls = v >= 0 ? "text-profit" : "text-loss";
-        return (
-          <span className={cls}>
-            {v >= 0 ? "+" : ""}
-            {v.toFixed(2)}
-          </span>
-        );
-      },
+      // r.profit_ratio here is a raw fraction (e.g. 0.0043), unlike PnlCell's
+      // usual pct input — scale it to a percentage before handing it off.
+      render: (r) => (
+        <PnlCell
+          pct={r.profit_ratio != null ? r.profit_ratio * 100 : null}
+          abs={r.profit_abs}
+        />
+      ),
     },
     {
       key: "duration",

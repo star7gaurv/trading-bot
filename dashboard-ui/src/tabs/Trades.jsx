@@ -12,6 +12,7 @@ import { X, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import Card from "../components/Card";
 import Table from "../components/Table";
 import Badge from "../components/Badge";
+import PnlCell, { pnlPct } from "../components/PnlCell";
 import { usePolling } from "../api/hooks";
 import {
   getOpenTrades,
@@ -26,27 +27,6 @@ import {
 } from "../utils/format";
 
 // ─── helpers ───────────────────────────────────────────────────────────────
-
-function pnlPct(t) {
-  const raw = t.profit_pct ?? t.profit_ratio;
-  if (raw == null) return null;
-  return raw;
-}
-
-function PnlCell({ pct, abs }) {
-  const cls = (pct ?? abs ?? 0) >= 0 ? "text-profit" : "text-loss";
-  return (
-    <span className={`font-mono ${cls}`}>
-      {pct != null ? `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%` : "—"}
-      {abs != null && (
-        <span className="text-text-muted ml-1 text-xxs">
-          ({abs >= 0 ? "+" : ""}
-          {abs.toFixed(2)})
-        </span>
-      )}
-    </span>
-  );
-}
 
 function DirectionBadge({ trade }) {
   const isShort = trade.is_short || trade.trade_direction === "short";
