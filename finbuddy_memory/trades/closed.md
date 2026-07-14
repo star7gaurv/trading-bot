@@ -704,3 +704,4 @@
 | 2026-07-14 08:00:34 | ARB/USDT:USDT | SHORT | 6h00m | +0.48% | +0.39 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-14 10:10:57 | LTC/USDT:USDT | SHORT | 6h00m | -0.36% | -0.29 | force_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-14 10:13:02 | FIL/USDT:USDT | SHORT | 5h12m | +0.66% | +0.54 | force_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-14 10:21:22 | FET/USDT:USDT | SHORT | 0h20m | -0.39% | -0.32 | force_exit | NEUTRAL | freqai_regression_v23_sh |
