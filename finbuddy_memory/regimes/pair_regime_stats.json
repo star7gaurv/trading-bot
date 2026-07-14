@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-14T04:00:01.930188+00:00",
+  "updated": "2026-07-14T04:30:01.716091+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ONDO/USDT:USDT": {
-      "BEAR": {
-        "n": 7,
-        "wins": 2,
-        "losses": 5,
-        "wr": 0.2857,
-        "pf": 0.07,
-        "profit_usdt": -5.59,
-        "avg_profit_pct": -1.394
-      }
-    },
     "APT/USDT:USDT": {
       "BEAR": {
         "n": 17,
@@ -38,6 +27,17 @@
         "pf": 0.0,
         "profit_usdt": -1.88,
         "avg_profit_pct": -2.34
+      }
+    },
+    "ONDO/USDT:USDT": {
+      "BEAR": {
+        "n": 6,
+        "wins": 1,
+        "losses": 5,
+        "wr": 0.1667,
+        "pf": 0.003,
+        "profit_usdt": -5.99,
+        "avg_profit_pct": -1.742
       }
     },
     "LTC/USDT:USDT": {
@@ -460,6 +460,14 @@
   },
   "blocked": [
     {
+      "pair": "ONDO/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=17% PF=0.00 n=6 profit=-5.99",
+      "n": 6,
+      "wr": 0.1667,
+      "pf": 0.003
+    },
+    {
       "pair": "XRP/USDT:USDT",
       "regime": "BEAR",
       "reason": "WR=17% PF=0.05 n=6 profit=-1.67",
@@ -482,14 +490,6 @@
       "n": 5,
       "wr": 0.2,
       "pf": 0.37
-    },
-    {
-      "pair": "ONDO/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=29% PF=0.07 n=7 profit=-5.59",
-      "n": 7,
-      "wr": 0.2857,
-      "pf": 0.07
     },
     {
       "pair": "DOT/USDT:USDT",
