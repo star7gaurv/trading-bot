@@ -465,6 +465,25 @@ P&L, proving genuine market exit orders. Toggled pause→resume via both channel
 no UI display of the audit log yet; label-horizon decision (lp=6/9/12) and Phase 10's other 5
 checklist items still open.
 
+**Same-day follow-up (commit `76d4e15fa`) — closed all 4 "left for later" items above:**
+- **Brain feedback loop shipped**: `analyst.py` (6h self-diagnosis cron) reads
+  `manual_overrides.jsonl` and reports force-exit/pause/resume counts per pair in its own
+  Telegram digest + `analyst_report.json`. Notices human disagreement, doesn't gate on it yet
+  (only 3 real overrides exist — nowhere near enough volume to safely act on).
+- **Label-horizon decided**: the sweep was NOT actually complete as claimed — only 6/12 cells
+  (lp=6/9/12 × 4 windows) had been queued, 5 scout-failed, and the one completion (lp=9,
+  bull_2024Q4) still lost money (PF=0.756). Queued the missing 6 cells for completeness; no
+  change to live (stays lp=6) — this lever changes the shape of the loss, not whether there's one.
+- **Live Telegram token found + fixed**: `phase-10-live-migration.md`'s sample `kill_switch.sh`
+  had the real, still-live bot token hardcoded — survived the 2026-07-05 scrub because it was in
+  a `.md` sample block, not a `.py`/`.json` file. Fixed to source `freqtrade/.env`. Ran a
+  secret-value scan (matches in-memory, never prints the value) across all 371 git-tracked files
+  — zero remaining exposures in the working tree. This is the 2nd confirmed live-exposure path
+  for this token (the 1st is the unscrubbable GitHub PR ref) — rotate it first when going live.
+- **Phase 10 checklist corrected** (not fabricated done): kill-switch item now notes today's
+  dashboard/Telegram force-exit mechanism functionally covers it, without claiming sign-off.
+- **`ComingSoon.jsx` removed** — dead code, zero usages, no upcoming module left (all 4 are live).
+
 ### July 8, 2026 — Lever 1 live + threshold floor + Lever 3 built + TON delisting cleanup
 
 **Context:** Gaurav asked for full status + "stop the stop-loss bleed" + why paper modules underperform.
