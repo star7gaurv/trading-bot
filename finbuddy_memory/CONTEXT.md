@@ -1,5 +1,5 @@
 # FinBuddy — Master Context
-Last updated: 2026-07-15 01:45 UTC
+Last updated: 2026-07-15 02:00 UTC
 
 ## Current Regime
 Regime: **NEUTRAL** | Confidence: 70.0% | Since: 2026-07-15
@@ -13,8 +13,8 @@ News Sentiment: 100.0% bullish
 Total Trades: 998 | Win Rate: 42.5% | Total P&L: 1.44%
 
 ## Open Trades (2)
-- ARB/USDT:USDT: Entry 0.09 | Current 0.09 | P&L: 1.18%
-- ONDO/USDT:USDT: Entry 0.31 | Current 0.32 | P&L: -1.09%
+- ARB/USDT:USDT: Entry 0.09 | Current 0.09 | P&L: 1.09%
+- ONDO/USDT:USDT: Entry 0.31 | Current 0.32 | P&L: -0.99%
 ## Risk Flags
 - None
 
