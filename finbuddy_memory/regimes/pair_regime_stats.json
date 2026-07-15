@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-15T06:00:01.778448+00:00",
+  "updated": "2026-07-15T06:30:01.670764+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -335,13 +335,13 @@
         "avg_profit_pct": -1.9
       },
       "NEUTRAL": {
-        "n": 1,
+        "n": 2,
         "wins": 0,
-        "losses": 1,
+        "losses": 2,
         "wr": 0.0,
         "pf": 0.0,
-        "profit_usdt": -0.37,
-        "avg_profit_pct": -0.45
+        "profit_usdt": -2.1,
+        "avg_profit_pct": -1.305
       }
     },
     "ENA/USDT:USDT": {
@@ -375,13 +375,13 @@
         "avg_profit_pct": -0.6
       },
       "NEUTRAL": {
-        "n": 3,
-        "wins": 1,
+        "n": 4,
+        "wins": 2,
         "losses": 2,
-        "wr": 0.3333,
-        "pf": 0.139,
-        "profit_usdt": -2.41,
-        "avg_profit_pct": -0.99
+        "wr": 0.5,
+        "pf": 1.468,
+        "profit_usdt": 1.31,
+        "avg_profit_pct": 0.42
       }
     },
     "UNI/USDT:USDT": {
@@ -457,13 +457,13 @@
     },
     "FET/USDT:USDT": {
       "NEUTRAL": {
-        "n": 16,
+        "n": 17,
         "wins": 8,
-        "losses": 8,
-        "wr": 0.5,
-        "pf": 0.893,
-        "profit_usdt": -1.14,
-        "avg_profit_pct": -0.087
+        "losses": 9,
+        "wr": 0.4706,
+        "pf": 0.737,
+        "profit_usdt": -3.4,
+        "avg_profit_pct": -0.249
       }
     }
   },
