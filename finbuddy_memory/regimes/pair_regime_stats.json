@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-15T22:30:01.639858+00:00",
+  "updated": "2026-07-15T23:00:01.769296+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -11,33 +11,13 @@
   "stats": {
     "AVAX/USDT:USDT": {
       "BEAR": {
-        "n": 27,
-        "wins": 12,
+        "n": 26,
+        "wins": 11,
         "losses": 15,
-        "wr": 0.4444,
-        "pf": 1.257,
-        "profit_usdt": 2.62,
-        "avg_profit_pct": 0.181
-      }
-    },
-    "DOT/USDT:USDT": {
-      "BEAR": {
-        "n": 13,
-        "wins": 3,
-        "losses": 10,
-        "wr": 0.2308,
-        "pf": 0.419,
-        "profit_usdt": -4.02,
-        "avg_profit_pct": -0.544
-      },
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 2,
-        "losses": 3,
-        "wr": 0.4,
-        "pf": 0.319,
-        "profit_usdt": -2.07,
-        "avg_profit_pct": -0.51
+        "wr": 0.4231,
+        "pf": 1.143,
+        "profit_usdt": 1.46,
+        "avg_profit_pct": 0.107
       }
     },
     "RENDER/USDT:USDT": {
@@ -89,6 +69,26 @@
         "pf": null,
         "profit_usdt": 0.64,
         "avg_profit_pct": 0.8
+      }
+    },
+    "DOT/USDT:USDT": {
+      "BEAR": {
+        "n": 12,
+        "wins": 2,
+        "losses": 10,
+        "wr": 0.1667,
+        "pf": 0.168,
+        "profit_usdt": -5.76,
+        "avg_profit_pct": -0.844
+      },
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 2,
+        "losses": 3,
+        "wr": 0.4,
+        "pf": 0.319,
+        "profit_usdt": -2.07,
+        "avg_profit_pct": -0.51
       }
     },
     "LTC/USDT:USDT": {
@@ -468,20 +468,20 @@
       "pf": 0.051
     },
     {
+      "pair": "DOT/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=17% PF=0.17 n=12 profit=-5.76",
+      "n": 12,
+      "wr": 0.1667,
+      "pf": 0.168
+    },
+    {
       "pair": "XRP/USDT:USDT",
       "regime": "NEUTRAL",
       "reason": "WR=20% PF=0.04 n=5 profit=-1.64",
       "n": 5,
       "wr": 0.2,
       "pf": 0.041
-    },
-    {
-      "pair": "DOT/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=23% PF=0.42 n=13 profit=-4.02",
-      "n": 13,
-      "wr": 0.2308,
-      "pf": 0.419
     },
     {
       "pair": "SUI/USDT:USDT",
