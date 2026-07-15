@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-15T19:30:01.891187+00:00",
+  "updated": "2026-07-15T20:00:01.242972+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,46 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "RENDER/USDT:USDT": {
-      "BEAR": {
-        "n": 20,
-        "wins": 12,
-        "losses": 8,
-        "wr": 0.6,
-        "pf": 1.378,
-        "profit_usdt": 2.78,
-        "avg_profit_pct": 0.25
-      },
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 2.217,
-        "profit_usdt": 0.56,
-        "avg_profit_pct": 0.36
-      }
-    },
-    "SUI/USDT:USDT": {
-      "BEAR": {
-        "n": 8,
-        "wins": 3,
-        "losses": 5,
-        "wr": 0.375,
-        "pf": 0.587,
-        "profit_usdt": -1.31,
-        "avg_profit_pct": -0.294
-      },
-      "NEUTRAL": {
-        "n": 6,
-        "wins": 4,
-        "losses": 2,
-        "wr": 0.6667,
-        "pf": 3.565,
-        "profit_usdt": 6.36,
-        "avg_profit_pct": 1.308
-      }
-    },
     "WIF/USDT:USDT": {
       "BEAR": {
         "n": 11,
@@ -109,6 +69,26 @@
         "pf": 1.257,
         "profit_usdt": 2.62,
         "avg_profit_pct": 0.181
+      }
+    },
+    "RENDER/USDT:USDT": {
+      "BEAR": {
+        "n": 19,
+        "wins": 11,
+        "losses": 8,
+        "wr": 0.5789,
+        "pf": 1.163,
+        "profit_usdt": 1.2,
+        "avg_profit_pct": 0.116
+      },
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 2.217,
+        "profit_usdt": 0.56,
+        "avg_profit_pct": 0.36
       }
     },
     "SOL/USDT:USDT": {
@@ -344,6 +324,26 @@
         "avg_profit_pct": 0.615
       }
     },
+    "SUI/USDT:USDT": {
+      "BEAR": {
+        "n": 7,
+        "wins": 2,
+        "losses": 5,
+        "wr": 0.2857,
+        "pf": 0.41,
+        "profit_usdt": -1.87,
+        "avg_profit_pct": -0.477
+      },
+      "NEUTRAL": {
+        "n": 6,
+        "wins": 4,
+        "losses": 2,
+        "wr": 0.6667,
+        "pf": 3.565,
+        "profit_usdt": 6.36,
+        "avg_profit_pct": 1.308
+      }
+    },
     "ARB/USDT:USDT": {
       "BEAR": {
         "n": 2,
@@ -476,6 +476,14 @@
       "pf": 0.041
     },
     {
+      "pair": "SUI/USDT:USDT",
+      "regime": "BEAR",
+      "reason": "WR=29% PF=0.41 n=7 profit=-1.87",
+      "n": 7,
+      "wr": 0.2857,
+      "pf": 0.41
+    },
+    {
       "pair": "DOT/USDT:USDT",
       "regime": "BEAR",
       "reason": "WR=29% PF=0.48 n=14 profit=-3.60",
@@ -490,14 +498,6 @@
       "n": 9,
       "wr": 0.3333,
       "pf": 0.551
-    },
-    {
-      "pair": "SUI/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=38% PF=0.59 n=8 profit=-1.31",
-      "n": 8,
-      "wr": 0.375,
-      "pf": 0.587
     }
   ]
 }
