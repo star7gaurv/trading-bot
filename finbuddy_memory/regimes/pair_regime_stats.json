@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-16T06:30:01.651779+00:00",
+  "updated": "2026-07-16T07:00:01.913455+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "1000PEPE/USDT:USDT": {
-      "BEAR": {
-        "n": 2,
-        "wins": 0,
-        "losses": 2,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -2.11,
-        "avg_profit_pct": -1.845
-      },
-      "NEUTRAL": {
-        "n": 9,
-        "wins": 3,
-        "losses": 6,
-        "wr": 0.3333,
-        "pf": 0.551,
-        "profit_usdt": -3.46,
-        "avg_profit_pct": -0.471
-      }
-    },
     "DOT/USDT:USDT": {
       "BEAR": {
         "n": 10,
@@ -402,6 +382,26 @@
         "pf": 0.724,
         "profit_usdt": -0.48,
         "avg_profit_pct": -0.156
+      }
+    },
+    "1000PEPE/USDT:USDT": {
+      "BEAR": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -1.41,
+        "avg_profit_pct": -2.48
+      },
+      "NEUTRAL": {
+        "n": 9,
+        "wins": 3,
+        "losses": 6,
+        "wr": 0.3333,
+        "pf": 0.551,
+        "profit_usdt": -3.46,
+        "avg_profit_pct": -0.471
       }
     },
     "TAO/USDT:USDT": {
