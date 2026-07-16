@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-16T08:30:01.393004+00:00",
+  "updated": "2026-07-16T09:00:01.537624+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "TON/USDT:USDT": {
-      "BEAR": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -0.75,
-        "avg_profit_pct": -1.31
-      }
-    },
     "APT/USDT:USDT": {
       "BEAR": {
         "n": 10,
