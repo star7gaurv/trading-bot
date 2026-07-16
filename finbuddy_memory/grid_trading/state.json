@@ -1,23 +1,5 @@
 {
   "grids": {
-    "LDO": {
-      "symbol": "LDO",
-      "entry_price": 0.3257,
-      "low": 0.276845,
-      "high": 0.374555,
-      "n_levels": 10,
-      "position_usdt": 300.0,
-      "spacing_abs": 0.01085667,
-      "spacing_pct": 3.3333,
-      "er": 0.103,
-      "vol_pct": 1.09,
-      "deployed_at": "2026-07-09T09:40:03.401337+00:00",
-      "last_price": 0.3697,
-      "last_price_ts": "2026-07-16T14:40:01.925046+00:00",
-      "total_crossings": 5,
-      "fees_paid": 0.375,
-      "accrued_pnl": 4.925
-    },
     "ARB": {
       "symbol": "ARB",
       "entry_price": 0.09193,
@@ -30,8 +12,8 @@
       "er": 0.074,
       "vol_pct": 0.93,
       "deployed_at": "2026-07-14T14:40:03.688053+00:00",
-      "last_price": 0.08803,
-      "last_price_ts": "2026-07-16T14:40:02.083431+00:00",
+      "last_price": 0.08904,
+      "last_price_ts": "2026-07-16T15:40:02.693430+00:00",
       "total_crossings": 0,
       "fees_paid": 0.3,
       "accrued_pnl": 0.0
@@ -48,13 +30,31 @@
       "er": 0.107,
       "vol_pct": 0.91,
       "deployed_at": "2026-07-15T11:40:03.286419+00:00",
-      "last_price": 3.696,
-      "last_price_ts": "2026-07-16T14:40:02.239921+00:00",
+      "last_price": 3.641,
+      "last_price_ts": "2026-07-16T15:40:02.845711+00:00",
+      "total_crossings": 0,
+      "fees_paid": 0.3,
+      "accrued_pnl": 0.0
+    },
+    "LDO": {
+      "symbol": "LDO",
+      "entry_price": 0.3806,
+      "low": 0.32351,
+      "high": 0.43769,
+      "n_levels": 10,
+      "position_usdt": 300.0,
+      "spacing_abs": 0.01268667,
+      "spacing_pct": 3.3333,
+      "er": 0.142,
+      "vol_pct": 1.13,
+      "deployed_at": "2026-07-16T15:40:03.012237+00:00",
+      "last_price": 0.3806,
+      "last_price_ts": "2026-07-16T15:40:03.012250+00:00",
       "total_crossings": 0,
       "fees_paid": 0.3,
       "accrued_pnl": 0.0
     }
   },
-  "realized_pnl": 19.44467,
-  "last_update": "2026-07-16T14:40:02.253839+00:00"
+  "realized_pnl": 24.96467,
+  "last_update": "2026-07-16T15:40:03.620344+00:00"
 }
