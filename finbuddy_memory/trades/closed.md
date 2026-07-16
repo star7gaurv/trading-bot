@@ -714,3 +714,4 @@
 | 2026-07-15 16:00:25 | ARB/USDT:USDT | SHORT | 6h00m | +0.07% | +0.05 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-15 23:05:20 | ARB/USDT:USDT | SHORT | 6h05m | -0.70% | -0.56 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-15 23:14:05 | FET/USDT:USDT | SHORT | 6h13m | +0.02% | +0.02 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-16 03:00:26 | UNI/USDT:USDT | SHORT | 6h00m | -2.62% | -2.08 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
