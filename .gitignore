@@ -67,3 +67,13 @@ site/
 # Arbitrage feed daemon's live price snapshot — rewritten every 5s, pure cache,
 # zero historical value (unlike ledger.jsonl, which IS tracked as an audit trail).
 finbuddy_memory/arbitrage/price_cache.json
+
+# Platform DB secrets — bootstrap_db.sql embeds the generated Postgres password,
+# .env holds the resulting connection string. Never commit either.
+scripts/platform/bootstrap_db.sql
+scripts/platform/.env
+
+# Platform master key (KEK for customer API-key envelope encryption) —
+# generated locally pending one-time `sudo install` to /etc/finbuddy/, see
+# scripts/platform/README.md. Never commit key material.
+scripts/platform/.platform_master.key.tmp

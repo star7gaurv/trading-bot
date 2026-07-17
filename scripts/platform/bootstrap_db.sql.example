@@ -1,0 +1,18 @@
+-- Template for scripts/platform/bootstrap_db.sql (gitignored — that copy has a real
+-- generated password baked in). Run the real file once as the postgres superuser:
+--   sudo -u postgres psql -f scripts/platform/bootstrap_db.sql
+-- Safe to re-run (IF NOT EXISTS / DO blocks guard against duplicate creation).
+
+DO
+$$
+BEGIN
+   IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'finbuddy_platform') THEN
+      CREATE ROLE finbuddy_platform WITH LOGIN PASSWORD '<REPLACE_ME>';
+   END IF;
+END
+$$;
+
+SELECT 'CREATE DATABASE finbuddy_platform OWNER finbuddy_platform'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'finbuddy_platform')\gexec
+
+GRANT ALL PRIVILEGES ON DATABASE finbuddy_platform TO finbuddy_platform;
