@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-17T23:00:01.815901+00:00",
+  "updated": "2026-07-17T23:30:01.685671+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -311,13 +311,13 @@
         "avg_profit_pct": 1.35
       },
       "NEUTRAL": {
-        "n": 5,
+        "n": 6,
         "wins": 2,
-        "losses": 3,
-        "wr": 0.4,
-        "pf": 0.724,
-        "profit_usdt": -0.48,
-        "avg_profit_pct": -0.156
+        "losses": 4,
+        "wr": 0.3333,
+        "pf": 0.592,
+        "profit_usdt": -0.87,
+        "avg_profit_pct": -0.232
       }
     },
     "SOL/USDT:USDT": {
@@ -459,6 +459,14 @@
       "n": 9,
       "wr": 0.3333,
       "pf": 0.551
+    },
+    {
+      "pair": "BTC/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=33% PF=0.59 n=6 profit=-0.87",
+      "n": 6,
+      "wr": 0.3333,
+      "pf": 0.592
     }
   ]
 }
