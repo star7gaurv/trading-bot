@@ -1,0 +1,369 @@
+{
+  "updated_at": 1784283233.5478258,
+  "prices": {
+    "bingx:BTC/USDT": {
+      "exchange": "bingx",
+      "symbol": "BTC/USDT",
+      "bid": 63065.97,
+      "ask": 63065.99,
+      "ts": 1784283219.1457567
+    },
+    "bingx:ETH/USDT": {
+      "exchange": "bingx",
+      "symbol": "ETH/USDT",
+      "bid": 1836.68,
+      "ask": 1836.7,
+      "ts": 1784283219.1457567
+    },
+    "bingx:SOL/USDT": {
+      "exchange": "bingx",
+      "symbol": "SOL/USDT",
+      "bid": 74.74,
+      "ask": 74.76,
+      "ts": 1784283219.1457567
+    },
+    "binance:BTC/USDT": {
+      "exchange": "binance",
+      "symbol": "BTC/USDT",
+      "bid": 63071.99,
+      "ask": 63072.0,
+      "ts": 1784283231.2822845
+    },
+    "binance:ETH/USDT": {
+      "exchange": "binance",
+      "symbol": "ETH/USDT",
+      "bid": 1836.68,
+      "ask": 1836.69,
+      "ts": 1784283231.2822845
+    },
+    "binance:SOL/USDT": {
+      "exchange": "binance",
+      "symbol": "SOL/USDT",
+      "bid": 74.79,
+      "ask": 74.8,
+      "ts": 1784283231.2822845
+    },
+    "okx:BTC/USDT": {
+      "exchange": "okx",
+      "symbol": "BTC/USDT",
+      "bid": 63072.6,
+      "ask": 63072.7,
+      "ts": 1784283231.5651035
+    },
+    "okx:ETH/USDT": {
+      "exchange": "okx",
+      "symbol": "ETH/USDT",
+      "bid": 1836.67,
+      "ask": 1836.68,
+      "ts": 1784283231.5651035
+    },
+    "okx:SOL/USDT": {
+      "exchange": "okx",
+      "symbol": "SOL/USDT",
+      "bid": 74.79,
+      "ask": 74.8,
+      "ts": 1784283231.5651035
+    },
+    "bitfinex:BTC/USDT": {
+      "exchange": "bitfinex",
+      "symbol": "BTC/USDT",
+      "bid": 63066.0,
+      "ask": 63077.0,
+      "ts": 1784283219.138299
+    },
+    "bitfinex:ETH/USDT": {
+      "exchange": "bitfinex",
+      "symbol": "ETH/USDT",
+      "bid": 1836.2,
+      "ask": 1836.8,
+      "ts": 1784283219.138299
+    },
+    "bitfinex:SOL/USDT": {
+      "exchange": "bitfinex",
+      "symbol": "SOL/USDT",
+      "bid": 74.78,
+      "ask": 74.803,
+      "ts": 1784283219.138299
+    },
+    "cryptocom:BTC/USDT": {
+      "exchange": "cryptocom",
+      "symbol": "BTC/USDT",
+      "bid": 63068.9,
+      "ask": 63068.91,
+      "ts": 1784283219.1418707
+    },
+    "cryptocom:ETH/USDT": {
+      "exchange": "cryptocom",
+      "symbol": "ETH/USDT",
+      "bid": 1836.3,
+      "ask": 1836.31,
+      "ts": 1784283219.1418707
+    },
+    "cryptocom:SOL/USDT": {
+      "exchange": "cryptocom",
+      "symbol": "SOL/USDT",
+      "bid": 74.78,
+      "ask": 74.79,
+      "ts": 1784283219.1418707
+    },
+    "bybit:SOL/USDT": {
+      "exchange": "bybit",
+      "symbol": "SOL/USDT",
+      "bid": 74.78,
+      "ask": 74.79,
+      "ts": 1784283232.7651594
+    },
+    "bybit:BTC/USDT": {
+      "exchange": "bybit",
+      "symbol": "BTC/USDT",
+      "bid": 63073.3,
+      "ask": 63073.4,
+      "ts": 1784283232.7651594
+    },
+    "bybit:ETH/USDT": {
+      "exchange": "bybit",
+      "symbol": "ETH/USDT",
+      "bid": 1836.69,
+      "ask": 1836.7,
+      "ts": 1784283232.7651594
+    },
+    "hitbtc:BTC/USDT": {
+      "exchange": "hitbtc",
+      "symbol": "BTC/USDT",
+      "bid": 63057.46,
+      "ask": 63094.84,
+      "ts": 1784283219.1745589
+    },
+    "hitbtc:ETH/USDT": {
+      "exchange": "hitbtc",
+      "symbol": "ETH/USDT",
+      "bid": 1836.005,
+      "ask": 1837.399,
+      "ts": 1784283219.1745589
+    },
+    "phemex:ETH/USDT": {
+      "exchange": "phemex",
+      "symbol": "ETH/USDT",
+      "bid": 1836.21,
+      "ask": 1836.4,
+      "ts": 1784283219.1607418
+    },
+    "phemex:BTC/USDT": {
+      "exchange": "phemex",
+      "symbol": "BTC/USDT",
+      "bid": 63065.99,
+      "ask": 63066.34,
+      "ts": 1784283219.1607418
+    },
+    "poloniex:BTC/USDT": {
+      "exchange": "poloniex",
+      "symbol": "BTC/USDT",
+      "bid": 63070.99,
+      "ask": 63079.86,
+      "ts": 1784283219.1640954
+    },
+    "poloniex:ETH/USDT": {
+      "exchange": "poloniex",
+      "symbol": "ETH/USDT",
+      "bid": 1836.13,
+      "ask": 1836.51,
+      "ts": 1784283219.1640954
+    },
+    "bitstamp:BTC/USDT": {
+      "exchange": "bitstamp",
+      "symbol": "BTC/USDT",
+      "bid": 63066.78,
+      "ask": 63068.73,
+      "ts": 1784283219.1497443
+    },
+    "bitstamp:ETH/USDT": {
+      "exchange": "bitstamp",
+      "symbol": "ETH/USDT",
+      "bid": 1836.03,
+      "ask": 1836.56,
+      "ts": 1784283219.1497443
+    },
+    "bitmart:BTC/USDT": {
+      "exchange": "bitmart",
+      "symbol": "BTC/USDT",
+      "bid": 63065.98,
+      "ask": 63066.01,
+      "ts": 1784283219.1710513
+    },
+    "bitmart:ETH/USDT": {
+      "exchange": "bitmart",
+      "symbol": "ETH/USDT",
+      "bid": 1836.46,
+      "ask": 1836.49,
+      "ts": 1784283219.1710513
+    },
+    "digifinex:BTC/USDT": {
+      "exchange": "digifinex",
+      "symbol": "BTC/USDT",
+      "bid": 63067.4,
+      "ask": 63067.52,
+      "ts": 1784283219.1779556
+    },
+    "digifinex:ETH/USDT": {
+      "exchange": "digifinex",
+      "symbol": "ETH/USDT",
+      "bid": 1836.68,
+      "ask": 1836.69,
+      "ts": 1784283219.1779556
+    },
+    "kraken:ETH/USDT": {
+      "exchange": "kraken",
+      "symbol": "ETH/USDT",
+      "bid": 1836.62,
+      "ask": 1836.81,
+      "ts": 1784283230.371362
+    },
+    "kraken:SOL/USDT": {
+      "exchange": "kraken",
+      "symbol": "SOL/USDT",
+      "bid": 74.78,
+      "ask": 74.8,
+      "ts": 1784283230.371362
+    },
+    "kraken:BTC/USDT": {
+      "exchange": "kraken",
+      "symbol": "BTC/USDT",
+      "bid": 63070.7,
+      "ask": 63072.9,
+      "ts": 1784283230.371362
+    },
+    "bitget:BTC/USDT": {
+      "exchange": "bitget",
+      "symbol": "BTC/USDT",
+      "bid": 63074.99,
+      "ask": 63075.0,
+      "ts": 1784283230.4857922
+    },
+    "bitget:ETH/USDT": {
+      "exchange": "bitget",
+      "symbol": "ETH/USDT",
+      "bid": 1836.46,
+      "ask": 1836.47,
+      "ts": 1784283230.4857922
+    },
+    "bitget:SOL/USDT": {
+      "exchange": "bitget",
+      "symbol": "SOL/USDT",
+      "bid": 74.78,
+      "ask": 74.79,
+      "ts": 1784283230.4857922
+    },
+    "kucoin:BTC/USDT": {
+      "exchange": "kucoin",
+      "symbol": "BTC/USDT",
+      "bid": 63070.8,
+      "ask": 63070.9,
+      "ts": 1784283231.009694
+    },
+    "kucoin:ETH/USDT": {
+      "exchange": "kucoin",
+      "symbol": "ETH/USDT",
+      "bid": 1836.56,
+      "ask": 1836.57,
+      "ts": 1784283231.009694
+    },
+    "kucoin:SOL/USDT": {
+      "exchange": "kucoin",
+      "symbol": "SOL/USDT",
+      "bid": 74.78,
+      "ask": 74.79,
+      "ts": 1784283231.009694
+    },
+    "bitrue:ETH/USDT": {
+      "exchange": "bitrue",
+      "symbol": "ETH/USDT",
+      "bid": 1836.55,
+      "ask": 1836.6,
+      "ts": 1784283219.1880758
+    },
+    "bitrue:BTC/USDT": {
+      "exchange": "bitrue",
+      "symbol": "BTC/USDT",
+      "bid": 63065.99,
+      "ask": 63066.0,
+      "ts": 1784283219.1880758
+    },
+    "htx:ETH/USDT": {
+      "exchange": "htx",
+      "symbol": "ETH/USDT",
+      "bid": 1836.23,
+      "ask": 1836.24,
+      "ts": 1784283219.1347277
+    },
+    "htx:BTC/USDT": {
+      "exchange": "htx",
+      "symbol": "BTC/USDT",
+      "bid": 63091.64,
+      "ask": 63091.65,
+      "ts": 1784283219.1347277
+    },
+    "htx:SOL/USDT": {
+      "exchange": "htx",
+      "symbol": "SOL/USDT",
+      "bid": 74.7877,
+      "ask": 74.7878,
+      "ts": 1784283219.1347277
+    },
+    "gemini:BTC/USDT": {
+      "exchange": "gemini",
+      "symbol": "BTC/USDT",
+      "bid": 63071.51,
+      "ask": 63071.52,
+      "ts": 1784283219.1529307
+    },
+    "gemini:ETH/USDT": {
+      "exchange": "gemini",
+      "symbol": "ETH/USDT",
+      "bid": 1836.25,
+      "ask": 1836.73,
+      "ts": 1784283219.1529307
+    },
+    "gate:SOL/USDT": {
+      "exchange": "gate",
+      "symbol": "SOL/USDT",
+      "bid": 74.78,
+      "ask": 74.79,
+      "ts": 1784283219.1110547
+    },
+    "gate:ETH/USDT": {
+      "exchange": "gate",
+      "symbol": "ETH/USDT",
+      "bid": 1836.58,
+      "ask": 1836.59,
+      "ts": 1784283219.1110547
+    },
+    "gate:BTC/USDT": {
+      "exchange": "gate",
+      "symbol": "BTC/USDT",
+      "bid": 63063.2,
+      "ask": 63063.3,
+      "ts": 1784283219.1110547
+    },
+    "mexc:SOL/USDT": {
+      "exchange": "mexc",
+      "symbol": "SOL/USDT",
+      "bid": 74.78,
+      "ask": 74.79,
+      "ts": 1784283219.1222594
+    },
+    "mexc:ETH/USDT": {
+      "exchange": "mexc",
+      "symbol": "ETH/USDT",
+      "bid": 1836.58,
+      "ask": 1836.68,
+      "ts": 1784283219.1222594
+    },
+    "mexc:BTC/USDT": {
+      "exchange": "mexc",
+      "symbol": "BTC/USDT",
+      "bid": 63070.98,
+      "ask": 63070.99,
+      "ts": 1784283219.1222594
+    }
+  }
+}
