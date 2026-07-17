@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-17T19:00:01.569455+00:00",
+  "updated": "2026-07-17T19:30:01.298558+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -251,13 +251,13 @@
         "avg_profit_pct": -0.6
       },
       "NEUTRAL": {
-        "n": 6,
+        "n": 7,
         "wins": 3,
-        "losses": 3,
-        "wr": 0.5,
-        "pf": 1.238,
-        "profit_usdt": 0.8,
-        "avg_profit_pct": 0.175
+        "losses": 4,
+        "wr": 0.4286,
+        "pf": 0.941,
+        "profit_usdt": -0.26,
+        "avg_profit_pct": -0.041
       }
     },
     "UNI/USDT:USDT": {
@@ -362,13 +362,13 @@
     },
     "TAO/USDT:USDT": {
       "NEUTRAL": {
-        "n": 8,
+        "n": 9,
         "wins": 4,
-        "losses": 4,
-        "wr": 0.5,
-        "pf": 0.64,
-        "profit_usdt": -1.14,
-        "avg_profit_pct": -0.176
+        "losses": 5,
+        "wr": 0.4444,
+        "pf": 0.438,
+        "profit_usdt": -2.6,
+        "avg_profit_pct": -0.36
       }
     },
     "FIL/USDT:USDT": {
