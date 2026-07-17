@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-17T01:00:01.784287+00:00",
+  "updated": "2026-07-17T01:30:01.541688+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -11,13 +11,13 @@
   "stats": {
     "XRP/USDT:USDT": {
       "BEAR": {
-        "n": 4,
-        "wins": 1,
+        "n": 3,
+        "wins": 0,
         "losses": 3,
-        "wr": 0.25,
-        "pf": 0.083,
-        "profit_usdt": -0.99,
-        "avg_profit_pct": -0.427
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -1.08,
+        "avg_profit_pct": -0.627
       },
       "NEUTRAL": {
         "n": 5,
@@ -27,26 +27,6 @@
         "pf": 0.041,
         "profit_usdt": -1.64,
         "avg_profit_pct": -0.402
-      }
-    },
-    "RENDER/USDT:USDT": {
-      "BEAR": {
-        "n": 15,
-        "wins": 9,
-        "losses": 6,
-        "wr": 0.6,
-        "pf": 1.158,
-        "profit_usdt": 1.0,
-        "avg_profit_pct": 0.123
-      },
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 2.217,
-        "profit_usdt": 0.56,
-        "avg_profit_pct": 0.36
       }
     },
     "APT/USDT:USDT": {
@@ -67,6 +47,26 @@
         "pf": 0.0,
         "profit_usdt": -1.88,
         "avg_profit_pct": -2.34
+      }
+    },
+    "RENDER/USDT:USDT": {
+      "BEAR": {
+        "n": 14,
+        "wins": 8,
+        "losses": 6,
+        "wr": 0.5714,
+        "pf": 1.151,
+        "profit_usdt": 0.96,
+        "avg_profit_pct": 0.126
+      },
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 2.217,
+        "profit_usdt": 0.56,
+        "avg_profit_pct": 0.36
       }
     },
     "AVAX/USDT:USDT": {
