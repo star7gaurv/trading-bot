@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-17T11:00:02.037268+00:00",
+  "updated": "2026-07-17T11:30:01.395688+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,15 +9,26 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
+    "AVAX/USDT:USDT": {
+      "BEAR": {
+        "n": 21,
+        "wins": 7,
+        "losses": 14,
+        "wr": 0.3333,
+        "pf": 1.036,
+        "profit_usdt": 0.34,
+        "avg_profit_pct": 0.036
+      }
+    },
     "DOT/USDT:USDT": {
       "BEAR": {
-        "n": 7,
-        "wins": 1,
+        "n": 6,
+        "wins": 0,
         "losses": 6,
-        "wr": 0.1429,
-        "pf": 0.16,
-        "profit_usdt": -3.3,
-        "avg_profit_pct": -0.833
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -3.93,
+        "avg_profit_pct": -1.157
       },
       "NEUTRAL": {
         "n": 5,
@@ -27,17 +38,6 @@
         "pf": 0.319,
         "profit_usdt": -2.07,
         "avg_profit_pct": -0.51
-      }
-    },
-    "AVAX/USDT:USDT": {
-      "BEAR": {
-        "n": 22,
-        "wins": 8,
-        "losses": 14,
-        "wr": 0.3636,
-        "pf": 1.083,
-        "profit_usdt": 0.79,
-        "avg_profit_pct": 0.072
       }
     },
     "RENDER/USDT:USDT": {
@@ -131,13 +131,13 @@
         "avg_profit_pct": -0.201
       },
       "NEUTRAL": {
-        "n": 1,
-        "wins": 0,
+        "n": 2,
+        "wins": 1,
         "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -1.23,
-        "avg_profit_pct": -1.54
+        "wr": 0.5,
+        "pf": 0.268,
+        "profit_usdt": -0.9,
+        "avg_profit_pct": -0.56
       }
     },
     "OP/USDT:USDT": {
@@ -440,10 +440,10 @@
     {
       "pair": "DOT/USDT:USDT",
       "regime": "BEAR",
-      "reason": "WR=14% PF=0.16 n=7 profit=-3.30",
-      "n": 7,
-      "wr": 0.1429,
-      "pf": 0.16
+      "reason": "WR=0% PF=0.00 n=6 profit=-3.93",
+      "n": 6,
+      "wr": 0.0,
+      "pf": 0.0
     },
     {
       "pair": "XRP/USDT:USDT",
