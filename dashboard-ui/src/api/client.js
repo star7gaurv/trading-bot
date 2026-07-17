@@ -181,6 +181,9 @@ export async function getFeatureIC() {
 export async function getFundingFarm() {
   return request("/api/funding-farm");
 }
+export async function getArbitrage() {
+  return request("/api/arbitrage");
+}
 export async function getSignalQuality() {
   return request("/api/signal-quality");
 }

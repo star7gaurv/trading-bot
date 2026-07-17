@@ -1324,6 +1324,72 @@ async def funding_farm(_: dict = Depends(require_auth)):
     return await asyncio.get_event_loop().run_in_executor(None, compute)
 
 
+# ───────────────────── Arbitrage (paper) ─────────────────────
+ARBITRAGE_STATE = REPO_ROOT / "finbuddy_memory/arbitrage/state.json"
+ARBITRAGE_LEDGER = REPO_ROOT / "finbuddy_memory/arbitrage/ledger.jsonl"
+ARBITRAGE_PRICE_CACHE = REPO_ROOT / "finbuddy_memory/arbitrage/price_cache.json"
+ARBITRAGE_FEED_STALE_S = 60.0  # feed daemon flushes every 5s — this stale means it's down
+
+
+@app.get("/api/arbitrage")
+async def arbitrage(_: dict = Depends(require_auth)):
+    """Live arbitrage (paper) monitor: wallet/P&L, recent captures/observations,
+    and whether the price-feed daemon is actually alive (a dead feed silently
+    stops finding anything, so surface it explicitly rather than just showing
+    zero opportunities indistinguishably from a healthy-but-quiet market)."""
+    def compute():
+        state: dict = {}
+        if ARBITRAGE_STATE.exists():
+            try:
+                state = json.loads(ARBITRAGE_STATE.read_text())
+            except (OSError, json.JSONDecodeError):
+                pass
+
+        feed_alive = False
+        feed_age_s: float | None = None
+        exchanges_reporting = 0
+        if ARBITRAGE_PRICE_CACHE.exists():
+            try:
+                cache = json.loads(ARBITRAGE_PRICE_CACHE.read_text())
+                updated_at = cache.get("updated_at", 0.0)
+                feed_age_s = round(time.time() - updated_at, 1)
+                feed_alive = feed_age_s < ARBITRAGE_FEED_STALE_S
+                exchanges_reporting = len({
+                    v.get("exchange") for v in cache.get("prices", {}).values()
+                })
+            except (OSError, json.JSONDecodeError):
+                pass
+
+        # Last 20 ledger events (captures + observations), newest first
+        recent: list[dict] = []
+        if ARBITRAGE_LEDGER.exists():
+            try:
+                lines = ARBITRAGE_LEDGER.read_text().splitlines()
+                for ln in reversed(lines[-100:]):
+                    try:
+                        recent.append(json.loads(ln))
+                    except json.JSONDecodeError:
+                        continue
+                    if len(recent) >= 20:
+                        break
+            except OSError:
+                pass
+
+        return {
+            "wallet_usdt": state.get("wallet_usdt"),
+            "realized_pnl": state.get("realized_pnl", 0.0),
+            "captures_total": state.get("captures", 0),
+            "observations_total": state.get("observations", 0),
+            "last_run": state.get("last_run"),
+            "feed_alive": feed_alive,
+            "feed_age_s": feed_age_s,
+            "exchanges_reporting": exchanges_reporting,
+            "recent_events": recent,
+        }
+
+    return await asyncio.get_event_loop().run_in_executor(None, compute)
+
+
 @app.get("/api/signal-quality")
 async def signal_quality(_: dict = Depends(require_auth)):
     """Live model health: do_predict ratio, entry rate, prediction distribution.

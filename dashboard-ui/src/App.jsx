@@ -4,6 +4,7 @@ import {
   Coins,
   ArrowLeftRight,
   Grid3x3,
+  Scale,
   Brain as BrainIcon,
   Repeat,
   Server,
@@ -18,6 +19,7 @@ import DirectionalModule from "./tabs/modules/Directional";
 import FundingFarmModule from "./tabs/modules/FundingFarm";
 import PairsTradingModule from "./tabs/modules/PairsTrading";
 import GridTradingModule from "./tabs/modules/GridTrading";
+import ArbitrageModule from "./tabs/modules/Arbitrage";
 import Brain from "./tabs/Brain";
 import WalkForward from "./tabs/WalkForward";
 import SystemHealth from "./tabs/SystemHealth";
@@ -30,6 +32,7 @@ const TABS = [
   { id: "funding", label: "Funding Farm", icon: Coins, group: "Modules", status: "paper", Component: FundingFarmModule },
   { id: "pairs", label: "Pairs Trading", icon: ArrowLeftRight, group: "Modules", status: "paper", Component: PairsTradingModule },
   { id: "grid", label: "Grid Trading", icon: Grid3x3, group: "Modules", status: "paper", Component: GridTradingModule },
+  { id: "arbitrage", label: "Arbitrage", icon: Scale, group: "Modules", status: "paper", Component: ArbitrageModule },
   { id: "brain", label: "Brain", icon: BrainIcon, group: "System", Component: Brain },
   { id: "wf", label: "Walk-Forward", icon: Repeat, group: "System", Component: WalkForward },
   { id: "system", label: "System Health", icon: Server, group: "System", Component: SystemHealth },

@@ -1,0 +1,17 @@
+[Unit]
+Description=FinBuddy Arbitrage Price Feed (async ccxt poller, paper module)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/var/www/html/trade
+ExecStart=/home/ubuntu/.finbuddy/venvs/arbitrage/bin/python3 /home/ubuntu/var/www/html/trade/scripts/arbitrage/feed_daemon.py
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:/home/ubuntu/.finbuddy/logs/arb_feed.log
+StandardError=append:/home/ubuntu/.finbuddy/logs/arb_feed.log
+
+[Install]
+WantedBy=multi-user.target

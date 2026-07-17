@@ -1,0 +1,57 @@
+{
+  "_comment": "Tiered exchange config for the arbitrage price-feed daemon. Adding an exchange is a config edit here, not a code change — feed_daemon.py reads this file directly. 'id' must be a valid ccxt exchange id (see: python3 -c \"import ccxt; print(ccxt.exchanges)\"). All symbols are SPOT markets (cross-exchange comparison needs a market type every venue actually has; perp availability varies too much per exchange to rely on broadly). 'intra_exchange_basis' (category 1 in the scanner) additionally compares each exchange's own spot price against its own perp price where perp_symbols is non-empty.",
+  "tiers": {
+    "1": {
+      "_comment": "Majors — highest liquidity, tightest spreads, most reliable pre-funded-capital assumption. Polled fastest.",
+      "poll_interval_s": 4,
+      "symbols": ["BTC/USDT", "ETH/USDT", "SOL/USDT"],
+      "exchanges": [
+        { "id": "binance",  "enabled": true, "perp_symbols": ["BTC/USDT:USDT", "ETH/USDT:USDT", "SOL/USDT:USDT"] },
+        { "id": "okx",      "enabled": true, "perp_symbols": [] },
+        { "id": "bybit",    "enabled": true, "perp_symbols": [] },
+        { "id": "kucoin",   "enabled": true, "perp_symbols": [] },
+        { "id": "gate",     "enabled": true, "perp_symbols": [] },
+        { "id": "bitget",   "enabled": true, "perp_symbols": [] },
+        { "id": "mexc",     "enabled": true, "perp_symbols": [] },
+        { "id": "kraken",   "enabled": true, "perp_symbols": [] }
+      ]
+    },
+    "2": {
+      "_comment": "Mid-liquidity majors — still deep enough to matter, polled less aggressively.",
+      "poll_interval_s": 20,
+      "symbols": ["BTC/USDT", "ETH/USDT", "SOL/USDT"],
+      "exchanges": [
+        { "id": "coinbase",  "enabled": true, "perp_symbols": [] },
+        { "id": "htx",       "enabled": true, "perp_symbols": [] },
+        { "id": "bitfinex",  "enabled": true, "perp_symbols": [] },
+        { "id": "cryptocom", "enabled": true, "perp_symbols": [] },
+        { "id": "bingx",     "enabled": true, "perp_symbols": [] },
+        { "id": "bitstamp",  "enabled": true, "perp_symbols": [] },
+        { "id": "gemini",    "enabled": true, "perp_symbols": [] }
+      ]
+    },
+    "3": {
+      "_comment": "Long tail — breadth for gap-discovery/observation (category 3, cross_exchange_transfer). BTC/ETH only, slowest polling. These gaps get logged as observed opportunities but never count toward paper P&L (withdrawal/deposit time exceeds a real gap's lifetime almost always). Add more here anytime by ccxt id, no code change needed.",
+      "poll_interval_s": 90,
+      "symbols": ["BTC/USDT", "ETH/USDT"],
+      "exchanges": [
+        { "id": "coinex",     "enabled": true, "perp_symbols": [] },
+        { "id": "phemex",     "enabled": true, "perp_symbols": [] },
+        { "id": "poloniex",   "enabled": true, "perp_symbols": [] },
+        { "id": "whitebit",   "enabled": true, "perp_symbols": [] },
+        { "id": "bitmart",    "enabled": true, "perp_symbols": [] },
+        { "id": "hitbtc",     "enabled": true, "perp_symbols": [] },
+        { "id": "digifinex",  "enabled": true, "perp_symbols": [] },
+        { "id": "lbank",      "enabled": true, "perp_symbols": [] },
+        { "id": "xt",         "enabled": true, "perp_symbols": [] },
+        { "id": "bitrue",     "enabled": true, "perp_symbols": [] }
+      ]
+    }
+  },
+  "fees": {
+    "_comment": "Conservative default taker fee assumption per leg when an exchange-specific value isn't known. Real per-exchange fee schedules vary and often depend on account tier; this is a deliberately conservative (higher-than-typical) estimate so paper P&L doesn't overstate captured edge.",
+    "default_taker_pct": 0.001
+  },
+  "latency_penalty_ms": 500,
+  "min_gap_pct_to_log": 0.0005
+}
