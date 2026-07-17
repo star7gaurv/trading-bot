@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-17T12:00:01.442180+00:00",
+  "updated": "2026-07-17T12:30:01.318241+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,37 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "AVAX/USDT:USDT": {
-      "BEAR": {
-        "n": 21,
-        "wins": 7,
-        "losses": 14,
-        "wr": 0.3333,
-        "pf": 1.036,
-        "profit_usdt": 0.34,
-        "avg_profit_pct": 0.036
-      }
-    },
-    "DOT/USDT:USDT": {
-      "BEAR": {
-        "n": 6,
-        "wins": 0,
-        "losses": 6,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -3.93,
-        "avg_profit_pct": -1.157
-      },
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 2,
-        "losses": 3,
-        "wr": 0.4,
-        "pf": 0.319,
-        "profit_usdt": -2.07,
-        "avg_profit_pct": -0.51
-      }
-    },
     "RENDER/USDT:USDT": {
       "BEAR": {
         "n": 13,
@@ -100,6 +69,17 @@
         "avg_profit_pct": 1.29
       }
     },
+    "AVAX/USDT:USDT": {
+      "BEAR": {
+        "n": 20,
+        "wins": 7,
+        "losses": 13,
+        "wr": 0.35,
+        "pf": 1.098,
+        "profit_usdt": 0.88,
+        "avg_profit_pct": 0.087
+      }
+    },
     "ADA/USDT:USDT": {
       "BEAR": {
         "n": 3,
@@ -118,6 +98,26 @@
         "pf": 1.511,
         "profit_usdt": 1.58,
         "avg_profit_pct": 0.327
+      }
+    },
+    "DOT/USDT:USDT": {
+      "BEAR": {
+        "n": 5,
+        "wins": 0,
+        "losses": 5,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -3.2,
+        "avg_profit_pct": -1.132
+      },
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 2,
+        "losses": 3,
+        "wr": 0.4,
+        "pf": 0.319,
+        "profit_usdt": -2.07,
+        "avg_profit_pct": -0.51
       }
     },
     "WIF/USDT:USDT": {
@@ -440,8 +440,8 @@
     {
       "pair": "DOT/USDT:USDT",
       "regime": "BEAR",
-      "reason": "WR=0% PF=0.00 n=6 profit=-3.93",
-      "n": 6,
+      "reason": "WR=0% PF=0.00 n=5 profit=-3.20",
+      "n": 5,
       "wr": 0.0,
       "pf": 0.0
     },
