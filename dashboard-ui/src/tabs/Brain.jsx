@@ -13,6 +13,7 @@ import Stat from "../components/Stat";
 import Table from "../components/Table";
 import Badge from "../components/Badge";
 import LogStream from "../components/LogStream";
+import InfoTip from "../components/InfoTip";
 import { usePolling } from "../api/hooks";
 import { getBrainQueue, getBrainExperiments, getWfCoverage, brainLogSocket } from "../api/client";
 import { formatRelative, formatDuration, formatDateTime } from "../utils/format";
@@ -32,13 +33,13 @@ function QueueStrip({ data }) {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-      <Stat label="Total" value={total} />
-      <Stat label="Queued" value={queued} tone={queued > 0 ? "warn" : "default"} />
-      <Stat label="Running" value={running} tone={running > 0 ? "profit" : "default"} />
-      <Stat label="Completed" value={completed} tone="profit" />
-      <Stat label="Scout Filtered" value={scoutFailed} tone="default"
+      <Stat label={<InfoTip label="Total" text="Every experiment the brain has ever run or queued, across all time." />} value={total} />
+      <Stat label={<InfoTip label="Queued" text="Waiting for a free slot to run — the brain only runs one experiment at a time." />} value={queued} tone={queued > 0 ? "warn" : "default"} />
+      <Stat label={<InfoTip label="Running" text="Actively backtesting right now." />} value={running} tone={running > 0 ? "profit" : "default"} />
+      <Stat label={<InfoTip label="Completed" text="Finished a full backtest and produced real metrics (win rate, profit factor, etc.)." />} value={completed} tone="profit" />
+      <Stat label={<InfoTip label="Scout Filtered" text="Failed a cheap 6-pair pre-check before the brain bothered running the full, expensive 26-pair backtest — saves compute on obviously bad ideas." />} value={scoutFailed} tone="default"
         unit="" />
-      <Stat label="Failed" value={failed} tone={failed > 0 ? "loss" : "default"} />
+      <Stat label={<InfoTip label="Failed" text="Crashed or errored out, not a normal 'this idea didn't work' result." />} value={failed} tone={failed > 0 ? "loss" : "default"} />
     </div>
   );
 }
@@ -89,7 +90,7 @@ function ExperimentsTable({ data, error, loading, lastUpdated, coverageFilter })
         </Badge>
       ),
     },
-    { key: "_window", label: "Window", mono: true },
+    { key: "_window", label: <InfoTip label="Window" text="The historical market period this experiment was backtested on, e.g. bear_2025Q1 = a bear-market quarter." />, mono: true },
     {
       key: "_profit",
       label: "Profit %",
@@ -107,7 +108,7 @@ function ExperimentsTable({ data, error, loading, lastUpdated, coverageFilter })
     },
     {
       key: "_wr",
-      label: "WR",
+      label: <InfoTip label="WR" text="Win Rate — the share of trades in this backtest that closed profitable." />,
       align: "right",
       render: (r) => {
         const v = r._wr;
@@ -116,8 +117,8 @@ function ExperimentsTable({ data, error, loading, lastUpdated, coverageFilter })
         return <span className={`font-mono ${cls}`}>{v.toFixed(1)}%</span>;
       },
     },
-    { key: "version", label: "Ver", mono: true },
-    { key: "hypothesis_id", label: "ID", mono: true },
+    { key: "version", label: <InfoTip label="Ver" text="Target-scoring version used to train the model for this experiment." />, mono: true },
+    { key: "hypothesis_id", label: <InfoTip label="ID" text="Unique identifier for this experiment, useful for looking it up in logs." />, mono: true },
     {
       key: "ts",
       label: "Time",
@@ -276,12 +277,12 @@ function WFCoveragePanel({ onCellClick, activeFilter }) {
   }
 
   return (
-    <Card title="WF Coverage" subtitle={`${data.total_experiments.toLocaleString()} experiments`}>
+    <Card title={<InfoTip label="WF Coverage" text="Walk-Forward Coverage — which timeframe + market-period combinations the brain has actually tested, so you can see where its knowledge is thin." />} subtitle={`${data.total_experiments.toLocaleString()} experiments`}>
       <div className="overflow-x-auto">
         <table className="text-xxs w-full border-collapse">
           <thead>
             <tr>
-              <th className="text-left text-text-tertiary pr-2 pb-1 font-normal">TF</th>
+              <th className="text-left text-text-tertiary pr-2 pb-1 font-normal"><InfoTip label="TF" text="Timeframe — how long each trading candle represents (e.g. 1h = one candle per hour)." /></th>
               {windows.map((w) => (
                 <th key={w} className="text-text-tertiary font-mono font-normal pb-1 px-1 text-center whitespace-nowrap">
                   {w.replace("bear_", "🔻").replace("bull_", "🔺").replace("crash_", "💥")}

@@ -181,14 +181,14 @@ function StatStrip({ profit, openTrades, regime, dailyPerf, balance, recentClose
         unit={balanceTotal != null ? "USDT" : ""}
       />
       <Stat
-        label="Streak"
+        label={<InfoTip label="Streak" text="Consecutive wins or losses in a row, most recent trades first." />}
         value={streak ? `${streak.count}${streak.capped ? "+" : ""}` : "—"}
         unit={streak ? (streak.win ? "wins" : "losses") : ""}
         tone={streak == null ? "default" : streak.win ? "profit" : "loss"}
         mono={false}
       />
       <Stat
-        label="Deployed"
+        label={<InfoTip label="Deployed" text="Share of your total balance currently tied up in open positions, rather than sitting free." />}
         value={deployedPct != null ? deployedPct.toFixed(0) : "—"}
         unit={deployedPct != null ? "%" : ""}
         tone={deployedPct != null && deployedPct > 80 ? "warn" : "default"}
@@ -199,26 +199,26 @@ function StatStrip({ profit, openTrades, regime, dailyPerf, balance, recentClose
         mono={false}
       />
       <Stat
-        label="Regime"
+        label={<InfoTip label="Regime" text="The current market condition classification (e.g. BULL, BEAR, NEUTRAL) the AI uses to adjust how aggressively it trades." />}
         value={regimeName}
         tone={regimeTone}
         mono={false}
       />
       <Stat
-        label="Conf"
+        label={<InfoTip label="Conf" text="Confidence — how sure the regime detector is about its current market classification." />}
         value={regimeConf != null ? (regimeConf * 100).toFixed(0) : "—"}
         unit={regimeConf != null ? "%" : ""}
       />
       {fearGreed != null && (
         <Stat
-          label="Fear/Greed"
+          label={<InfoTip label="Fear/Greed" text="Crypto Fear & Greed Index (0=extreme fear, 100=extreme greed) — a broad market-sentiment gauge, not specific to this bot's own positions." />}
           value={fearGreed}
           tone={fearGreed < 25 ? "loss" : fearGreed > 75 ? "profit" : "warn"}
         />
       )}
       {fundingRate != null && (
         <Stat
-          label="Funding"
+          label={<InfoTip label="Funding" text="The current BTC perpetual futures funding rate — a periodic fee longs and shorts pay each other that keeps perpetual contract prices anchored to the spot price." />}
           value={(fundingRate * 100).toFixed(4)}
           unit="%"
           tone={Math.abs(fundingRate) > 0.001 ? "warn" : "default"}

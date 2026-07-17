@@ -12,6 +12,7 @@ import Card from "../components/Card";
 import Table from "../components/Table";
 import Badge from "../components/Badge";
 import Stat from "../components/Stat";
+import InfoTip from "../components/InfoTip";
 import { usePolling } from "../api/hooks";
 import { getSignals } from "../api/client";
 
@@ -86,7 +87,7 @@ export default function Signals() {
       ),
     },
     {
-      key: "do_predict", label: "Predict", align: "center",
+      key: "do_predict", label: <InfoTip label="Predict" text="Whether the model is actively scoring this pair right now (a red X usually means it's still warming up or the data looks like an outlier)." />, align: "center",
       render: (r) => r.do_predict === 1
         ? <span className="text-profit font-mono">✓</span>
         : <span className="text-loss font-mono" title="model not predicting (outlier/warmup)">✗</span>,
@@ -94,7 +95,7 @@ export default function Signals() {
     { key: "long_status", label: "Long", render: (r) => <StatusBadge code={r.long_status} /> },
     { key: "short_status", label: "Short", render: (r) => <StatusBadge code={r.short_status} /> },
     {
-      key: "pred", label: "Pred", align: "right", mono: true,
+      key: "pred", label: <InfoTip label="Pred" text="The model's raw prediction score for this candle — higher magnitude means stronger conviction, sign means direction." />, align: "right", mono: true,
       render: (r) => {
         const v = r.pred;
         if (v == null) return "—";
@@ -103,7 +104,7 @@ export default function Signals() {
       },
     },
     {
-      key: "thr", label: "L / S thr", align: "right", mono: true,
+      key: "thr", label: <InfoTip label="L / S thr" text="Long / Short threshold — how strong the prediction must be before a trade opens in that direction." />, align: "right", mono: true,
       render: (r) => (
         <span className="text-text-muted text-xxs">
           {fmtNum(r.long_threshold, 2)} / {fmtNum(r.short_threshold, 2)}
@@ -126,15 +127,15 @@ export default function Signals() {
       {/* Summary strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Stat
-          label="Entering Now"
+          label={<InfoTip label="Entering Now" text="Pairs whose model signal is currently strong enough to open a trade this candle." />}
           value={`${entering}`}
           unit={total ? `/ ${total}` : ""}
           tone={entering > 0 ? "profit" : "warn"}
         />
-        <Stat label="Below Threshold" value={blockerSummary.threshold || 0}
+        <Stat label={<InfoTip label="Below Threshold" text="The model's prediction exists but isn't confident enough yet to cross the entry bar." />} value={blockerSummary.threshold || 0}
           tone="default" />
-        <Stat label="TA-Blocked" value={blockerSummary.ta || 0} tone="default" />
-        <Stat label="Gated / No-Predict"
+        <Stat label={<InfoTip label="TA-Blocked" text="Blocked by a technical-analysis filter (trend/RSI/Bollinger Band), not the model itself." />} value={blockerSummary.ta || 0} tone="default" />
+        <Stat label={<InfoTip label="Gated / No-Predict" text="Either this pair+regime combo was auto-blocked for poor recent performance, or the model isn't scoring this candle at all." />}
           value={(blockerSummary.gated || 0) + (blockerSummary.no_predict || 0)}
           tone={(blockerSummary.gated || 0) + (blockerSummary.no_predict || 0) > 0 ? "loss" : "default"} />
       </div>

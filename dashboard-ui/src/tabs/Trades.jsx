@@ -14,6 +14,7 @@ import Table from "../components/Table";
 import Badge from "../components/Badge";
 import PnlCell, { pnlPct } from "../components/PnlCell";
 import ForceExitButton from "../components/ForceExitButton";
+import InfoTip from "../components/InfoTip";
 import { usePolling } from "../api/hooks";
 import {
   getOpenTrades,
@@ -155,7 +156,7 @@ function OpenTradesTable({ onSelectTrade }) {
     },
     {
       key: "leverage",
-      label: "Lev",
+      label: <InfoTip label="Lev" text="Leverage — the multiplier applied to your stake. 2x means a $50 move in the underlying moves your P&L like a $100 position." />,
       align: "right",
       mono: true,
       render: (r) => (r.leverage ? `${r.leverage}×` : "—"),
@@ -200,7 +201,7 @@ function OpenTradesTable({ onSelectTrade }) {
     },
     {
       key: "sl_dist",
-      label: "SL Dist",
+      label: <InfoTip label="SL Dist" text="Stop-Loss Distance — how far the current price is from triggering the stop-loss. Smaller % means closer to being stopped out." />,
       align: "right",
       mono: true,
       render: (r) => {
@@ -277,7 +278,7 @@ function ClosedTradesTable({ onSelectTrade }) {
     },
     {
       key: "leverage",
-      label: "Lev",
+      label: <InfoTip label="Lev" text="Leverage — the multiplier applied to your stake. 2x means a $50 move in the underlying moves your P&L like a $100 position." />,
       align: "right",
       mono: true,
       render: (r) => (r.leverage ? `${r.leverage}×` : "—"),
@@ -428,7 +429,7 @@ function PairPerformanceTable() {
     { key: "key", label: "Pair", mono: true },
     {
       key: "profit_all_percent",
-      label: "WR",
+      label: <InfoTip label="WR" text="Win Rate — the share of this pair's trades that closed profitable." />,
       align: "right",
       render: (r) => {
         const wr = r.win_ratio != null ? r.win_ratio * 100 : null;
@@ -442,7 +443,7 @@ function PairPerformanceTable() {
     },
     {
       key: "profit_factor",
-      label: "PF",
+      label: <InfoTip label="PF" text="Profit Factor — this pair's winning USDT divided by its losing USDT. Above 1.0 means profitable." />,
       align: "right",
       mono: true,
       render: (r) => {

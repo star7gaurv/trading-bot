@@ -7,6 +7,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import Card from "../components/Card";
 import Badge from "../components/Badge";
 import Table from "../components/Table";
+import InfoTip from "../components/InfoTip";
 import { usePolling, useFetch } from "../api/hooks";
 import { getWfLatest, getWfHistory, getRunningFolds } from "../api/client";
 import { formatRelative, formatDateTime } from "../utils/format";
@@ -14,10 +15,14 @@ import { formatRelative, formatDateTime } from "../utils/format";
 // ─── Gate badges ─────────────────────────────────────────────────────────────
 
 const GATES = [
-  { label: "WR",     key: "weighted_win_rate",      threshold: 0.5, fmt: (v) => `${(v*100).toFixed(1)}%`, compare: (v,t) => v > t },
-  { label: "Sharpe", key: "weighted_sharpe", altKey: "sharpe", threshold: 0.5, fmt: (v) => v.toFixed(3), compare: (v,t) => v > t },
-  { label: "DD",     key: "worst_drawdown",          threshold: 0.2, fmt: (v) => `${(Math.abs(v)*100).toFixed(1)}%`, compare: (v,t) => Math.abs(v) < t },
-  { label: "PF",     key: "weighted_profit_factor",  threshold: 1.2, fmt: (v) => v.toFixed(2), compare: (v,t) => v > t },
+  { label: "WR",     key: "weighted_win_rate",      threshold: 0.5, fmt: (v) => `${(v*100).toFixed(1)}%`, compare: (v,t) => v > t,
+    tip: "Win Rate — must beat 50% to pass." },
+  { label: "Sharpe", key: "weighted_sharpe", altKey: "sharpe", threshold: 0.5, fmt: (v) => v.toFixed(3), compare: (v,t) => v > t,
+    tip: "Risk-adjusted return — how much profit per unit of volatility. Must beat 0.5 to pass." },
+  { label: "DD",     key: "worst_drawdown",          threshold: 0.2, fmt: (v) => `${(Math.abs(v)*100).toFixed(1)}%`, compare: (v,t) => Math.abs(v) < t,
+    tip: "Drawdown — the worst peak-to-trough loss during this test. Must stay under 20% to pass." },
+  { label: "PF",     key: "weighted_profit_factor",  threshold: 1.2, fmt: (v) => v.toFixed(2), compare: (v,t) => v > t,
+    tip: "Profit Factor — total winning USDT divided by total losing USDT. Above 1.0 means profitable; must beat 1.2 to pass." },
 ];
 
 function GateRow({ agg }) {
@@ -32,8 +37,8 @@ function GateRow({ agg }) {
             key={g.label}
             className="bg-elevated border border-border rounded px-3 py-2 text-center"
           >
-            <div className="text-xxs uppercase tracking-wider text-text-tertiary mb-1">
-              {g.label}
+            <div className="text-xxs uppercase tracking-wider text-text-tertiary mb-1 flex items-center justify-center">
+              <InfoTip label={g.label} text={g.tip} />
             </div>
             <div
               className={`text-base font-mono font-semibold ${
@@ -221,7 +226,7 @@ function FoldTable({ data }) {
   }
 
   const columns = [
-    { key: "fold", label: "Fold", mono: true },
+    { key: "fold", label: <InfoTip label="Fold" text="One train/test split — the model trains on one period and is tested on the following period it never saw." />, mono: true },
     {
       key: "train_start",
       label: "Train",
@@ -245,7 +250,7 @@ function FoldTable({ data }) {
     },
     {
       key: "profit_factor",
-      label: "PF",
+      label: <InfoTip label="PF" text="Profit Factor — winning USDT divided by losing USDT. Above 1.0 is profitable." />,
       align: "right",
       render: (r) => {
         const v = r.profit_factor;
@@ -279,7 +284,7 @@ function FoldTable({ data }) {
     },
     {
       key: "sharpe",
-      label: "Sharpe",
+      label: <InfoTip label="Sharpe" text="Risk-adjusted return — profit per unit of volatility. Higher is better; above 0.5 is generally considered decent." />,
       align: "right",
       render: (r) => {
         const v = r.weighted_sharpe ?? r.sharpe;
@@ -394,7 +399,7 @@ function HistoryList({ data, error, loading, lastUpdated }) {
                 <th>Run ID</th>
                 <th style={{ textAlign: "right" }}>Age</th>
                 <th style={{ textAlign: "right" }}>Trades</th>
-                <th style={{ textAlign: "right" }}>WR</th>
+                <th style={{ textAlign: "right" }}><InfoTip label="WR" text="Win Rate — the share of trades that closed profitable." /></th>
               </tr>
             </thead>
             <tbody>
