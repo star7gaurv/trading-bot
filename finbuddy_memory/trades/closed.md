@@ -718,3 +718,4 @@
 | 2026-07-17 02:01:54 | ETH/USDT:USDT | SHORT | 6h01m | +1.29% | +1.02 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-17 02:00:34 | WIF/USDT:USDT | LONG | 6h00m | -1.54% | -1.23 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-07-17 11:00:44 | WIF/USDT:USDT | LONG | 6h00m | +0.42% | +0.33 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-07-17 16:44:06 | ADA/USDT:USDT | SHORT | 4h23m | -3.28% | -2.61 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
