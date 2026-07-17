@@ -1,0 +1,35 @@
+site_name: FinBuddy Internal Docs
+site_description: Internal code documentation for the FinBuddy brain, backend, and dashboard.
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: teal
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [scripts, dashboard]
+          options:
+            show_source: true
+            show_root_heading: true
+            docstring_style: google
+            merge_init_into_class: true
+            show_if_no_docstring: false
+
+nav:
+  - Home: index.md
+  - Confidentiality Style Guide: confidentiality.md
+  - Brain (hypothesis engine): brain.md
+  - Shared Libraries: lib.md
+  - Dashboard Backend: dashboard.md
+  - User Tutorials (ScribeHow setup): user-tutorials.md
