@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-17T18:30:01.459850+00:00",
+  "updated": "2026-07-17T19:00:01.569455+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,37 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "DOT/USDT:USDT": {
-      "BEAR": {
-        "n": 5,
-        "wins": 0,
-        "losses": 5,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -3.2,
-        "avg_profit_pct": -1.132
-      },
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 2,
-        "losses": 3,
-        "wr": 0.4,
-        "pf": 0.319,
-        "profit_usdt": -2.07,
-        "avg_profit_pct": -0.51
-      }
-    },
-    "AVAX/USDT:USDT": {
-      "BEAR": {
-        "n": 19,
-        "wins": 6,
-        "losses": 13,
-        "wr": 0.3158,
-        "pf": 1.049,
-        "profit_usdt": 0.44,
-        "avg_profit_pct": 0.049
-      }
-    },
     "LDO/USDT:USDT": {
       "BEAR": {
         "n": 11,
@@ -58,6 +27,37 @@
         "pf": 0.331,
         "profit_usdt": -6.56,
         "avg_profit_pct": -0.903
+      }
+    },
+    "DOT/USDT:USDT": {
+      "BEAR": {
+        "n": 4,
+        "wins": 0,
+        "losses": 4,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -2.49,
+        "avg_profit_pct": -1.1
+      },
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 2,
+        "losses": 3,
+        "wr": 0.4,
+        "pf": 0.319,
+        "profit_usdt": -2.07,
+        "avg_profit_pct": -0.51
+      }
+    },
+    "AVAX/USDT:USDT": {
+      "BEAR": {
+        "n": 18,
+        "wins": 6,
+        "losses": 12,
+        "wr": 0.3333,
+        "pf": 1.172,
+        "profit_usdt": 1.38,
+        "avg_profit_pct": 0.147
       }
     },
     "ADA/USDT:USDT": {
@@ -428,14 +428,6 @@
     }
   },
   "blocked": [
-    {
-      "pair": "DOT/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=0% PF=0.00 n=5 profit=-3.20",
-      "n": 5,
-      "wr": 0.0,
-      "pf": 0.0
-    },
     {
       "pair": "XRP/USDT:USDT",
       "regime": "NEUTRAL",
