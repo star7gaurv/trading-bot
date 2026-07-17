@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-17T00:00:01.482346+00:00",
+  "updated": "2026-07-17T00:30:01.070265+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -11,13 +11,13 @@
   "stats": {
     "XRP/USDT:USDT": {
       "BEAR": {
-        "n": 5,
+        "n": 4,
         "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
+        "losses": 3,
+        "wr": 0.25,
         "pf": 0.083,
-        "profit_usdt": -1.0,
-        "avg_profit_pct": -0.344
+        "profit_usdt": -0.99,
+        "avg_profit_pct": -0.427
       },
       "NEUTRAL": {
         "n": 5,
@@ -31,13 +31,13 @@
     },
     "RENDER/USDT:USDT": {
       "BEAR": {
-        "n": 16,
+        "n": 15,
         "wins": 9,
-        "losses": 7,
-        "wr": 0.5625,
-        "pf": 1.136,
-        "profit_usdt": 0.88,
-        "avg_profit_pct": 0.102
+        "losses": 6,
+        "wr": 0.6,
+        "pf": 1.158,
+        "profit_usdt": 1.0,
+        "avg_profit_pct": 0.123
       },
       "NEUTRAL": {
         "n": 2,
@@ -443,14 +443,6 @@
       "n": 5,
       "wr": 0.2,
       "pf": 0.041
-    },
-    {
-      "pair": "XRP/USDT:USDT",
-      "regime": "BEAR",
-      "reason": "WR=20% PF=0.08 n=5 profit=-1.00",
-      "n": 5,
-      "wr": 0.2,
-      "pf": 0.083
     },
     {
       "pair": "SUI/USDT:USDT",
