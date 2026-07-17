@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-17T13:30:01.397643+00:00",
+  "updated": "2026-07-17T14:00:01.990592+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,46 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "RENDER/USDT:USDT": {
-      "BEAR": {
-        "n": 13,
-        "wins": 8,
-        "losses": 5,
-        "wr": 0.6154,
-        "pf": 1.327,
-        "profit_usdt": 1.8,
-        "avg_profit_pct": 0.249
-      },
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 2.217,
-        "profit_usdt": 0.56,
-        "avg_profit_pct": 0.36
-      }
-    },
-    "LDO/USDT:USDT": {
-      "BEAR": {
-        "n": 13,
-        "wins": 4,
-        "losses": 9,
-        "wr": 0.3077,
-        "pf": 1.066,
-        "profit_usdt": 0.39,
-        "avg_profit_pct": 0.055
-      },
-      "NEUTRAL": {
-        "n": 9,
-        "wins": 4,
-        "losses": 5,
-        "wr": 0.4444,
-        "pf": 0.331,
-        "profit_usdt": -6.56,
-        "avg_profit_pct": -0.903
-      }
-    },
     "ETH/USDT:USDT": {
       "BEAR": {
         "n": 2,
@@ -100,6 +60,26 @@
         "avg_profit_pct": 0.327
       }
     },
+    "LDO/USDT:USDT": {
+      "BEAR": {
+        "n": 12,
+        "wins": 4,
+        "losses": 8,
+        "wr": 0.3333,
+        "pf": 1.435,
+        "profit_usdt": 1.91,
+        "avg_profit_pct": 0.282
+      },
+      "NEUTRAL": {
+        "n": 9,
+        "wins": 4,
+        "losses": 5,
+        "wr": 0.4444,
+        "pf": 0.331,
+        "profit_usdt": -6.56,
+        "avg_profit_pct": -0.903
+      }
+    },
     "DOT/USDT:USDT": {
       "BEAR": {
         "n": 5,
@@ -138,6 +118,26 @@
         "pf": 0.268,
         "profit_usdt": -0.9,
         "avg_profit_pct": -0.56
+      }
+    },
+    "RENDER/USDT:USDT": {
+      "BEAR": {
+        "n": 12,
+        "wins": 8,
+        "losses": 4,
+        "wr": 0.6667,
+        "pf": 1.55,
+        "profit_usdt": 2.59,
+        "avg_profit_pct": 0.386
+      },
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 2.217,
+        "profit_usdt": 0.56,
+        "avg_profit_pct": 0.36
       }
     },
     "OP/USDT:USDT": {
