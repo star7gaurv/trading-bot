@@ -507,9 +507,17 @@ def apply_promotion(config_hash: str) -> int:
         "FREQAI_THRESHOLD_FLOOR":       _bool_env(new_cfg.get("threshold_floor")),
         "FREQAI_PROGRESS_CUT":          _bool_env(new_cfg.get("progress_cut")),
         "FREQAI_PROGRESS_CUT_CANDLES":  new_cfg.get("progress_cut_candles"),
+        "FREQAI_PROGRESS_CUT_PROFIT":   new_cfg.get("progress_cut_profit"),
         "FREQAI_PARTIAL_TP":            _bool_env(new_cfg.get("partial_tp")),
         "FREQAI_PARTIAL_TP_TRIGGER":    new_cfg.get("partial_tp_trigger"),
         "FREQAI_PARTIAL_TP_FRACTION":   new_cfg.get("partial_tp_fraction"),
+        # probe_scale (2026-07-17): same 3-layer-gap class — was built 2026-06-23 but never
+        # wired into runner.py's backtest env forwarding OR here, so it could never have been
+        # validated OR correctly promoted until now.
+        "FREQAI_PROBE_SCALE":           _bool_env(new_cfg.get("probe_scale")),
+        "FREQAI_PROBE_FRACTION":        new_cfg.get("probe_fraction"),
+        "FREQAI_PROBE_CONFIRM_PCT":     new_cfg.get("probe_confirm_pct"),
+        "FREQAI_PROBE_WINDOW":          new_cfg.get("probe_window"),
     }
     env_keys = {k: v for k, v in env_keys.items() if v is not None}
     if env_keys:

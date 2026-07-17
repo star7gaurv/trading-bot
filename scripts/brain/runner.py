@@ -420,6 +420,8 @@ def _build_env_args(cfg: dict, identifier: str) -> list[str]:
             env_args += ["-e", f"FREQAI_PROGRESS_CUT={'1' if cfg['progress_cut'] else '0'}"]
         if cfg.get("progress_cut_candles") is not None:
             env_args += ["-e", f"FREQAI_PROGRESS_CUT_CANDLES={cfg['progress_cut_candles']}"]
+        if cfg.get("progress_cut_profit") is not None:
+            env_args += ["-e", f"FREQAI_PROGRESS_CUT_PROFIT={cfg['progress_cut_profit']}"]
         if cfg.get("partial_tp") is not None:
             env_args += ["-e", f"FREQAI_PARTIAL_TP={'1' if cfg['partial_tp'] else '0'}"]
             # adjust_trade_position is only called when position adjustment is on.
@@ -428,6 +430,20 @@ def _build_env_args(cfg: dict, identifier: str) -> list[str]:
             env_args += ["-e", f"FREQAI_PARTIAL_TP_TRIGGER={cfg['partial_tp_trigger']}"]
         if cfg.get("partial_tp_fraction") is not None:
             env_args += ["-e", f"FREQAI_PARTIAL_TP_FRACTION={cfg['partial_tp_fraction']}"]
+        # 2026-07-17: probe_scale was built 2026-06-23 alongside progress_cut/partial_tp but
+        # its env forwarding was never added here — any past experiment with probe_scale set
+        # silently ran with the live default (FREQAI_PROBE_SCALE=0), i.e. was a no-op duplicate
+        # of the baseline. Fixing the same 3-layer gap partial_tp already had fixed on 07-08.
+        if cfg.get("probe_scale") is not None:
+            env_args += ["-e", f"FREQAI_PROBE_SCALE={'1' if cfg['probe_scale'] else '0'}"]
+            # adjust_trade_position is only called when position adjustment is on.
+            env_args += ["-e", "FREQTRADE__POSITION_ADJUSTMENT_ENABLE=true"]
+        if cfg.get("probe_fraction") is not None:
+            env_args += ["-e", f"FREQAI_PROBE_FRACTION={cfg['probe_fraction']}"]
+        if cfg.get("probe_confirm_pct") is not None:
+            env_args += ["-e", f"FREQAI_PROBE_CONFIRM_PCT={cfg['probe_confirm_pct']}"]
+        if cfg.get("probe_window") is not None:
+            env_args += ["-e", f"FREQAI_PROBE_WINDOW={cfg['probe_window']}"]
     return env_args
 
 
