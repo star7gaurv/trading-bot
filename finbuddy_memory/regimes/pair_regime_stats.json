@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-18T09:30:01.420771+00:00",
+  "updated": "2026-07-18T10:00:01.687719+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ONDO/USDT:USDT": {
-      "BEAR": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -1.08,
-        "avg_profit_pct": -1.9
-      },
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 0,
-        "losses": 2,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -2.1,
-        "avg_profit_pct": -1.305
-      }
-    },
     "AVAX/USDT:USDT": {
       "BEAR": {
         "n": 15,
@@ -404,6 +384,17 @@
         "pf": 0.731,
         "profit_usdt": -0.28,
         "avg_profit_pct": -0.117
+      }
+    },
+    "ONDO/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 0,
+        "losses": 2,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -2.1,
+        "avg_profit_pct": -1.305
       }
     },
     "ETH/USDT:USDT": {
