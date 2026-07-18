@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-18T03:30:01.329709+00:00",
+  "updated": "2026-07-18T04:00:01.618817+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,37 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "AVAX/USDT:USDT": {
-      "BEAR": {
-        "n": 17,
-        "wins": 6,
-        "losses": 11,
-        "wr": 0.3529,
-        "pf": 1.177,
-        "profit_usdt": 1.41,
-        "avg_profit_pct": 0.159
-      }
-    },
-    "WIF/USDT:USDT": {
-      "BEAR": {
-        "n": 9,
-        "wins": 5,
-        "losses": 4,
-        "wr": 0.5556,
-        "pf": 0.629,
-        "profit_usdt": -1.03,
-        "avg_profit_pct": -0.201
-      },
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 0.268,
-        "profit_usdt": -0.9,
-        "avg_profit_pct": -0.56
-      }
-    },
     "RENDER/USDT:USDT": {
       "BEAR": {
         "n": 12,
@@ -58,6 +27,37 @@
         "pf": 2.217,
         "profit_usdt": 0.56,
         "avg_profit_pct": 0.36
+      }
+    },
+    "WIF/USDT:USDT": {
+      "BEAR": {
+        "n": 8,
+        "wins": 4,
+        "losses": 4,
+        "wr": 0.5,
+        "pf": 0.457,
+        "profit_usdt": -1.51,
+        "avg_profit_pct": -0.332
+      },
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 0.268,
+        "profit_usdt": -0.9,
+        "avg_profit_pct": -0.56
+      }
+    },
+    "AVAX/USDT:USDT": {
+      "BEAR": {
+        "n": 16,
+        "wins": 5,
+        "losses": 11,
+        "wr": 0.3125,
+        "pf": 1.046,
+        "profit_usdt": 0.37,
+        "avg_profit_pct": 0.049
       }
     },
     "DOT/USDT:USDT": {
