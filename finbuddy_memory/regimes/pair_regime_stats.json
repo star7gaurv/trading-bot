@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-18T12:00:01.681905+00:00",
+  "updated": "2026-07-18T12:30:01.263228+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "AVAX/USDT:USDT": {
-      "BEAR": {
-        "n": 13,
-        "wins": 3,
-        "losses": 10,
-        "wr": 0.2308,
-        "pf": 1.042,
-        "profit_usdt": 0.31,
-        "avg_profit_pct": 0.054
-      }
-    },
     "APT/USDT:USDT": {
       "BEAR": {
         "n": 7,
@@ -38,6 +27,17 @@
         "pf": 0.0,
         "profit_usdt": -1.88,
         "avg_profit_pct": -2.34
+      }
+    },
+    "AVAX/USDT:USDT": {
+      "BEAR": {
+        "n": 12,
+        "wins": 3,
+        "losses": 9,
+        "wr": 0.25,
+        "pf": 1.112,
+        "profit_usdt": 0.78,
+        "avg_profit_pct": 0.128
       }
     },
     "RENDER/USDT:USDT": {
