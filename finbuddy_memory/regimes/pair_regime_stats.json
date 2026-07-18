@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-18T03:00:01.912511+00:00",
+  "updated": "2026-07-18T03:30:01.329709+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -271,13 +271,13 @@
         "avg_profit_pct": -1.92
       },
       "NEUTRAL": {
-        "n": 3,
+        "n": 4,
         "wins": 2,
-        "losses": 1,
-        "wr": 0.6667,
-        "pf": 3.362,
-        "profit_usdt": 1.11,
-        "avg_profit_pct": 0.463
+        "losses": 2,
+        "wr": 0.5,
+        "pf": 1.816,
+        "profit_usdt": 0.71,
+        "avg_profit_pct": 0.22
       }
     },
     "BTC/USDT:USDT": {
