@@ -722,3 +722,4 @@
 | 2026-07-17 19:00:37 | ARB/USDT:USDT | SHORT | 6h00m | -1.34% | -1.06 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-17 19:11:02 | TAO/USDT:USDT | SHORT | 6h00m | -1.83% | -1.46 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-17 23:00:36 | BTC/USDT:USDT | SHORT | 6h00m | -0.61% | -0.39 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-18 03:10:46 | LINK/USDT:USDT | SHORT | 6h10m | -0.51% | -0.40 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
