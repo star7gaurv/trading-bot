@@ -143,7 +143,7 @@ pip install pytrends --break-system-packages
 ## Task 2.6 — TradingView Webhook Integration
 **Status:** 🔴 ABANDONED (2026-05-04) — see [Phase 6 abandonment note]
 
-> **2026-05-18**: TradingView free tier limits alerts to 1 per account; the webhook + scripts/PineScript on free account isn't viable for the multi-pair, multi-timeframe FinBuddy needs. Path abandoned. FreqAI is the sole signal source.
+> **2026-05-18**: TradingView free tier limits alerts to 1 per account; the webhook + scripts/PineScript on free account isn't viable for the multi-pair, multi-timeframe Cortexa needs. Path abandoned. FreqAI is the sole signal source.
 
 ~~TradingView's alert system (free) can fire webhooks when Pine Script conditions are met. This lets us use ANY TradingView indicator as a signal source for free.~~ (abandoned — paid plan required)
 

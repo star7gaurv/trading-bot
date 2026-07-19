@@ -4,7 +4,7 @@
 
 ## Why this runbook exists
 
-Adding pairs to FinBuddy is mechanical but multi-step. Skip a step and you hit one of: pipeline schema mismatch, NaN training crash, brain↔live config drift, cluster-cap distortion, walk-forward timeout, or stale per-pair-regime stats. Each of those has cost us hours this week. This runbook captures the **9 required steps** in order.
+Adding pairs to Cortexa is mechanical but multi-step. Skip a step and you hit one of: pipeline schema mismatch, NaN training crash, brain↔live config drift, cluster-cap distortion, walk-forward timeout, or stale per-pair-regime stats. Each of those has cost us hours this week. This runbook captures the **9 required steps** in order.
 
 ---
 

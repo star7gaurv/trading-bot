@@ -11,7 +11,7 @@
 
 ## Goal
 
-Rebuild the FinBuddy dashboard from scratch as a compact, dense, Binance-class trading console. Mirror every relevant FreqTrade UI feature, add full system-health visibility for all 24 crons + 3 processes, dedicated views for Brain and Walk-Forward, password-gated.
+Rebuild the Cortexa dashboard from scratch as a compact, dense, Binance-class trading console. Mirror every relevant FreqTrade UI feature, add full system-health visibility for all 24 crons + 3 processes, dedicated views for Brain and Walk-Forward, password-gated.
 
 **Stack stays:** React 19 + Vite + Tailwind + FastAPI streamer + nginx. No framework changes.
 

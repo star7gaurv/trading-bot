@@ -7,8 +7,8 @@
 
 ## Decisions Made
 
-### FinBuddy Is an Autonomous AI Brain (Not a Bot)
-Locked framing. FinBuddy observes markets, forms hypotheses, tests them, promotes winners, retires losers, and improves itself. FreqTrade executing trades is just the hands. The brain is the product.
+### Cortexa Is an Autonomous AI Brain (Not a Bot)
+Locked framing. Cortexa observes markets, forms hypotheses, tests them, promotes winners, retires losers, and improves itself. FreqTrade executing trades is just the hands. The brain is the product.
 
 ### This Is a Fluid System
 Nothing is sacred except the core idea. Tools and models can be dropped, swapped, or added freely. We already dropped OpenRouter and Dify. We will drop N8N. Always optimize for what moves the brain forward.

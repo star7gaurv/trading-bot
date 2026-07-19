@@ -184,7 +184,7 @@ def send_telegram(message: str):
     chat_id = os.getenv("TELEGRAM_CHAT_ID", "5622292536")
     requests.post(
         f"https://api.telegram.org/bot{token}/sendMessage",
-        json={"chat_id": chat_id, "text": f"🚨 FinBuddy Risk Alert:\n{message}"},
+        json={"chat_id": chat_id, "text": f"🚨 Cortexa Risk Alert:\n{message}"},
         timeout=5
     )
 ```

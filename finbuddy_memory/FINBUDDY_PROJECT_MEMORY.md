@@ -1,8 +1,8 @@
-# FinBuddy Project Hub
+# Cortexa Project Hub
 
 > **Phase boundary:** All performance evaluation and future research are **Futures Mode only** (Binance USDT-M Perpetual, long AND short). Any older spot-only conclusions are kept as historical context only.
 
-**Project:** FinBuddy — Autonomous AI Brain for Crypto Trading  
+**Project:** Cortexa — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
 **Status**: 🟢 v23 LIVE on **1h** (`finbuddy_v23_tf1h_1782044602` — switched from 15m 2026-06-21 via the dashboard timeframe switcher; label 6 candles, informative ['4h','1d']) · **LT=0.7/ST=−0.6** (asymmetric, raised 2026-06-17 to stop the bleed) · K_TP=3.0/K_SL=2.0 · DI+SVM disabled · regime BEAR (genuine — BTC ≈ −15%/mo) · short-only by design · 15m era track record was 752 trades / +17.6 USDT / 41% WR (now historical — 1h model starts fresh) · family model cache active · promote.py identifier→.env gap FIXED 2026-06-21 (commit 2f430d74)  
 **Last Updated**: 2026-06-19 UTC (meta-labeling NO-GO; brain windows made honest; pagination root-caused — see CLAUDE.md June 19 session entry)
@@ -358,7 +358,7 @@ Next session priorities: (a) watch v23 first 48h trade WR vs prior 48h, (b) push
 
 ---
 
-## 🧠 What Is FinBuddy?
+## 🧠 What Is Cortexa?
 
 An **autonomous, self-evolving AI brain for crypto trading** — NOT a bot.
 - Observes markets, forms hypotheses, tests them via walk-forward backtest
@@ -606,7 +606,7 @@ JSONL log and may the best win.
 
 ## 🧠 Vision Realignment (2026-05-17 afternoon)
 
-Gaurav called out that I was doing **bot tuning** (picking thresholds, asking "which path?") instead of building **the brain** (autonomous, self-evolving, hypothesis-generating system). The vision says FinBuddy "observes markets, forms hypotheses, tests them, promotes winners, retires losers, and gets smarter over time — without Gaurav having to intervene."
+Gaurav called out that I was doing **bot tuning** (picking thresholds, asking "which path?") instead of building **the brain** (autonomous, self-evolving, hypothesis-generating system). The vision says Cortexa "observes markets, forms hypotheses, tests them, promotes winners, retires losers, and gets smarter over time — without Gaurav having to intervene."
 
 **Corrected plan (approved by user):**
 1. **Fix existing strategy first** (Tasks #1–#4) — 3 structural fixes + validation

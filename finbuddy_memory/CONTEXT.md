@@ -1,5 +1,5 @@
-# FinBuddy — Master Context
-Last updated: 2026-07-19 09:00 UTC
+# Cortexa — Master Context
+Last updated: 2026-07-19 09:15 UTC
 
 ## Current Regime
 Regime: **NEUTRAL** | Confidence: 70.0% | Since: 2026-07-19
@@ -10,10 +10,10 @@ BTC Dominance: 56.49%
 News Sentiment: 100.0% bullish
 
 ## Bot Performance
-Total Trades: 1015 | Win Rate: 42.4% | Total P&L: 0.35%
+Total Trades: 1015 | Win Rate: 42.4% | Total P&L: 0.37%
 
 ## Open Trades (1)
-- ARB/USDT:USDT: Entry 0.09 | Current 0.09 | P&L: -1.75%
+- ARB/USDT:USDT: Entry 0.09 | Current 0.09 | P&L: -1.52%
 ## Risk Flags
 - None
 

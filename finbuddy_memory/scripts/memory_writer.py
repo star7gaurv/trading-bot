@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FinBuddy Memory Writer — runs every 15 min.
+Cortexa Memory Writer — runs every 15 min.
 Reads bot state from all sources and writes Obsidian vault files.
 """
 import json, os, sys, requests
@@ -55,7 +55,7 @@ def write_context():
     total_trades = profit_info.get("trade_count", 0)
     win_rate = profit_info.get("winning_trades", 0) / max(total_trades, 1) * 100
 
-    context_md = f"""# FinBuddy — Master Context
+    context_md = f"""# Cortexa — Master Context
 Last updated: {now}
 
 ## Current Regime

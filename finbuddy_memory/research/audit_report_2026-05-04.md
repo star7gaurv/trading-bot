@@ -1,4 +1,4 @@
-# FinBuddy Deep Audit — May 4 2026
+# Cortexa Deep Audit — May 4 2026
 
 **Auditor:** Claude (compassionate-clarke worktree)
 **Branch:** `gaurav` (worktree)

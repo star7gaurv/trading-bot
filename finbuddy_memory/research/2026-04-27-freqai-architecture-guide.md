@@ -19,7 +19,7 @@ FreqAI is a **machine learning framework built into FreqTrade** that enables tra
 
 ---
 
-## Core Benefits for FinBuddy
+## Core Benefits for Cortexa
 
 ### 1. **Unified Signal Generation Inside FreqTrade**
 - ✅ No external API calls (N8N → Groq → webhook → FreqTrade)
@@ -53,7 +53,7 @@ FreqAI is a **machine learning framework built into FreqTrade** that enables tra
 - ✅ Validates model on unseen future data (prevents overfitting)
 - ✅ Mimics live trading: train on past, test on future in rolling windows
 - ✅ Reports: Sharpe, Sortino, max drawdown, win rate, profit factor
-- ✅ Mandatory before going live (FinBuddy Phase 1 requirement)
+- ✅ Mandatory before going live (Cortexa Phase 1 requirement)
 
 ### 5. **Feature Engineering & External Data**
 - ✅ Create custom features: RSI, MACD, ATR, etc.
@@ -69,7 +69,7 @@ FreqAI is a **machine learning framework built into FreqTrade** that enables tra
 ### 7. **Multi-Timeframe Support**
 - ✅ Train model on 15m data, use 1h features, generate signals on 5m
 - ✅ Flexible feature engineering across timeframes
-- ✅ FinBuddy: Train on 15m, test on 1h
+- ✅ Cortexa: Train on 15m, test on 1h
 
 ### 8. **Production-Ready Inference**
 - ✅ Model predictions cached per candle (no redundant inference)
@@ -230,7 +230,7 @@ FreqAI returns predictions as probabilities (0.0–1.0):
 - ⚠️ Real-time inference without historical training
 - ⚠️ Complex multi-step pipelines (use FreqAI + custom layer instead)
 
-**FinBuddy:** Use FreqAI + custom IFreqaiModel for Groq layer. Best of both worlds.
+**Cortexa:** Use FreqAI + custom IFreqaiModel for Groq layer. Best of both worlds.
 
 ---
 

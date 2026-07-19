@@ -12,7 +12,7 @@
 - **N8N v4 Pipeline** — Active, running every 15 minutes, calling Groq Llama 3.3 70B successfully
 - **Groq Integration** — Free tier live, ~200ms response time, 6000 req/day budget
 - **Strategy Registry** — Created and configured with rsi_macd_ai_v1 marked active
-- **FinBuddy Memory Vault** — Obsidian structure ready, CONTEXT.md hub set up
+- **Cortexa Memory Vault** — Obsidian structure ready, CONTEXT.md hub set up
 - **User Config** — user_01_gaurav.json exists with full profile
 - **First Dry-Run Trade** — BTC/USDT opened April 4, 2026 @ 67,206.72 USDT
 
@@ -85,7 +85,7 @@ N8N workspace is clean. No action needed.
 ## Key Insights
 
 **This is a fluid system.** Nothing is sacred except the core idea:
-- FinBuddy is an **autonomous AI brain for crypto trading**, not a bot
+- Cortexa is an **autonomous AI brain for crypto trading**, not a bot
 - Tools can be dropped (we cut OpenRouter, Dify, will cut N8N)
 - Always optimize for what moves the brain forward
 

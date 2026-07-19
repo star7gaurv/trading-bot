@@ -4,7 +4,7 @@
 
 ## Phase 0 — Spot Era (Historical Only)
 
-All backtests and conclusions from 2025-02 to 2026-04 were run on BTC **spot** (mostly long-biased). Deprecated when FinBuddy pivoted to Binance USDT-M Perpetual (long + short, futures) on 2026-05-02.
+All backtests and conclusions from 2025-02 to 2026-04 were run on BTC **spot** (mostly long-biased). Deprecated when Cortexa pivoted to Binance USDT-M Perpetual (long + short, futures) on 2026-05-02.
 
 - Market: BTC spot
 - Mode: Long-biased, no leverage, no proper shorting

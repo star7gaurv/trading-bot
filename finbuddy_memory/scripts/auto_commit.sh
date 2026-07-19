@@ -1,5 +1,5 @@
 #!/bin/bash
-# FinBuddy Memory Auto-Commit
+# Cortexa Memory Auto-Commit
 # Commits and pushes any changes in finbuddy_memory/ to GitHub.
 # Run by cron every hour (or call directly after memory_writer.py).
 

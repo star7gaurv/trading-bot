@@ -1,5 +1,5 @@
 #!/bin/bash
-# FinBuddy Memory — One-Time Server Setup
+# Cortexa Memory — One-Time Server Setup
 # Run this ONCE on the Oracle server after git pull.
 # Sets up permissions and cron job for auto-commit.
 
@@ -7,7 +7,7 @@ REPO_ROOT="/home/ubuntu/var/www/html/trade"
 SCRIPT_PATH="$REPO_ROOT/finbuddy_memory/scripts/auto_commit.sh"
 LOG_FILE="/home/ubuntu/finbuddy_memory_cron.log"
 
-echo "=== FinBuddy Memory Setup ==="
+echo "=== Cortexa Memory Setup ==="
 
 # 1. Make scripts executable
 chmod +x "$SCRIPT_PATH"
@@ -16,7 +16,7 @@ echo "✅ Scripts made executable"
 
 # 2. Configure git (needed for commits to work)
 git -C "$REPO_ROOT" config user.email "finbuddy@trading-bot"
-git -C "$REPO_ROOT" config user.name "FinBuddy"
+git -C "$REPO_ROOT" config user.name "Cortexa"
 echo "✅ Git user configured"
 
 # 3. Add cron job: auto-commit every hour
@@ -32,7 +32,7 @@ fi
 # 4. Quick test — write a test entry
 python3 "$REPO_ROOT/finbuddy_memory/scripts/memory_writer.py" research \
   --theme "Server setup complete" \
-  --insight "FinBuddy memory pipeline is live" \
+  --insight "Cortexa memory pipeline is live" \
   --risk "None" \
   --action "Monitoring started"
 echo "✅ Test entry written to research log"

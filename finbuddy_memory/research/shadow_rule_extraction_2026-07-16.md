@@ -2,7 +2,7 @@
 
 Generated: 2026-07-16T13:06:04.751648+00:00
 
-Interpretable rule extraction (KMeans clustering + shallow decision trees) applied to FinBuddy's own closed-trade history — a different technique class than the ML regression/classification approaches already exhausted on this project (meta-labeling AUC=0.50, cross-sectional IC negative, order-flow/OI/funding features all noise). Asks 'what did the winners already have in common' rather than 'predict the future return'.
+Interpretable rule extraction (KMeans clustering + shallow decision trees) applied to Cortexa's own closed-trade history — a different technique class than the ML regression/classification approaches already exhausted on this project (meta-labeling AUC=0.50, cross-sectional IC negative, order-flow/OI/funding features all noise). Asks 'what did the winners already have in common' rather than 'predict the future return'.
 
 **Any candidate rule below is a hypothesis, not a conclusion.** It must go through the normal `hypothesis_gen.py` -> `runner.py` backtest -> `promote.py` gate pipeline like every other hypothesis before it could ever affect live trading. This script has no fast path to production.
 

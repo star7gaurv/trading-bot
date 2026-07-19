@@ -1,4 +1,4 @@
-# FinBuddy — Closed Trade Ledger
+# Cortexa — Closed Trade Ledger
 
 > Auto-written by `scripts/trade_postmortem.py` every 15 minutes.
 > One row per closed trade. The brain reads this back via Karpathy loop

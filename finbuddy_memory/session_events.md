@@ -1,4 +1,4 @@
-# FinBuddy Session Events (auto-generated)
+# Cortexa Session Events (auto-generated)
 
 - **2026-05-09 10:42 UTC** — Strategy version changed: N/A → v16.2
 - **2026-05-09 10:42 UTC** — FreqAI identifier changed: N/A → finbuddy_v16_clean_1778316280

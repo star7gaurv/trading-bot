@@ -1,6 +1,6 @@
-# FinBuddy — Master Task Index
+# Cortexa — Master Task Index
 
-> Execution roadmap for the FinBuddy autonomous AI brain.
+> Execution roadmap for the Cortexa autonomous AI brain.
 > Each phase has its own file. Read `FINBUDDY_PROJECT_MEMORY.md` first for live state.
 > Tasks within each phase are ordered — top to bottom unless marked [PARALLEL].
 

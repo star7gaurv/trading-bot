@@ -104,7 +104,7 @@ TOKEN="$FREQTRADE__TELEGRAM__TOKEN"
 CHAT="${TELEGRAM_CHAT_ID:-5622292536}"   # chat ID is not secret (documented in CLAUDE.md); token is
 curl -s -X POST "https://api.telegram.org/bot$TOKEN/sendMessage" \
   -d chat_id="$CHAT" \
-  -d text="🛑 FinBuddy KILL SWITCH activated. All positions closed. Container stopped. $(date)"
+  -d text="🛑 Cortexa KILL SWITCH activated. All positions closed. Container stopped. $(date)"
 
 echo "Kill switch complete."
 ```

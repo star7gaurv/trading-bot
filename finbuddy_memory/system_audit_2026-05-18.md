@@ -1,4 +1,4 @@
-# FinBuddy System Audit — 2026-05-18
+# Cortexa System Audit — 2026-05-18
 
 Full audit of the autonomous brain stack. Findings organized by severity with concrete fix status.
 

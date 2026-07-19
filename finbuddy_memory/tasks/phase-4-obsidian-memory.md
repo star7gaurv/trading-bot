@@ -54,7 +54,7 @@ Master script that collects brain state from all sources and writes to vault fil
 
 **CONTEXT.md** — master summary (re-written every 15 min)
 ```markdown
-# FinBuddy — Master Context
+# Cortexa — Master Context
 Last updated: 2026-04-27 12:00 UTC
 
 ## Current Regime
@@ -117,7 +117,7 @@ git push origin master 2>/dev/null || true
 
 Add an N8N node before the Groq call that reads CONTEXT.md from the server and prepends it to the AI prompt.
 
-### N8N node: "Read FinBuddy Context"
+### N8N node: "Read Cortexa Context"
 - Type: Execute Command or HTTP Request (read local file via FreqTrade API or sidecar)
 - Output: contents of CONTEXT.md
 - Inject into Groq system prompt before market data

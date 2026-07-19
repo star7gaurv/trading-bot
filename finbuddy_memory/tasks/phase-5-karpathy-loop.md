@@ -1,8 +1,8 @@
 # Phase 5 — Karpathy Auto-Research Loop
 
-> The self-improving engine. The brain that makes FinBuddy get smarter without Gaurav doing anything.
+> The self-improving engine. The brain that makes Cortexa get smarter without Gaurav doing anything.
 > Named after Andrej Karpathy's philosophy of continuous evaluation, hypothesis generation, and validation.
-> This is what separates FinBuddy from every other trading bot — it researches and evolves itself.
+> This is what separates Cortexa from every other trading bot — it researches and evolves itself.
 
 ---
 
@@ -80,7 +80,7 @@ A research note written to `finbuddy_memory/research/[YYYY-MM-DD]-nightly.md`:
 ### Gemini prompt template
 ```python
 RESEARCH_PROMPT = """
-You are FinBuddy's research analyst. Analyze the following data and produce a structured research note.
+You are Cortexa's research analyst. Analyze the following data and produce a structured research note.
 
 SIGNAL HISTORY (last 24h):
 {signal_log}

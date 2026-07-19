@@ -1,4 +1,4 @@
-# 🤝 FinBuddy — Handoff Note for Claude Code
+# 🤝 Cortexa — Handoff Note for Claude Code
 
 **Last updated:** 2026-06-21 UTC (live flipped to 1h via timeframe switcher; promote.py identifier→.env gap fixed)
 **Branch:** `fix/meta-label-corrected`

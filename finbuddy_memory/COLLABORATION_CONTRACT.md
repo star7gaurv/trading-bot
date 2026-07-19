@@ -1,4 +1,4 @@
-# FinBuddy — Collaboration & Autonomy Contract
+# Cortexa — Collaboration & Autonomy Contract
 
 **Owner:** Gaurav (star7gaurv)
 **Actors:** Claude Code (primary), Brain bot (autonomous via cron), future agents (Grok/xAI, DeepSeek, etc.)
