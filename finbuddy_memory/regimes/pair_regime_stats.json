@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-19T20:30:01.503818+00:00",
+  "updated": "2026-07-19T21:00:01.180384+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "LDO/USDT:USDT": {
-      "BEAR": {
-        "n": 9,
-        "wins": 2,
-        "losses": 7,
-        "wr": 0.2222,
-        "pf": 0.138,
-        "profit_usdt": -2.99,
-        "avg_profit_pct": -0.59
-      },
-      "NEUTRAL": {
-        "n": 9,
-        "wins": 4,
-        "losses": 5,
-        "wr": 0.4444,
-        "pf": 0.331,
-        "profit_usdt": -6.56,
-        "avg_profit_pct": -0.903
-      }
-    },
     "WIF/USDT:USDT": {
       "BEAR": {
         "n": 7,
@@ -47,6 +27,26 @@
         "pf": 0.268,
         "profit_usdt": -0.9,
         "avg_profit_pct": -0.56
+      }
+    },
+    "LDO/USDT:USDT": {
+      "BEAR": {
+        "n": 8,
+        "wins": 2,
+        "losses": 6,
+        "wr": 0.25,
+        "pf": 0.184,
+        "profit_usdt": -2.13,
+        "avg_profit_pct": -0.474
+      },
+      "NEUTRAL": {
+        "n": 9,
+        "wins": 4,
+        "losses": 5,
+        "wr": 0.4444,
+        "pf": 0.331,
+        "profit_usdt": -6.56,
+        "avg_profit_pct": -0.903
       }
     },
     "AVAX/USDT:USDT": {
@@ -403,10 +403,10 @@
     {
       "pair": "LDO/USDT:USDT",
       "regime": "BEAR",
-      "reason": "WR=22% PF=0.14 n=9 profit=-2.99",
-      "n": 9,
-      "wr": 0.2222,
-      "pf": 0.138
+      "reason": "WR=25% PF=0.18 n=8 profit=-2.13",
+      "n": 8,
+      "wr": 0.25,
+      "pf": 0.184
     },
     {
       "pair": "1000PEPE/USDT:USDT",
