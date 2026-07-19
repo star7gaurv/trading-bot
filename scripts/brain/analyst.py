@@ -1,5 +1,5 @@
 """
-analyst.py — Self-diagnosis engine for the FinBuddy brain.
+analyst.py — Self-diagnosis engine for the Cortexa brain.
 
 Runs every 6 h (after the generate cron). Reads all completed experiment
 results, identifies what is failing and why, prunes dead hypotheses from
@@ -648,7 +648,7 @@ def llm_insight(findings: dict) -> str:
         m = findings["best_overall"]["metrics"]
         best_m = {"WR": f"{m['wr']*100:.1f}%", "PF": m["pf"], "profit": f"{m['profit_pct']:+.2f}%"}
 
-    prompt = f"""You are analysing a LightGBM regression-based crypto trading strategy (FinBuddy v23).
+    prompt = f"""You are analysing a LightGBM regression-based crypto trading strategy (Cortexa v23).
 The brain has run {sum(s['n'] for s in findings.get('tf_stats', {}).values())} backtests.
 
 Timeframe performance:
@@ -809,7 +809,7 @@ def analyse(dry_run: bool = False, no_llm: bool = False) -> dict:
 
 
 if __name__ == "__main__":
-    p = argparse.ArgumentParser(description="FinBuddy Brain — self-diagnosis analyst")
+    p = argparse.ArgumentParser(description="Cortexa Brain — self-diagnosis analyst")
     p.add_argument("--dry-run", action="store_true", help="analyse only, no queue changes")
     p.add_argument("--no-llm", action="store_true", help="skip DeepSeek call")
     args = p.parse_args()

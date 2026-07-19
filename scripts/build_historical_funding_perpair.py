@@ -59,7 +59,7 @@ def _fetch_symbol(symbol: str, start_ms: int) -> pd.DataFrame:
     cursor = start_ms
     while True:
         qs  = f"?symbol={symbol}&startTime={cursor}&limit={PAGE_SZ}"
-        req = urllib.request.Request(BASE_URL + qs, headers={"User-Agent": "FinBuddy/1.0"})
+        req = urllib.request.Request(BASE_URL + qs, headers={"User-Agent": "Cortexa/1.0"})
         try:
             with urllib.request.urlopen(req, timeout=20) as r:
                 page = json.loads(r.read())

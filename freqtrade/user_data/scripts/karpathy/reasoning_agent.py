@@ -88,7 +88,7 @@ def run_reasoning(research_text: str) -> list:
     suffix   = today.replace("-", "")
 
     system_prompt = (
-        "You are FinBuddy's strategy designer for a FreqAI LightGBM futures bot (long+short, 1h TF, 25 pairs). "
+        "You are Cortexa's strategy designer for a FreqAI LightGBM futures bot (long+short, 1h TF, 25 pairs). "
         "Based on the research text, propose exactly 2 NEW trading hypotheses. "
         "Reply ONLY with a JSON array of objects, each with: "
         "strategy_id (must end with _" + suffix + " and not be in this list: " + json.dumps(sorted(existing)) + "), "

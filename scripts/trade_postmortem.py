@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FinBuddy Trade Post-Mortem Writer
+Cortexa Trade Post-Mortem Writer
 
 For every closed trade not yet recorded, append a one-line memorandum to
 `finbuddy_memory/trades/closed.md`. This is the closed-loop feedback the
@@ -47,7 +47,7 @@ BIAS_WINDOW = 10            # last N trades to inspect
 BIAS_THRESHOLD = 0.85       # 85% or more on one side fires alert
 BIAS_COOLDOWN_HOURS = 6     # don't repeat the same direction alert within this window
 
-HEADER = """# FinBuddy — Closed Trade Ledger
+HEADER = """# Cortexa — Closed Trade Ledger
 
 > Auto-written by `scripts/trade_postmortem.py` every 15 minutes.
 > One row per closed trade. The brain reads this back via Karpathy loop

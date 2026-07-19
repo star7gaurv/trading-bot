@@ -196,7 +196,7 @@ def disk_usage_pct() -> int:
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="FinBuddy brain disk cleanup")
+    p = argparse.ArgumentParser(description="Cortexa brain disk cleanup")
     p.add_argument("--max-age-days",     type=int, default=2,  help="brain/wf model dir age threshold (default 2 days — brain_scout alone generates ~15GB/week)")
     p.add_argument("--zip-max-age-days", type=int, default=14, help="backtest zip age threshold")
     p.add_argument("--log-max-age-days", type=int, default=14, help="brain log age threshold")

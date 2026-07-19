@@ -1,5 +1,5 @@
-site_name: FinBuddy Internal Docs
-site_description: Internal code documentation for the FinBuddy brain, backend, and dashboard.
+site_name: Cortexa Internal Docs
+site_description: Internal code documentation for the Cortexa brain, backend, and dashboard.
 docs_dir: docs
 site_dir: site
 

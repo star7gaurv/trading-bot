@@ -1,4 +1,4 @@
-# FinBuddy — Current Regime
+# Cortexa — Current Regime
 
 **Last Updated:** 2026-07-05 12:50 UTC  
 **Data Sources:** 0/5 OK

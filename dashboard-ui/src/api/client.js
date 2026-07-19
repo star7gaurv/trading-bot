@@ -1,5 +1,5 @@
 /**
- * API client for the FinBuddy dashboard.
+ * API client for the Cortexa dashboard.
  *
  * - All requests go through `request()` which attaches the Bearer token
  *   from localStorage.

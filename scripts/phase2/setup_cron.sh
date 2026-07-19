@@ -16,7 +16,7 @@ chmod +x "${PHASE2_DIR}"/*.py 2>/dev/null || true
 
 # Build cron block
 CRON_BLOCK="
-# FinBuddy Phase 2 — External Data Fetchers
+# Cortexa Phase 2 — External Data Fetchers
 # Fear & Greed — every 4 hours
 0 */4 * * * ${PYTHON} ${PHASE2_DIR}/fetch_fear_greed.py >> ${LOG_DIR}/fetch_fear_greed.log 2>&1
 # CoinGecko market data — every 1 hour
@@ -33,7 +33,7 @@ CRON_BLOCK="
 
 # Append only if not already installed
 CURRENT=$(crontab -l 2>/dev/null || echo "")
-if echo "${CURRENT}" | grep -q "FinBuddy Phase 2"; then
+if echo "${CURRENT}" | grep -q "Cortexa Phase 2"; then
     echo "Phase 2 crons already installed. Skipping."
 else
     (echo "${CURRENT}"; echo "${CRON_BLOCK}") | crontab -
@@ -45,7 +45,7 @@ if echo "${CURRENT}" | grep -q "auto_experiment"; then
     echo "auto_experiment cron already installed. Skipping."
 else
     chmod +x "${TRADE_DIR}/scripts/auto_experiment.sh"
-    AUTO_CRON="\n# FinBuddy — Nightly walk-forward backtest\n0 2 * * * ${TRADE_DIR}/scripts/auto_experiment.sh >> ${LOG_DIR}/auto_experiment.log 2>&1"
+    AUTO_CRON="\n# Cortexa — Nightly walk-forward backtest\n0 2 * * * ${TRADE_DIR}/scripts/auto_experiment.sh >> ${LOG_DIR}/auto_experiment.log 2>&1"
     (crontab -l 2>/dev/null || echo ""; printf "${AUTO_CRON}") | crontab -
     echo "auto_experiment nightly cron installed."
 fi

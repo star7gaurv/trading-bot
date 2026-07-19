@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FinBuddy central LLM client.
+Cortexa central LLM client.
 
 Two providers, one key each:
   NVIDIA_API_KEY     → https://integrate.api.nvidia.com/v1  (50+ models, free tier)
@@ -161,7 +161,7 @@ def _call_provider(
     # OpenRouter requires these for attribution
     if "openrouter.ai" in url:
         headers["HTTP-Referer"] = "https://github.com/star7gaurv/trading-bot"
-        headers["X-Title"]      = "FinBuddy"
+        headers["X-Title"]      = "Cortexa"
 
     req = urllib.request.Request(url, data=payload, headers=headers, method="POST")
     try:

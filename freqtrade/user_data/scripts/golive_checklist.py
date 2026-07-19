@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-golive_checklist.py — 11 automated pre-live checks for FinBuddy.
+golive_checklist.py — 11 automated pre-live checks for Cortexa.
 Exit 0 if all pass (or only WARNs). Exit 1 if any FAIL.
 """
 import json
@@ -174,7 +174,7 @@ def check_binance_futures_warn():
 
 
 def main():
-    print("\n=== FinBuddy Go-Live Checklist ===\n")
+    print("\n=== Cortexa Go-Live Checklist ===\n")
     check_walkforward()
     check_trading_mode()
     check_margin_mode()

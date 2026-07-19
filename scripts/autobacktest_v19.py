@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-autobacktest_v19.py — FinBuddy v19 Campaign Grid Runner
+autobacktest_v19.py — Cortexa v19 Campaign Grid Runner
 =========================================================
 Runs an 18-combo × 2-window backtest grid for the asymmetric-barrier fix:
   - k_tp         (take-profit barrier: 1.5 / 2.0 / 2.5 × ATR)
@@ -404,7 +404,7 @@ def reparse_all(grid_cfg: dict) -> None:
 
 # ── Main ───────────────────────────────────────────────────────────────────
 def main():
-    parser = argparse.ArgumentParser(description="FinBuddy v19 backtest campaign — asymmetric barriers")
+    parser = argparse.ArgumentParser(description="Cortexa v19 backtest campaign — asymmetric barriers")
     parser.add_argument("--dry-run",     action="store_true", help="Print commands without running")
     parser.add_argument("--window",      choices=["bull", "bear", "both"], default="both")
     parser.add_argument("--no-download", action="store_true", help="Skip data download step")
@@ -438,7 +438,7 @@ def main():
     n_total = len(combos) * len(run_windows)
 
     log.info(f"\n{'#'*60}")
-    log.info(f"  FinBuddy v19 Backtest Campaign — Asymmetric Barriers")
+    log.info(f"  Cortexa v19 Backtest Campaign — Asymmetric Barriers")
     log.info(f"  {len(combos)} combos × {len(run_windows)} window(s) = {n_total} runs")
     log.info(f"  k_tp: {k_tps}  k_sl: {k_sls}  ml_threshold: {thresholds}")
     log.info(f"  label_period: {label_period} (fixed)")

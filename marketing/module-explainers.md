@@ -1,4 +1,4 @@
-# FinBuddy Modules — Plain-English Explainers
+# Cortexa Modules — Plain-English Explainers
 
 **Audience: marketing copy, investor materials, customer-facing content.** Every sentence here has
 already been checked against the [Confidentiality Style Guide](../docs/confidentiality.md) — no
@@ -10,7 +10,7 @@ sees once they log in.
 
 ## The core idea
 
-FinBuddy isn't one trading bot — it's several independent, narrowly-scoped strategies ("modules"),
+Cortexa isn't one trading bot — it's several independent, narrowly-scoped strategies ("modules"),
 each one measured honestly before it's trusted with anything. Some modules bet on price direction;
 others are built to make money regardless of which way the market moves. All of them are watched
 by the same underlying research process: observe, hypothesize, test out-of-sample, and only

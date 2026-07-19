@@ -1,4 +1,4 @@
-# FinBuddy Platform (Phase 3 — multi-tenant SaaS shell)
+# Cortexa Platform (Phase 3 — multi-tenant SaaS shell)
 
 Everything under this directory is new and additive. It never touches
 `freqtrade/`, its config, or the operator's own dashboard/streamer.py — the

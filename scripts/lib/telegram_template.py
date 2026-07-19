@@ -1,5 +1,5 @@
 """
-telegram_template.py — Unified Telegram message format for ALL FinBuddy subsystems.
+telegram_template.py — Unified Telegram message format for ALL Cortexa subsystems.
 
 The problem this solves: previously each script (brain runner, watchdog, postmortem,
 daily summary, etc.) sent its own ad-hoc format. From the user's phone you couldn't
@@ -104,7 +104,7 @@ def format_message(
     Build a consistent, scannable Telegram message.
 
     Args:
-        subsystem: which FinBuddy subsystem is speaking
+        subsystem: which Cortexa subsystem is speaking
         status: OK / INFO / WARN / FAIL / ACTION / RUNNING
         title: one-line subject (lowercase imperative or noun phrase)
         fields: dict of key → value pairs. Values may contain HTML (<code>, <b>, etc.)

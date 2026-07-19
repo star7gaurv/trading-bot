@@ -1,5 +1,5 @@
 // ============================================================
-// FinBuddy Context Reader — N8N Code Node (v4 workflow)
+// Cortexa Context Reader — N8N Code Node (v4 workflow)
 // Place this node BEFORE the Groq HTTP Request node.
 // Node type: Code | Language: JavaScript | Mode: Run Once For All Items
 // ============================================================
@@ -16,7 +16,7 @@ try {
   // Strip obsidian wikilinks for clean AI input
   contextContent = contextContent.replace(/\[\[.*?\]\]/g, '').trim();
 } catch (e) {
-  contextContent = '[FinBuddy memory not available]';
+  contextContent = '[Cortexa memory not available]';
 }
 
 // --- Read last 3 days of research ---
@@ -38,7 +38,7 @@ try {
 
 // --- Build the memory block to inject into Groq prompt ---
 const memoryBlock = `
-=== FinBuddy Memory ===
+=== Cortexa Memory ===
 ${contextContent}
 
 === Recent Research (last 3 days) ===

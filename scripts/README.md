@@ -1,4 +1,4 @@
-# FinBuddy — Scripts
+# Cortexa — Scripts
 
 All helper scripts for backtesting, tuning, and data collection.
 

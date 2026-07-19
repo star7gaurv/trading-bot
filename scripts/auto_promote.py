@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-auto_promote.py — FinBuddy Self-Evolution: Walk-Forward Promotion Engine
+auto_promote.py — Cortexa Self-Evolution: Walk-Forward Promotion Engine
 =========================================================================
 Compares the most recently completed walk-forward run against the current
 live model's recorded Sharpe. If the new run is meaningfully better, sends

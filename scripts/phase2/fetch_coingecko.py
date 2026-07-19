@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FinBuddy Phase 2 — CoinGecko Market Data Fetcher
+Cortexa Phase 2 — CoinGecko Market Data Fetcher
 Source: CoinGecko free API (no key needed, rate limit: 10-30 req/min)
 Output: BTC dominance, global market cap, 24h change, trending coins
 """

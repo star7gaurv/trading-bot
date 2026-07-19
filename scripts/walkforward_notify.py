@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FinBuddy Walk-Forward Notifier
+Cortexa Walk-Forward Notifier
 
 Watches `walkforward_results/` for completed runs and fires a Telegram
 message with PASS/FAIL verdict + key metrics. Runs every 30m via cron.

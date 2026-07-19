@@ -1,4 +1,4 @@
-# Step 3 — Wire N8N to Read FinBuddy Memory
+# Step 3 — Wire N8N to Read Cortexa Memory
 
 ## Part A: Restart N8N with the new volume mount
 
@@ -24,7 +24,7 @@ Open `n8n.star7gaurav.in` → open the **trading_loop_v3** workflow.
 
 ### Add 2 new Code nodes before the Groq HTTP Request node:
 
-**Node 1 — "Read FinBuddy Memory"**
+**Node 1 — "Read Cortexa Memory"**
 - Type: Code
 - Language: JavaScript
 - Mode: Run Once For All Items
@@ -44,7 +44,7 @@ Open `n8n.star7gaurav.in` → open the **trading_loop_v3** workflow.
 
 ### Wire the nodes:
 ```
-[Existing nodes] → [Read FinBuddy Memory] → [Build Groq Prompt] → [Groq HTTP Request] → [rest of workflow]
+[Existing nodes] → [Read Cortexa Memory] → [Build Groq Prompt] → [Groq HTTP Request] → [rest of workflow]
 ```
 
 ---

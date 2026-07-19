@@ -1,4 +1,4 @@
-# FinBuddy — Signal Audit Log
+# Cortexa — Signal Audit Log
 
 | Date | Pair | Result | Profit% | Profit USDT | Enter Tag | Exit Reason | Market State |
 |---|---|---|---|---|---|---|---|

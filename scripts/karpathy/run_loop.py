@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Phase 13: FinBuddy Self-Evolution (MLOps Loop)
+Phase 13: Cortexa Self-Evolution (MLOps Loop)
 ==============================================
 Runs nightly at 2:00 AM via cron.
 1. Checks the latest _autobacktest_v23_results.csv.

@@ -365,7 +365,7 @@ def main():
     total = len(combos)
 
     print(f"\n{'='*60}")
-    print(f"FinBuddy AutoBacktest Grid Search v4")
+    print(f"Cortexa AutoBacktest Grid Search v4")
     print(f"Strategy: v6 (Option C — trailing stop + tighter ML exit)")
     print(f"Grid: {total} combinations to test")
     print(f"Acceptance: {criteria}")

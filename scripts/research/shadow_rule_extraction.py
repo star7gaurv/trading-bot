@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-shadow_rule_extraction.py — interpretable rule extraction from FinBuddy's own
+shadow_rule_extraction.py — interpretable rule extraction from Cortexa's own
 profitable trade history (pattern borrowed from Vibe-Trading's "Shadow Account"
 feature, adapted to this repo's conventions — see 2026-07-16 comparison).
 
@@ -8,7 +8,7 @@ Every entry-alpha attempt on this project so far has been a variant of "predict
 the future return" (LightGBM regression, meta-labeling classifier, cross-sectional
 ranking) — all independently confirmed dead (IC≈0.03-0.05, meta AUC=0.50, no
 signal survives fees). This asks a different question: not "what will happen
-next", but "what did FinBuddy's own actual winning trades already have in
+next", but "what did Cortexa's own actual winning trades already have in
 common". KMeans clusters the profitable trades, a shallow decision tree per
 cluster extracts a human-readable entry_condition.
 
@@ -247,7 +247,7 @@ def main() -> int:
         f"Generated: {datetime.now(timezone.utc).isoformat()}",
         "",
         "Interpretable rule extraction (KMeans clustering + shallow decision trees) "
-        "applied to FinBuddy's own closed-trade history — a different technique class "
+        "applied to Cortexa's own closed-trade history — a different technique class "
         "than the ML regression/classification approaches already exhausted on this "
         "project (meta-labeling AUC=0.50, cross-sectional IC negative, order-flow/OI/"
         "funding features all noise). Asks 'what did the winners already have in "

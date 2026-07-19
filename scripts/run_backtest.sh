@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# FinBuddy — Task 1.3 Backtest Runner
+# Cortexa — Task 1.3 Backtest Runner
 # =============================================================================
 # Usage:
 #   chmod +x scripts/run_backtest.sh
@@ -29,7 +29,7 @@ CONFIG="$SCRIPTS_DIR/backtest_config.json"
 LOG_FILE="/tmp/finbuddy_backtest_$(date +%Y%m%d_%H%M%S).log"
 
 echo "==========================================================="
-echo " FinBuddy — Task 1.3 Walk-Forward Backtest"
+echo " Cortexa — Task 1.3 Walk-Forward Backtest"
 echo " $(date '+%Y-%m-%d %H:%M:%S IST')"
 echo "Log: $LOG_FILE"
 echo "==========================================================="

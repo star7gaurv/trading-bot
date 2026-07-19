@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FinBuddy Phase 2 — Fear & Greed Index Fetcher
+Cortexa Phase 2 — Fear & Greed Index Fetcher
 Source: Alternative.me (free, no API key needed)
 Output: dict with value (0-100), classification, and 7-day trend
 

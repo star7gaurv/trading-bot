@@ -1,4 +1,4 @@
-"""Core table definitions for the FinBuddy platform database (Phase 3).
+"""Core table definitions for the Cortexa platform database (Phase 3).
 
 SQLAlchemy Core, not the ORM — per ADR-001/roadmap decision, this stays thin.
 Alembic migrations in scripts/platform/migrations/ are generated from this file

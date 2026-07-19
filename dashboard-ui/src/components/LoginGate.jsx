@@ -36,7 +36,7 @@ export default function LoginGate({ onAuthed }) {
             <Activity className="w-4.5 h-4.5 text-accent" />
           </div>
           <div className="leading-tight">
-            <div className="text-sm font-semibold">FinBuddy Console</div>
+            <div className="text-sm font-semibold">Cortexa Console</div>
             <div className="text-xxs text-text-tertiary">v2 · sign in to continue</div>
           </div>
         </div>

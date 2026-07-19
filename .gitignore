@@ -7,7 +7,7 @@ freqtrade/user_data/notebooks/
 .claude/
 freqtrade/user_data/models/
 
-# --- FinBuddy Temp/Log Files ---
+# --- Cortexa Temp/Log Files ---
 backtests/
 *.log
 freqtrade/user_data/tradesv3.dryrun.sqlite

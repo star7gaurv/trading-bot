@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FinBuddy Daily Telegram Summary
+Cortexa Daily Telegram Summary
 
 Sends a morning digest to Telegram every day at 8 AM (alongside pair_performance).
 Covers what matters most at a glance:

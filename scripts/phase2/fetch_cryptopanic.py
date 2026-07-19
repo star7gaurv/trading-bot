@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FinBuddy Phase 2 — CryptoPanic News Sentiment Fetcher
+Cortexa Phase 2 — CryptoPanic News Sentiment Fetcher
 Source: CryptoPanic API
 Free tier: limited to public posts (no auth token needed for basic use)
 Optional: set CRYPTOPANIC_TOKEN env var for more results

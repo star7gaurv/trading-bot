@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FinBuddy Watchdog — alerts when the live FreqTrade/FreqAI bot goes silent.
+Cortexa Watchdog — alerts when the live FreqTrade/FreqAI bot goes silent.
 
 Designed after the 7-day no-trade crisis (2026-05-08). The classic failure
 mode is "container Up, heartbeat ticking, but training never re-fires and
@@ -238,12 +238,12 @@ def main() -> int:
     # 1. container up
     if not container_running(CONTAINER):
         maybe_alert(state, "container",
-                    f"🚨 *FinBuddy DOWN* — container `{CONTAINER}` is not running.")
+                    f"🚨 *Cortexa DOWN* — container `{CONTAINER}` is not running.")
         issues.append("container")
         save_state(state)
         return 1
     maybe_recover(state, "container",
-                  f"✅ FinBuddy recovered — container `{CONTAINER}` is running again.")
+                  f"✅ Cortexa recovered — container `{CONTAINER}` is running again.")
 
     # 1b. container uptime — alert if bot restarted unexpectedly in last 30 min
     # Bug 8 fix (2026-05-30): after a container restart FreqAI takes ~30 min to
@@ -285,19 +285,19 @@ def main() -> int:
     )
     if last_train is None:
         maybe_alert(state, "training",
-                    f"⚠️ *FinBuddy stuck* — no `Done training` event in last {TRAINING_MAX_AGE_MIN//60}h. "
+                    f"⚠️ *Cortexa stuck* — no `Done training` event in last {TRAINING_MAX_AGE_MIN//60}h. "
                     f"FreqAI may be silently broken (see Pitfall 1: identifier collision).")
         issues.append("training")
     else:
         age = now_utc() - last_train
         if age > timedelta(minutes=TRAINING_MAX_AGE_MIN):
             maybe_alert(state, "training",
-                        f"⚠️ *FinBuddy stale models* — last `Done training` was "
+                        f"⚠️ *Cortexa stale models* — last `Done training` was "
                         f"{age.total_seconds()/3600:.1f}h ago (> {TRAINING_MAX_AGE_MIN//60}h threshold).")
             issues.append("training")
         else:
             maybe_recover(state, "training",
-                          f"✅ FinBuddy training resumed — last event {int(age.total_seconds()/60)}m ago.")
+                          f"✅ Cortexa training resumed — last event {int(age.total_seconds()/60)}m ago.")
 
     # 2b. FreqAI NaN training failure — 100% of training rows dropped
     # This is the catastrophic feature-pipeline failure pattern seen on 2026-05-19
@@ -330,34 +330,34 @@ def main() -> int:
     last_hb = latest_log_match("Bot heartbeat", since_min=HEARTBEAT_MAX_AGE_MIN + 2, use_file_fallback=True)
     if last_hb is None:
         maybe_alert(state, "heartbeat",
-                    f"🚨 *FinBuddy heartbeat lost* — no `Bot heartbeat` line in last {HEARTBEAT_MAX_AGE_MIN}m. "
+                    f"🚨 *Cortexa heartbeat lost* — no `Bot heartbeat` line in last {HEARTBEAT_MAX_AGE_MIN}m. "
                     f"Worker loop may be dead.")
         issues.append("heartbeat")
     else:
         age = now_utc() - last_hb
         if age > timedelta(minutes=HEARTBEAT_MAX_AGE_MIN):
             maybe_alert(state, "heartbeat",
-                        f"🚨 *FinBuddy heartbeat stale* — last beat {int(age.total_seconds()/60)}m ago.")
+                        f"🚨 *Cortexa heartbeat stale* — last beat {int(age.total_seconds()/60)}m ago.")
             issues.append("heartbeat")
         else:
-            maybe_recover(state, "heartbeat", "✅ FinBuddy heartbeat resumed.")
+            maybe_recover(state, "heartbeat", "✅ Cortexa heartbeat resumed.")
 
     # 4. disk usage — Oracle free tier ~50GB, FreqAI models accumulate silently
     used_pct, avail_gb, mount = check_disk_usage()
     if used_pct >= DISK_USAGE_CRITICAL_PCT:
         maybe_alert(state, "disk",
-                    f"🚨 *FinBuddy disk CRITICAL* — `{mount}` at {used_pct}% used "
+                    f"🚨 *Cortexa disk CRITICAL* — `{mount}` at {used_pct}% used "
                     f"({avail_gb}GB free). Bot will fail when disk fills. "
                     f"Clean old FreqAI models or rotated logs NOW.")
         issues.append("disk")
     elif used_pct >= DISK_USAGE_WARN_PCT:
         maybe_alert(state, "disk",
-                    f"⚠️ *FinBuddy disk warning* — `{mount}` at {used_pct}% used "
+                    f"⚠️ *Cortexa disk warning* — `{mount}` at {used_pct}% used "
                     f"({avail_gb}GB free). Consider cleaning old model dirs.")
         issues.append("disk")
     elif used_pct >= 0:
         maybe_recover(state, "disk",
-                      f"✅ FinBuddy disk pressure cleared — {mount} at {used_pct}% ({avail_gb}GB free).")
+                      f"✅ Cortexa disk pressure cleared — {mount} at {used_pct}% ({avail_gb}GB free).")
 
     # 5. CPU load — alert when server is saturated (brain + WF + bot fighting for cores)
     load1, load5, _ = os.getloadavg()
@@ -370,7 +370,7 @@ def main() -> int:
 
     if load1 >= CPU_LOAD_CRITICAL:
         maybe_alert(state, "cpu_load",
-                    f"🚨 *FinBuddy CPU CRITICAL* — load {load1:.1f} on {CPU_CORES} cores "
+                    f"🚨 *Cortexa CPU CRITICAL* — load {load1:.1f} on {CPU_CORES} cores "
                     f"({load1/CPU_CORES*100:.0f}% saturation). "
                     f"{'WF is active (low-priority) but server load is critical.' if wf_active else 'WF fold + brain + live bot may be fighting.'} "
                     f"Check: `docker stats --no-stream`")
@@ -379,15 +379,15 @@ def main() -> int:
         if wf_active:
             # Suppress normal warning since WF is designed to run low-priority on idle cores
             maybe_recover(state, "cpu_load",
-                          f"✅ FinBuddy CPU normal (WF active and running low-priority at load {load1:.1f}).")
+                          f"✅ Cortexa CPU normal (WF active and running low-priority at load {load1:.1f}).")
         else:
             maybe_alert(state, "cpu_load",
-                        f"⚠️ *FinBuddy CPU high* — load {load1:.1f} on {CPU_CORES} cores. "
+                        f"⚠️ *Cortexa CPU high* — load {load1:.1f} on {CPU_CORES} cores. "
                         f"All cores busy — bot responses may be slow.")
             issues.append("cpu_load")
     else:
         maybe_recover(state, "cpu_load",
-                      f"✅ FinBuddy CPU normal — load {load1:.1f} on {CPU_CORES} cores.")
+                      f"✅ Cortexa CPU normal — load {load1:.1f} on {CPU_CORES} cores.")
 
     save_state(state)
     if issues:

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FinBuddy — Per-pair performance tracker
+Cortexa — Per-pair performance tracker
 Reads closed trades from FreqTrade API and prints a WR/PF/profit table by pair.
 Usage:
   python3 pair_performance.py              # all closed trades
@@ -103,7 +103,7 @@ def print_table(pairs, total_trades):
 
     header = f"{'Pair':<8} {'Trades':>6} {'W':>4} {'L':>4} {'WR%':>6} {'PF':>6} {'Profit':>9} {'AvgDur':>8}"
     sep = "-" * len(header)
-    print(f"\n{'FinBuddy — Per-Pair Performance':^{len(header)}}")
+    print(f"\n{'Cortexa — Per-Pair Performance':^{len(header)}}")
     print(f"{'(closed trades only)':^{len(header)}}\n")
     print(header)
     print(sep)

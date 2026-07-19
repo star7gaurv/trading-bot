@@ -1,5 +1,5 @@
 """
-Simple HMAC-signed token auth for the FinBuddy dashboard.
+Simple HMAC-signed token auth for the Cortexa dashboard.
 
 No external dependencies — uses Python stdlib only. Token format:
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-autobacktest_v23.py — FinBuddy v23 Regression Campaign Grid Runner
+autobacktest_v23.py — Cortexa v23 Regression Campaign Grid Runner
 ====================================================================
 Runs a 48-combo × 2-window backtest grid for the Regression Conscious Brain:
   - long_threshold   (predicted % return to enter long: 0.5 / 1.0 / 1.5 / 2.0)
@@ -365,7 +365,7 @@ def reparse_all(grid_cfg: dict) -> None:
 
 # ── Main ───────────────────────────────────────────────────────────────────
 def main():
-    parser = argparse.ArgumentParser(description="FinBuddy v23 Regression backtest campaign")
+    parser = argparse.ArgumentParser(description="Cortexa v23 Regression backtest campaign")
     parser.add_argument("--dry-run",     action="store_true")
     parser.add_argument("--window",      choices=["bull", "bear", "both"], default="both")
     parser.add_argument("--no-download", action="store_true")
@@ -398,7 +398,7 @@ def main():
     n_total = len(combos) * len(run_windows)
 
     log.info(f"\n{'#'*60}")
-    log.info(f"  FinBuddy v23 Regression Backtest Campaign")
+    log.info(f"  Cortexa v23 Regression Backtest Campaign")
     log.info(f"  {len(combos)} combos × {len(run_windows)} window(s) = {n_total} runs")
     log.info(f"  long_threshold:  {long_thresholds}%")
     log.info(f"  short_threshold: {short_thresholds}%")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FinBuddy Context Auto-Sync
+Cortexa Context Auto-Sync
 
 Runs every 4h (alongside HMM cron) and keeps FINBUDDY_PROJECT_MEMORY.md
 permanently in sync with the live system state. Also appends a one-liner to
@@ -218,7 +218,7 @@ def append_event(msg: str) -> None:
     ts = now_utc().strftime("%Y-%m-%d %H:%M UTC")
     line = f"- **{ts}** — {msg}\n"
     if not EVENTS_FILE.exists():
-        EVENTS_FILE.write_text("# FinBuddy Session Events (auto-generated)\n\n*← [[FINBUDDY_PROJECT_MEMORY]]*\n\n")
+        EVENTS_FILE.write_text("# Cortexa Session Events (auto-generated)\n\n*← [[FINBUDDY_PROJECT_MEMORY]]*\n\n")
     with EVENTS_FILE.open("a") as f:
         f.write(line)
     print(f"EVENT: {msg}")

@@ -1,4 +1,4 @@
-"""Engine/session setup for the FinBuddy platform Postgres database.
+"""Engine/session setup for the Cortexa platform Postgres database.
 
 Separate from everything under freqtrade/ — this database has nothing to do
 with the operator's own dry-run bot or its SQLite trade ledger. It exists

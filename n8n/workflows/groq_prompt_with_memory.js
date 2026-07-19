@@ -1,5 +1,5 @@
 // ============================================================
-// FinBuddy Groq Prompt Builder — N8N Code Node (v4 workflow)
+// Cortexa Groq Prompt Builder — N8N Code Node (v4 workflow)
 // Place this node AFTER the context reader and BEFORE the Groq HTTP Request.
 // Replaces (or wraps) your existing prompt builder code node.
 // Node type: Code | Language: JavaScript | Mode: Run Once For All Items
@@ -26,7 +26,7 @@ if (tradeOpen && pnl !== null) {
 }
 
 // --- Build the full prompt ---
-const prompt = `You are FinBuddy, an autonomous crypto trading AI.
+const prompt = `You are Cortexa, an autonomous crypto trading AI.
 
 ${memory}
 

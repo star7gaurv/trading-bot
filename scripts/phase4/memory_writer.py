@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FinBuddy Phase 4 — Memory Auto-Writer
+Cortexa Phase 4 — Memory Auto-Writer
 
 Automatically writes trade events, signal results, and regime changes
 to the Obsidian memory vault and commits them to GitHub.
@@ -141,7 +141,7 @@ def write_signal_log(trades: list, ext_data: dict):
     # Create file with header if new
     if not SIGNAL_LOG.exists():
         header = (
-            "# FinBuddy — Signal Audit Log\n\n"
+            "# Cortexa — Signal Audit Log\n\n"
             "| Date | Pair | Result | Profit% | Profit USDT | "
             "Enter Tag | Exit Reason | Market State |\n"
             "|---|---|---|---|---|---|---|---|\n"
@@ -179,7 +179,7 @@ def write_regime(ext_data: dict, profit: dict):
     total_trades  = profit.get("trade_count", 0)
     win_rate      = profit.get("winning_trades", 0) / max(total_trades, 1) * 100
 
-    content = f"""# FinBuddy — Current Regime
+    content = f"""# Cortexa — Current Regime
 
 **Last Updated:** {now.strftime('%Y-%m-%d %H:%M')} UTC  
 **Data Sources:** {sources_ok}/{sources_total} OK
@@ -247,7 +247,7 @@ def write_daily_note(trades: list, ext_data: dict, profit: dict):
         outcome    = "✅" if profit_pct > 0 else "❌"
         recent_lines.append(f"- {outcome} {pair}: {profit_pct:+.2f}%")
 
-    content = f"""# FinBuddy — Daily Note {today}
+    content = f"""# Cortexa — Daily Note {today}
 
 **Generated:** {datetime.utcnow().strftime('%H:%M')} UTC  
 **Market Regime:** {label} ({composite:+.3f})
@@ -318,7 +318,7 @@ def git_commit_vault():
 
 def main():
     now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"\n[{now}] FinBuddy Memory Writer running...")
+    print(f"\n[{now}] Cortexa Memory Writer running...")
 
     trades    = get_recent_trades(limit=20)
     profit    = get_profit()

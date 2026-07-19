@@ -1,4 +1,6 @@
-# FinBuddy — Master Project Context for Claude
+# Cortexa — Master Project Context for Claude
+
+> **Tagline:** Self-taught. Self-tuned. Self-evolving.
 
 > This file is the single source of truth for any Claude instance working in this repo.
 > Read this fully before touching any file, writing any code, or making any suggestion.
@@ -6,13 +8,13 @@
 keep in mind no matter what we have to make it self aware, self evolving, conscious brain. and when say self aware it means dynamically can changes parameters to adjust tuning itself. so that. it can run on long, short both by detecting trend time. as we have made plan already. and it must have wide range it stored so that it can have broader perspective , reference and data to analyze. but keep also in mind the code you do make it achieve should not be make it worse than current system.
 ---
 
-## What FinBuddy Actually Is
+## What Cortexa Actually Is
 
-FinBuddy is **not a trading bot**. It is an **autonomous, self-evolving AI brain for crypto trading**. The distinction matters. A bot follows fixed rules. FinBuddy observes markets, forms hypotheses, tests them, promotes winners, retires losers, and gets smarter over time — without Gaurav having to intervene. FreqTrade placing orders on Binance is just the hands. The brain is the product.
+Cortexa is **not a trading bot**. It is an **autonomous, self-evolving AI brain for crypto trading**. The distinction matters. A bot follows fixed rules. Cortexa observes markets, forms hypotheses, tests them, promotes winners, retires losers, and gets smarter over time — without Gaurav having to intervene. FreqTrade placing orders on Binance is just the hands. The brain is the product.
 
-The long-term vision is a **multi-tenant SaaS platform** where retail traders plug their exchange accounts into the FinBuddy brain as a service. One central intelligence, many users. The brain gets better with time and every user inherits that improvement automatically.
+The long-term vision is a **multi-tenant SaaS platform** where retail traders plug their exchange accounts into the Cortexa brain as a service. One central intelligence, many users. The brain gets better with time and every user inherits that improvement automatically.
 
-**Project name:** FinBuddy. The old name "Jarvis" is permanently retired — never use it.
+**Project name:** Cortexa. The old names "Jarvis" and "FinBuddy" are permanently retired — never use them. (FinBuddy was retired 2026-07-19 after discovering an unrelated finance-management app already uses that name.)
 
 ---
 
@@ -22,7 +24,7 @@ The long-term vision is a **multi-tenant SaaS platform** where retail traders pl
 
 The 192-combo spot backtest failure was not a strategy bug — it was an architectural ceiling. Spot is structurally long-only. In a -47.55% bear market (BTC 2025-02-01 → 2026-04-01), no long-only strategy can achieve Sharpe > 0.5. The ML signal quality is confirmed healthy (79–81% WR on signal-driven exits). The market type was wrong.
 
-**Futures gives FinBuddy long + short capability = truly market-agnostic.**
+**Futures gives Cortexa long + short capability = truly market-agnostic.**
 
 ### Do NOT do this anymore:
 - Run more backtests on spot with the same bear market period
@@ -40,7 +42,7 @@ The 192-combo spot backtest failure was not a strategy bug — it was an archite
 
 ## Full Vision — All Crypto Market Modules
 
-FinBuddy will support all major crypto market types as modular strategy plugins:
+Cortexa will support all major crypto market types as modular strategy plugins:
 
 | Module | Type | Priority |
 |---|---|---|
@@ -58,7 +60,7 @@ All modules share: the same regime signal, the same AI brain, the same memory va
 
 ## This Is a Fluid System
 
-This is not a fixed blueprint. FinBuddy is a self-evolving system and the project approach evolves with it. Tools, models, workflows, and components can be dropped, swapped, or added at any time based on what works best. Nothing here is sacred except the core idea: an autonomous AI brain that trades, learns, and improves itself continuously.
+This is not a fixed blueprint. Cortexa is a self-evolving system and the project approach evolves with it. Tools, models, workflows, and components can be dropped, swapped, or added at any time based on what works best. Nothing here is sacred except the core idea: an autonomous AI brain that trades, learns, and improves itself continuously.
 
 - If a better model exists, we switch to it (we dropped OpenRouter → Groq → now Grok-3-Mini)
 - If a tool stops serving the vision, we cut it (cut Dify, cut N8N pipeline)
@@ -392,7 +394,7 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 - Architecture docs: `docs/`
 - Strategy registry: `strategies/registry.json`
 - User configs: `users/`
-- FinBuddy brain memory: `finbuddy_memory/`
+- Cortexa brain memory: `finbuddy_memory/`
 - Phase scripts: `scripts/`
 
 ## .gitignore Rules
@@ -769,7 +771,7 @@ Both `custom_stoploss` and `custom_exit` hardcoded `/300` (5m seconds) for candl
 
 **Gaurav's feedback**: I was doing bot tuning (manually tweaking thresholds, asking "Path A/B/C?")
 instead of building the brain (autonomous, self-evolving, hypothesis-generating). Per vision,
-FinBuddy must form hypotheses, test them, promote winners — without human intervention.
+Cortexa must form hypotheses, test them, promote winners — without human intervention.
 
 **Corrected plan (approved)**:
 1. Fix existing strategy FIRST (Task #1-4)
@@ -823,7 +825,7 @@ Regression eliminates classes → no imbalance.
 - **v18 campaign result**: 0/24 PASS. Root cause: symmetric 1:1 R:R + fee drag. v19 asymmetric barriers is the fix.
 - **v19 built**: K_MULT split → K_TP/K_SL env vars, `feature_engineering_standard` activated, identifier bumped, campaign runner `scripts/autobacktest_v19.py` built (36 runs, K_TP∈{1.5,2.0,2.5} × K_SL∈{0.8,1.0} × ml_threshold∈{0.60,0.65,0.70}).
 
-### May 14, 2026 (Antigravity AI) — FinBuddy v21 Intelligent Evolution
+### May 14, 2026 (Antigravity AI) — Cortexa v21 Intelligent Evolution
 - **Deep-dive Analysis**: Found the root causes of the 42% win rate (74 losses): 
   1. A "Short Bias" caused by a lagging, global regime detector blocking all longs. Shorts had a 30% WR while Longs had a 66% WR.
   2. Hard fallback stoploss in `config.json` (-0.08) overriding the ATR stoploss and allowing massive 16% leveraged losses.

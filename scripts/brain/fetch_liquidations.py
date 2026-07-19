@@ -48,7 +48,7 @@ def load_key() -> str:
 def _get(path: str, params: dict, key: str | None = None) -> list | dict:
     url = f"{API}{path}?" + urllib.parse.urlencode(params)
     req = urllib.request.Request(url, headers={"api_key": key or load_key(),
-                                               "User-Agent": "FinBuddy/1.0"})
+                                               "User-Agent": "Cortexa/1.0"})
     return json.loads(urllib.request.urlopen(req, timeout=30).read())
 
 

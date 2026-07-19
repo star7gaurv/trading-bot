@@ -1,6 +1,6 @@
-# FinBuddy — Internal Documentation
+# Cortexa — Internal Documentation
 
-This is internal documentation for the FinBuddy codebase, generated from the code's own
+This is internal documentation for the Cortexa codebase, generated from the code's own
 docstrings. It is **not** customer or public-facing — see the
 [Confidentiality Style Guide](confidentiality.md) before copying anything from here into any
 customer-visible surface.

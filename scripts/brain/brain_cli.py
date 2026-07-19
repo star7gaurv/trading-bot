@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-brain_cli.py — single entry point for the FinBuddy autonomous brain.
+brain_cli.py — single entry point for the Cortexa autonomous brain.
 
 Subcommands:
   status     — print current queue / log summary
@@ -36,7 +36,7 @@ from promote import find_candidates, propose, _config_hash
 
 def cmd_status(_args) -> int:
     stats = summary_stats()
-    print("== FinBuddy Brain Status ==")
+    print("== Cortexa Brain Status ==")
     print(f"  Queued      : {stats['queued']}")
     print(f"  Completed   : {stats['completed']}")
     print(f"  Failed      : {stats['failed']}")
@@ -220,7 +220,7 @@ def cmd_best(_args) -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="FinBuddy autonomous brain")
+    parser = argparse.ArgumentParser(description="Cortexa autonomous brain")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("status").set_defaults(func=cmd_status)

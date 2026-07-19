@@ -76,7 +76,7 @@ def main() -> int:
     sweep1_queue = [r for r in queue if _is_sweep1(r.get("config", {}))]
     sweep2_queue = [r for r in queue if _is_sweep2(r.get("config", {}))]
 
-    lines = ["FinBuddy sweep-results check (2026-07-16 sweeps, 24h later)", ""]
+    lines = ["Cortexa sweep-results check (2026-07-16 sweeps, 24h later)", ""]
 
     lines.append(f"Sweep 1 (threshold re-sweep, 12 queued): "
                  f"{sum(1 for r in sweep1_log if r['status']=='completed')} completed, "

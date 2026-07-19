@@ -5,7 +5,7 @@ page, in-app copy, support docs, investor materials, error messages shown to use
 
 ## The rule
 
-FinBuddy's underlying tech stack is confidential. Never name it — not the framework, not specific
+Cortexa's underlying tech stack is confidential. Never name it — not the framework, not specific
 libraries, not internal script/service/container names — in anything a customer, prospect, or the
 public could see.
 

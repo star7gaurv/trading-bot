@@ -41,7 +41,7 @@ def _whitelist_symbols() -> list[str]:
 def fetch_daily_metrics(symbol: str, date_str: str) -> pd.DataFrame | None:
     url = (f"https://data.binance.vision/data/futures/um/daily/metrics/"
            f"{symbol}/{symbol}-metrics-{date_str}.zip")
-    req = urllib.request.Request(url, headers={"User-Agent": "FinBuddy/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "Cortexa/1.0"})
     try:
         with urllib.request.urlopen(req, timeout=15) as r:
             zip_bytes = r.read()

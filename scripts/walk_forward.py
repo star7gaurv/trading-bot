@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FinBuddy Walk-Forward Validator  (v2 — Parallel Fold Execution)
+Cortexa Walk-Forward Validator  (v2 — Parallel Fold Execution)
 
 Runs FreqTrade backtests in rolling folds (train N months, test 1 month, slide).
 The aggregated out-of-sample stats are the real test — anything
@@ -509,7 +509,7 @@ def reparse_existing_run(run_dir: Path,
 
 
 def main():
-    p = argparse.ArgumentParser(description="FinBuddy Walk-Forward Validator v2 (parallel)")
+    p = argparse.ArgumentParser(description="Cortexa Walk-Forward Validator v2 (parallel)")
     p.add_argument("--start", required=True, help="YYYY-MM-DD outer window start")
     p.add_argument("--end", required=True, help="YYYY-MM-DD outer window end")
     p.add_argument("--train-months", type=int, default=6)

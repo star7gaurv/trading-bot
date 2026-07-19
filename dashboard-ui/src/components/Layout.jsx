@@ -36,7 +36,7 @@ export default function Layout({ tabs, activeTab, onTabChange, children, globalS
             </div>
             <div className="leading-tight">
               <div className="text-sm font-semibold tracking-tight">
-                FinBuddy <span className="text-text-tertiary font-normal">· Console</span>
+                Cortexa <span className="text-text-tertiary font-normal">· Console</span>
               </div>
               <div className="text-[11px] text-text-tertiary font-mono">v2 · {new Date().toISOString().slice(0, 10)}</div>
             </div>
@@ -94,7 +94,7 @@ export default function Layout({ tabs, activeTab, onTabChange, children, globalS
 
       {/* Footer */}
       <footer className="max-w-[1400px] mx-auto px-6 py-6 border-t border-border mt-12 text-xxs text-text-muted flex justify-between">
-        <span>FinBuddy autonomous trading brain · Oracle Free Tier · ARM64</span>
+        <span>Cortexa autonomous trading brain · Oracle Free Tier · ARM64</span>
         <span className="font-mono">{new Date().toLocaleString()}</span>
       </footer>
     </div>

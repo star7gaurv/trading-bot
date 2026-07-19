@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FinBuddy Phase 2 — Google Trends Fetcher
+Cortexa Phase 2 — Google Trends Fetcher
 Source: Google Trends via pytrends (unofficial, free)
 Output: search interest for bitcoin, crypto, ethereum (0-100 normalized)
 

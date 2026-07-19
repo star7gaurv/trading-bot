@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-autobacktest_v18.py — FinBuddy v18 Campaign Grid Runner
+autobacktest_v18.py — Cortexa v18 Campaign Grid Runner
 =========================================================
 Runs a 12-combo × 2-window backtest grid to find the optimal:
   - k_mult        (barrier multiplier + stoploss scale)
@@ -437,7 +437,7 @@ def reparse_all(grid_cfg: dict) -> None:
 
 # ── Main ───────────────────────────────────────────────────────────────────
 def main():
-    parser = argparse.ArgumentParser(description="FinBuddy v18 backtest campaign")
+    parser = argparse.ArgumentParser(description="Cortexa v18 backtest campaign")
     parser.add_argument("--dry-run", action="store_true", help="Print commands without running")
     parser.add_argument("--window", choices=["bull", "bear", "both"], default="both",
                         help="Which time window(s) to run")
@@ -474,7 +474,7 @@ def main():
     n_total = len(combos) * len(run_windows)
 
     log.info(f"\n{'#'*60}")
-    log.info(f"  FinBuddy v18 Backtest Campaign")
+    log.info(f"  Cortexa v18 Backtest Campaign")
     log.info(f"  {len(combos)} combos × {len(run_windows)} window(s) = {n_total} runs")
     log.info(f"  Windows: {run_windows}")
     log.info(f"{'#'*60}\n")

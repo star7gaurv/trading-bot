@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FinBuddy Phase 2 — DefiLlama TVL Fetcher
+Cortexa Phase 2 — DefiLlama TVL Fetcher
 Source: DefiLlama API (100% free, no API key)
 Output: total DeFi TVL, 24h/7d change, chain breakdown
 

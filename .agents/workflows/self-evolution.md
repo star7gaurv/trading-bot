@@ -3,7 +3,7 @@ description: "The execution cycle for synchronizing the Conscious Brain and evol
 ---
 # The Self-Evolution Workflow
 
-This workflow ensures that every time Antigravity interacts with the FinBuddy workspace, the conscious memory of the project is strictly maintained and self-evolved.
+This workflow ensures that every time Antigravity interacts with the Cortexa workspace, the conscious memory of the project is strictly maintained and self-evolved.
 
 ## Step 1: Memory Ingestion (Read)
 Execute the following commands or file views to load the conscious state:

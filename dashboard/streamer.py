@@ -1,5 +1,5 @@
 """
-FinBuddy Dashboard Streamer — FastAPI server on :8501.
+Cortexa Dashboard Streamer — FastAPI server on :8501.
 
 Exposes:
 - WebSockets:
@@ -106,7 +106,7 @@ _preflight()
 # (nginx has no location routing to it, and uvicorn binds 127.0.0.1 only) - explicitly
 # disabling it here means that stays true even if nginx routing ever changes. Internal
 # API/code documentation lives in the MkDocs site instead (finbuddy_memory/docs_site/).
-app = FastAPI(title="FinBuddy Dashboard Streamer", docs_url=None, redoc_url=None)
+app = FastAPI(title="Cortexa Dashboard Streamer", docs_url=None, redoc_url=None)
 
 # 2026-07-05: server IP moved out of source into an env var (DASHBOARD_EXTRA_ORIGIN,
 # optional) instead of being hardcoded and committed to git.

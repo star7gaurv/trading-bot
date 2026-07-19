@@ -1,4 +1,4 @@
-# FinBuddy Brain — Operator Cheatsheet
+# Cortexa Brain — Operator Cheatsheet
 
 The autonomous hypothesis engine. Runs by itself on cron. You only intervene to **approve promotions**.
 

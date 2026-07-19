@@ -48,7 +48,7 @@ START_MS = 1568000000000  # 2019-09-09 — before Binance Futures launched, safe
 def fetch_page(start_ms: int) -> list[dict]:
     """Fetch up to 1000 funding events from start_ms (inclusive)."""
     qs = f"?symbol={SYMBOL}&startTime={start_ms}&limit={PAGE_SZ}"
-    req = urllib.request.Request(URL + qs, headers={"User-Agent": "FinBuddy/1.0"})
+    req = urllib.request.Request(URL + qs, headers={"User-Agent": "Cortexa/1.0"})
     with urllib.request.urlopen(req, timeout=20) as r:
         return json.loads(r.read())
 

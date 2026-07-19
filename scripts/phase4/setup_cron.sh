@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# FinBuddy Phase 4 — Cron Setup for Memory Auto-Writer
+# Cortexa Phase 4 — Cron Setup for Memory Auto-Writer
 # =============================================================================
 # Installs two cron jobs:
 #   1. External data aggregator — every 15 min (Phase 2)
@@ -21,7 +21,7 @@ set -e
 FREQTRADE_DIR="/home/ubuntu/var/www/html/trade/freqtrade"
 
 echo "==========================================================="
-echo " FinBuddy Phase 4 — Cron Setup"
+echo " Cortexa Phase 4 — Cron Setup"
 echo "==========================================================="
 
 # --- Verify prerequisites ---

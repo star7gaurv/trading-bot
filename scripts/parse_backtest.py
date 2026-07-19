@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-FinBuddy — Task 1.3 Backtest Result Parser
+Cortexa — Task 1.3 Backtest Result Parser
 
 Reads the latest backtest JSON from user_data/backtest_results/
-and prints a PASS/FAIL grade against FinBuddy acceptance criteria.
+and prints a PASS/FAIL grade against Cortexa acceptance criteria.
 
 Usage:
     python scripts/parse_backtest.py
@@ -148,7 +148,7 @@ def extract_metrics(data: dict) -> dict:
 def grade(metrics: dict) -> bool:
     """Print a PASS/FAIL table. Returns True if all criteria pass."""
     print(f"\n{BOLD}{'=' * 60}{RESET}")
-    print(f"{BOLD}  FinBuddy Task 1.3 — Backtest Acceptance Report{RESET}")
+    print(f"{BOLD}  Cortexa Task 1.3 — Backtest Acceptance Report{RESET}")
     print(f"  {datetime.now().strftime('%Y-%m-%d %H:%M:%S IST')}")
     print(f"{BOLD}{'=' * 60}{RESET}")
 
@@ -219,7 +219,7 @@ def grade(metrics: dict) -> bool:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="FinBuddy backtest result grader")
+    parser = argparse.ArgumentParser(description="Cortexa backtest result grader")
     parser.add_argument(
         "--results-dir",
         default="user_data/backtest_results",

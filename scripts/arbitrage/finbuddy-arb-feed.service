@@ -1,5 +1,5 @@
 [Unit]
-Description=FinBuddy Arbitrage Price Feed (async ccxt poller, paper module)
+Description=Cortexa Arbitrage Price Feed (async ccxt poller, paper module)
 After=network-online.target
 Wants=network-online.target
 

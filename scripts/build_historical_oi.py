@@ -36,7 +36,7 @@ START_DATE = datetime(2023, 9, 1, tzinfo=timezone.utc)
 def fetch_daily_metrics(date_str: str) -> pd.DataFrame | None:
     """Download and extract the daily metrics CSV for the given YYYY-MM-DD."""
     url = f"https://data.binance.vision/data/futures/um/daily/metrics/{SYMBOL}/{SYMBOL}-metrics-{date_str}.zip"
-    req = urllib.request.Request(url, headers={"User-Agent": "FinBuddy/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "Cortexa/1.0"})
     try:
         with urllib.request.urlopen(req, timeout=15) as r:
             zip_bytes = r.read()

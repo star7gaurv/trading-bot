@@ -45,7 +45,7 @@ def _whitelist_symbols() -> list[str]:
 def fetch_current_funding() -> dict[str, float]:
     """symbol -> last funding rate (per 8h event), one bulk call."""
     url = "https://fapi.binance.com/fapi/v1/premiumIndex"
-    req = urllib.request.Request(url, headers={"User-Agent": "FinBuddy/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "Cortexa/1.0"})
     with urllib.request.urlopen(req, timeout=15) as r:
         data = json.load(r)
     return {d["symbol"]: float(d["lastFundingRate"]) for d in data}
@@ -63,7 +63,7 @@ def fetch_contract_status() -> dict[str, str]:
     """
     url = "https://fapi.binance.com/fapi/v1/exchangeInfo"
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": "FinBuddy/1.0"})
+        req = urllib.request.Request(url, headers={"User-Agent": "Cortexa/1.0"})
         with urllib.request.urlopen(req, timeout=15) as r:
             data = json.load(r)
         return {s["symbol"]: s.get("status", "TRADING") for s in data.get("symbols", [])}

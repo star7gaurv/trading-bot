@@ -81,7 +81,7 @@ def main() -> int:
     log = read_log()
     queue = read_queue()
 
-    lines = ["FinBuddy progress_cut/probe_scale results (2026-07-17 sweeps)", ""]
+    lines = ["Cortexa progress_cut/probe_scale results (2026-07-17 sweeps)", ""]
     all_completed = []
 
     for matcher, label, key_fn, expected_n in [

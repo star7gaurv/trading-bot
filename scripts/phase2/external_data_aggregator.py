@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FinBuddy Phase 2 — External Data Aggregator
+Cortexa Phase 2 — External Data Aggregator
 
 Runs all 5 data fetchers and combines their output into:
   1. A single JSON file for logging/memory vault
@@ -153,7 +153,7 @@ def load_latest_features() -> dict:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="FinBuddy external data aggregator")
+    parser = argparse.ArgumentParser(description="Cortexa external data aggregator")
     parser.add_argument("--output", default=DEFAULT_OUTPUT)
     args = parser.parse_args()
 

@@ -105,7 +105,7 @@ def run_research() -> str:
     )
 
     system_prompt = (
-        "You are FinBuddy's research analyst for a 25-pair crypto futures bot "
+        "You are Cortexa's research analyst for a 25-pair crypto futures bot "
         "(FreqAI LightGBM, 1h TF, long+short). "
         "Analyse the market snapshot and produce a nightly research note: "
         "key observations, regime interpretation, 2-3 concrete testable hypotheses, risk notes. "

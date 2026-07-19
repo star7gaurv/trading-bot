@@ -645,7 +645,7 @@ def reject_promotion(config_hash: str, reason: str) -> int:
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="FinBuddy Brain promotion engine")
+    p = argparse.ArgumentParser(description="Cortexa Brain promotion engine")
     p.add_argument("--apply", metavar="CONFIG_HASH", help="Apply a pending promotion")
     p.add_argument("--reject", metavar="CONFIG_HASH", help="Permanently block a candidate from resurfacing")
     p.add_argument("--reason", default="", help="Reason for --reject (recorded in rejected.jsonl)")

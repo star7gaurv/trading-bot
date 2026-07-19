@@ -918,7 +918,7 @@ def run_next(max_runs: int = 1, status_only: bool = False) -> int:
 
 
 if __name__ == "__main__":
-    p = argparse.ArgumentParser(description="FinBuddy Brain — autonomous experiment runner")
+    p = argparse.ArgumentParser(description="Cortexa Brain — autonomous experiment runner")
     p.add_argument("--max",    type=int, default=1, help="max experiments to run this invocation")
     p.add_argument("--status", action="store_true", help="print status, do not run")
     args = p.parse_args()
