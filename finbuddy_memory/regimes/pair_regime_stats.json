@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-20T11:00:01.247953+00:00",
+  "updated": "2026-07-20T11:30:01.952185+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,46 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ENA/USDT:USDT": {
-      "BEAR": {
-        "n": 6,
-        "wins": 4,
-        "losses": 2,
-        "wr": 0.6667,
-        "pf": 3.482,
-        "profit_usdt": 4.17,
-        "avg_profit_pct": 1.238
-      },
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 2.021,
-        "profit_usdt": 0.99,
-        "avg_profit_pct": 0.615
-      }
-    },
-    "RENDER/USDT:USDT": {
-      "BEAR": {
-        "n": 7,
-        "wins": 6,
-        "losses": 1,
-        "wr": 0.8571,
-        "pf": 9.0,
-        "profit_usdt": 3.44,
-        "avg_profit_pct": 0.879
-      },
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 2.217,
-        "profit_usdt": 0.56,
-        "avg_profit_pct": 0.36
-      }
-    },
     "LDO/USDT:USDT": {
       "BEAR": {
         "n": 7,
@@ -67,6 +27,46 @@
         "pf": 0.331,
         "profit_usdt": -6.56,
         "avg_profit_pct": -0.903
+      }
+    },
+    "RENDER/USDT:USDT": {
+      "BEAR": {
+        "n": 6,
+        "wins": 5,
+        "losses": 1,
+        "wr": 0.8333,
+        "pf": 8.535,
+        "profit_usdt": 3.24,
+        "avg_profit_pct": 0.965
+      },
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 2.217,
+        "profit_usdt": 0.56,
+        "avg_profit_pct": 0.36
+      }
+    },
+    "ENA/USDT:USDT": {
+      "BEAR": {
+        "n": 5,
+        "wins": 3,
+        "losses": 2,
+        "wr": 0.6,
+        "pf": 3.232,
+        "profit_usdt": 3.75,
+        "avg_profit_pct": 1.338
+      },
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 2.021,
+        "profit_usdt": 0.99,
+        "avg_profit_pct": 0.615
       }
     },
     "AVAX/USDT:USDT": {
