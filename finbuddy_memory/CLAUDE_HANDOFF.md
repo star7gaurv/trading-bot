@@ -1,108 +1,91 @@
 # 🤝 Cortexa — Handoff Note for Claude Code
 
-**Last updated:** 2026-06-21 UTC (live flipped to 1h via timeframe switcher; promote.py identifier→.env gap fixed)
-**Branch:** `fix/meta-label-corrected`
+**Last updated:** 2026-07-20 UTC (rebrand to Cortexa; probe_scale/progress_cut sweep result recorded — also NO-GO)
+**Branch:** `master`
 
 ---
 
-## ✅ Current Live State (verified 2026-06-21 via `docker exec`)
+## ✅ Current Live State (verified 2026-07-20 via `.env` + `config.json`)
 
 | Item | Value |
 |---|---|
-| Live strategy | `FinBuddyFreqAI_v23.py` (**1h TF** — switched from 15m 2026-06-21; LightGBMRegressor, z-scored target) |
-| FreqAI identifier | `finbuddy_v23_tf1h_1782044602` (set in `.env`, overrides config.json; was `finbuddy_v23_nosvm_1780729988`) |
-| Pairs | **26** |
+| Live strategy | `FinBuddyFreqAI_v23.py` (1h TF; LightGBMRegressor, z-scored target) — file/class name intentionally NOT renamed in the Cortexa rebrand (live-system risk, deferred) |
+| FreqAI identifier | `finbuddy_v23_tf1h_1782044602` |
+| Pairs | **25** (TON removed 2026-07-08 — delisted) |
 | Leverage | Confidence-based tiers 1×/2×/3× (FALLBACK = 1×) |
-| Regime | **BEAR (80% confidence)** — market genuinely falling (BTC ≈ −15% this month) |
-| Wallet | **1000 USDT** dry-run | max_open_trades **8** |
-| Bot status | ✅ Up, untouched all session — frozen baseline running clean |
-| DI / SVM | **DI_threshold=0, SVM disabled** (do_predict bug fix 2026-06-06) |
+| Regime | **NEUTRAL (70% confidence)**, since 2026-07-20 |
+| Wallet | **1000 USDT** dry-run \| max_open_trades **8** |
+| Manual kill-switch | ✅ force-exit (dashboard + Telegram) + pause/resume, shipped 2026-07-14 |
+| DI / SVM | DI_threshold=0, SVM disabled |
 | Daily circuit breaker | ✅ FREQAI_DAILY_LOSS_LIMIT=10 |
 
 **Live env vars (`freqtrade/.env`) — current:**
 ```
-FREQAI_LONG_THRESHOLD=0.7      # RAISED 2026-06-17 (was 0.3) — Phase-1 stop-the-bleed
+FREQAI_LONG_THRESHOLD=0.7
 FREQAI_SHORT_THRESHOLD=-0.6    # asymmetric: longs are the worse side
 FREQAI_K_TP=3.0
-FREQAI_K_SL=2.0
+FREQAI_K_SL=3.5                # RAISED 2.0→3.5 on 2026-07-08 (Lever 1) — cut stop_loss share but PF got worse, see below
 FREQAI_STABILITY_N=1
 FREQAI_DAILY_LOSS_LIMIT=10
 FREQAI_REENTRY_COOLDOWN_CANDLES=8
 FREQAI_DAILY_FLATTEN_MULT=1.5
-FINBUDDY_RECENT_WR=0.4
-FREQTRADE__FREQAI__IDENTIFIER=finbuddy_v23_tf1h_1782044602   # overrides config.json freqai.identifier
+FREQAI_THRESHOLD_FLOOR=1        # default; effective threshold can only tighten past nominal
+FREQTRADE__FREQAI__IDENTIFIER=finbuddy_v23_tf1h_1782044602
 ```
-
-✅ **Label-horizon divergence FIXED (2026-06-21, applied live).** Previously the time-limit exit read
-a separate `FREQAI_LABEL_CANDLES` env var (stale at 12 after the 1h switch moved the model to 6).
-The exit now derives its horizon from `config.json freqai.feature_parameters.label_period_candles`
-via `FinBuddyFreqAI_v23._label_period_candles()` — single source of truth, the same value the brain
-tunes and `apply_timeframe.py` sets per TF, used by both `set_freqai_targets` and `custom_exit`. The
-`FREQAI_LABEL_CANDLES` env var was removed from `.env` + `docker-compose.yml`. Verified live: container
-recreated (`up -d`, identifier unchanged, model reused), env var absent, `[TF-init] timeframe=1h` clean.
-Live exit horizon is now 6 candles (6h@1h), matching the model.
+`FREQAI_PARTIAL_TP` / `FREQAI_PROBE_SCALE` / `FREQAI_PROGRESS_CUT` / `FREQAI_META_LABEL` all built, all plumbed through all 3 layers (runner/promote/docker-compose), all still **OFF live** — every A/B run so far has failed (see Brain State below).
 
 ⚠️ `docker-compose.yml` has an explicit `environment:` block — every new `.env` var MUST also be added there. `docker-compose restart` does NOT reload `.env` — always `docker-compose up -d freqtrade`.
 
-⚠️ **DO NOT TUNE / PROMOTE LIVE** until the honest brain beats the frozen baseline.
-Baseline recorded in `finbuddy_memory/FROZEN_BASELINE_2026-06-17.md`.
-
 ---
 
-## 📊 Live Performance (2026-06-19)
+## 📊 Live Performance (since 2026-07-17 diagnosis)
 
 | Metric | Value |
 |---|---|
-| Closed trades | **752** |
-| Total P&L | **+17.6 USDT** (≈breakeven; all gains came from one week in May, every week since loses) |
-| Win rate | **41%** |
-| Currently short-only | Correct behavior — regime is BEAR; hard regime gate blocks longs in down-markets (NOT a bug) |
+| Lifetime P&L | **+11.34 USDT** (1,003+ trades) |
+| Since 2026-07-08 (K_SL=3.5 went live) | **−10.46 USDT** on 111 trades — losing streak, not a bug |
+| Pre-fix (K_SL=2.0) | WR 41.9%, PF 1.04, net +21.80 — stop_loss (39% of trades, 0% WR) almost exactly canceled by exit_signal (29%, 91% WR) |
+| Post-fix (K_SL=3.5) | WR rose to 47.7%, stop_loss down to 13% of trades (fix worked as predicted) — but **PF got WORSE (0.84 vs 1.04)**: the bleed didn't disappear, it moved into `time_limit_exit` (57% of all trades, only 38% WR) |
 
-**The diagnosis that matters:** the EXIT is genuine alpha (exit_signal exits ~90% WR), the ENTRY
-is a coin flip (IC≈0). Stop-loss exits almost exactly cancel the exit-signal gains. Per-trade
-expectancy is negative; profit is monotonic in trade count. See [[FROZEN_BASELINE_2026-06-17]].
+**The diagnosis that still holds:** the EXIT is genuine alpha (exit_signal ~90-100% WR, unchanged), the ENTRY is a coin flip (IC≈0.03-0.05). Widening the stop just gives losing entries more room to drift to the clock instead of the stop. See [[FROZEN_BASELINE_2026-06-17]] and [[reference_ic_and_edge_location]].
 
 ---
 
-## 🧠 Brain State (2026-06-19)
+## 🧠 Brain State — every cheap lever now tried, ALL NO-GO (as of 2026-07-18)
 
-| Item | Value |
+| Attempt | Result |
 |---|---|
-| Log entries | **1,865** (534 completed, 1,156 scout_failed, 175 failed) |
-| profit>0 runs | **101** (all noise — avg ~45 trades, PF~1.1; killed by honest-brain gates) |
-| Queue depth | **0** |
-| Promotions fired | **0** that survive (the 2026-05-28 LT=3.25 promotion was reverted; it manufactured the bleed) |
-| Honest-brain gates (2026-06-17) | scout: trades≥40 & PF>1.0 ; promote: MIN_TRADES=150, MIN_PF=1.1, MIN_BULL=2, MIN_BEAR=1, BEAR_2026Q1 WR≥50% |
-| Test windows (HONEST names 2026-06-19) | bull_2024Q1 (+68%), bull_2024Q4 (+47%), bull_2021, bear_2024Q2 (−11%), bear_2025Q1 (−12%), bear_2025Q4 (−23%), bear_2026Q1 (−22%), crash_2022 (stress) |
-| PAIRED rotation | bull_2024Q1 → bear_2025Q1 → bull_2024Q4 → bear_2026Q1 (2:2, all genuine) |
+| Threshold re-sweep (LT×ST at K_SL=3.5) | Best PF **0.822** (bull_2024Q4), still a net loser |
+| K_SL re-test (2.5 / 3.0) | Best PF **0.870** (K_SL=2.5) — nominal improvement over live 0.84, still loses, nowhere near MIN_PF=1.1 |
+| Partial take-profit (Lever 3) | All 4 completed runs PF 0.54–0.77 → OFF live |
+| **`progress_cut`** (cut dead trades early) | Best PF **0.725** — worse than both the live baseline (0.84) and the threshold/K_SL sweep's best (0.87) |
+| **`probe_scale`** (anti-martingale sizing) | 0/6 completed (all `scout_failed`) |
+| Combined probe_scale + progress_cut | 0/4 completed (all `scout_failed`) |
+| Meta-labeling (2nd model, act/skip filter) | AUC=0.50 — no separable signal — **dead for good** |
+| Quantile entry mode / feature pruning / sample weighting | All validated OFF, no improvement |
+| Shadow-account rule extraction (KMeans + decision trees on own trade history) | Mostly confirmatory NO-GO (~0-1.0x lift); one 1.94x cluster flagged as likely in-sample overfitting, not real |
 
-⚠️ **Queue race:** the cron queue silently drops entries under concurrent rewrite (hit 3× on
-2026-06-19). To run a specific config reliably, bypass the queue: `runner.run_hypothesis(h)` with
-an explicit dict needing keys `config` + `window` + `timerange` (from `hypothesis_gen.WINDOWS[window]`),
-holding `runner._acquire_lock()`. Run helper scripts from the repo dir, NOT /tmp (a stray
-`/tmp/inspect.py` shadows the stdlib).
+`promote.py find_candidates()` has surfaced **zero** candidates across all of the above. Brain queue is currently empty (0 pending experiments).
+
+**This closes out every remaining cheap/parameter-level lever** — thresholds, stop geometry, partial-TP, probe-scale, progress-cut, meta-labeling, quantile mode, feature pruning, sample weighting, and independent rule-extraction all point the same way: **the entry signal itself has no real edge (IC≈0.03-0.05) to extract**, whether by tuning thresholds around it or by changing how capital is committed to it.
 
 ---
 
-## 🎯 What's Next — the only remaining lever is ENTRY SIGNAL QUALITY
+## 🎯 What's Next
 
-Every cheap fix is now exhausted and ALL point the same way (entry signal has no edge):
-threshold tuning, quantile entry mode, feature pruning, sample weighting, **and meta-labeling
-(NO-GO 2026-06-19 — tightening the meta filter made the stop-loss rate WORSE, not better)**.
+**The fork Gaurav himself set up on 2026-07-17 is now live:** *"if both [probe_scale, progress_cut] come back flat/negative, that's a stronger signal to seriously consider the market-neutral modules (grid/funding/pairs) as the better use of attention, since even position-sizing tricks aren't enough to rescue a coin-flip entry."* Both came back flat/negative (0.725, still below baseline). Two real paths forward — **needs Gaurav's call, not a default**:
 
-**→ Phase 4: build genuinely NEW entry-time features** (order-flow imbalance, OI-delta/CVD,
-funding/basis, cross-asset lead-lag — signals the model currently cannot see). Per Gaurav:
-**research & scope first, bring a plan, get approval BEFORE writing code.** Not yet started.
+1. **Phase 4: build genuinely NEW entry-time features** (order-flow imbalance, OI-delta/CVD, funding/basis, cross-asset lead-lag — signals the model currently cannot see at all, as opposed to re-tuning what it already sees). Per Gaurav's standing instruction: **research & scope first, bring a plan, get approval BEFORE writing any code.** Not started.
+2. **Shift attention to the market-neutral paper modules** (Funding Farm, Pairs Trading, Grid Trading — all already live in paper mode, see [[project_ui_modular_redesign]]) and the platform roadmap, since directional entry-alpha may be a dead end regardless of position-sizing cleverness.
 
-Meta-labeling code stays in the tree, `FREQAI_META_LABEL=0` (live byte-identical).
+**Separately, the platform roadmap (approved 2026-07-17, see [[project_20260717_platform_roadmap]]) has its own next steps, independent of the above:**
+- Phase 3 (multi-tenant DB/auth/key-vault) is **blocked on two manual steps only Gaurav can do**: `sudo -u postgres psql -f scripts/platform/bootstrap_db.sql` (creates the DB) and installing the generated KEK to `/etc/finbuddy/platform_master.key` — neither has been done yet (verified 2026-07-20). Also blocked on a Clerk signup (external account creation, not something to do automatically).
+- The arbitrage feed daemon systemd service (`scripts/arbitrage/finbuddy-arb-feed.service`) is written but still **not installed/enabled** (verified inactive 2026-07-20) — needs Gaurav to run the `sudo cp ... && systemctl enable --now` step from `scripts/platform/README.md`.
+- Once those unblock, next platform step is: apply the Alembic migration, verify the 9 tables exist, then the API-key connection flow + executor worker pool.
 
-### Open / deferred
-- Historical experiment log has ~800 entries under the OLD window names (bull_2024Q2/bull_2025Q4)
-  — promote.py substring-counts them as "bull". Left immutable (ledger). Low impact (strict gates,
-  nothing promoted). Optional clean: old→new name-normalization in promote.py's log reader.
-- Dashboard pagination: root cause was nginx serving `index.html` with no cache header (browser
-  kept stale JS). Fixed (no-cache HTML, immutable assets). One hard-refresh needed once. See
-  auto-memory `reference_dashboard_deploy.md`.
+### Open / deferred (low priority)
+- ~800 old-named experiment-log entries (bull_2024Q2/bull_2025Q4 pre-2026-06-19 rename) — left immutable, low impact.
+- **Cortexa rebrand (2026-07-19/20):** branding/docs/UI/comments swept repo-wide + dashboard rebuilt & deployed. Deliberately left as `finbuddy_*`: the `finbuddy_memory/` directory path, the live strategy file/class, `config.json`/`docker-compose.yml`, and the FreqAI identifier strings — renaming those forces a container recreate + likely full retrain, deferred pending explicit approval. See [[project_20260719_rebrand_cortexa]].
 
 ---
 *← [[FINBUDDY_PROJECT_MEMORY]] · [[FROZEN_BASELINE_2026-06-17]] · [[CONTEXT]]*
