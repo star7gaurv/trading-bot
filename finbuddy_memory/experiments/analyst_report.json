@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-21T06:30:02.235297+00:00",
+  "generated_at": "2026-07-21T12:30:01.553188+00:00",
   "findings": {
     "dead_timeframes": [
       "5m",
@@ -247,15 +247,9 @@
   "llm_insight": "",
   "manual_overrides": {
     "period_days": 7,
-    "force_exits": 5,
-    "pauses": 2,
-    "resumes": 2,
-    "by_pair": {
-      "LTC/USDT:USDT": 1,
-      "FIL/USDT:USDT": 1,
-      "FET/USDT:USDT": 1,
-      "BTC/USDT:USDT": 1,
-      "1000PEPE/USDT:USDT": 1
-    }
+    "force_exits": 0,
+    "pauses": 0,
+    "resumes": 0,
+    "by_pair": {}
   }
 }
