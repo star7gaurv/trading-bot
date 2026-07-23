@@ -1,7 +1,18 @@
 {
-  "positions": {},
+  "positions": {
+    "LDOUSDT": {
+      "symbol": "LDOUSDT",
+      "side": "long",
+      "entry_price": 0.4024,
+      "notional": 200.0,
+      "entry_liq_z": 2.035,
+      "entry_liq_long_usd": 43081.0,
+      "opened_at": "2026-07-23T00:50:19.128778+00:00",
+      "fees_paid": 0.04
+    }
+  },
   "realized_pnl": -15.880563,
   "wins": 2,
   "losses": 10,
-  "last_update": "2026-07-22T23:50:16.898117+00:00"
+  "last_update": "2026-07-23T00:50:19.717622+00:00"
 }
