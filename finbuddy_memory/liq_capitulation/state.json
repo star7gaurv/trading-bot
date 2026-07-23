@@ -1,28 +1,18 @@
 {
   "positions": {
-    "SUIUSDT": {
-      "symbol": "SUIUSDT",
-      "side": "long",
-      "entry_price": 0.7572,
-      "notional": 200.0,
-      "entry_liq_z": 2.076,
-      "entry_liq_long_usd": 165526.0,
-      "opened_at": "2026-07-23T13:50:16.881111+00:00",
-      "fees_paid": 0.04
-    },
     "WIFUSDT": {
       "symbol": "WIFUSDT",
       "side": "long",
-      "entry_price": 0.1436,
+      "entry_price": 0.1459,
       "notional": 200.0,
       "entry_liq_z": 2.012,
       "entry_liq_long_usd": 67942.0,
-      "opened_at": "2026-07-23T19:50:18.556162+00:00",
+      "opened_at": "2026-07-23T20:50:18.366164+00:00",
       "fees_paid": 0.04
     }
   },
-  "realized_pnl": -8.194031,
-  "wins": 4,
-  "losses": 10,
-  "last_update": "2026-07-23T19:50:19.142641+00:00"
+  "realized_pnl": -7.64073,
+  "wins": 5,
+  "losses": 11,
+  "last_update": "2026-07-23T20:50:18.943521+00:00"
 }
