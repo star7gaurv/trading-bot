@@ -1,18 +1,7 @@
 {
-  "positions": {
-    "WIFUSDT": {
-      "symbol": "WIFUSDT",
-      "side": "long",
-      "entry_price": 0.1459,
-      "notional": 200.0,
-      "entry_liq_z": 2.012,
-      "entry_liq_long_usd": 67942.0,
-      "opened_at": "2026-07-23T20:50:18.366164+00:00",
-      "fees_paid": 0.04
-    }
-  },
-  "realized_pnl": -7.64073,
+  "positions": {},
+  "realized_pnl": -9.914013,
   "wins": 5,
-  "losses": 11,
-  "last_update": "2026-07-24T02:50:18.923083+00:00"
+  "losses": 12,
+  "last_update": "2026-07-24T03:50:18.799963+00:00"
 }
