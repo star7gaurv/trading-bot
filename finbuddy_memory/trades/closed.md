@@ -730,3 +730,4 @@
 | 2026-07-19 14:04:39 | SUI/USDT:USDT | LONG | 2h04m | +0.32% | +0.25 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-07-21 00:00:29 | TAO/USDT:USDT | SHORT | 6h00m | +0.38% | +0.30 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-23 02:00:33 | LDO/USDT:USDT | LONG | 6h00m | +0.33% | +0.26 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-07-24 10:05:09 | FET/USDT:USDT | SHORT | 6h04m | -0.42% | -0.33 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
