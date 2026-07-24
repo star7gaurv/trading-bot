@@ -1,20 +1,5 @@
 {
   "positions": {
-    "BTC/XRP": {
-      "a": "BTC",
-      "b": "XRP",
-      "side": -1,
-      "beta": 0.6402,
-      "entry_z": 2.669,
-      "corr": 0.862,
-      "entry_price_a": 63917.2,
-      "entry_price_b": 1.1065,
-      "notional_a": 121.935,
-      "notional_b": 78.065,
-      "opened_at": "2026-07-10T05:20:02.868743+00:00",
-      "fees_paid": 0.1,
-      "half_life_h": 24.1
-    },
     "LINK/SUI": {
       "a": "LINK",
       "b": "SUI",
@@ -31,6 +16,6 @@
       "half_life_h": 67.3
     }
   },
-  "realized_pnl": -36.4125277253857,
-  "last_update": "2026-07-24T04:20:18.292537+00:00"
+  "realized_pnl": -39.151941253694545,
+  "last_update": "2026-07-24T05:20:06.487424+00:00"
 }
