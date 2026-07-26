@@ -11,3 +11,4 @@
 {"ts": "2026-07-11T05:20:02.115042+00:00", "event": "close", "pair": "DOT/APT", "reason": "reverted (z -0.39)", "exit_z": -0.39, "gross_pnl": 5.0827, "fees_total": 0.2, "net_pnl": 4.8827, "held_hours": 24.0, "caveat": "slippage/borrow not modeled"}
 {"ts": "2026-07-15T08:20:06.685121+00:00", "event": "open", "pair": "LINK/SUI", "side": -1, "trade": "short LINK / long SUI", "z": 2.0, "beta": 0.824, "corr": 0.863, "notional": 200.0, "entry_fee": 0.1}
 {"ts": "2026-07-24T05:20:05.605912+00:00", "event": "close", "pair": "BTC/XRP", "reason": "time stop (14d)", "exit_z": 1.79, "gross_pnl": -2.5394, "fees_total": 0.2, "net_pnl": -2.7394, "held_hours": 336.0, "caveat": "slippage/borrow not modeled"}
+{"ts": "2026-07-26T17:20:06.425523+00:00", "event": "close", "pair": "LINK/SUI", "reason": "diverged (z +4.20)", "exit_z": 4.2, "gross_pnl": -7.4647, "fees_total": 0.2, "net_pnl": -7.6647, "held_hours": 273.0, "caveat": "slippage/borrow not modeled"}

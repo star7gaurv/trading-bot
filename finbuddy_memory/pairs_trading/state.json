@@ -1,21 +1,5 @@
 {
-  "positions": {
-    "LINK/SUI": {
-      "a": "LINK",
-      "b": "SUI",
-      "side": -1,
-      "beta": 0.824,
-      "entry_z": 2.004,
-      "corr": 0.863,
-      "entry_price_a": 8.359,
-      "entry_price_b": 0.7518,
-      "notional_a": 109.6499,
-      "notional_b": 90.3501,
-      "opened_at": "2026-07-15T08:20:06.684954+00:00",
-      "fees_paid": 0.1,
-      "half_life_h": 67.3
-    }
-  },
-  "realized_pnl": -39.151941253694545,
-  "last_update": "2026-07-26T16:20:06.266960+00:00"
+  "positions": {},
+  "realized_pnl": -46.81668550510809,
+  "last_update": "2026-07-26T17:20:07.348440+00:00"
 }
