@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-26T08:00:01.888042+00:00",
+  "updated": "2026-07-26T08:30:01.163770+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "BTC/USDT:USDT": {
-      "BEAR": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -0.24,
-        "avg_profit_pct": -0.4
-      },
-      "NEUTRAL": {
-        "n": 6,
-        "wins": 2,
-        "losses": 4,
-        "wr": 0.3333,
-        "pf": 0.592,
-        "profit_usdt": -0.87,
-        "avg_profit_pct": -0.232
-      }
-    },
     "DOT/USDT:USDT": {
       "BEAR": {
         "n": 1,
@@ -277,6 +257,17 @@
         "pf": 1.816,
         "profit_usdt": 0.71,
         "avg_profit_pct": 0.22
+      }
+    },
+    "BTC/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 6,
+        "wins": 2,
+        "losses": 4,
+        "wr": 0.3333,
+        "pf": 0.592,
+        "profit_usdt": -0.87,
+        "avg_profit_pct": -0.232
       }
     },
     "ENA/USDT:USDT": {
