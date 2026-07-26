@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-26T07:00:01.394364+00:00",
+  "updated": "2026-07-26T07:30:01.614383+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "UNI/USDT:USDT": {
-      "BEAR": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -2.15,
-        "avg_profit_pct": -3.85
-      },
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 0.591,
-        "profit_usdt": -0.85,
-        "avg_profit_pct": -0.55
-      }
-    },
     "BTC/USDT:USDT": {
       "BEAR": {
         "n": 1,
@@ -308,6 +288,17 @@
         "pf": 2.021,
         "profit_usdt": 0.99,
         "avg_profit_pct": 0.615
+      }
+    },
+    "UNI/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 0.591,
+        "profit_usdt": -0.85,
+        "avg_profit_pct": -0.55
       }
     },
     "LTC/USDT:USDT": {
