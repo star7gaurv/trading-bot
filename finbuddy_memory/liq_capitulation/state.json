@@ -1,18 +1,7 @@
 {
-  "positions": {
-    "ADAUSDT": {
-      "symbol": "ADAUSDT",
-      "side": "long",
-      "entry_price": 0.1582,
-      "notional": 200.0,
-      "entry_liq_z": 2.025,
-      "entry_liq_long_usd": 423391.0,
-      "opened_at": "2026-07-27T15:50:18.651406+00:00",
-      "fees_paid": 0.04
-    }
-  },
-  "realized_pnl": -6.612243,
+  "positions": {},
+  "realized_pnl": -9.473533,
   "wins": 6,
-  "losses": 12,
-  "last_update": "2026-07-27T21:50:16.821035+00:00"
+  "losses": 13,
+  "last_update": "2026-07-27T22:50:17.000304+00:00"
 }
