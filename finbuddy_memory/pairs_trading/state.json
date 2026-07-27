@@ -1,5 +1,21 @@
 {
-  "positions": {},
+  "positions": {
+    "BTC/LINK": {
+      "a": "BTC",
+      "b": "LINK",
+      "side": 1,
+      "beta": 0.5586,
+      "entry_z": -2.108,
+      "corr": 0.88,
+      "entry_price_a": 65107.2,
+      "entry_price_b": 8.76,
+      "notional_a": 128.3183,
+      "notional_b": 71.6817,
+      "opened_at": "2026-07-27T00:20:10.092936+00:00",
+      "fees_paid": 0.1,
+      "half_life_h": 30.7
+    }
+  },
   "realized_pnl": -46.81668550510809,
-  "last_update": "2026-07-26T23:20:10.853052+00:00"
+  "last_update": "2026-07-27T00:20:10.699126+00:00"
 }
