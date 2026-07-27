@@ -1,7 +1,28 @@
 {
-  "positions": {},
+  "positions": {
+    "LDOUSDT": {
+      "symbol": "LDOUSDT",
+      "side": "long",
+      "entry_price": 0.3785,
+      "notional": 200.0,
+      "entry_liq_z": 2.045,
+      "entry_liq_long_usd": 73517.0,
+      "opened_at": "2026-07-27T15:50:17.884287+00:00",
+      "fees_paid": 0.04
+    },
+    "ADAUSDT": {
+      "symbol": "ADAUSDT",
+      "side": "long",
+      "entry_price": 0.1582,
+      "notional": 200.0,
+      "entry_liq_z": 2.025,
+      "entry_liq_long_usd": 423391.0,
+      "opened_at": "2026-07-27T15:50:18.651406+00:00",
+      "fees_paid": 0.04
+    }
+  },
   "realized_pnl": -9.914013,
   "wins": 5,
   "losses": 12,
-  "last_update": "2026-07-27T14:50:17.647892+00:00"
+  "last_update": "2026-07-27T15:50:19.262523+00:00"
 }
