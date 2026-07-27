@@ -1,23 +1,5 @@
 {
   "grids": {
-    "ARB": {
-      "symbol": "ARB",
-      "entry_price": 0.09193,
-      "low": 0.0781405,
-      "high": 0.1057195,
-      "n_levels": 10,
-      "position_usdt": 300.0,
-      "spacing_abs": 0.00306433,
-      "spacing_pct": 3.3333,
-      "er": 0.074,
-      "vol_pct": 0.93,
-      "deployed_at": "2026-07-14T14:40:03.688053+00:00",
-      "last_price": 0.07831,
-      "last_price_ts": "2026-07-27T22:40:02.179093+00:00",
-      "total_crossings": 0,
-      "fees_paid": 0.3,
-      "accrued_pnl": 0.0
-    },
     "UNI": {
       "symbol": "UNI",
       "entry_price": 3.58,
@@ -30,8 +12,8 @@
       "er": 0.107,
       "vol_pct": 0.91,
       "deployed_at": "2026-07-15T11:40:03.286419+00:00",
-      "last_price": 3.749,
-      "last_price_ts": "2026-07-27T22:40:02.355009+00:00",
+      "last_price": 3.696,
+      "last_price_ts": "2026-07-27T23:40:03.303904+00:00",
       "total_crossings": 0,
       "fees_paid": 0.3,
       "accrued_pnl": 0.0
@@ -48,13 +30,31 @@
       "er": 0.142,
       "vol_pct": 1.13,
       "deployed_at": "2026-07-16T15:40:03.012237+00:00",
-      "last_price": 0.3927,
-      "last_price_ts": "2026-07-27T22:40:02.535723+00:00",
+      "last_price": 0.388,
+      "last_price_ts": "2026-07-27T23:40:03.472833+00:00",
       "total_crossings": 1,
       "fees_paid": 0.315,
       "accrued_pnl": 0.985
+    },
+    "ONDO": {
+      "symbol": "ONDO",
+      "entry_price": 0.3956,
+      "low": 0.34549726,
+      "high": 0.44570274,
+      "n_levels": 10,
+      "position_usdt": 300.0,
+      "spacing_abs": 0.01113394,
+      "spacing_pct": 2.8144,
+      "er": 0.022,
+      "vol_pct": 0.95,
+      "deployed_at": "2026-07-27T23:40:03.656077+00:00",
+      "last_price": 0.3956,
+      "last_price_ts": "2026-07-27T23:40:03.656089+00:00",
+      "total_crossings": 0,
+      "fees_paid": 0.3,
+      "accrued_pnl": 0.0
     }
   },
-  "realized_pnl": 24.96467,
-  "last_update": "2026-07-27T22:40:02.549382+00:00"
+  "realized_pnl": 24.66467,
+  "last_update": "2026-07-27T23:40:04.237077+00:00"
 }
