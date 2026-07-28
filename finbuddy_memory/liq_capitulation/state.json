@@ -10,16 +10,6 @@
       "opened_at": "2026-07-27T23:50:17.340329+00:00",
       "fees_paid": 0.04
     },
-    "DOTUSDT": {
-      "symbol": "DOTUSDT",
-      "side": "long",
-      "entry_price": 0.7563,
-      "notional": 200.0,
-      "entry_liq_z": 2.249,
-      "entry_liq_long_usd": 642385.0,
-      "opened_at": "2026-07-27T23:50:18.096530+00:00",
-      "fees_paid": 0.04
-    },
     "SUIUSDT": {
       "symbol": "SUIUSDT",
       "side": "long",
@@ -31,8 +21,8 @@
       "fees_paid": 0.04
     }
   },
-  "realized_pnl": -9.473533,
-  "wins": 6,
+  "realized_pnl": -6.062855,
+  "wins": 7,
   "losses": 13,
-  "last_update": "2026-07-28T04:50:02.774260+00:00"
+  "last_update": "2026-07-28T05:50:17.117149+00:00"
 }
