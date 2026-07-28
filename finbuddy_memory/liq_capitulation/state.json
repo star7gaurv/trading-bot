@@ -1,7 +1,38 @@
 {
-  "positions": {},
+  "positions": {
+    "FETUSDT": {
+      "symbol": "FETUSDT",
+      "side": "long",
+      "entry_price": 0.144,
+      "notional": 200.0,
+      "entry_liq_z": 2.26,
+      "entry_liq_long_usd": 357410.0,
+      "opened_at": "2026-07-27T23:50:17.340329+00:00",
+      "fees_paid": 0.04
+    },
+    "DOTUSDT": {
+      "symbol": "DOTUSDT",
+      "side": "long",
+      "entry_price": 0.7563,
+      "notional": 200.0,
+      "entry_liq_z": 2.249,
+      "entry_liq_long_usd": 642385.0,
+      "opened_at": "2026-07-27T23:50:18.096530+00:00",
+      "fees_paid": 0.04
+    },
+    "SUIUSDT": {
+      "symbol": "SUIUSDT",
+      "side": "long",
+      "entry_price": 0.6798,
+      "notional": 200.0,
+      "entry_liq_z": 2.136,
+      "entry_liq_long_usd": 837259.0,
+      "opened_at": "2026-07-27T23:50:18.862708+00:00",
+      "fees_paid": 0.04
+    }
+  },
   "realized_pnl": -9.473533,
   "wins": 6,
   "losses": 13,
-  "last_update": "2026-07-27T22:50:17.000304+00:00"
+  "last_update": "2026-07-27T23:50:19.451124+00:00"
 }
