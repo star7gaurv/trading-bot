@@ -1,15 +1,5 @@
 {
   "positions": {
-    "LTCUSDT": {
-      "symbol": "LTCUSDT",
-      "side": "long",
-      "entry_price": 45.23,
-      "notional": 200.0,
-      "entry_liq_z": 2.084,
-      "entry_liq_long_usd": 137861.0,
-      "opened_at": "2026-07-29T04:50:17.682453+00:00",
-      "fees_paid": 0.04
-    },
     "ENAUSDT": {
       "symbol": "ENAUSDT",
       "side": "long",
@@ -21,8 +11,8 @@
       "fees_paid": 0.04
     }
   },
-  "realized_pnl": -5.751193,
-  "wins": 9,
+  "realized_pnl": -5.123698,
+  "wins": 10,
   "losses": 14,
-  "last_update": "2026-07-29T10:50:17.418667+00:00"
+  "last_update": "2026-07-29T11:50:17.558572+00:00"
 }
