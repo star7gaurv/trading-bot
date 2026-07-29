@@ -1,23 +1,5 @@
 {
   "grids": {
-    "UNI": {
-      "symbol": "UNI",
-      "entry_price": 3.58,
-      "low": 3.043,
-      "high": 4.117,
-      "n_levels": 10,
-      "position_usdt": 300.0,
-      "spacing_abs": 0.11933333,
-      "spacing_pct": 3.3333,
-      "er": 0.107,
-      "vol_pct": 0.91,
-      "deployed_at": "2026-07-15T11:40:03.286419+00:00",
-      "last_price": 4.042,
-      "last_price_ts": "2026-07-29T11:40:01.939830+00:00",
-      "total_crossings": 0,
-      "fees_paid": 0.3,
-      "accrued_pnl": 0.0
-    },
     "LDO": {
       "symbol": "LDO",
       "entry_price": 0.3806,
@@ -30,8 +12,8 @@
       "er": 0.142,
       "vol_pct": 1.13,
       "deployed_at": "2026-07-16T15:40:03.012237+00:00",
-      "last_price": 0.3658,
-      "last_price_ts": "2026-07-29T11:40:02.119637+00:00",
+      "last_price": 0.3654,
+      "last_price_ts": "2026-07-29T12:40:03.231370+00:00",
       "total_crossings": 1,
       "fees_paid": 0.315,
       "accrued_pnl": 0.985
@@ -48,13 +30,31 @@
       "er": 0.022,
       "vol_pct": 0.95,
       "deployed_at": "2026-07-27T23:40:03.656077+00:00",
-      "last_price": 0.4019,
-      "last_price_ts": "2026-07-29T11:40:02.397107+00:00",
+      "last_price": 0.3981,
+      "last_price_ts": "2026-07-29T12:40:03.385407+00:00",
       "total_crossings": 1,
       "fees_paid": 0.315,
       "accrued_pnl": 0.829333
+    },
+    "ARB": {
+      "symbol": "ARB",
+      "entry_price": 0.07797,
+      "low": 0.06727252,
+      "high": 0.08866748,
+      "n_levels": 10,
+      "position_usdt": 300.0,
+      "spacing_abs": 0.00237722,
+      "spacing_pct": 3.0489,
+      "er": 0.054,
+      "vol_pct": 0.95,
+      "deployed_at": "2026-07-29T12:40:03.547521+00:00",
+      "last_price": 0.07797,
+      "last_price_ts": "2026-07-29T12:40:03.547535+00:00",
+      "total_crossings": 0,
+      "fees_paid": 0.3,
+      "accrued_pnl": 0.0
     }
   },
-  "realized_pnl": 24.66467,
-  "last_update": "2026-07-29T11:40:02.410494+00:00"
+  "realized_pnl": 24.36467,
+  "last_update": "2026-07-29T12:40:04.154868+00:00"
 }
