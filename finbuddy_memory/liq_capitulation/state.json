@@ -1,18 +1,7 @@
 {
-  "positions": {
-    "ENAUSDT": {
-      "symbol": "ENAUSDT",
-      "side": "long",
-      "entry_price": 0.08205,
-      "notional": 200.0,
-      "entry_liq_z": 2.094,
-      "entry_liq_long_usd": 437685.0,
-      "opened_at": "2026-07-29T05:50:16.496656+00:00",
-      "fees_paid": 0.04
-    }
-  },
-  "realized_pnl": -5.123698,
+  "positions": {},
+  "realized_pnl": -7.494984,
   "wins": 10,
-  "losses": 14,
-  "last_update": "2026-07-29T11:50:17.558572+00:00"
+  "losses": 15,
+  "last_update": "2026-07-29T12:50:17.345334+00:00"
 }
