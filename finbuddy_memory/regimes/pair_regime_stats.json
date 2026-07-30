@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-30T11:00:01.396983+00:00",
+  "updated": "2026-07-30T11:30:01.422018+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -51,13 +51,13 @@
     },
     "TAO/USDT:USDT": {
       "NEUTRAL": {
-        "n": 11,
+        "n": 12,
         "wins": 5,
-        "losses": 6,
-        "wr": 0.4545,
-        "pf": 0.424,
-        "profit_usdt": -3.16,
-        "avg_profit_pct": -0.359
+        "losses": 7,
+        "wr": 0.4167,
+        "pf": 0.386,
+        "profit_usdt": -3.7,
+        "avg_profit_pct": -0.387
       }
     },
     "POL/USDT:USDT": {
