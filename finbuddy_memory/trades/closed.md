@@ -735,3 +735,4 @@
 | 2026-07-27 14:28:25 | NEAR/USDT:USDT | LONG | 4h18m | -2.75% | -2.13 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-07-28 22:00:28 | WIF/USDT:USDT | SHORT | 6h00m | +0.63% | +0.50 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-30 11:01:35 | TAO/USDT:USDT | SHORT | 6h01m | -0.69% | -0.54 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-30 12:01:10 | ENA/USDT:USDT | SHORT | 6h00m | -2.57% | -2.02 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
