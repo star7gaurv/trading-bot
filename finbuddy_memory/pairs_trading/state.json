@@ -14,8 +14,23 @@
       "opened_at": "2026-07-31T14:20:06.986180+00:00",
       "fees_paid": 0.1,
       "half_life_h": 25.7
+    },
+    "XRP/LINK": {
+      "a": "XRP",
+      "b": "LINK",
+      "side": 1,
+      "beta": 0.4206,
+      "entry_z": -2.088,
+      "corr": 0.885,
+      "entry_price_a": 1.0622,
+      "entry_price_b": 8.174,
+      "notional_a": 140.7902,
+      "notional_b": 59.2098,
+      "opened_at": "2026-07-31T19:20:06.387394+00:00",
+      "fees_paid": 0.1,
+      "half_life_h": 59.9
     }
   },
   "realized_pnl": -44.68988196364045,
-  "last_update": "2026-07-31T18:20:06.738984+00:00"
+  "last_update": "2026-07-31T19:20:07.031858+00:00"
 }
