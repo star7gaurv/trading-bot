@@ -737,3 +737,4 @@
 | 2026-07-30 11:01:35 | TAO/USDT:USDT | SHORT | 6h01m | -0.69% | -0.54 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-30 12:01:10 | ENA/USDT:USDT | SHORT | 6h00m | -2.57% | -2.02 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-07-30 19:01:35 | ENA/USDT:USDT | SHORT | 6h01m | -2.48% | -1.95 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-07-31 06:00:48 | TAO/USDT:USDT | SHORT | 6h00m | -2.00% | -1.57 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
