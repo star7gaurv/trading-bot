@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-01T12:30:01.902037+00:00",
+  "generated_at": "2026-08-01T18:30:02.247329+00:00",
   "findings": {
     "dead_timeframes": [
       "5m",
@@ -242,7 +242,7 @@
       }
     }
   },
-  "pruned": 8,
+  "pruned": 11,
   "actions": [],
   "llm_insight": "",
   "manual_overrides": {
