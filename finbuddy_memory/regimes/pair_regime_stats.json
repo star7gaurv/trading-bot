@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-03T23:00:01.730839+00:00",
+  "updated": "2026-08-03T23:30:01.487834+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -33,13 +33,13 @@
     },
     "FIL/USDT:USDT": {
       "NEUTRAL": {
-        "n": 13,
+        "n": 14,
         "wins": 9,
-        "losses": 4,
-        "wr": 0.6923,
-        "pf": 1.616,
-        "profit_usdt": 3.43,
-        "avg_profit_pct": 0.332
+        "losses": 5,
+        "wr": 0.6429,
+        "pf": 1.552,
+        "profit_usdt": 3.2,
+        "avg_profit_pct": 0.287
       }
     },
     "XRP/USDT:USDT": {
