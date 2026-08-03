@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-03T18:00:01.141704+00:00",
+  "updated": "2026-08-03T18:30:01.917847+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -11,13 +11,13 @@
   "stats": {
     "TAO/USDT:USDT": {
       "NEUTRAL": {
-        "n": 9,
-        "wins": 3,
+        "n": 8,
+        "wins": 2,
         "losses": 6,
-        "wr": 0.3333,
-        "pf": 0.2,
-        "profit_usdt": -5.51,
-        "avg_profit_pct": -0.77
+        "wr": 0.25,
+        "pf": 0.051,
+        "profit_usdt": -6.54,
+        "avg_profit_pct": -1.028
       }
     },
     "SUI/USDT:USDT": {
@@ -286,10 +286,10 @@
     {
       "pair": "TAO/USDT:USDT",
       "regime": "NEUTRAL",
-      "reason": "WR=33% PF=0.20 n=9 profit=-5.51",
-      "n": 9,
-      "wr": 0.3333,
-      "pf": 0.2
+      "reason": "WR=25% PF=0.05 n=8 profit=-6.54",
+      "n": 8,
+      "wr": 0.25,
+      "pf": 0.051
     },
     {
       "pair": "1000PEPE/USDT:USDT",
