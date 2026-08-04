@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-04T18:00:01.740789+00:00",
+  "updated": "2026-08-04T18:30:01.269451+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,28 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "XRP/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
-        "pf": 0.041,
-        "profit_usdt": -1.64,
-        "avg_profit_pct": -0.402
-      }
-    },
-    "FIL/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 13,
-        "wins": 7,
-        "losses": 6,
-        "wr": 0.5385,
-        "pf": 1.163,
-        "profit_usdt": 1.02,
-        "avg_profit_pct": 0.099
-      }
-    },
     "POL/USDT:USDT": {
       "NEUTRAL": {
         "n": 2,
@@ -117,6 +95,17 @@
         "pf": 0.0,
         "profit_usdt": -1.88,
         "avg_profit_pct": -2.34
+      }
+    },
+    "FIL/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 12,
+        "wins": 7,
+        "losses": 5,
+        "wr": 0.5833,
+        "pf": 1.401,
+        "profit_usdt": 2.08,
+        "avg_profit_pct": 0.217
       }
     },
     "LINK/USDT:USDT": {
@@ -207,6 +196,17 @@
         "avg_profit_pct": -0.55
       }
     },
+    "XRP/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.061,
+        "profit_usdt": -1.07,
+        "avg_profit_pct": -0.328
+      }
+    },
     "DOT/USDT:USDT": {
       "NEUTRAL": {
         "n": 6,
@@ -275,14 +275,6 @@
     }
   },
   "blocked": [
-    {
-      "pair": "XRP/USDT:USDT",
-      "regime": "NEUTRAL",
-      "reason": "WR=20% PF=0.04 n=5 profit=-1.64",
-      "n": 5,
-      "wr": 0.2,
-      "pf": 0.041
-    },
     {
       "pair": "TAO/USDT:USDT",
       "regime": "NEUTRAL",
