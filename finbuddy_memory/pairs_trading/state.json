@@ -1,20 +1,5 @@
 {
   "positions": {
-    "BTC/ETH": {
-      "a": "BTC",
-      "b": "ETH",
-      "side": 1,
-      "beta": 0.4428,
-      "entry_z": -2.795,
-      "corr": 0.899,
-      "entry_price_a": 62623.4,
-      "entry_price_b": 1867.88,
-      "notional_a": 138.617,
-      "notional_b": 61.383,
-      "opened_at": "2026-07-31T14:20:06.986180+00:00",
-      "fees_paid": 0.1,
-      "half_life_h": 25.7
-    },
     "XRP/LINK": {
       "a": "XRP",
       "b": "LINK",
@@ -31,6 +16,6 @@
       "half_life_h": 59.9
     }
   },
-  "realized_pnl": -44.68988196364045,
-  "last_update": "2026-08-04T22:20:06.667135+00:00"
+  "realized_pnl": -41.1502227177081,
+  "last_update": "2026-08-04T23:20:06.941979+00:00"
 }
