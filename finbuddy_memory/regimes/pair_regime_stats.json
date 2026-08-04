@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-04T22:00:01.873166+00:00",
+  "updated": "2026-08-04T22:30:01.543887+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "TAO/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 7,
-        "wins": 2,
-        "losses": 5,
-        "wr": 0.2857,
-        "pf": 0.066,
-        "profit_usdt": -4.93,
-        "avg_profit_pct": -0.89
-      }
-    },
     "LDO/USDT:USDT": {
       "NEUTRAL": {
         "n": 10,
@@ -106,6 +95,17 @@
         "pf": 1.816,
         "profit_usdt": 0.71,
         "avg_profit_pct": 0.22
+      }
+    },
+    "TAO/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 6,
+        "wins": 1,
+        "losses": 5,
+        "wr": 0.1667,
+        "pf": 0.057,
+        "profit_usdt": -4.98,
+        "avg_profit_pct": -1.048
       }
     },
     "RENDER/USDT:USDT": {
@@ -278,10 +278,10 @@
     {
       "pair": "TAO/USDT:USDT",
       "regime": "NEUTRAL",
-      "reason": "WR=29% PF=0.07 n=7 profit=-4.93",
-      "n": 7,
-      "wr": 0.2857,
-      "pf": 0.066
+      "reason": "WR=17% PF=0.06 n=6 profit=-4.98",
+      "n": 6,
+      "wr": 0.1667,
+      "pf": 0.057
     },
     {
       "pair": "1000PEPE/USDT:USDT",
