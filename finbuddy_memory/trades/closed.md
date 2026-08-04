@@ -742,3 +742,4 @@
 | 2026-08-03 23:00:29 | FIL/USDT:USDT | LONG | 6h00m | -0.29% | -0.23 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-08-04 06:01:13 | NEAR/USDT:USDT | LONG | 6h00m | +1.81% | +1.41 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-08-04 06:19:34 | FIL/USDT:USDT | LONG | 6h09m | -0.58% | -0.45 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-08-04 13:00:56 | NEAR/USDT:USDT | LONG | 6h00m | -1.08% | -0.83 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
