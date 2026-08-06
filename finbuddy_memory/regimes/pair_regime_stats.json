@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-06T19:00:01.397441+00:00",
+  "updated": "2026-08-06T19:30:01.363731+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,37 +9,15 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "RENDER/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 2.217,
-        "profit_usdt": 0.56,
-        "avg_profit_pct": 0.36
-      }
-    },
-    "OP/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 4,
-        "wins": 4,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 4.31,
-        "avg_profit_pct": 1.33
-      }
-    },
     "SOL/USDT:USDT": {
       "NEUTRAL": {
-        "n": 1,
-        "wins": 1,
+        "n": 2,
+        "wins": 2,
         "losses": 0,
         "wr": 1.0,
         "pf": null,
-        "profit_usdt": 0.64,
-        "avg_profit_pct": 0.8
+        "profit_usdt": 1.3,
+        "avg_profit_pct": 0.82
       }
     },
     "LINK/USDT:USDT": {
@@ -152,6 +130,17 @@
         "avg_profit_pct": -0.291
       }
     },
+    "RENDER/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.46,
+        "avg_profit_pct": -0.56
+      }
+    },
     "UNI/USDT:USDT": {
       "NEUTRAL": {
         "n": 3,
@@ -194,6 +183,17 @@
         "pf": 0.464,
         "profit_usdt": -1.63,
         "avg_profit_pct": -0.333
+      }
+    },
+    "OP/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 3,
+        "wins": 3,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 3.11,
+        "avg_profit_pct": 1.277
       }
     },
     "LTC/USDT:USDT": {
