@@ -1,5 +1,5 @@
 # Cortexa — Master Context
-Last updated: 2026-08-06 06:15 UTC
+Last updated: 2026-08-06 06:30 UTC
 
 ## Current Regime
 Regime: **NEUTRAL** | Confidence: 70.0% | Since: 2026-08-06
@@ -10,10 +10,10 @@ BTC Dominance: 56.7%
 News Sentiment: 100.0% bullish
 
 ## Bot Performance
-Total Trades: 1035 | Win Rate: 42.4% | Total P&L: -0.34%
+Total Trades: 1035 | Win Rate: 42.4% | Total P&L: -0.35%
 
 ## Open Trades (1)
-- AVAX/USDT:USDT: Entry 6.65 | Current 6.65 | P&L: -0.06%
+- AVAX/USDT:USDT: Entry 6.65 | Current 6.66 | P&L: -0.18%
 ## Risk Flags
 - None
 
