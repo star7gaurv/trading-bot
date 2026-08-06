@@ -1,5 +1,5 @@
 # Cortexa — Master Context
-Last updated: 2026-08-06 06:45 UTC
+Last updated: 2026-08-06 07:00 UTC
 
 ## Current Regime
 Regime: **NEUTRAL** | Confidence: 70.0% | Since: 2026-08-06
@@ -13,7 +13,7 @@ News Sentiment: 100.0% bullish
 Total Trades: 1035 | Win Rate: 42.4% | Total P&L: -0.36%
 
 ## Open Trades (1)
-- AVAX/USDT:USDT: Entry 6.65 | Current 6.67 | P&L: -0.34%
+- AVAX/USDT:USDT: Entry 6.65 | Current 6.67 | P&L: -0.27%
 ## Risk Flags
 - None
 
