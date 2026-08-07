@@ -1,23 +1,5 @@
 {
   "grids": {
-    "ONDO": {
-      "symbol": "ONDO",
-      "entry_price": 0.3956,
-      "low": 0.34549726,
-      "high": 0.44570274,
-      "n_levels": 10,
-      "position_usdt": 300.0,
-      "spacing_abs": 0.01113394,
-      "spacing_pct": 2.8144,
-      "er": 0.022,
-      "vol_pct": 0.95,
-      "deployed_at": "2026-07-27T23:40:03.656077+00:00",
-      "last_price": 0.3488,
-      "last_price_ts": "2026-08-07T21:40:01.773247+00:00",
-      "total_crossings": 1,
-      "fees_paid": 0.315,
-      "accrued_pnl": 0.829333
-    },
     "ARB": {
       "symbol": "ARB",
       "entry_price": 0.07797,
@@ -30,8 +12,8 @@
       "er": 0.054,
       "vol_pct": 0.95,
       "deployed_at": "2026-07-29T12:40:03.547521+00:00",
-      "last_price": 0.07897,
-      "last_price_ts": "2026-08-07T21:40:01.916235+00:00",
+      "last_price": 0.07869,
+      "last_price_ts": "2026-08-07T22:40:02.600156+00:00",
       "total_crossings": 0,
       "fees_paid": 0.3,
       "accrued_pnl": 0.0
@@ -48,13 +30,31 @@
       "er": 0.087,
       "vol_pct": 1.14,
       "deployed_at": "2026-08-04T09:40:02.759935+00:00",
-      "last_price": 0.2863,
-      "last_price_ts": "2026-08-07T21:40:02.057114+00:00",
+      "last_price": 0.2847,
+      "last_price_ts": "2026-08-07T22:40:02.742383+00:00",
       "total_crossings": 2,
       "fees_paid": 0.33,
       "accrued_pnl": 1.97
+    },
+    "ONDO": {
+      "symbol": "ONDO",
+      "entry_price": 0.3453,
+      "low": 0.30156776,
+      "high": 0.38903224,
+      "n_levels": 10,
+      "position_usdt": 300.0,
+      "spacing_abs": 0.00971828,
+      "spacing_pct": 2.8144,
+      "er": 0.022,
+      "vol_pct": 0.95,
+      "deployed_at": "2026-08-07T22:40:02.897274+00:00",
+      "last_price": 0.3453,
+      "last_price_ts": "2026-08-07T22:40:02.897286+00:00",
+      "total_crossings": 0,
+      "fees_paid": 0.3,
+      "accrued_pnl": 0.0
     }
   },
-  "realized_pnl": 24.73467,
-  "last_update": "2026-08-07T21:40:02.070879+00:00"
+  "realized_pnl": 25.249003,
+  "last_update": "2026-08-07T22:40:03.473719+00:00"
 }
