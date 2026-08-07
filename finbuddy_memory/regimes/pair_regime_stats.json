@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-07T09:00:01.247052+00:00",
+  "updated": "2026-08-07T09:30:01.536699+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,70 +9,15 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "FIL/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 10,
-        "wins": 5,
-        "losses": 5,
-        "wr": 0.5,
-        "pf": 1.023,
-        "profit_usdt": 0.12,
-        "avg_profit_pct": 0.016
-      }
-    },
-    "FET/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 15,
-        "wins": 7,
-        "losses": 8,
-        "wr": 0.4667,
-        "pf": 0.893,
-        "profit_usdt": -0.96,
-        "avg_profit_pct": -0.081
-      }
-    },
-    "BTC/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 6,
-        "wins": 2,
-        "losses": 4,
-        "wr": 0.3333,
-        "pf": 0.592,
-        "profit_usdt": -0.87,
-        "avg_profit_pct": -0.232
-      }
-    },
-    "SUI/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 3,
-        "wins": 2,
-        "losses": 1,
-        "wr": 0.6667,
-        "pf": 3.485,
-        "profit_usdt": 2.56,
-        "avg_profit_pct": 1.04
-      }
-    },
-    "ENA/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 4,
-        "wins": 1,
-        "losses": 3,
-        "wr": 0.25,
-        "pf": 0.397,
-        "profit_usdt": -2.98,
-        "avg_profit_pct": -0.955
-      }
-    },
     "1000PEPE/USDT:USDT": {
       "NEUTRAL": {
-        "n": 8,
-        "wins": 2,
+        "n": 7,
+        "wins": 1,
         "losses": 6,
-        "wr": 0.25,
-        "pf": 0.319,
-        "profit_usdt": -5.25,
-        "avg_profit_pct": -0.807
+        "wr": 0.1429,
+        "pf": 0.106,
+        "profit_usdt": -6.89,
+        "avg_profit_pct": -1.211
       }
     },
     "POL/USDT:USDT": {
@@ -95,6 +40,39 @@
         "pf": 0.648,
         "profit_usdt": -1.9,
         "avg_profit_pct": -0.291
+      }
+    },
+    "BTC/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 1,
+        "losses": 4,
+        "wr": 0.2,
+        "pf": 0.183,
+        "profit_usdt": -1.74,
+        "avg_profit_pct": -0.554
+      }
+    },
+    "FET/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 14,
+        "wins": 6,
+        "losses": 8,
+        "wr": 0.4286,
+        "pf": 0.432,
+        "profit_usdt": -5.11,
+        "avg_profit_pct": -0.452
+      }
+    },
+    "ENA/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 3,
+        "wins": 0,
+        "losses": 3,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -4.94,
+        "avg_profit_pct": -2.077
       }
     },
     "RENDER/USDT:USDT": {
@@ -128,6 +106,17 @@
         "pf": 0.562,
         "profit_usdt": -1.52,
         "avg_profit_pct": -0.39
+      }
+    },
+    "FIL/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 9,
+        "wins": 4,
+        "losses": 5,
+        "wr": 0.4444,
+        "pf": 0.644,
+        "profit_usdt": -1.85,
+        "avg_profit_pct": -0.251
       }
     },
     "XRP/USDT:USDT": {
@@ -240,6 +229,17 @@
         "avg_profit_pct": -1.046
       }
     },
+    "SUI/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 0.243,
+        "profit_usdt": -0.78,
+        "avg_profit_pct": -0.49
+      }
+    },
     "NEAR/USDT:USDT": {
       "NEUTRAL": {
         "n": 6,
@@ -276,6 +276,14 @@
   },
   "blocked": [
     {
+      "pair": "1000PEPE/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=14% PF=0.11 n=7 profit=-6.89",
+      "n": 7,
+      "wr": 0.1429,
+      "pf": 0.106
+    },
+    {
       "pair": "TAO/USDT:USDT",
       "regime": "NEUTRAL",
       "reason": "WR=20% PF=0.07 n=5 profit=-4.13",
@@ -284,20 +292,12 @@
       "pf": 0.068
     },
     {
-      "pair": "1000PEPE/USDT:USDT",
-      "regime": "NEUTRAL",
-      "reason": "WR=25% PF=0.32 n=8 profit=-5.25",
-      "n": 8,
-      "wr": 0.25,
-      "pf": 0.319
-    },
-    {
       "pair": "BTC/USDT:USDT",
       "regime": "NEUTRAL",
-      "reason": "WR=33% PF=0.59 n=6 profit=-0.87",
-      "n": 6,
-      "wr": 0.3333,
-      "pf": 0.592
+      "reason": "WR=20% PF=0.18 n=5 profit=-1.74",
+      "n": 5,
+      "wr": 0.2,
+      "pf": 0.183
     }
   ]
 }
