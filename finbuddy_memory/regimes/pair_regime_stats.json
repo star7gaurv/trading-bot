@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-07T23:00:01.849761+00:00",
+  "updated": "2026-08-07T23:30:02.033465+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,28 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "BTC/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
-        "pf": 0.183,
-        "profit_usdt": -1.74,
-        "avg_profit_pct": -0.554
-      }
-    },
-    "FET/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 14,
-        "wins": 6,
-        "losses": 8,
-        "wr": 0.4286,
-        "pf": 0.432,
-        "profit_usdt": -5.11,
-        "avg_profit_pct": -0.452
-      }
-    },
     "ENA/USDT:USDT": {
       "NEUTRAL": {
         "n": 3,
@@ -73,6 +51,17 @@
         "pf": 0.562,
         "profit_usdt": -1.52,
         "avg_profit_pct": -0.39
+      }
+    },
+    "FET/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 13,
+        "wins": 6,
+        "losses": 7,
+        "wr": 0.4615,
+        "pf": 0.55,
+        "profit_usdt": -3.18,
+        "avg_profit_pct": -0.305
       }
     },
     "FIL/USDT:USDT": {
@@ -161,6 +150,17 @@
         "pf": 0.475,
         "profit_usdt": -0.21,
         "avg_profit_pct": -0.135
+      }
+    },
+    "BTC/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.206,
+        "profit_usdt": -1.5,
+        "avg_profit_pct": -0.595
       }
     },
     "ARB/USDT:USDT": {
@@ -279,14 +279,6 @@
       "n": 5,
       "wr": 0.2,
       "pf": 0.068
-    },
-    {
-      "pair": "BTC/USDT:USDT",
-      "regime": "NEUTRAL",
-      "reason": "WR=20% PF=0.18 n=5 profit=-1.74",
-      "n": 5,
-      "wr": 0.2,
-      "pf": 0.183
     }
   ]
 }
