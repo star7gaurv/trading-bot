@@ -748,3 +748,4 @@
 | 2026-08-06 07:03:25 | AVAX/USDT:USDT | SHORT | 6h03m | -0.24% | -0.17 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-08-06 10:00:53 | NEAR/USDT:USDT | SHORT | 1h50m | +1.54% | +1.18 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
 | 2026-08-06 19:00:26 | SOL/USDT:USDT | SHORT | 4h00m | +0.84% | +0.66 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
+| 2026-08-07 01:10:40 | OP/USDT:USDT | SHORT | 6h10m | -0.38% | -0.30 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
