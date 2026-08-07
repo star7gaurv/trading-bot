@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-07T14:00:01.421502+00:00",
+  "updated": "2026-08-07T14:30:01.235859+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "1000PEPE/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 7,
-        "wins": 1,
-        "losses": 6,
-        "wr": 0.1429,
-        "pf": 0.106,
-        "profit_usdt": -6.89,
-        "avg_profit_pct": -1.211
-      }
-    },
     "POL/USDT:USDT": {
       "NEUTRAL": {
         "n": 1,
@@ -152,6 +141,17 @@
         "avg_profit_pct": 0.41
       }
     },
+    "1000PEPE/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 6,
+        "wins": 1,
+        "losses": 5,
+        "wr": 0.1667,
+        "pf": 0.152,
+        "profit_usdt": -4.59,
+        "avg_profit_pct": -0.948
+      }
+    },
     "LTC/USDT:USDT": {
       "NEUTRAL": {
         "n": 3,
@@ -242,13 +242,13 @@
     },
     "NEAR/USDT:USDT": {
       "NEUTRAL": {
-        "n": 6,
-        "wins": 4,
+        "n": 7,
+        "wins": 5,
         "losses": 2,
-        "wr": 0.6667,
-        "pf": 1.328,
-        "profit_usdt": 0.97,
-        "avg_profit_pct": 0.208
+        "wr": 0.7143,
+        "pf": 1.429,
+        "profit_usdt": 1.27,
+        "avg_profit_pct": 0.234
       }
     },
     "AVAX/USDT:USDT": {
@@ -278,10 +278,10 @@
     {
       "pair": "1000PEPE/USDT:USDT",
       "regime": "NEUTRAL",
-      "reason": "WR=14% PF=0.11 n=7 profit=-6.89",
-      "n": 7,
-      "wr": 0.1429,
-      "pf": 0.106
+      "reason": "WR=17% PF=0.15 n=6 profit=-4.59",
+      "n": 6,
+      "wr": 0.1667,
+      "pf": 0.152
     },
     {
       "pair": "TAO/USDT:USDT",
