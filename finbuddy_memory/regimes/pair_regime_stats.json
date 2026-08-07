@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-07T01:30:01.963756+00:00",
+  "updated": "2026-08-07T02:00:01.386957+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,28 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "LINK/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 3,
-        "wins": 2,
-        "losses": 1,
-        "wr": 0.6667,
-        "pf": 3.95,
-        "profit_usdt": 1.18,
-        "avg_profit_pct": 0.487
-      }
-    },
-    "FIL/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 11,
-        "wins": 6,
-        "losses": 5,
-        "wr": 0.5455,
-        "pf": 1.331,
-        "profit_usdt": 1.72,
-        "avg_profit_pct": 0.195
-      }
-    },
     "1000PEPE/USDT:USDT": {
       "NEUTRAL": {
         "n": 9,
@@ -51,6 +29,17 @@
         "pf": 0.629,
         "profit_usdt": -2.45,
         "avg_profit_pct": -0.338
+      }
+    },
+    "FIL/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 10,
+        "wins": 5,
+        "losses": 5,
+        "wr": 0.5,
+        "pf": 1.023,
+        "profit_usdt": 0.12,
+        "avg_profit_pct": 0.016
       }
     },
     "FET/USDT:USDT": {
@@ -194,6 +183,17 @@
         "pf": 0.731,
         "profit_usdt": -0.28,
         "avg_profit_pct": -0.117
+      }
+    },
+    "LINK/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 0.475,
+        "profit_usdt": -0.21,
+        "avg_profit_pct": -0.135
       }
     },
     "ONDO/USDT:USDT": {
