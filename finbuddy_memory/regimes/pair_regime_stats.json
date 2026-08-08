@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-08T06:00:01.401368+00:00",
+  "updated": "2026-08-08T06:30:01.497224+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,39 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ADA/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 3,
-        "losses": 2,
-        "wr": 0.6,
-        "pf": 0.562,
-        "profit_usdt": -1.52,
-        "avg_profit_pct": -0.39
-      }
-    },
-    "FET/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 13,
-        "wins": 6,
-        "losses": 7,
-        "wr": 0.4615,
-        "pf": 0.55,
-        "profit_usdt": -3.18,
-        "avg_profit_pct": -0.305
-      }
-    },
-    "FIL/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 9,
-        "wins": 4,
-        "losses": 5,
-        "wr": 0.4444,
-        "pf": 0.644,
-        "profit_usdt": -1.85,
-        "avg_profit_pct": -0.251
-      }
-    },
     "XRP/USDT:USDT": {
       "NEUTRAL": {
         "n": 4,
@@ -53,6 +20,17 @@
         "avg_profit_pct": -0.328
       }
     },
+    "FET/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 12,
+        "wins": 6,
+        "losses": 6,
+        "wr": 0.5,
+        "pf": 0.662,
+        "profit_usdt": -1.99,
+        "avg_profit_pct": -0.209
+      }
+    },
     "DOT/USDT:USDT": {
       "NEUTRAL": {
         "n": 6,
@@ -62,6 +40,17 @@
         "pf": 0.464,
         "profit_usdt": -1.63,
         "avg_profit_pct": -0.333
+      }
+    },
+    "ADA/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 4,
+        "wins": 3,
+        "losses": 1,
+        "wr": 0.75,
+        "pf": 0.747,
+        "profit_usdt": -0.66,
+        "avg_profit_pct": -0.222
       }
     },
     "OP/USDT:USDT": {
@@ -95,6 +84,17 @@
         "pf": 0.644,
         "profit_usdt": -1.92,
         "avg_profit_pct": -0.336
+      }
+    },
+    "FIL/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 8,
+        "wins": 4,
+        "losses": 4,
+        "wr": 0.5,
+        "pf": 1.561,
+        "profit_usdt": 1.2,
+        "avg_profit_pct": 0.185
       }
     },
     "LTC/USDT:USDT": {
