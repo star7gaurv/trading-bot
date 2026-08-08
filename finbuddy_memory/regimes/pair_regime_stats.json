@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-08T21:00:01.931067+00:00",
+  "updated": "2026-08-08T21:30:01.199999+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -220,13 +220,13 @@
     },
     "ENA/USDT:USDT": {
       "NEUTRAL": {
-        "n": 4,
-        "wins": 1,
+        "n": 5,
+        "wins": 2,
         "losses": 3,
-        "wr": 0.25,
-        "pf": 0.422,
-        "profit_usdt": -2.52,
-        "avg_profit_pct": -0.802
+        "wr": 0.4,
+        "pf": 0.647,
+        "profit_usdt": -1.54,
+        "avg_profit_pct": -0.392
       }
     },
     "AVAX/USDT:USDT": {
