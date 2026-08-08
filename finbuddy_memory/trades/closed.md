@@ -762,3 +762,4 @@
 | 2026-08-08 10:00:34 | ENA/USDT:USDT | SHORT | 6h00m | -0.50% | -0.39 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-08-08 12:30:40 | OP/USDT:USDT | SHORT | 5h00m | -2.92% | -2.29 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
 | 2026-08-08 15:30:26 | NEAR/USDT:USDT | SHORT | 6h30m | -1.98% | -1.55 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-08-08 21:04:15 | ENA/USDT:USDT | SHORT | 6h03m | +1.25% | +0.98 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
