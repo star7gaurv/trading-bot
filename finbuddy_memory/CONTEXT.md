@@ -1,5 +1,5 @@
 # Cortexa — Master Context
-Last updated: 2026-08-08 18:45 UTC
+Last updated: 2026-08-08 19:00 UTC
 
 ## Current Regime
 Regime: **NEUTRAL** | Confidence: 70.0% | Since: 2026-08-08
@@ -13,8 +13,8 @@ News Sentiment: 100.0% bullish
 Total Trades: 1057 | Win Rate: 42.4% | Total P&L: -0.68%
 
 ## Open Trades (2)
-- ENA/USDT:USDT: Entry 0.09 | Current 0.09 | P&L: 1.27%
-- NEAR/USDT:USDT: Entry 1.63 | Current 1.63 | P&L: -0.45%
+- ENA/USDT:USDT: Entry 0.09 | Current 0.09 | P&L: 1.40%
+- NEAR/USDT:USDT: Entry 1.63 | Current 1.63 | P&L: -0.57%
 ## Risk Flags
 - None
 
