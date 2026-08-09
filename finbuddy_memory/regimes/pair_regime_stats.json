@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-09T05:30:01.198112+00:00",
+  "updated": "2026-08-09T06:00:02.003949+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -209,13 +209,13 @@
     },
     "NEAR/USDT:USDT": {
       "NEUTRAL": {
-        "n": 9,
-        "wins": 6,
+        "n": 10,
+        "wins": 7,
         "losses": 3,
-        "wr": 0.6667,
-        "pf": 1.073,
-        "profit_usdt": 0.33,
-        "avg_profit_pct": 0.049
+        "wr": 0.7,
+        "pf": 1.089,
+        "profit_usdt": 0.4,
+        "avg_profit_pct": 0.053
       }
     },
     "ENA/USDT:USDT": {
