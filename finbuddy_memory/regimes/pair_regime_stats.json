@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-09T16:00:01.694924+00:00",
+  "updated": "2026-08-09T16:30:01.834328+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "LDO/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 6,
-        "wins": 3,
-        "losses": 3,
-        "wr": 0.5,
-        "pf": 0.472,
-        "profit_usdt": -2.85,
-        "avg_profit_pct": -0.582
-      }
-    },
     "FET/USDT:USDT": {
       "NEUTRAL": {
         "n": 10,
@@ -51,6 +40,17 @@
         "pf": 1.561,
         "profit_usdt": 1.2,
         "avg_profit_pct": 0.185
+      }
+    },
+    "LDO/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 2,
+        "losses": 3,
+        "wr": 0.4,
+        "pf": 0.243,
+        "profit_usdt": -4.09,
+        "avg_profit_pct": -1.004
       }
     },
     "OP/USDT:USDT": {
