@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-09T07:00:01.473553+00:00",
+  "updated": "2026-08-09T07:30:01.147448+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "1000PEPE/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 6,
-        "wins": 1,
-        "losses": 5,
-        "wr": 0.1667,
-        "pf": 0.152,
-        "profit_usdt": -4.59,
-        "avg_profit_pct": -0.948
-      }
-    },
     "ADA/USDT:USDT": {
       "NEUTRAL": {
         "n": 3,
@@ -95,6 +84,17 @@
         "pf": 1.775,
         "profit_usdt": 0.55,
         "avg_profit_pct": 0.23
+      }
+    },
+    "1000PEPE/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 1,
+        "losses": 4,
+        "wr": 0.2,
+        "pf": 0.194,
+        "profit_usdt": -3.4,
+        "avg_profit_pct": -0.844
       }
     },
     "LTC/USDT:USDT": {
@@ -254,20 +254,20 @@
   },
   "blocked": [
     {
-      "pair": "1000PEPE/USDT:USDT",
-      "regime": "NEUTRAL",
-      "reason": "WR=17% PF=0.15 n=6 profit=-4.59",
-      "n": 6,
-      "wr": 0.1667,
-      "pf": 0.152
-    },
-    {
       "pair": "TAO/USDT:USDT",
       "regime": "NEUTRAL",
       "reason": "WR=20% PF=0.07 n=5 profit=-4.13",
       "n": 5,
       "wr": 0.2,
       "pf": 0.068
+    },
+    {
+      "pair": "1000PEPE/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=20% PF=0.19 n=5 profit=-3.40",
+      "n": 5,
+      "wr": 0.2,
+      "pf": 0.194
     }
   ]
 }
