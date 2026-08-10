@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-10T17:00:01.739228+00:00",
+  "updated": "2026-08-10T17:30:02.007477+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -242,13 +242,13 @@
     },
     "APT/USDT:USDT": {
       "NEUTRAL": {
-        "n": 1,
-        "wins": 1,
+        "n": 2,
+        "wins": 2,
         "losses": 0,
         "wr": 1.0,
         "pf": null,
-        "profit_usdt": 0.53,
-        "avg_profit_pct": 0.68
+        "profit_usdt": 1.51,
+        "avg_profit_pct": 0.965
       }
     }
   },
