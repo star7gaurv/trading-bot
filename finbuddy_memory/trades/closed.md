@@ -770,3 +770,4 @@
 | 2026-08-09 18:15:15 | NEAR/USDT:USDT | SHORT | 6h14m | -1.64% | -1.27 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-08-09 19:12:04 | OP/USDT:USDT | SHORT | 6h11m | -1.28% | -1.00 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-08-10 05:02:06 | ONDO/USDT:USDT | LONG | 6h01m | -0.67% | -0.52 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-08-10 10:12:36 | ADA/USDT:USDT | SHORT | 1h12m | +0.62% | +0.49 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
