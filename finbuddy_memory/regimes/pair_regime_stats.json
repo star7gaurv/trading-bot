@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-10T21:00:01.921628+00:00",
+  "updated": "2026-08-10T21:30:02.123568+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "OP/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
-        "pf": 0.043,
-        "profit_usdt": -4.49,
-        "avg_profit_pct": -1.148
-      }
-    },
     "DOT/USDT:USDT": {
       "NEUTRAL": {
         "n": 3,
@@ -187,13 +176,13 @@
     },
     "SUI/USDT:USDT": {
       "NEUTRAL": {
-        "n": 5,
+        "n": 6,
         "wins": 3,
-        "losses": 2,
-        "wr": 0.6,
-        "pf": 0.393,
-        "profit_usdt": -1.7,
-        "avg_profit_pct": -0.428
+        "losses": 3,
+        "wr": 0.5,
+        "pf": 0.383,
+        "profit_usdt": -1.77,
+        "avg_profit_pct": -0.372
       }
     },
     "NEAR/USDT:USDT": {
@@ -240,6 +229,17 @@
         "avg_profit_pct": -0.317
       }
     },
+    "OP/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 4,
+        "wins": 0,
+        "losses": 4,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -4.69,
+        "avg_profit_pct": -1.495
+      }
+    },
     "APT/USDT:USDT": {
       "NEUTRAL": {
         "n": 2,
@@ -253,14 +253,6 @@
     }
   },
   "blocked": [
-    {
-      "pair": "OP/USDT:USDT",
-      "regime": "NEUTRAL",
-      "reason": "WR=20% PF=0.04 n=5 profit=-4.49",
-      "n": 5,
-      "wr": 0.2,
-      "pf": 0.043
-    },
     {
       "pair": "TAO/USDT:USDT",
       "regime": "NEUTRAL",
