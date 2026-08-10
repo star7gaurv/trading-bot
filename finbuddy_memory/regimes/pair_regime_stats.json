@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-10T15:00:01.680252+00:00",
+  "updated": "2026-08-10T15:30:01.424568+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -11,13 +11,13 @@
   "stats": {
     "OP/USDT:USDT": {
       "NEUTRAL": {
-        "n": 6,
-        "wins": 2,
+        "n": 5,
+        "wins": 1,
         "losses": 4,
-        "wr": 0.3333,
-        "pf": 0.217,
-        "profit_usdt": -3.67,
-        "avg_profit_pct": -0.788
+        "wr": 0.2,
+        "pf": 0.043,
+        "profit_usdt": -4.49,
+        "avg_profit_pct": -1.148
       }
     },
     "DOT/USDT:USDT": {
@@ -254,6 +254,14 @@
   },
   "blocked": [
     {
+      "pair": "OP/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=20% PF=0.04 n=5 profit=-4.49",
+      "n": 5,
+      "wr": 0.2,
+      "pf": 0.043
+    },
+    {
       "pair": "TAO/USDT:USDT",
       "regime": "NEUTRAL",
       "reason": "WR=20% PF=0.07 n=5 profit=-4.13",
@@ -268,14 +276,6 @@
       "n": 5,
       "wr": 0.2,
       "pf": 0.194
-    },
-    {
-      "pair": "OP/USDT:USDT",
-      "regime": "NEUTRAL",
-      "reason": "WR=33% PF=0.22 n=6 profit=-3.67",
-      "n": 6,
-      "wr": 0.3333,
-      "pf": 0.217
     },
     {
       "pair": "FET/USDT:USDT",
