@@ -772,3 +772,4 @@
 | 2026-08-10 05:02:06 | ONDO/USDT:USDT | LONG | 6h01m | -0.67% | -0.52 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-08-10 10:12:36 | ADA/USDT:USDT | SHORT | 1h12m | +0.62% | +0.49 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
 | 2026-08-10 10:30:42 | APT/USDT:USDT | SHORT | 1h30m | +0.68% | +0.53 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
+| 2026-08-10 13:03:26 | BTC/USDT:USDT | SHORT | 3h03m | +0.16% | +0.10 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
