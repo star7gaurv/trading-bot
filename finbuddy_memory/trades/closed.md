@@ -778,3 +778,4 @@
 | 2026-08-10 23:00:55 | DOT/USDT:USDT | SHORT | 6h00m | -0.73% | -0.57 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-08-11 00:00:58 | NEAR/USDT:USDT | SHORT | 6h00m | +0.71% | +0.55 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-08-11 00:00:27 | FIL/USDT:USDT | SHORT | 6h00m | -0.33% | -0.26 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-08-11 05:01:04 | BTC/USDT:USDT | SHORT | 6h00m | -0.00% | -0.00 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
