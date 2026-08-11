@@ -781,3 +781,4 @@
 | 2026-08-11 05:01:04 | BTC/USDT:USDT | SHORT | 6h00m | -0.00% | -0.00 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-08-11 06:01:28 | DOT/USDT:USDT | SHORT | 6h00m | -0.02% | -0.01 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-08-11 07:01:05 | FIL/USDT:USDT | SHORT | 6h00m | +0.14% | +0.11 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-08-11 10:59:32 | RENDER/USDT:USDT | SHORT | 5h59m | +1.15% | +0.90 | trailing_stop_loss | NEUTRAL | freqai_regression_v23_sh |
