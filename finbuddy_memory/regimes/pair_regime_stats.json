@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-11T15:00:01.372709+00:00",
+  "updated": "2026-08-11T15:30:01.623388+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -231,13 +231,13 @@
     },
     "OP/USDT:USDT": {
       "NEUTRAL": {
-        "n": 4,
-        "wins": 0,
+        "n": 5,
+        "wins": 1,
         "losses": 4,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -4.69,
-        "avg_profit_pct": -1.495
+        "wr": 0.2,
+        "pf": 0.469,
+        "profit_usdt": -2.49,
+        "avg_profit_pct": -0.636
       }
     },
     "APT/USDT:USDT": {
@@ -271,6 +271,14 @@
       "n": 5,
       "wr": 0.2,
       "pf": 0.068
+    },
+    {
+      "pair": "OP/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=20% PF=0.47 n=5 profit=-2.49",
+      "n": 5,
+      "wr": 0.2,
+      "pf": 0.469
     },
     {
       "pair": "BTC/USDT:USDT",
