@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-11T00:00:01.519325+00:00",
+  "updated": "2026-08-11T00:30:01.539057+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -33,13 +33,13 @@
     },
     "FIL/USDT:USDT": {
       "NEUTRAL": {
-        "n": 6,
+        "n": 7,
         "wins": 4,
-        "losses": 2,
-        "wr": 0.6667,
-        "pf": 4.912,
-        "profit_usdt": 2.66,
-        "avg_profit_pct": 0.547
+        "losses": 3,
+        "wr": 0.5714,
+        "pf": 3.553,
+        "profit_usdt": 2.4,
+        "avg_profit_pct": 0.421
       }
     },
     "FET/USDT:USDT": {
@@ -187,13 +187,13 @@
     },
     "NEAR/USDT:USDT": {
       "NEUTRAL": {
-        "n": 12,
-        "wins": 8,
+        "n": 13,
+        "wins": 9,
         "losses": 4,
-        "wr": 0.6667,
-        "pf": 0.912,
-        "profit_usdt": -0.51,
-        "avg_profit_pct": -0.054
+        "wr": 0.6923,
+        "pf": 1.007,
+        "profit_usdt": 0.04,
+        "avg_profit_pct": 0.005
       }
     },
     "ENA/USDT:USDT": {
