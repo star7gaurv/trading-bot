@@ -1,15 +1,5 @@
 {
   "positions": {
-    "NEARUSDT": {
-      "symbol": "NEARUSDT",
-      "side": "long",
-      "entry_price": 1.549,
-      "notional": 200.0,
-      "entry_liq_z": 2.21,
-      "entry_liq_long_usd": 560876.0,
-      "opened_at": "2026-08-11T15:50:17.401293+00:00",
-      "fees_paid": 0.04
-    },
     "DOTUSDT": {
       "symbol": "DOTUSDT",
       "side": "long",
@@ -21,8 +11,8 @@
       "fees_paid": 0.04
     }
   },
-  "realized_pnl": -2.919533,
-  "wins": 11,
+  "realized_pnl": 0.873934,
+  "wins": 12,
   "losses": 15,
-  "last_update": "2026-08-11T19:50:16.187651+00:00"
+  "last_update": "2026-08-11T20:50:17.578412+00:00"
 }
