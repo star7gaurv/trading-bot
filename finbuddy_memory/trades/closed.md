@@ -786,3 +786,4 @@
 | 2026-08-11 12:01:21 | NEAR/USDT:USDT | SHORT | 5h59m | +1.68% | +1.31 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
 | 2026-08-11 14:09:32 | FIL/USDT:USDT | SHORT | 6h09m | -2.72% | -2.13 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
 | 2026-08-11 15:00:31 | OP/USDT:USDT | SHORT | 5h50m | +2.80% | +2.20 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
+| 2026-08-11 21:52:12 | NEAR/USDT:USDT | SHORT | 3h51m | -4.44% | -3.46 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
