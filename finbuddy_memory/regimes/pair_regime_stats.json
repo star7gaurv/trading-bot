@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-12T03:00:01.454851+00:00",
+  "updated": "2026-08-12T03:30:02.103556+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "LDO/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 3,
-        "wins": 2,
-        "losses": 1,
-        "wr": 0.6667,
-        "pf": 2.079,
-        "profit_usdt": 0.68,
-        "avg_profit_pct": 0.283
-      }
-    },
     "FET/USDT:USDT": {
       "NEUTRAL": {
         "n": 7,
@@ -51,6 +40,17 @@
         "pf": 0.475,
         "profit_usdt": -0.21,
         "avg_profit_pct": -0.135
+      }
+    },
+    "LDO/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 0.413,
+        "profit_usdt": -0.37,
+        "avg_profit_pct": -0.225
       }
     },
     "BTC/USDT:USDT": {
@@ -242,13 +242,13 @@
     },
     "APT/USDT:USDT": {
       "NEUTRAL": {
-        "n": 2,
-        "wins": 2,
+        "n": 3,
+        "wins": 3,
         "losses": 0,
         "wr": 1.0,
         "pf": null,
-        "profit_usdt": 1.51,
-        "avg_profit_pct": 0.965
+        "profit_usdt": 2.09,
+        "avg_profit_pct": 0.89
       }
     },
     "RENDER/USDT:USDT": {
