@@ -1,23 +1,5 @@
 {
   "grids": {
-    "ARB": {
-      "symbol": "ARB",
-      "entry_price": 0.07797,
-      "low": 0.06727252,
-      "high": 0.08866748,
-      "n_levels": 10,
-      "position_usdt": 300.0,
-      "spacing_abs": 0.00237722,
-      "spacing_pct": 3.0489,
-      "er": 0.054,
-      "vol_pct": 0.95,
-      "deployed_at": "2026-07-29T12:40:03.547521+00:00",
-      "last_price": 0.07891,
-      "last_price_ts": "2026-08-12T12:40:02.485687+00:00",
-      "total_crossings": 0,
-      "fees_paid": 0.3,
-      "accrued_pnl": 0.0
-    },
     "LDO": {
       "symbol": "LDO",
       "entry_price": 0.3177,
@@ -30,8 +12,8 @@
       "er": 0.087,
       "vol_pct": 1.14,
       "deployed_at": "2026-08-04T09:40:02.759935+00:00",
-      "last_price": 0.2967,
-      "last_price_ts": "2026-08-12T12:40:02.684899+00:00",
+      "last_price": 0.2961,
+      "last_price_ts": "2026-08-12T13:40:02.812839+00:00",
       "total_crossings": 2,
       "fees_paid": 0.33,
       "accrued_pnl": 1.97
@@ -48,13 +30,31 @@
       "er": 0.022,
       "vol_pct": 0.95,
       "deployed_at": "2026-08-07T22:40:02.897274+00:00",
-      "last_price": 0.3384,
-      "last_price_ts": "2026-08-12T12:40:02.855788+00:00",
+      "last_price": 0.3369,
+      "last_price_ts": "2026-08-12T13:40:02.982222+00:00",
+      "total_crossings": 0,
+      "fees_paid": 0.3,
+      "accrued_pnl": 0.0
+    },
+    "ARB": {
+      "symbol": "ARB",
+      "entry_price": 0.07869,
+      "low": 0.06789373,
+      "high": 0.08948627,
+      "n_levels": 10,
+      "position_usdt": 300.0,
+      "spacing_abs": 0.00239917,
+      "spacing_pct": 3.0489,
+      "er": 0.054,
+      "vol_pct": 0.95,
+      "deployed_at": "2026-08-12T13:40:03.171837+00:00",
+      "last_price": 0.07869,
+      "last_price_ts": "2026-08-12T13:40:03.171848+00:00",
       "total_crossings": 0,
       "fees_paid": 0.3,
       "accrued_pnl": 0.0
     }
   },
-  "realized_pnl": 25.249003,
-  "last_update": "2026-08-12T12:40:02.869865+00:00"
+  "realized_pnl": 24.949003,
+  "last_update": "2026-08-12T13:40:03.758010+00:00"
 }
