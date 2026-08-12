@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-12T22:00:01.681714+00:00",
+  "updated": "2026-08-12T22:30:01.427933+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "FET/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 6,
-        "wins": 2,
-        "losses": 4,
-        "wr": 0.3333,
-        "pf": 0.285,
-        "profit_usdt": -2.91,
-        "avg_profit_pct": -0.607
-      }
-    },
     "LTC/USDT:USDT": {
       "NEUTRAL": {
         "n": 2,
@@ -29,6 +18,17 @@
         "pf": 0.0,
         "profit_usdt": -1.04,
         "avg_profit_pct": -0.645
+      }
+    },
+    "FET/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 1,
+        "losses": 4,
+        "wr": 0.2,
+        "pf": 0.005,
+        "profit_usdt": -4.05,
+        "avg_profit_pct": -1.01
       }
     },
     "1000PEPE/USDT:USDT": {
@@ -276,6 +276,14 @@
   },
   "blocked": [
     {
+      "pair": "FET/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=20% PF=0.01 n=5 profit=-4.05",
+      "n": 5,
+      "wr": 0.2,
+      "pf": 0.005
+    },
+    {
       "pair": "BTC/USDT:USDT",
       "regime": "NEUTRAL",
       "reason": "WR=20% PF=0.05 n=5 profit=-1.79",
@@ -306,14 +314,6 @@
       "n": 5,
       "wr": 0.2,
       "pf": 0.469
-    },
-    {
-      "pair": "FET/USDT:USDT",
-      "regime": "NEUTRAL",
-      "reason": "WR=33% PF=0.28 n=6 profit=-2.91",
-      "n": 6,
-      "wr": 0.3333,
-      "pf": 0.285
     }
   ]
 }
