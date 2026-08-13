@@ -1,15 +1,5 @@
 {
   "positions": {
-    "ARBUSDT": {
-      "symbol": "ARBUSDT",
-      "side": "long",
-      "entry_price": 0.07577,
-      "notional": 200.0,
-      "entry_liq_z": 2.009,
-      "entry_liq_long_usd": 121406.0,
-      "opened_at": "2026-08-12T21:50:19.071437+00:00",
-      "fees_paid": 0.04
-    },
     "DOTUSDT": {
       "symbol": "DOTUSDT",
       "side": "long",
@@ -31,8 +21,8 @@
       "fees_paid": 0.04
     }
   },
-  "realized_pnl": 0.79552,
-  "wins": 13,
+  "realized_pnl": 1.111455,
+  "wins": 14,
   "losses": 16,
-  "last_update": "2026-08-13T03:50:02.511353+00:00"
+  "last_update": "2026-08-13T04:50:20.027103+00:00"
 }

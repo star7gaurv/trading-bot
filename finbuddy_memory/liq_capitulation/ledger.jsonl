@@ -59,3 +59,4 @@
 {"ts": "2026-08-12T21:50:19.071654+00:00", "event": "open", "symbol": "ARBUSDT", "side": "long", "price": 0.07577, "liq_long_z": 2.009, "liq_long_usd": 121406.0, "entry_fee": 0.04}
 {"ts": "2026-08-12T22:50:17.317961+00:00", "event": "open", "symbol": "DOTUSDT", "side": "long", "price": 0.7717, "liq_long_z": 2.185, "liq_long_usd": 111871.0, "entry_fee": 0.04}
 {"ts": "2026-08-12T22:50:18.055228+00:00", "event": "open", "symbol": "OPUSDT", "side": "long", "price": 0.0854, "liq_long_z": 2.093, "liq_long_usd": 121618.0, "entry_fee": 0.04}
+{"ts": "2026-08-13T04:50:02.707268+00:00", "event": "close", "symbol": "ARBUSDT", "reason": "time stop (7.0h, +0.20%)", "exit_price": 0.07592, "entry_price": 0.07577, "gross_pnl": 0.3959, "fees_total": 0.08, "net_pnl": 0.3159, "held_hours": 7.0, "caveat": "maker fill modeled at close \u2014 optimistic vs real adverse selection"}
