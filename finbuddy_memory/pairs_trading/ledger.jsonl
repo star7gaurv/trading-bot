@@ -158,3 +158,5 @@
 {"ts": "2026-08-13T11:20:07.355469+00:00", "event": "open", "pair": "XRP/LINK", "side": 1, "trade": "long XRP / short LINK", "z": -5.55, "beta": 0.421, "corr": 0.885, "notional": 200.0, "entry_fee": 0.1}
 {"ts": "2026-08-13T12:20:07.261628+00:00", "event": "close", "pair": "XRP/LINK", "reason": "diverged (z -5.69)", "exit_z": -5.69, "gross_pnl": -0.4423, "fees_total": 0.2, "net_pnl": -0.6423, "held_hours": 1.0, "caveat": "slippage/borrow not modeled"}
 {"ts": "2026-08-13T12:20:08.184651+00:00", "event": "open", "pair": "XRP/LINK", "side": 1, "trade": "long XRP / short LINK", "z": -5.69, "beta": 0.421, "corr": 0.885, "notional": 200.0, "entry_fee": 0.1}
+{"ts": "2026-08-13T13:20:06.586495+00:00", "event": "close", "pair": "XRP/LINK", "reason": "diverged (z -5.76)", "exit_z": -5.76, "gross_pnl": -0.2354, "fees_total": 0.2, "net_pnl": -0.4354, "held_hours": 1.0, "caveat": "slippage/borrow not modeled"}
+{"ts": "2026-08-13T13:20:07.529146+00:00", "event": "open", "pair": "XRP/LINK", "side": 1, "trade": "long XRP / short LINK", "z": -5.76, "beta": 0.421, "corr": 0.885, "notional": 200.0, "entry_fee": 0.1}
