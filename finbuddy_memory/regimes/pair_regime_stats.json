@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-13T18:00:01.595296+00:00",
+  "updated": "2026-08-13T18:30:01.479514+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -132,13 +132,13 @@
     },
     "SUI/USDT:USDT": {
       "NEUTRAL": {
-        "n": 6,
-        "wins": 3,
+        "n": 7,
+        "wins": 4,
         "losses": 3,
-        "wr": 0.5,
-        "pf": 0.383,
-        "profit_usdt": -1.77,
-        "avg_profit_pct": -0.372
+        "wr": 0.5714,
+        "pf": 0.429,
+        "profit_usdt": -1.64,
+        "avg_profit_pct": -0.294
       }
     },
     "LDO/USDT:USDT": {
