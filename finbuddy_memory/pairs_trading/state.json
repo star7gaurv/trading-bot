@@ -20,17 +20,17 @@
       "b": "LINK",
       "side": 1,
       "beta": 0.4206,
-      "entry_z": -5.739,
+      "entry_z": -5.821,
       "corr": 0.885,
-      "entry_price_a": 1.01,
-      "entry_price_b": 8.842,
+      "entry_price_a": 1.0087,
+      "entry_price_b": 8.854,
       "notional_a": 140.7902,
       "notional_b": 59.2098,
-      "opened_at": "2026-08-13T20:20:06.977002+00:00",
+      "opened_at": "2026-08-13T21:20:06.380436+00:00",
       "fees_paid": 0.1,
       "half_life_h": 59.9
     }
   },
-  "realized_pnl": -68.37287866862226,
-  "last_update": "2026-08-13T20:20:07.574422+00:00"
+  "realized_pnl": -68.83445089130834,
+  "last_update": "2026-08-13T21:20:06.966418+00:00"
 }
