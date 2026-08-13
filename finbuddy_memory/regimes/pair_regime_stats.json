@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-13T06:00:01.863327+00:00",
+  "updated": "2026-08-13T06:30:01.836376+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,39 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "FET/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
-        "pf": 0.005,
-        "profit_usdt": -4.05,
-        "avg_profit_pct": -1.01
-      }
-    },
-    "1000PEPE/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 0,
-        "losses": 2,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -3.33,
-        "avg_profit_pct": -2.06
-      }
-    },
-    "BTC/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
-        "pf": 0.053,
-        "profit_usdt": -1.79,
-        "avg_profit_pct": -0.57
-      }
-    },
     "DOT/USDT:USDT": {
       "NEUTRAL": {
         "n": 5,
@@ -84,6 +51,39 @@
         "pf": 0.733,
         "profit_usdt": -0.82,
         "avg_profit_pct": -0.119
+      }
+    },
+    "FET/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.007,
+        "profit_usdt": -2.89,
+        "avg_profit_pct": -0.905
+      }
+    },
+    "BTC/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.068,
+        "profit_usdt": -1.37,
+        "avg_profit_pct": -0.545
+      }
+    },
+    "1000PEPE/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -2.78,
+        "avg_profit_pct": -3.45
       }
     },
     "ONDO/USDT:USDT": {
@@ -275,22 +275,6 @@
     }
   },
   "blocked": [
-    {
-      "pair": "FET/USDT:USDT",
-      "regime": "NEUTRAL",
-      "reason": "WR=20% PF=0.01 n=5 profit=-4.05",
-      "n": 5,
-      "wr": 0.2,
-      "pf": 0.005
-    },
-    {
-      "pair": "BTC/USDT:USDT",
-      "regime": "NEUTRAL",
-      "reason": "WR=20% PF=0.05 n=5 profit=-1.79",
-      "n": 5,
-      "wr": 0.2,
-      "pf": 0.053
-    },
     {
       "pair": "TAO/USDT:USDT",
       "regime": "NEUTRAL",
