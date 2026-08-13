@@ -799,3 +799,4 @@
 | 2026-08-13 00:10:32 | AVAX/USDT:USDT | LONG | 6h00m | -0.53% | -0.41 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-08-13 04:00:33 | AVAX/USDT:USDT | LONG | 3h00m | +2.72% | +2.08 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-08-13 09:01:56 | APT/USDT:USDT | SHORT | 6h01m | -0.32% | -0.25 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-08-13 11:01:43 | FIL/USDT:USDT | SHORT | 6h01m | +0.79% | +0.62 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
