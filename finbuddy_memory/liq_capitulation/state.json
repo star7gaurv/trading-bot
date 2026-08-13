@@ -1,28 +1,7 @@
 {
-  "positions": {
-    "DOTUSDT": {
-      "symbol": "DOTUSDT",
-      "side": "long",
-      "entry_price": 0.7717,
-      "notional": 200.0,
-      "entry_liq_z": 2.185,
-      "entry_liq_long_usd": 111871.0,
-      "opened_at": "2026-08-12T22:50:17.317805+00:00",
-      "fees_paid": 0.04
-    },
-    "OPUSDT": {
-      "symbol": "OPUSDT",
-      "side": "long",
-      "entry_price": 0.0854,
-      "notional": 200.0,
-      "entry_liq_z": 2.093,
-      "entry_liq_long_usd": 121618.0,
-      "opened_at": "2026-08-12T22:50:18.055098+00:00",
-      "fees_paid": 0.04
-    }
-  },
-  "realized_pnl": 1.111455,
-  "wins": 14,
+  "positions": {},
+  "realized_pnl": 4.434655,
+  "wins": 16,
   "losses": 16,
-  "last_update": "2026-08-13T04:50:20.027103+00:00"
+  "last_update": "2026-08-13T05:50:19.653388+00:00"
 }
