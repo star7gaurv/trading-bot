@@ -1,18 +1,7 @@
 {
-  "positions": {
-    "UNIUSDT": {
-      "symbol": "UNIUSDT",
-      "side": "long",
-      "entry_price": 3.238,
-      "notional": 200.0,
-      "entry_liq_z": 2.013,
-      "entry_liq_long_usd": 530131.0,
-      "opened_at": "2026-08-14T12:50:17.605381+00:00",
-      "fees_paid": 0.04
-    }
-  },
-  "realized_pnl": 4.434655,
+  "positions": {},
+  "realized_pnl": 2.007527,
   "wins": 16,
-  "losses": 16,
-  "last_update": "2026-08-14T18:50:20.633507+00:00"
+  "losses": 17,
+  "last_update": "2026-08-14T19:50:19.501973+00:00"
 }
