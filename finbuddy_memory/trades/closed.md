@@ -811,3 +811,5 @@
 | 2026-08-14 02:04:23 | SUI/USDT:USDT | SHORT | 6h03m | -0.18% | -0.14 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-08-14 02:12:13 | RENDER/USDT:USDT | SHORT | 6h01m | -0.04% | -0.03 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-08-14 03:11:16 | NEAR/USDT:USDT | SHORT | 6h00m | +2.15% | +1.68 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-08-14 09:20:14 | RENDER/USDT:USDT | SHORT | 6h09m | +0.13% | +0.10 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-08-14 09:20:34 | FIL/USDT:USDT | SHORT | 6h10m | +0.28% | +0.22 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
