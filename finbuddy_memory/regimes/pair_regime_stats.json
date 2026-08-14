@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-14T06:00:02.005253+00:00",
+  "updated": "2026-08-14T06:30:01.113386+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -11,35 +11,24 @@
   "stats": {
     "ARB/USDT:USDT": {
       "NEUTRAL": {
-        "n": 6,
-        "wins": 2,
+        "n": 5,
+        "wins": 1,
         "losses": 4,
-        "wr": 0.3333,
-        "pf": 0.99,
-        "profit_usdt": -0.04,
-        "avg_profit_pct": -0.012
-      }
-    },
-    "ONDO/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 0,
-        "losses": 2,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -2.25,
-        "avg_profit_pct": -1.415
+        "wr": 0.2,
+        "pf": 0.013,
+        "profit_usdt": -3.76,
+        "avg_profit_pct": -0.944
       }
     },
     "FET/USDT:USDT": {
       "NEUTRAL": {
-        "n": 5,
+        "n": 4,
         "wins": 2,
-        "losses": 3,
-        "wr": 0.4,
-        "pf": 0.015,
-        "profit_usdt": -3.32,
-        "avg_profit_pct": -0.838
+        "losses": 2,
+        "wr": 0.5,
+        "pf": 0.045,
+        "profit_usdt": -1.06,
+        "avg_profit_pct": -0.34
       }
     },
     "UNI/USDT:USDT": {
@@ -218,6 +207,17 @@
         "avg_profit_pct": -0.636
       }
     },
+    "ONDO/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.52,
+        "avg_profit_pct": -0.67
+      }
+    },
     "APT/USDT:USDT": {
       "NEUTRAL": {
         "n": 4,
@@ -253,6 +253,14 @@
     }
   },
   "blocked": [
+    {
+      "pair": "ARB/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=20% PF=0.01 n=5 profit=-3.76",
+      "n": 5,
+      "wr": 0.2,
+      "pf": 0.013
+    },
     {
       "pair": "TAO/USDT:USDT",
       "regime": "NEUTRAL",
