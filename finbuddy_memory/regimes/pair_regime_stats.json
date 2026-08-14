@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-14T16:00:01.285161+00:00",
+  "updated": "2026-08-14T16:30:02.025849+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -11,13 +11,13 @@
   "stats": {
     "ARB/USDT:USDT": {
       "NEUTRAL": {
-        "n": 5,
-        "wins": 1,
+        "n": 4,
+        "wins": 0,
         "losses": 4,
-        "wr": 0.2,
-        "pf": 0.013,
-        "profit_usdt": -3.76,
-        "avg_profit_pct": -0.944
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -3.81,
+        "avg_profit_pct": -1.198
       }
     },
     "FET/USDT:USDT": {
@@ -253,14 +253,6 @@
     }
   },
   "blocked": [
-    {
-      "pair": "ARB/USDT:USDT",
-      "regime": "NEUTRAL",
-      "reason": "WR=20% PF=0.01 n=5 profit=-3.76",
-      "n": 5,
-      "wr": 0.2,
-      "pf": 0.013
-    },
     {
       "pair": "TAO/USDT:USDT",
       "regime": "NEUTRAL",
