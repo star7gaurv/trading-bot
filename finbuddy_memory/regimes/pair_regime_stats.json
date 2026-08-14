@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-14T23:00:01.845909+00:00",
+  "updated": "2026-08-14T23:30:01.436380+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,28 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ARB/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 4,
-        "wins": 0,
-        "losses": 4,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -3.81,
-        "avg_profit_pct": -1.198
-      }
-    },
-    "FET/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 3,
-        "losses": 2,
-        "wr": 0.6,
-        "pf": 0.649,
-        "profit_usdt": -0.39,
-        "avg_profit_pct": -0.102
-      }
-    },
     "UNI/USDT:USDT": {
       "NEUTRAL": {
         "n": 2,
@@ -73,6 +51,17 @@
         "pf": 0.188,
         "profit_usdt": -2.12,
         "avg_profit_pct": -1.33
+      }
+    },
+    "ARB/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 3,
+        "wins": 0,
+        "losses": 3,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -3.25,
+        "avg_profit_pct": -1.363
       }
     },
     "TAO/USDT:USDT": {
@@ -139,6 +128,17 @@
         "pf": null,
         "profit_usdt": 0.26,
         "avg_profit_pct": 0.33
+      }
+    },
+    "FET/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 4,
+        "wins": 2,
+        "losses": 2,
+        "wr": 0.5,
+        "pf": 0.631,
+        "profit_usdt": -0.41,
+        "avg_profit_pct": -0.133
       }
     },
     "NEAR/USDT:USDT": {
