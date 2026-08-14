@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-14T18:00:02.104024+00:00",
+  "updated": "2026-08-14T18:30:01.926160+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -242,13 +242,13 @@
     },
     "POL/USDT:USDT": {
       "NEUTRAL": {
-        "n": 5,
+        "n": 6,
         "wins": 2,
-        "losses": 3,
-        "wr": 0.4,
-        "pf": 0.781,
-        "profit_usdt": -0.28,
-        "avg_profit_pct": -0.07
+        "losses": 4,
+        "wr": 0.3333,
+        "pf": 0.633,
+        "profit_usdt": -0.58,
+        "avg_profit_pct": -0.123
       }
     }
   },
@@ -268,6 +268,14 @@
       "n": 5,
       "wr": 0.2,
       "pf": 0.469
+    },
+    {
+      "pair": "POL/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=33% PF=0.63 n=6 profit=-0.58",
+      "n": 6,
+      "wr": 0.3333,
+      "pf": 0.633
     }
   ]
 }
