@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-15T03:00:01.609953+00:00",
+  "updated": "2026-08-15T03:30:01.376540+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "UNI/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 0.014,
-        "profit_usdt": -2.05,
-        "avg_profit_pct": -1.295
-      }
-    },
     "ETH/USDT:USDT": {
       "NEUTRAL": {
         "n": 1,
@@ -172,6 +161,17 @@
         "pf": 0.767,
         "profit_usdt": -0.82,
         "avg_profit_pct": -0.088
+      }
+    },
+    "UNI/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 0.03,
+        "avg_profit_pct": 0.03
       }
     },
     "AVAX/USDT:USDT": {
