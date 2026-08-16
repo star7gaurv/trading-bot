@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-16T19:00:02.018865+00:00",
+  "updated": "2026-08-16T19:30:01.335435+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,28 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ARB/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 3,
-        "wins": 0,
-        "losses": 3,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -3.25,
-        "avg_profit_pct": -1.363
-      }
-    },
-    "TAO/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
-        "pf": 0.068,
-        "profit_usdt": -4.13,
-        "avg_profit_pct": -1.046
-      }
-    },
     "BTC/USDT:USDT": {
       "NEUTRAL": {
         "n": 3,
@@ -62,6 +40,28 @@
         "pf": 0.321,
         "profit_usdt": -0.93,
         "avg_profit_pct": -0.302
+      }
+    },
+    "TAO/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.101,
+        "profit_usdt": -2.67,
+        "avg_profit_pct": -0.85
+      }
+    },
+    "ARB/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 0,
+        "losses": 2,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -2.19,
+        "avg_profit_pct": -1.375
       }
     },
     "SUI/USDT:USDT": {
@@ -242,14 +242,6 @@
     }
   },
   "blocked": [
-    {
-      "pair": "TAO/USDT:USDT",
-      "regime": "NEUTRAL",
-      "reason": "WR=20% PF=0.07 n=5 profit=-4.13",
-      "n": 5,
-      "wr": 0.2,
-      "pf": 0.068
-    },
     {
       "pair": "OP/USDT:USDT",
       "regime": "NEUTRAL",
