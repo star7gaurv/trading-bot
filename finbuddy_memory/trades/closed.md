@@ -822,3 +822,4 @@
 | 2026-08-15 18:04:42 | WIF/USDT:USDT | SHORT | 6h04m | +0.08% | +0.06 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-08-16 00:00:46 | WIF/USDT:USDT | SHORT | 5h00m | +0.99% | +0.78 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
 | 2026-08-16 09:31:03 | WIF/USDT:USDT | SHORT | 6h30m | -0.63% | -0.49 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-08-16 16:36:36 | WIF/USDT:USDT | SHORT | 6h06m | -1.20% | -0.94 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
