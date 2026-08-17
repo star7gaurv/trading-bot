@@ -1,5 +1,5 @@
 # Cortexa — Master Context
-Last updated: 2026-08-17 03:15 UTC
+Last updated: 2026-08-17 03:30 UTC
 
 ## Current Regime
 Regime: **NEUTRAL** | Confidence: 70.0% | Since: 2026-08-17
@@ -13,8 +13,8 @@ News Sentiment: 100.0% bullish
 Total Trades: 1125 | Win Rate: 43.4% | Total P&L: -0.27%
 
 ## Open Trades (2)
-- WIF/USDT:USDT: Entry 0.14 | Current 0.14 | P&L: -1.29%
-- ARB/USDT:USDT: Entry 0.07 | Current 0.07 | P&L: 0.44%
+- WIF/USDT:USDT: Entry 0.14 | Current 0.14 | P&L: -1.07%
+- ARB/USDT:USDT: Entry 0.07 | Current 0.07 | P&L: 0.20%
 ## Risk Flags
 - None
 
