@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-17T18:30:01.974578+00:00",
+  "updated": "2026-08-17T19:00:02.078117+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -77,13 +77,13 @@
     },
     "WIF/USDT:USDT": {
       "NEUTRAL": {
-        "n": 7,
+        "n": 8,
         "wins": 5,
-        "losses": 2,
-        "wr": 0.7143,
-        "pf": 2.287,
-        "profit_usdt": 1.84,
-        "avg_profit_pct": 0.333
+        "losses": 3,
+        "wr": 0.625,
+        "pf": 1.248,
+        "profit_usdt": 0.65,
+        "avg_profit_pct": 0.104
       }
     },
     "ENA/USDT:USDT": {
