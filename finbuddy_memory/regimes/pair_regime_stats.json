@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-17T19:00:02.078117+00:00",
+  "updated": "2026-08-17T19:30:01.945404+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -154,13 +154,13 @@
     },
     "ONDO/USDT:USDT": {
       "NEUTRAL": {
-        "n": 4,
+        "n": 5,
         "wins": 3,
-        "losses": 1,
-        "wr": 0.75,
-        "pf": 7.692,
-        "profit_usdt": 3.48,
-        "avg_profit_pct": 1.105
+        "losses": 2,
+        "wr": 0.6,
+        "pf": 2.469,
+        "profit_usdt": 2.38,
+        "avg_profit_pct": 0.604
       }
     },
     "ADA/USDT:USDT": {
