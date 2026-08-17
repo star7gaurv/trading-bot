@@ -1,7 +1,18 @@
 {
-  "positions": {},
+  "positions": {
+    "POLUSDT": {
+      "symbol": "POLUSDT",
+      "side": "long",
+      "entry_price": 0.08008,
+      "notional": 200.0,
+      "entry_liq_z": 2.015,
+      "entry_liq_long_usd": 9712.0,
+      "opened_at": "2026-08-17T20:50:17.162484+00:00",
+      "fees_paid": 0.04
+    }
+  },
   "realized_pnl": 5.085624,
   "wins": 17,
   "losses": 17,
-  "last_update": "2026-08-17T19:50:16.679257+00:00"
+  "last_update": "2026-08-17T20:50:17.772070+00:00"
 }
