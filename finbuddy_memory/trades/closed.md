@@ -831,3 +831,4 @@
 | 2026-08-17 12:01:54 | ONDO/USDT:USDT | LONG | 2h51m | +1.39% | +1.09 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-08-17 18:21:10 | WIF/USDT:USDT | SHORT | 6h10m | -1.50% | -1.19 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-08-17 19:01:24 | ONDO/USDT:USDT | LONG | 6h01m | -1.40% | -1.10 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-08-17 22:01:03 | ENA/USDT:USDT | LONG | 6h00m | -0.50% | -0.39 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
