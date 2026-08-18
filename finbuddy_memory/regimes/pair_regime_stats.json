@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-18T03:00:02.034914+00:00",
+  "updated": "2026-08-18T03:30:01.713437+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -11,13 +11,13 @@
   "stats": {
     "ARB/USDT:USDT": {
       "NEUTRAL": {
-        "n": 2,
+        "n": 1,
         "wins": 0,
-        "losses": 2,
+        "losses": 1,
         "wr": 0.0,
         "pf": 0.0,
-        "profit_usdt": -2.19,
-        "avg_profit_pct": -1.375
+        "profit_usdt": -1.94,
+        "avg_profit_pct": -2.44
       }
     },
     "SUI/USDT:USDT": {
@@ -77,13 +77,13 @@
     },
     "WIF/USDT:USDT": {
       "NEUTRAL": {
-        "n": 8,
-        "wins": 5,
+        "n": 9,
+        "wins": 6,
         "losses": 3,
-        "wr": 0.625,
-        "pf": 1.248,
-        "profit_usdt": 0.65,
-        "avg_profit_pct": 0.104
+        "wr": 0.6667,
+        "pf": 1.634,
+        "profit_usdt": 1.66,
+        "avg_profit_pct": 0.234
       }
     },
     "ENA/USDT:USDT": {
@@ -154,13 +154,13 @@
     },
     "ONDO/USDT:USDT": {
       "NEUTRAL": {
-        "n": 5,
+        "n": 6,
         "wins": 3,
-        "losses": 2,
-        "wr": 0.6,
-        "pf": 2.469,
-        "profit_usdt": 2.38,
-        "avg_profit_pct": 0.604
+        "losses": 3,
+        "wr": 0.5,
+        "pf": 1.449,
+        "profit_usdt": 1.24,
+        "avg_profit_pct": 0.262
       }
     },
     "ADA/USDT:USDT": {
@@ -209,13 +209,13 @@
     },
     "RENDER/USDT:USDT": {
       "NEUTRAL": {
-        "n": 5,
-        "wins": 4,
+        "n": 6,
+        "wins": 5,
         "losses": 1,
-        "wr": 0.8,
-        "pf": 79.0,
-        "profit_usdt": 2.34,
-        "avg_profit_pct": 0.596
+        "wr": 0.8333,
+        "pf": 111.333,
+        "profit_usdt": 3.31,
+        "avg_profit_pct": 0.702
       }
     },
     "POL/USDT:USDT": {
