@@ -842,3 +842,4 @@
 | 2026-08-18 18:11:20 | LDO/USDT:USDT | SHORT | 6h10m | -1.33% | -1.05 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-08-18 18:25:00 | WIF/USDT:USDT | SHORT | 6h14m | -0.48% | -0.37 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-08-18 20:21:19 | ONDO/USDT:USDT | LONG | 4h21m | -3.02% | -2.38 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
+| 2026-08-18 23:02:23 | LTC/USDT:USDT | LONG | 6h02m | -0.13% | -0.10 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
