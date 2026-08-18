@@ -1,28 +1,7 @@
 {
-  "positions": {
-    "SUIUSDT": {
-      "symbol": "SUIUSDT",
-      "side": "long",
-      "entry_price": 0.6468,
-      "notional": 200.0,
-      "entry_liq_z": 2.51,
-      "entry_liq_long_usd": 2333233.0,
-      "opened_at": "2026-08-18T03:50:19.694488+00:00",
-      "fees_paid": 0.04
-    },
-    "TAOUSDT": {
-      "symbol": "TAOUSDT",
-      "side": "long",
-      "entry_price": 191.28,
-      "notional": 200.0,
-      "entry_liq_z": 2.075,
-      "entry_liq_long_usd": 318974.0,
-      "opened_at": "2026-08-18T03:50:20.452024+00:00",
-      "fees_paid": 0.04
-    }
-  },
-  "realized_pnl": 4.161717,
-  "wins": 18,
+  "positions": {},
+  "realized_pnl": 6.691748,
+  "wins": 20,
   "losses": 18,
-  "last_update": "2026-08-18T09:50:18.395556+00:00"
+  "last_update": "2026-08-18T10:50:20.122909+00:00"
 }
