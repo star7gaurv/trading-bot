@@ -9,10 +9,20 @@
       "entry_liq_long_usd": 9712.0,
       "opened_at": "2026-08-17T20:50:17.162484+00:00",
       "fees_paid": 0.04
+    },
+    "DOTUSDT": {
+      "symbol": "DOTUSDT",
+      "side": "long",
+      "entry_price": 0.7348,
+      "notional": 200.0,
+      "entry_liq_z": 2.019,
+      "entry_liq_long_usd": 186389.0,
+      "opened_at": "2026-08-18T02:50:17.818267+00:00",
+      "fees_paid": 0.04
     }
   },
   "realized_pnl": 5.085624,
   "wins": 17,
   "losses": 17,
-  "last_update": "2026-08-18T01:50:17.479110+00:00"
+  "last_update": "2026-08-18T02:50:18.654981+00:00"
 }
