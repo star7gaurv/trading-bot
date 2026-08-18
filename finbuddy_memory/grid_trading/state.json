@@ -1,23 +1,5 @@
 {
   "grids": {
-    "LDO": {
-      "symbol": "LDO",
-      "entry_price": 0.3177,
-      "low": 0.270045,
-      "high": 0.365355,
-      "n_levels": 10,
-      "position_usdt": 300.0,
-      "spacing_abs": 0.01059,
-      "spacing_pct": 3.3333,
-      "er": 0.087,
-      "vol_pct": 1.14,
-      "deployed_at": "2026-08-04T09:40:02.759935+00:00",
-      "last_price": 0.3021,
-      "last_price_ts": "2026-08-18T08:40:02.186554+00:00",
-      "total_crossings": 2,
-      "fees_paid": 0.33,
-      "accrued_pnl": 1.97
-    },
     "ONDO": {
       "symbol": "ONDO",
       "entry_price": 0.3453,
@@ -30,8 +12,8 @@
       "er": 0.022,
       "vol_pct": 0.95,
       "deployed_at": "2026-08-07T22:40:02.897274+00:00",
-      "last_price": 0.3289,
-      "last_price_ts": "2026-08-18T08:40:02.387773+00:00",
+      "last_price": 0.3297,
+      "last_price_ts": "2026-08-18T09:40:03.990083+00:00",
       "total_crossings": 0,
       "fees_paid": 0.3,
       "accrued_pnl": 0.0
@@ -48,13 +30,31 @@
       "er": 0.054,
       "vol_pct": 0.95,
       "deployed_at": "2026-08-12T13:40:03.171837+00:00",
-      "last_price": 0.0752,
-      "last_price_ts": "2026-08-18T08:40:02.567286+00:00",
+      "last_price": 0.07524,
+      "last_price_ts": "2026-08-18T09:40:04.142456+00:00",
+      "total_crossings": 0,
+      "fees_paid": 0.3,
+      "accrued_pnl": 0.0
+    },
+    "LDO": {
+      "symbol": "LDO",
+      "entry_price": 0.301,
+      "low": 0.25585,
+      "high": 0.34615,
+      "n_levels": 10,
+      "position_usdt": 300.0,
+      "spacing_abs": 0.01003333,
+      "spacing_pct": 3.3333,
+      "er": 0.087,
+      "vol_pct": 1.14,
+      "deployed_at": "2026-08-18T09:40:04.318739+00:00",
+      "last_price": 0.301,
+      "last_price_ts": "2026-08-18T09:40:04.318752+00:00",
       "total_crossings": 0,
       "fees_paid": 0.3,
       "accrued_pnl": 0.0
     }
   },
-  "realized_pnl": 24.949003,
-  "last_update": "2026-08-18T08:40:02.638573+00:00"
+  "realized_pnl": 26.589003,
+  "last_update": "2026-08-18T09:40:04.937483+00:00"
 }
