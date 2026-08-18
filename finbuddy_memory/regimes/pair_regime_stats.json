@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-18T14:00:01.739323+00:00",
+  "updated": "2026-08-18T14:30:01.943383+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "SUI/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 8,
-        "wins": 4,
-        "losses": 4,
-        "wr": 0.5,
-        "pf": 0.409,
-        "profit_usdt": -1.78,
-        "avg_profit_pct": -0.28
-      }
-    },
     "TAO/USDT:USDT": {
       "NEUTRAL": {
         "n": 3,
@@ -53,15 +42,26 @@
         "avg_profit_pct": -0.133
       }
     },
+    "SUI/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 7,
+        "wins": 3,
+        "losses": 4,
+        "wr": 0.4286,
+        "pf": 0.326,
+        "profit_usdt": -2.03,
+        "avg_profit_pct": -0.366
+      }
+    },
     "NEAR/USDT:USDT": {
       "NEUTRAL": {
-        "n": 20,
+        "n": 21,
         "wins": 13,
-        "losses": 7,
-        "wr": 0.65,
-        "pf": 0.749,
-        "profit_usdt": -3.68,
-        "avg_profit_pct": -0.235
+        "losses": 8,
+        "wr": 0.619,
+        "pf": 0.719,
+        "profit_usdt": -4.29,
+        "avg_profit_pct": -0.261
       }
     },
     "WIF/USDT:USDT": {
@@ -216,6 +216,17 @@
         "pf": 0.633,
         "profit_usdt": -0.58,
         "avg_profit_pct": -0.123
+      }
+    },
+    "LTC/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.12,
+        "avg_profit_pct": -0.15
       }
     }
   },
