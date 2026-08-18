@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-18T23:00:01.497829+00:00",
+  "updated": "2026-08-18T23:30:01.981296+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -220,13 +220,13 @@
     },
     "LTC/USDT:USDT": {
       "NEUTRAL": {
-        "n": 1,
+        "n": 2,
         "wins": 0,
-        "losses": 1,
+        "losses": 2,
         "wr": 0.0,
         "pf": 0.0,
-        "profit_usdt": -0.12,
-        "avg_profit_pct": -0.15
+        "profit_usdt": -0.22,
+        "avg_profit_pct": -0.14
       }
     }
   },
