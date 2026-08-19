@@ -844,3 +844,4 @@
 | 2026-08-18 20:21:19 | ONDO/USDT:USDT | LONG | 4h21m | -3.02% | -2.38 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-08-18 23:02:23 | LTC/USDT:USDT | LONG | 6h02m | -0.13% | -0.10 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-08-19 01:00:39 | RENDER/USDT:USDT | SHORT | 4h00m | +0.36% | +0.28 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
+| 2026-08-19 12:07:09 | LTC/USDT:USDT | LONG | 10h06m | +0.92% | +0.72 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
