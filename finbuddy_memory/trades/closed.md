@@ -848,3 +848,4 @@
 | 2026-08-19 15:00:28 | ONDO/USDT:USDT | LONG | 2h00m | +4.80% | +3.76 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-08-25 13:18:44 | ONDO/USDT:USDT | LONG | 4h18m | -7.18% | -5.64 | stop_loss | BULL | freqai_regression_v23_lo |
 | 2026-08-25 14:00:33 | LINK/USDT:USDT | SHORT | 3h00m | +0.78% | +0.61 | exit_signal | BULL | freqai_regression_v23_sh |
+| 2026-08-25 18:01:28 | SOL/USDT:USDT | LONG | 6h01m | -0.50% | -0.56 | time_limit_exit | BULL | freqai_regression_v23_lo |
