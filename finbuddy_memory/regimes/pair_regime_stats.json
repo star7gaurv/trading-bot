@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-19T18:00:01.256478+00:00",
+  "updated": "2026-08-25T09:00:01.511991+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,39 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "TAO/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 3,
-        "wins": 1,
-        "losses": 2,
-        "wr": 0.3333,
-        "pf": 0.142,
-        "profit_usdt": -1.81,
-        "avg_profit_pct": -0.77
-      }
-    },
-    "LDO/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 0.248,
-        "profit_usdt": -0.79,
-        "avg_profit_pct": -0.5
-      }
-    },
-    "FET/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 4,
-        "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 0.631,
-        "profit_usdt": -0.41,
-        "avg_profit_pct": -0.133
-      }
-    },
     "SUI/USDT:USDT": {
       "NEUTRAL": {
         "n": 7,
@@ -73,6 +40,17 @@
         "pf": 1.431,
         "profit_usdt": 1.29,
         "avg_profit_pct": 0.163
+      }
+    },
+    "TAO/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 0,
+        "losses": 2,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -2.11,
+        "avg_profit_pct": -1.345
       }
     },
     "ENA/USDT:USDT": {
@@ -218,6 +196,17 @@
         "avg_profit_pct": -0.123
       }
     },
+    "FET/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 3,
+        "wins": 2,
+        "losses": 1,
+        "wr": 0.6667,
+        "pf": 0.897,
+        "profit_usdt": -0.08,
+        "avg_profit_pct": -0.037
+      }
+    },
     "LTC/USDT:USDT": {
       "NEUTRAL": {
         "n": 3,
@@ -227,6 +216,17 @@
         "pf": 3.273,
         "profit_usdt": 0.5,
         "avg_profit_pct": 0.213
+      }
+    },
+    "LDO/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -1.05,
+        "avg_profit_pct": -1.33
       }
     }
   },
