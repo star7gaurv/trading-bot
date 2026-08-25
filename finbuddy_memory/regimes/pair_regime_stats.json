@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-25T18:00:02.002011+00:00",
+  "updated": "2026-08-25T18:30:02.067477+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -95,6 +95,15 @@
         "pf": 0.398,
         "profit_usdt": -1.0,
         "avg_profit_pct": -0.318
+      },
+      "BULL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.56,
+        "avg_profit_pct": -0.5
       }
     },
     "OP/USDT:USDT": {
