@@ -1,18 +1,7 @@
 {
-  "positions": {
-    "ARBUSDT": {
-      "symbol": "ARBUSDT",
-      "side": "long",
-      "entry_price": 0.09319,
-      "notional": 200.0,
-      "entry_liq_z": 2.014,
-      "entry_liq_long_usd": 145571.0,
-      "opened_at": "2026-08-25T22:50:15.879403+00:00",
-      "fees_paid": 0.04
-    }
-  },
-  "realized_pnl": 40.282659,
-  "wins": 21,
+  "positions": {},
+  "realized_pnl": 40.567505,
+  "wins": 22,
   "losses": 18,
-  "last_update": "2026-08-26T04:50:14.416017+00:00"
+  "last_update": "2026-08-26T05:50:15.499181+00:00"
 }
