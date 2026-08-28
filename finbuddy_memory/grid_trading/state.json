@@ -1,23 +1,5 @@
 {
   "grids": {
-    "ENA": {
-      "symbol": "ENA",
-      "entry_price": 0.15103,
-      "low": 0.1283755,
-      "high": 0.1736845,
-      "n_levels": 10,
-      "position_usdt": 300.0,
-      "spacing_abs": 0.00503433,
-      "spacing_pct": 3.3333,
-      "er": 0.167,
-      "vol_pct": 1.42,
-      "deployed_at": "2026-08-25T09:40:04.733768+00:00",
-      "last_price": 0.17174,
-      "last_price_ts": "2026-08-28T00:40:02.297773+00:00",
-      "total_crossings": 5,
-      "fees_paid": 0.375,
-      "accrued_pnl": 4.924996
-    },
     "UNI": {
       "symbol": "UNI",
       "entry_price": 4.405,
@@ -30,8 +12,8 @@
       "er": 0.038,
       "vol_pct": 1.15,
       "deployed_at": "2026-08-25T09:40:05.500293+00:00",
-      "last_price": 4.753,
-      "last_price_ts": "2026-08-28T00:40:02.447119+00:00",
+      "last_price": 4.789,
+      "last_price_ts": "2026-08-28T01:40:03.558853+00:00",
       "total_crossings": 0,
       "fees_paid": 0.3,
       "accrued_pnl": 0.0
@@ -48,13 +30,31 @@
       "er": 0.141,
       "vol_pct": 1.21,
       "deployed_at": "2026-08-25T09:40:06.272983+00:00",
-      "last_price": 0.0038888,
-      "last_price_ts": "2026-08-28T00:40:02.598655+00:00",
+      "last_price": 0.0039234,
+      "last_price_ts": "2026-08-28T01:40:03.705082+00:00",
+      "total_crossings": 0,
+      "fees_paid": 0.3,
+      "accrued_pnl": 0.0
+    },
+    "ENA": {
+      "symbol": "ENA",
+      "entry_price": 0.18709,
+      "low": 0.1590265,
+      "high": 0.2151535,
+      "n_levels": 10,
+      "position_usdt": 300.0,
+      "spacing_abs": 0.00623633,
+      "spacing_pct": 3.3333,
+      "er": 0.137,
+      "vol_pct": 1.49,
+      "deployed_at": "2026-08-28T01:40:03.867194+00:00",
+      "last_price": 0.18709,
+      "last_price_ts": "2026-08-28T01:40:03.867208+00:00",
       "total_crossings": 0,
       "fees_paid": 0.3,
       "accrued_pnl": 0.0
     }
   },
-  "realized_pnl": 41.773333,
-  "last_update": "2026-08-28T00:40:02.612306+00:00"
+  "realized_pnl": 49.233327,
+  "last_update": "2026-08-28T01:40:04.422446+00:00"
 }
