@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-29T19:00:02.208602+00:00",
+  "updated": "2026-08-29T19:30:02.377032+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ENA/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 7,
-        "wins": 3,
-        "losses": 4,
-        "wr": 0.4286,
-        "pf": 1.102,
-        "profit_usdt": 0.3,
-        "avg_profit_pct": 0.054
-      }
-    },
     "TAO/USDT:USDT": {
       "NEUTRAL": {
         "n": 1,
@@ -135,6 +124,17 @@
         "pf": 1.264,
         "profit_usdt": 0.79,
         "avg_profit_pct": 0.111
+      }
+    },
+    "ENA/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 6,
+        "wins": 3,
+        "losses": 3,
+        "wr": 0.5,
+        "pf": 3.25,
+        "profit_usdt": 2.25,
+        "avg_profit_pct": 0.477
       }
     },
     "ONDO/USDT:USDT": {
