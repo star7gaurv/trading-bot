@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-29T12:00:01.482061+00:00",
+  "updated": "2026-08-29T12:30:01.436385+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -11,13 +11,13 @@
   "stats": {
     "ENA/USDT:USDT": {
       "NEUTRAL": {
-        "n": 8,
+        "n": 7,
         "wins": 3,
-        "losses": 5,
-        "wr": 0.375,
-        "pf": 0.654,
-        "profit_usdt": -1.72,
-        "avg_profit_pct": -0.274
+        "losses": 4,
+        "wr": 0.4286,
+        "pf": 1.102,
+        "profit_usdt": 0.3,
+        "avg_profit_pct": 0.054
       }
     },
     "TAO/USDT:USDT": {
@@ -284,14 +284,6 @@
       "n": 6,
       "wr": 0.3333,
       "pf": 0.633
-    },
-    {
-      "pair": "ENA/USDT:USDT",
-      "regime": "NEUTRAL",
-      "reason": "WR=38% PF=0.65 n=8 profit=-1.72",
-      "n": 8,
-      "wr": 0.375,
-      "pf": 0.654
     }
   ]
 }
