@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-30T17:00:01.488900+00:00",
+  "updated": "2026-08-30T17:30:01.851536+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -137,13 +137,13 @@
         "avg_profit_pct": 0.419
       },
       "BULL": {
-        "n": 4,
-        "wins": 2,
+        "n": 5,
+        "wins": 3,
         "losses": 2,
-        "wr": 0.5,
-        "pf": 0.357,
-        "profit_usdt": -7.39,
-        "avg_profit_pct": -2.177
+        "wr": 0.6,
+        "pf": 0.45,
+        "profit_usdt": -6.33,
+        "avg_profit_pct": -1.554
       }
     },
     "ADA/USDT:USDT": {
