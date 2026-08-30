@@ -298,3 +298,4 @@ um_threads=2** added to both config.json and 23_regression_15m_di_config.json. 
 - **2026-08-28 16:00 UTC** — Walk-forward status: ❌ FAIL — WR 47.3%, Sharpe -5.66, DD 11.3%, PF 0.61 (336 trades, run `FinBuddyFreqAI_v23_2026-01-01_2026-08-01_20260828T130001`)
 - **2026-08-29 00:00 UTC** — Walk-forward status: ❌ FAIL — WR 46.1%, Sharpe -4.97, DD 10.1%, PF 0.62 (282 trades, run `FinBuddyFreqAI_v23_2026-01-01_2026-08-01_20260828T220001`)
 - **2026-08-29 16:00 UTC** — Walk-forward status: ❌ FAIL — WR 46.1%, Sharpe -4.97, DD 10.1%, PF 0.62 (282 trades, run `FinBuddyFreqAI_v23_2026-01-01_2026-08-01_20260829T130002`)
+- **2026-08-30 00:00 UTC** — Walk-forward status: ❌ FAIL — WR 47.3%, Sharpe -5.66, DD 11.3%, PF 0.61 (336 trades, run `FinBuddyFreqAI_v23_2026-01-01_2026-08-01_20260829T220001`)
