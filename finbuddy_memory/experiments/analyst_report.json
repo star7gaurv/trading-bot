@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-31T12:30:02.301821+00:00",
+  "generated_at": "2026-08-31T18:30:02.496189+00:00",
   "findings": {
     "dead_timeframes": [
       "5m",
@@ -159,14 +159,14 @@
     },
     "window_stats": {
       "bear_2025Q1": {
-        "n": 234,
+        "n": 239,
         "avg_wr": 0.467,
-        "avg_pf": 0.861
+        "avg_pf": 0.858
       },
       "bull_2024Q1": {
-        "n": 197,
+        "n": 199,
         "avg_wr": 0.374,
-        "avg_pf": 0.576
+        "avg_pf": 0.577
       },
       "bull_2024Q2": {
         "n": 109,
@@ -174,9 +174,9 @@
         "avg_pf": 0.776
       },
       "bear_2026Q1": {
-        "n": 102,
+        "n": 103,
         "avg_wr": 0.404,
-        "avg_pf": 0.536
+        "avg_pf": 0.539
       },
       "bull_2025Q4": {
         "n": 69,
@@ -194,9 +194,9 @@
         "avg_pf": 0.623
       },
       "bull_2024Q4": {
-        "n": 113,
-        "avg_wr": 0.371,
-        "avg_pf": 0.844
+        "n": 122,
+        "avg_wr": 0.378,
+        "avg_pf": 0.854
       },
       "bear_2024Q2": {
         "n": 2,
@@ -217,10 +217,10 @@
         "avg_trades_day": 7.27
       },
       "1h": {
-        "n": 247,
-        "avg_pf": 0.691,
-        "avg_wr": 0.375,
-        "avg_trades_day": 2.11
+        "n": 264,
+        "avg_pf": 0.702,
+        "avg_wr": 0.381,
+        "avg_trades_day": 2.21
       },
       "5m": {
         "n": 18,
@@ -242,7 +242,7 @@
       }
     }
   },
-  "pruned": 5,
+  "pruned": 15,
   "actions": [],
   "llm_insight": "",
   "manual_overrides": {
