@@ -180,8 +180,18 @@ SEED_CONFIG_V23 = {
     "k_tp":               3.0,   # raised from 2.0 — WF shows WR=61% but PF=0.77 (exits too early)
     "stability_n":        2,
     "label_period_candles": 12,
-    "filter_di":          True,
-    "filter_svm":         True,
+    # FIXED 2026-08-31: both defaulted True, matching the live bot's setting until 2026-06-12 —
+    # when DI_threshold=0/use_SVM_to_remove_outliers=False was applied live after SVM was found
+    # flagging 100% of candles as outliers (do_predict=0 outage). That fix was never carried over
+    # to the brain's own baseline. Confirmed via two direct A/B diagnostics (bull_2024Q4, both
+    # trend_vol and standard absolute-mode entry): filter_di=True suppressed ALL long entries on
+    # strongly-trending candles (long_count 0→238 and 0→224 just from flipping this off, else-
+    # identical config) — DI/SVM outlier filtering treats a genuine strong rally as "out of
+    # distribution" relative to calmer training data. Any past experiment run with filter_di=True
+    # may have had artificially suppressed longs; treat filter_di=True historical results with
+    # long_count=0 or low as suspect, not as evidence the config itself is long-averse.
+    "filter_di":          False,
+    "filter_svm":         False,
     "feature_set":        "all",   # which external features to include (see strategy FREQAI_FEATURE_SET)
     "n_estimators":       100,     # stamped so A/B comparisons are possible in experiment logs
 }
@@ -381,8 +391,11 @@ AGGRESSIVE_CHOICES_V23 = {
     "k_tp":               [1.5, 2.0, 2.5, 3.0],
     "stability_n":        [1, 2, 3, 4],
     "label_period_candles": [12, 24, 48, 72, 144],
-    "filter_di":          [True, False],
-    "filter_svm":         [True, False],
+    # FIXED 2026-08-31: True removed from the search space — confirmed to suppress ALL long
+    # entries on strongly-trending candles (see SEED_CONFIG_V23 comment above), the same bug
+    # already fixed live 2026-06-12. Not a legitimate lever to explore, matches live's setting.
+    "filter_di":          [False],
+    "filter_svm":         [False],
     "feature_set":        ["all", "no_regime"],
     # LightGBM tree hyperparameters — previously locked, now swept by brain
     # Lower num_leaves = more regularized (less overfit); lower lr = better generalisation
@@ -590,8 +603,9 @@ def _make_distributions(allowed_tfs: list[str]) -> dict:
         "k_tp":                 _Float(1.0,  4.0,  step=0.25),
         "stability_n":          _Int(1, 4),
         "label_period_candles": _Cat([12, 24, 48, 72, 144]),
-        "filter_di":            _Cat([True, False]),
-        "filter_svm":           _Cat([True, False]),
+        # FIXED 2026-08-31: True removed, same fix as AGGRESSIVE_CHOICES_V23 above.
+        "filter_di":            _Cat([False]),
+        "filter_svm":           _Cat([False]),
         "num_leaves":           _Cat([15, 31, 63, 127]),
         "learning_rate":        _Cat([0.01, 0.03, 0.05]),
         "feature_set":          _Cat(["all", "no_regime"]),
