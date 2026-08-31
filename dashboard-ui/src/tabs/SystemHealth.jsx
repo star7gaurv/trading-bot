@@ -21,6 +21,16 @@ function safe(obj, key, fallback = null) {
   return v == null ? fallback : v;
 }
 
+// Display-only rebrand: underlying engine is FreqTrade/FreqAI, but nothing
+// on this page should surface those names — Cortexa is the product name.
+function rebrand(str) {
+  if (typeof str !== "string") return str;
+  return str
+    .replace(/freqtradeorg\/freqtrade/gi, "cortexa/cortexa-engine")
+    .replace(/freqai/gi, "cortexa-brain")
+    .replace(/freqtrade/gi, "Cortexa Engine");
+}
+
 // ─── Top stat strip ───
 function TopStats({ sys }) {
   const load = safe(sys, "load", {});
@@ -81,7 +91,7 @@ function TopStats({ sys }) {
         tone={diskTone}
       />
       <Stat
-        label="FreqTrade"
+        label="Cortexa"
         value={ft.running ? ft.status || "Up" : "DOWN"}
         tone={ft.running ? "profit" : "loss"}
         mono={false}
@@ -217,7 +227,7 @@ function CronTable({ data, error, lastUpdated, loading }) {
 function ContainersPanel({ sys, lastUpdated }) {
   const containers = safe(sys, "containers", []) || [];
   const columns = [
-    { key: "name", label: "Name", mono: true },
+    { key: "name", label: "Name", mono: true, render: (r) => rebrand(r.name) },
     {
       key: "status",
       label: "Status",
@@ -230,7 +240,7 @@ function ContainersPanel({ sys, lastUpdated }) {
         );
       },
     },
-    { key: "image", label: "Image", mono: true },
+    { key: "image", label: "Image", mono: true, render: (r) => rebrand(r.image) },
     { key: "created_at", label: "Created", mono: true },
   ];
   return (

@@ -11,6 +11,16 @@ import ParamControls from "../components/ParamControls";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
+// Display-only rebrand: the live strategy class is still literally named
+// FinBuddyFreqAI_v23 in config.json/docker-compose/brain scripts (renaming
+// that for real means a live-bot restart + touching dozens of automation
+// files — deferred, live-system risk). This only relabels what's shown here.
+function displayStrategyName(raw) {
+  if (typeof raw !== "string") return raw;
+  if (raw === "FinBuddyFreqAI_v23") return "CortexaAI_v23";
+  return raw.replace(/finbuddy/gi, "Cortexa");
+}
+
 function KV({ label, value, mono = true, tone }) {
   const toneClass =
     tone === "profit"
@@ -143,7 +153,7 @@ function ConfigPanel({ data, loading, error, lastUpdated }) {
   return (
     <div className="space-y-4">
       <Section title="Strategy">
-        <KV label="Strategy" value={cfg.strategy} />
+        <KV label="Strategy" value={displayStrategyName(cfg.strategy)} />
         <KV label="FreqAI Identifier" value={identifier} />
         <KV label="Timeframe" value={cfg.timeframe} />
         <KV label="Max open trades" value={cfg.max_open_trades} />

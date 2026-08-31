@@ -103,7 +103,7 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 | Server user | `ubuntu` (SSH), sometimes seen as `opc` for older files |
 | Docker Compose root | `/home/ubuntu/var/www/html/trade/` |
 | FreqTrade version | 2026.3, Docker container |
-| N8N | ~~Docker container~~ 🔴 **DISABLED since 2026-04-30** |
+| N8N | Docker container — **kept running permanently** (2026-07-20 decision, serves other apps on this shared server); its old trading pipeline stays disabled — FreqAI remains Cortexa's sole signal source |
 | GitHub repo | `git@github.com:star7gaurv/trading-bot.git` (note: star7gaurv, not star7gaurav — typo in repo name) |
 | Dev tooling on server | Claude Code 2.1.109 (npm global install) |
 
@@ -196,7 +196,7 @@ Standard layer 4 features include 3 funding-rate features (`%-funding_rate`, `%-
 2. **Pair expansion** — runbook at `finbuddy_memory/tasks/pair_addition_runbook.md`; defer until z-scored brain gets first WF PASS.
 
 ### N8N
-- 🔴 **Permanently disabled** — FreqAI is sole signal source
+- Container stays **running permanently** (2026-07-20 decision — this server hosts other, unrelated apps that use it). Its old crypto-signal pipeline stays 🔴 **disabled** — FreqAI is still Cortexa's sole signal source. Do not wire n8n back into trading logic without an explicit decision to do so.
 
 ### OpenClaw ("Jack")
 - ☠️ **Permanently abandoned** — was only used as an OpenRouter proxy

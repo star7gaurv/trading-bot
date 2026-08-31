@@ -94,7 +94,7 @@ export default function Layout({ tabs, activeTab, onTabChange, children, globalS
 
       {/* Footer */}
       <footer className="max-w-[1400px] mx-auto px-6 py-6 border-t border-border mt-12 text-xxs text-text-muted flex justify-between">
-        <span>Cortexa autonomous trading brain · Oracle Free Tier · ARM64</span>
+        <span>Cortexa autonomous trading brain · ARM64</span>
         <span className="font-mono">{new Date().toLocaleString()}</span>
       </footer>
     </div>

@@ -102,6 +102,26 @@ def _tail_log(path: str, n: int = 5) -> list[str]:
 _BRAIN_LOCK = "/tmp/finbuddy_brain_run.lock"
 _WF_LOCK    = "/tmp/walkforward_deep.lock"
 
+# The crontab is shared with other, unrelated projects on this server
+# (e.g. siteserve, siteserve-filament5). Only surface jobs that belong to
+# this project — recognized by their log path living under one of these.
+# (Commands aren't reliable to filter on: several jobs use a bare relative
+# script path with no `cd`/absolute prefix, so the log path is the one
+# thing every job here consistently roots in this project.)
+_PROJECT_LOG_PREFIXES = (
+    "/home/ubuntu/var/www/html/trade",
+    "/home/ubuntu/.finbuddy",
+)
+_PROJECT_LOG_EXACT = {
+    "/home/ubuntu/finbuddy_memory_cron.log",  # auto_commit.sh (vault git commit)
+}
+
+
+def _belongs_to_project(log_path: Optional[str]) -> bool:
+    if not log_path:
+        return True
+    return log_path.startswith(_PROJECT_LOG_PREFIXES) or log_path in _PROJECT_LOG_EXACT
+
 
 def _lock_is_held(lock_path: str) -> bool:
     """Return True if a flock lock file is currently held by another process."""
@@ -155,6 +175,10 @@ def parse_crontab() -> list[dict]:
         schedule = " ".join(parts[:5])
         command = parts[5]
 
+        log_path = _extract_log_path(command)
+        if not _belongs_to_project(log_path):
+            continue
+
         name = _extract_name(command)
         # Disambiguate duplicates (e.g. memory_writer.py appears twice)
         if name in seen_names:
@@ -164,7 +188,6 @@ def parse_crontab() -> list[dict]:
             seen_names[name] = 1
             display_name = name
 
-        log_path = _extract_log_path(command)
         last_run_ts = None
         last_run_age = None
         tail = []
