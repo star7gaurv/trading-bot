@@ -14,14 +14,11 @@ from __future__ import annotations
 
 import json
 import sys
-import urllib.parse
-import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
 REPO = Path("/home/ubuntu/var/www/html/trade")
 RESULTS_BASE = REPO / "walkforward_results"
-CONFIG_PATH = REPO / "freqtrade/user_data/config.json"
 STATE_FILE = Path("/home/ubuntu/.finbuddy/state/walkforward_notify.json")
 
 
@@ -37,28 +34,6 @@ def load_state() -> dict:
 def save_state(state: dict) -> None:
     STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
     STATE_FILE.write_text(json.dumps(state, indent=2))
-
-
-def telegram_send(msg: str) -> bool:
-    try:
-        cfg = json.loads(CONFIG_PATH.read_text())
-        tg = cfg.get("telegram") or {}
-        token, chat_id = tg.get("token"), tg.get("chat_id")
-        if not (token and chat_id):
-            print("WARN: telegram creds missing", file=sys.stderr)
-            return False
-        url = f"https://api.telegram.org/bot{token}/sendMessage"
-        data = urllib.parse.urlencode({
-            "chat_id": chat_id,
-            "text": msg,
-            "parse_mode": "Markdown",
-            "disable_web_page_preview": "true",
-        }).encode()
-        with urllib.request.urlopen(urllib.request.Request(url, data=data), timeout=10) as r:
-            return r.status == 200
-    except Exception as e:
-        print(f"ERR: telegram send failed: {e}", file=sys.stderr)
-        return False
 
 
 def send_wf_message(run_id: str, summary: dict) -> bool:

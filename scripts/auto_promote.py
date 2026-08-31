@@ -21,10 +21,7 @@ State file: ~/.finbuddy/state/promotion_state.json
 from __future__ import annotations
 
 import json
-import os
 import sys
-import urllib.parse
-import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -33,22 +30,6 @@ REPO_ROOT      = Path("/home/ubuntu/var/www/html/trade")
 WF_RESULTS_DIR = REPO_ROOT / "walkforward_results"
 CONFIG_PATH    = REPO_ROOT / "freqtrade" / "user_data" / "config.json"
 STATE_FILE     = Path("/home/ubuntu/.finbuddy/state/promotion_state.json")
-
-# Fix 11 (2026-05-22): read Telegram credentials from FreqTrade config.json
-# (same approach as walkforward_notify.py). Hard-coded strings were visible in
-# git history and any clone of the repo — security risk.
-def _read_telegram_from_ft_config() -> tuple[str, str]:
-    """Return (token, chat_id) from FreqTrade config.json telegram section."""
-    try:
-        cfg = json.loads(CONFIG_PATH.read_text())
-        tg = cfg.get("telegram", {})
-        return tg.get("token", ""), str(tg.get("chat_id", ""))
-    except Exception:
-        return "", ""
-
-_tg_tok, _tg_chat = _read_telegram_from_ft_config()
-TELEGRAM_TOKEN = os.environ.get("FREQAI_TELEGRAM_TOKEN") or _tg_tok
-TELEGRAM_CHAT  = os.environ.get("FREQAI_TELEGRAM_CHAT")  or _tg_chat
 
 # Minimum Sharpe improvement to trigger a promotion notification
 PROMOTION_DELTA = 0.10

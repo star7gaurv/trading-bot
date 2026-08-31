@@ -19,16 +19,24 @@ IC_BY_TF = ROOT / "finbuddy_memory/analytics/feature_ic_by_tf.json"
 PROFILES = ROOT / "finbuddy_memory/timeframe_profiles.json"
 CONFIG = ROOT / "freqtrade/user_data/config.json"
 
+sys.path.insert(0, str(ROOT / "scripts" / "lib"))
+from ft_creds import read_freqtrade_env  # noqa: E402
+
 BEAR_WINDOWS = ["bear_2025Q1", "bear_2026Q1"]
 IC_GATE = 0.05
 MIN_SWITCH_GAIN = 0.015   # only suggest a switch if best TF is this much better than current
 
 
 def _telegram_creds() -> tuple[str, str]:
+    # 2026-07-05: config.json's telegram.token is now a placeholder (real value
+    # moved to freqtrade/.env FREQTRADE__TELEGRAM__TOKEN) — read from there instead.
+    # (2026-08-31: this script was missed in the original 07-05 pass — every
+    # weekly send had been silently failing against the placeholder since then.)
     try:
         cfg = json.loads(CONFIG.read_text())
-        tg = cfg.get("telegram", {})
-        return tg.get("token", ""), str(tg.get("chat_id", ""))
+        chat_id = str((cfg.get("telegram") or {}).get("chat_id", ""))
+        token = read_freqtrade_env().get("FREQTRADE__TELEGRAM__TOKEN", "")
+        return token, chat_id
     except Exception:
         return "", ""
 
