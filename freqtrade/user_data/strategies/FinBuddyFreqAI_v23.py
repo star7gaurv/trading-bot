@@ -228,9 +228,20 @@ class FinBuddyFreqAI_v23(IStrategy):
         # Trail activation threshold: once profit exceeds 1.0 * tp_pct
         lock_threshold = tp_pct * 1.0
 
+        # Leverage/ATR mismatch fix (2026-08-31, env-gated FREQAI_TRAIL_LEVERAGE_FIX, default
+        # off): current_profit is FreqTrade's LEVERAGED profit ratio, but tp_pct/lock_threshold
+        # are computed from raw price ATR (unleveraged). Comparing them directly means the trail
+        # activates at 1/leverage of the intended price move — e.g. at 2x leverage, a trade
+        # locks in after only half the ATR distance the K_TP setting was meant to require.
+        # Documented as a known discrepancy for months, never fixed or measured pending brain
+        # validation (this is that validation). Default off preserves exact prior behavior.
+        _trail_compare_profit = current_profit
+        if os.environ.get("FREQAI_TRAIL_LEVERAGE_FIX", "0") == "1" and trade.leverage:
+            _trail_compare_profit = current_profit / trade.leverage
+
         # Trail: once profit exceeds the lock threshold, lock stop at max(0.5 * tp_pct, 0.005) from entry.
         # Floor raised from 0.25→0.5 and 0.002→0.005 (0.25× was too tight, caused profit give-back).
-        if current_profit > lock_threshold:
+        if _trail_compare_profit > lock_threshold:
             locked_stop = max(tp_pct * 0.5, 0.005)
             trail_pct = stoploss_from_open(
                 locked_stop,
@@ -2155,13 +2166,14 @@ class FinBuddyFreqAI_v23(IStrategy):
         """
         v23 Regression exit — predicted return has flipped direction.
 
-        Exit long:  model now predicts negative return (< -half_short_thresh)
+        Exit long:  model now predicts negative return (< short_thresh * hysteresis_frac)
                     OR RSI/BB technical exhaustion
-        Exit short: model now predicts positive return (> half_long_thresh)
+        Exit short: model now predicts positive return (> long_thresh * hysteresis_frac)
                     OR RSI/BB technical exhaustion
 
-        Using half the entry threshold as the exit trigger avoids whipsaw —
-        a small reversal in prediction doesn't immediately close the trade.
+        Using a fraction of the entry threshold (FREQAI_EXIT_HYSTERESIS_FRAC, default 0.5) as
+        the exit trigger avoids whipsaw — a small reversal in prediction doesn't immediately
+        close the trade. See _exit_hyst below for the tuning rationale.
         """
         predicted_return = dataframe.get(
             "&-future_return",
@@ -2178,9 +2190,19 @@ class FinBuddyFreqAI_v23(IStrategy):
         long_thresh  = dataframe["dynamic_long_threshold"]
         short_thresh = dataframe["dynamic_short_threshold"]
 
+        # Exit hysteresis fraction (2026-08-31): how much of the entry threshold the prediction
+        # must reverse before exit_signal fires. Was a bare 0.5 constant, never varied or A/B
+        # tested despite exit_signal being the project's one consistently-proven edge (87-100% WR
+        # when it fires) — every trade that DOESN'T reach it instead resolves via stop_loss (0% WR
+        # by definition) or time_limit_exit (35-42% WR). Default 0.5 = byte-identical prior
+        # behavior. Lower = fires earlier/more often (more trades reach the good exit, but risks
+        # firing on noise); higher = fires later (closer to full threshold, more whipsaw-resistant
+        # but lets more trades drift into the worse exit paths).
+        _exit_hyst = float(os.environ.get("FREQAI_EXIT_HYSTERESIS_FRAC", "0.5"))
+
         ml_exit_long = (
             (dataframe["do_predict"] == 1)
-            & (centered_pred < (short_thresh * 0.5))   # prediction flipped negative
+            & (centered_pred < (short_thresh * _exit_hyst))   # prediction flipped negative
         )
         ta_exit_long = (
             (dataframe["rsi_14"] > 75)
@@ -2190,7 +2212,7 @@ class FinBuddyFreqAI_v23(IStrategy):
 
         ml_exit_short = (
             (dataframe["do_predict"] == 1)
-            & (centered_pred > (long_thresh * 0.5))    # prediction flipped positive
+            & (centered_pred > (long_thresh * _exit_hyst))    # prediction flipped positive
         )
         ta_exit_short = (
             (dataframe["rsi_14"] < 25)

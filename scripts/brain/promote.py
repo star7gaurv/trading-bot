@@ -523,6 +523,9 @@ def apply_promotion(config_hash: str) -> int:
         "FREQAI_NEUTRAL_SHORT_MULT":    new_cfg.get("neutral_short_mult"),
         "FREQAI_NEUTRAL_EXIT_MULT_LONG":  new_cfg.get("neutral_exit_mult_long"),
         "FREQAI_NEUTRAL_EXIT_MULT_SHORT": new_cfg.get("neutral_exit_mult_short"),
+        # Exit-edge knobs (2026-08-31): same 3-layer-gap class.
+        "FREQAI_EXIT_HYSTERESIS_FRAC":  new_cfg.get("exit_hysteresis_frac"),
+        "FREQAI_TRAIL_LEVERAGE_FIX":    _bool_env(new_cfg.get("trail_leverage_fix")),
     }
     env_keys = {k: v for k, v in env_keys.items() if v is not None}
     if env_keys:

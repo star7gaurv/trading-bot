@@ -454,6 +454,11 @@ def _build_env_args(cfg: dict, identifier: str) -> list[str]:
             env_args += ["-e", f"FREQAI_NEUTRAL_EXIT_MULT_LONG={cfg['neutral_exit_mult_long']}"]
         if cfg.get("neutral_exit_mult_short") is not None:
             env_args += ["-e", f"FREQAI_NEUTRAL_EXIT_MULT_SHORT={cfg['neutral_exit_mult_short']}"]
+        # Exit-edge knobs (2026-08-31) — serve-time gates, NOT in _TRAIN_SHAPE_KEYS.
+        if cfg.get("exit_hysteresis_frac") is not None:
+            env_args += ["-e", f"FREQAI_EXIT_HYSTERESIS_FRAC={cfg['exit_hysteresis_frac']}"]
+        if cfg.get("trail_leverage_fix") is not None:
+            env_args += ["-e", f"FREQAI_TRAIL_LEVERAGE_FIX={'1' if cfg['trail_leverage_fix'] else '0'}"]
     return env_args
 
 

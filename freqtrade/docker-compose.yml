@@ -102,6 +102,14 @@ services:
       # DEFAULT 1.0/1.0 = byte-identical to prior behavior.
       - FREQAI_NEUTRAL_EXIT_MULT_LONG=${FREQAI_NEUTRAL_EXIT_MULT_LONG:-1.0}
       - FREQAI_NEUTRAL_EXIT_MULT_SHORT=${FREQAI_NEUTRAL_EXIT_MULT_SHORT:-1.0}
+      # Exit-signal hysteresis fraction (2026-08-31): fraction of the entry threshold the
+      # prediction must reverse before exit_signal fires. DEFAULT 0.5 = byte-identical prior
+      # behavior. A/B queued to see if a different fraction shifts trades toward the good
+      # exit_signal path and away from stop_loss/time_limit_exit.
+      - FREQAI_EXIT_HYSTERESIS_FRAC=${FREQAI_EXIT_HYSTERESIS_FRAC:-0.5}
+      # Trailing-stop leverage/ATR fix (2026-08-31): DEFAULT OFF pending brain A/B. See strategy
+      # custom_stoploss comment for the mismatch this corrects.
+      - FREQAI_TRAIL_LEVERAGE_FIX=${FREQAI_TRAIL_LEVERAGE_FIX:-0}
       - FREQAI_PROGRESS_CUT_CANDLES=${FREQAI_PROGRESS_CUT_CANDLES:-3}
       - FREQAI_PROGRESS_CUT_PROFIT=${FREQAI_PROGRESS_CUT_PROFIT:--0.005}
       # Probe-scale (2026-06-23): DEFAULT OFF. Anti-martingale sizing — enter a reduced
