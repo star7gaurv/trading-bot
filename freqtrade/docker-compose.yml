@@ -92,6 +92,16 @@ services:
       # 2026-07-17: this was missing from docker-compose entirely until now — even a
       # promoted progress_cut winner would have silently deployed OFF (3-layer-gap class).
       - FREQAI_PROGRESS_CUT=${FREQAI_PROGRESS_CUT:-0}
+      # NEUTRAL-regime long/short threshold multiplier override (2026-08-31): DEFAULT
+      # 1.0/1.0 = byte-identical to the hardcoded _REGIME_THRESHOLD_MULTS value. A/B
+      # queued via the brain to test whether shorts need extra caution during chop.
+      - FREQAI_NEUTRAL_LONG_MULT=${FREQAI_NEUTRAL_LONG_MULT:-1.0}
+      - FREQAI_NEUTRAL_SHORT_MULT=${FREQAI_NEUTRAL_SHORT_MULT:-1.0}
+      # NEUTRAL-regime time-limit exit horizon override (2026-08-31): shortens the
+      # exit horizon (<1.0) for trades entered during NEUTRAL chop, per direction.
+      # DEFAULT 1.0/1.0 = byte-identical to prior behavior.
+      - FREQAI_NEUTRAL_EXIT_MULT_LONG=${FREQAI_NEUTRAL_EXIT_MULT_LONG:-1.0}
+      - FREQAI_NEUTRAL_EXIT_MULT_SHORT=${FREQAI_NEUTRAL_EXIT_MULT_SHORT:-1.0}
       - FREQAI_PROGRESS_CUT_CANDLES=${FREQAI_PROGRESS_CUT_CANDLES:-3}
       - FREQAI_PROGRESS_CUT_PROFIT=${FREQAI_PROGRESS_CUT_PROFIT:--0.005}
       # Probe-scale (2026-06-23): DEFAULT OFF. Anti-martingale sizing — enter a reduced

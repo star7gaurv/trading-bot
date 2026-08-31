@@ -518,6 +518,11 @@ def apply_promotion(config_hash: str) -> int:
         "FREQAI_PROBE_FRACTION":        new_cfg.get("probe_fraction"),
         "FREQAI_PROBE_CONFIRM_PCT":     new_cfg.get("probe_confirm_pct"),
         "FREQAI_PROBE_WINDOW":          new_cfg.get("probe_window"),
+        # NEUTRAL-regime multiplier override (2026-08-31): same 3-layer-gap class.
+        "FREQAI_NEUTRAL_LONG_MULT":     new_cfg.get("neutral_long_mult"),
+        "FREQAI_NEUTRAL_SHORT_MULT":    new_cfg.get("neutral_short_mult"),
+        "FREQAI_NEUTRAL_EXIT_MULT_LONG":  new_cfg.get("neutral_exit_mult_long"),
+        "FREQAI_NEUTRAL_EXIT_MULT_SHORT": new_cfg.get("neutral_exit_mult_short"),
     }
     env_keys = {k: v for k, v in env_keys.items() if v is not None}
     if env_keys:

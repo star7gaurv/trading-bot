@@ -363,6 +363,23 @@ class FinBuddyFreqAI_v23(IStrategy):
         # model — e.g. 6 candles @1h, 12 @15m — and the brain's label_period_candles
         # tuning applies to both automatically.
         label_candles = self._label_period_candles()
+
+        # NEUTRAL-chop exit horizon override (2026-08-31): shorten the time-limit
+        # exit for trades ENTERED during a NEUTRAL/choppy regime. Diagnosed: shorts
+        # entered during a multi-week NEUTRAL stretch spent the full horizon
+        # drifting nowhere 66% of the time (34.5% WR once they finally timed out)
+        # instead of resolving via a real signal exit or stop. Raising the entry
+        # conviction bar for NEUTRAL shorts (FREQAI_NEUTRAL_SHORT_MULT) barely
+        # moved trade count/WR/PF when tested — the fix isn't fewer entries, it's
+        # giving undecided trades less rope in chop specifically. Per-direction
+        # (diagnosis was short-specific; longs did fine in the same stretch).
+        # Default 1.0/1.0 = byte-identical to prior behavior.
+        _neutral_exit_mult_long  = float(os.environ.get("FREQAI_NEUTRAL_EXIT_MULT_LONG", "1.0"))
+        _neutral_exit_mult_short = float(os.environ.get("FREQAI_NEUTRAL_EXIT_MULT_SHORT", "1.0"))
+        _neutral_exit_mult = _neutral_exit_mult_short if trade.is_short else _neutral_exit_mult_long
+        if _neutral_exit_mult != 1.0 and self._get_current_regime(as_of=trade.open_date_utc) == "NEUTRAL":
+            label_candles = max(1, int(round(label_candles * _neutral_exit_mult)))
+
         if candles_open >= label_candles:
             return "time_limit_exit"
         return None
@@ -1659,9 +1676,26 @@ class FinBuddyFreqAI_v23(IStrategy):
         """
         regime_series = self._get_regime_series(dataframe)
 
+        # NEUTRAL-regime override (2026-08-31): _REGIME_THRESHOLD_MULTS ships NEUTRAL
+        # as (1.0, 1.0) — no extra caution either direction, on the assumption that a
+        # trendless market is equally hospitable to longs and shorts. Live data showed
+        # otherwise: in a multi-week NEUTRAL/choppy stretch, short trades hit the
+        # time_limit_exit far more than longs (66% of shorts vs comparable longs) with
+        # a losing bias (34.5% WR) — shorts were structurally the weaker side in chop,
+        # not because of a regime-mismatch (regime was NEUTRAL for good reason most of
+        # that window) but because chop gives directional bets less room to resolve
+        # within the fixed exit horizon. Default 1.0/1.0 preserves exact prior behavior
+        # — this is purely an opt-in A/B knob until the brain validates a value.
+        neutral_mults = (
+            float(os.getenv("FREQAI_NEUTRAL_LONG_MULT", "1.0")),
+            float(os.getenv("FREQAI_NEUTRAL_SHORT_MULT", "1.0")),
+        )
+        regime_mults = dict(self._REGIME_THRESHOLD_MULTS)
+        regime_mults["NEUTRAL"] = neutral_mults
+
         # Map regimes → multipliers vectorized
-        long_mult_series  = regime_series.map(lambda r: self._REGIME_THRESHOLD_MULTS.get(r, (1.0, 1.0))[0])
-        short_mult_series = regime_series.map(lambda r: self._REGIME_THRESHOLD_MULTS.get(r, (1.0, 1.0))[1])
+        long_mult_series  = regime_series.map(lambda r: regime_mults.get(r, (1.0, 1.0))[0])
+        short_mult_series = regime_series.map(lambda r: regime_mults.get(r, (1.0, 1.0))[1])
 
         recent_wr = self._load_recent_wr()
         # Fix 8 (2026-05-22): bidirectional WR feedback (was one-directional — only

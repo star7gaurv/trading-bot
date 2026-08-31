@@ -444,6 +444,16 @@ def _build_env_args(cfg: dict, identifier: str) -> list[str]:
             env_args += ["-e", f"FREQAI_PROBE_CONFIRM_PCT={cfg['probe_confirm_pct']}"]
         if cfg.get("probe_window") is not None:
             env_args += ["-e", f"FREQAI_PROBE_WINDOW={cfg['probe_window']}"]
+        # NEUTRAL-regime threshold multiplier override (2026-08-31) — serve-time gate,
+        # same category as trend_filter/threshold_floor: NOT in _TRAIN_SHAPE_KEYS.
+        if cfg.get("neutral_long_mult") is not None:
+            env_args += ["-e", f"FREQAI_NEUTRAL_LONG_MULT={cfg['neutral_long_mult']}"]
+        if cfg.get("neutral_short_mult") is not None:
+            env_args += ["-e", f"FREQAI_NEUTRAL_SHORT_MULT={cfg['neutral_short_mult']}"]
+        if cfg.get("neutral_exit_mult_long") is not None:
+            env_args += ["-e", f"FREQAI_NEUTRAL_EXIT_MULT_LONG={cfg['neutral_exit_mult_long']}"]
+        if cfg.get("neutral_exit_mult_short") is not None:
+            env_args += ["-e", f"FREQAI_NEUTRAL_EXIT_MULT_SHORT={cfg['neutral_exit_mult_short']}"]
     return env_args
 
 
