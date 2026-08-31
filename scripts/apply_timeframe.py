@@ -29,6 +29,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts" / "lib"))
+from ft_creds import read_freqtrade_env  # noqa: E402
 LIVE_CONFIG = ROOT / "freqtrade" / "user_data" / "config.json"
 ENV_PATH = ROOT / "freqtrade" / ".env"
 PROFILES = ROOT / "finbuddy_memory" / "timeframe_profiles.json"
@@ -258,9 +260,12 @@ def apply(tf: str, dry_run: bool = False, no_restart: bool = False) -> int:
                 f"You can switch via the dashboard TimeframeCard."
             )
         print(f"[RegimeAdvisory] {advisory}")
-        # Send via Telegram (same pattern as walkforward_notify.py)
+        # Send via Telegram. 2026-08-31: config.json's telegram.token is a placeholder
+        # since the 2026-07-05 security pass (real value moved to freqtrade/.env) — this
+        # call had been silently failing on every timeframe switch since then.
         cfg_tg = json.loads((ROOT / "freqtrade" / "user_data" / "config.json").read_text()).get("telegram", {})
-        token, chat_id = cfg_tg.get("token"), cfg_tg.get("chat_id")
+        token = read_freqtrade_env().get("FREQTRADE__TELEGRAM__TOKEN")
+        chat_id = cfg_tg.get("chat_id")
         if token and chat_id:
             import urllib.request as _ur
             _ur.urlopen(
