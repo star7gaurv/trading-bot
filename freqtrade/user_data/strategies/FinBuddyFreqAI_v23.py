@@ -352,6 +352,36 @@ class FinBuddyFreqAI_v23(IStrategy):
                     if (not trade.is_short) and centered <= -decay_level:
                         return "pred_decay_exit"
 
+        # ── Persistence-gated prediction-disagreement exit (2026-09-01) ──────────
+        # Same intent as pred_decay_exit above, but noise-resistant: requires
+        # FREQAI_PRED_PERSIST_EXIT_N CONSECUTIVE candles of model disagreement
+        # (mirrors the entry-side STABILITY_N pattern, populate_entry_trend
+        # ~line 1941) instead of a single raw candle. pred_decay_exit's
+        # single-candle version was A/B-tested and made results WORSE (see
+        # above); this is the persistence-gated redesign, gated OFF pending
+        # its own brain A/B. Reports a distinct exit_reason so its effect is
+        # measurable in isolation from pred_decay_exit (which stays OFF).
+        # DEFAULT OFF: FREQAI_PRED_PERSIST_EXIT=0 → byte-identical prior behavior.
+        if os.environ.get("FREQAI_PRED_PERSIST_EXIT", "0") == "1":
+            _persist_n = max(1, int(os.environ.get("FREQAI_PRED_PERSIST_EXIT_N", "3")))
+            _persist_level = float(os.environ.get("FREQAI_PRED_PERSIST_EXIT_LEVEL", "0.0"))
+            _persist_min_loss = float(os.environ.get("FREQAI_PRED_PERSIST_EXIT_MIN_LOSS", "-0.002"))
+            if candles_open >= _persist_n and current_profit < _persist_min_loss:
+                df, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
+                if df is not None and len(df) >= _persist_n and "&-future_return" in df.columns:
+                    rolling_median = df["&-future_return"].rolling(
+                        self._CENTERING_WINDOW, min_periods=self._CENTERING_MIN_PERIODS
+                    ).median()
+                    centered_tail = (df["&-future_return"] - rolling_median).tail(_persist_n)
+                    dp_tail = df.get("do_predict", pd.Series(1, index=df.index)).tail(_persist_n)
+                    if len(centered_tail) == _persist_n and bool((dp_tail == 1).all()):
+                        if trade.is_short:
+                            disagreeing = bool((centered_tail >= _persist_level).all())
+                        else:
+                            disagreeing = bool((centered_tail <= -_persist_level).all())
+                        if disagreeing:
+                            return "pred_persist_exit"
+
         # ── Progress-cut exit (2026-06-23, env-gated FREQAI_PROGRESS_CUT=1; default off) ──
         # Different from pred_decay (which cut on the noisy per-candle PREDICTION and made
         # things worse). This cuts on lack of PRICE PROGRESS: winners declare themselves fast
@@ -391,7 +421,47 @@ class FinBuddyFreqAI_v23(IStrategy):
         if _neutral_exit_mult != 1.0 and self._get_current_regime(as_of=trade.open_date_utc) == "NEUTRAL":
             label_candles = max(1, int(round(label_candles * _neutral_exit_mult)))
 
-        if candles_open >= label_candles:
+        # ── Time-limit grace extension (2026-09-01) ──────────────────────────────
+        # The branch below used to force-close unconditionally at the deadline with
+        # ZERO model input — even a trade the model still likes gets killed blind.
+        # If the model still supports the trade's direction (even weakly) when the
+        # deadline hits, extend by FREQAI_TIME_LIMIT_GRACE_CANDLES instead of
+        # blind-closing, capped at FREQAI_TIME_LIMIT_GRACE_MAX_EXTENSIONS grants per
+        # trade (bounded, not unlimited holding). Extension count persisted via
+        # trade.get/set_custom_data, same mechanism as entry_atr_pct in
+        # custom_stoploss. DEFAULT OFF: FREQAI_TIME_LIMIT_GRACE_CANDLES=0 is a true
+        # no-op even if FREQAI_TIME_LIMIT_GRACE is mistakenly flipped on.
+        _grace_on = os.environ.get("FREQAI_TIME_LIMIT_GRACE", "0") == "1"
+        _grace_candles = int(os.environ.get("FREQAI_TIME_LIMIT_GRACE_CANDLES", "0")) if _grace_on else 0
+        _grace_extensions_used = int(trade.get_custom_data("time_limit_grace_used") or 0) if _grace_candles > 0 else 0
+        _effective_label_candles = label_candles + _grace_candles * _grace_extensions_used
+
+        if candles_open >= _effective_label_candles:
+            if _grace_candles > 0:
+                _grace_level = float(os.environ.get("FREQAI_TIME_LIMIT_GRACE_LEVEL", "0.0"))
+                _grace_max = int(os.environ.get("FREQAI_TIME_LIMIT_GRACE_MAX_EXTENSIONS", "1"))
+                if _grace_extensions_used < _grace_max:
+                    df, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
+                    if df is not None and not df.empty and "&-future_return" in df.columns:
+                        last = df.iloc[-1]
+                        if int(last.get("do_predict", 0)) == 1:
+                            pred = float(last.get("&-future_return", 0.0))
+                            rolling_median = df["&-future_return"].tail(self._CENTERING_WINDOW).median()
+                            centered = pred - rolling_median
+                            still_supported = (
+                                centered < -_grace_level if trade.is_short
+                                else centered > _grace_level
+                            )
+                            if still_supported:
+                                trade.set_custom_data(
+                                    "time_limit_grace_used", _grace_extensions_used + 1
+                                )
+                                logger.info(
+                                    f"[TimeLimitGrace] {pair} deadline extended by "
+                                    f"{_grace_candles} candles "
+                                    f"({_grace_extensions_used + 1}/{_grace_max} used)."
+                                )
+                                return None
             return "time_limit_exit"
         return None
 

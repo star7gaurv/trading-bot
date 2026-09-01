@@ -526,6 +526,15 @@ def apply_promotion(config_hash: str) -> int:
         # Exit-edge knobs (2026-08-31): same 3-layer-gap class.
         "FREQAI_EXIT_HYSTERESIS_FRAC":  new_cfg.get("exit_hysteresis_frac"),
         "FREQAI_TRAIL_LEVERAGE_FIX":    _bool_env(new_cfg.get("trail_leverage_fix")),
+        # Persistence-exit / time-limit-grace knobs (2026-09-01): same 3-layer-gap class.
+        "FREQAI_PRED_PERSIST_EXIT":               _bool_env(new_cfg.get("pred_persist_exit")),
+        "FREQAI_PRED_PERSIST_EXIT_N":             new_cfg.get("pred_persist_exit_n"),
+        "FREQAI_PRED_PERSIST_EXIT_LEVEL":         new_cfg.get("pred_persist_exit_level"),
+        "FREQAI_PRED_PERSIST_EXIT_MIN_LOSS":      new_cfg.get("pred_persist_exit_min_loss"),
+        "FREQAI_TIME_LIMIT_GRACE":                _bool_env(new_cfg.get("time_limit_grace")),
+        "FREQAI_TIME_LIMIT_GRACE_CANDLES":        new_cfg.get("time_limit_grace_candles"),
+        "FREQAI_TIME_LIMIT_GRACE_LEVEL":          new_cfg.get("time_limit_grace_level"),
+        "FREQAI_TIME_LIMIT_GRACE_MAX_EXTENSIONS": new_cfg.get("time_limit_grace_max_extensions"),
     }
     env_keys = {k: v for k, v in env_keys.items() if v is not None}
     if env_keys:

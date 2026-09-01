@@ -184,6 +184,8 @@ def _compute_metrics_from_raw_trades(trades: list[dict]) -> dict:
             "long_count": 0, "short_count": 0,
             "exit_signal_count": 0, "exit_signal_wr": 0.0,
             "stop_loss_count": 0, "stop_loss_exit_rate": 0.0,
+            "time_limit_exit_count": 0, "time_limit_exit_rate": 0.0,
+            "pred_persist_exit_count": 0, "pred_persist_exit_wr": 0.0,
         }
 
     wins = sum(1 for t in trades if float(t.get("profit_abs") or 0) > 0)
@@ -231,6 +233,10 @@ def _compute_metrics_from_raw_trades(trades: list[dict]) -> dict:
     exit_signal_wins  = sum(1 for t in trades if t.get("exit_reason") == "exit_signal" and float(t.get("profit_abs") or 0) > 0)
     exit_signal_wr    = (exit_signal_wins / exit_signal_count) if exit_signal_count else 0.0
     stop_loss_count   = sum(1 for t in trades if t.get("exit_reason") == "stop_loss")
+    time_limit_exit_count = sum(1 for t in trades if t.get("exit_reason") == "time_limit_exit")
+    pred_persist_exit_count = sum(1 for t in trades if t.get("exit_reason") == "pred_persist_exit")
+    pred_persist_exit_wins  = sum(1 for t in trades if t.get("exit_reason") == "pred_persist_exit" and float(t.get("profit_abs") or 0) > 0)
+    pred_persist_exit_wr    = (pred_persist_exit_wins / pred_persist_exit_count) if pred_persist_exit_count else 0.0
 
     return {
         "trades":            n,
@@ -245,6 +251,10 @@ def _compute_metrics_from_raw_trades(trades: list[dict]) -> dict:
         "exit_signal_wr":    round(exit_signal_wr, 4),
         "stop_loss_count":   stop_loss_count,
         "stop_loss_exit_rate": round(stop_loss_count / n, 4),
+        "time_limit_exit_count": time_limit_exit_count,
+        "time_limit_exit_rate": round(time_limit_exit_count / n, 4),
+        "pred_persist_exit_count": pred_persist_exit_count,
+        "pred_persist_exit_wr": round(pred_persist_exit_wr, 4),
     }
 
 
@@ -278,6 +288,8 @@ def parse_zip(zip_path: Path) -> dict | None:
                 "long_count": 0, "short_count": 0,
                 "exit_signal_count": 0, "exit_signal_wr": 0.0,
                 "stop_loss_count": 0, "stop_loss_exit_rate": 0.0,
+                "time_limit_exit_count": 0, "time_limit_exit_rate": 0.0,
+                "pred_persist_exit_count": 0, "pred_persist_exit_wr": 0.0,
             }
         raw_wr = s.get("winrate") or (s.get("wins", 0) / trades)
 
@@ -298,6 +310,12 @@ def parse_zip(zip_path: Path) -> dict | None:
         exit_signal_wr    = (exit_signal_wins / exit_signal_count) if exit_signal_count else 0.0
         stop_loss_row     = exit_reasons.get("stop_loss", {})
         stop_loss_count   = int(stop_loss_row.get("trades", stop_loss_row.get("count", 0)) or 0)
+        time_limit_row    = exit_reasons.get("time_limit_exit", {})
+        time_limit_exit_count = int(time_limit_row.get("trades", time_limit_row.get("count", 0)) or 0)
+        pred_persist_row  = exit_reasons.get("pred_persist_exit", {})
+        pred_persist_exit_count = int(pred_persist_row.get("trades", pred_persist_row.get("count", 0)) or 0)
+        pred_persist_exit_wins  = int(pred_persist_row.get("wins", 0) or 0)
+        pred_persist_exit_wr    = (pred_persist_exit_wins / pred_persist_exit_count) if pred_persist_exit_count else 0.0
 
         enter_reasons = _to_dict(s.get("enter_reason_summary"))
         long_count  = sum(int(v.get("trades", v.get("count", 0)) or 0) for k, v in enter_reasons.items() if "long" in (k or ""))
@@ -326,6 +344,10 @@ def parse_zip(zip_path: Path) -> dict | None:
             "exit_signal_wr":    round(exit_signal_wr, 4),
             "stop_loss_count":   stop_loss_count,
             "stop_loss_exit_rate": round(stop_loss_count / trades, 4) if trades else 0.0,
+            "time_limit_exit_count": time_limit_exit_count,
+            "time_limit_exit_rate": round(time_limit_exit_count / trades, 4) if trades else 0.0,
+            "pred_persist_exit_count": pred_persist_exit_count,
+            "pred_persist_exit_wr": round(pred_persist_exit_wr, 4),
         }
     except Exception as e:
         print(f"[parse] error: {e}", file=sys.stderr)
@@ -459,6 +481,24 @@ def _build_env_args(cfg: dict, identifier: str) -> list[str]:
             env_args += ["-e", f"FREQAI_EXIT_HYSTERESIS_FRAC={cfg['exit_hysteresis_frac']}"]
         if cfg.get("trail_leverage_fix") is not None:
             env_args += ["-e", f"FREQAI_TRAIL_LEVERAGE_FIX={'1' if cfg['trail_leverage_fix'] else '0'}"]
+        # Persistence-exit / time-limit-grace knobs (2026-09-01) — serve-time gates,
+        # NOT in _TRAIN_SHAPE_KEYS (same family as exit_hysteresis_frac/trail_leverage_fix).
+        if cfg.get("pred_persist_exit") is not None:
+            env_args += ["-e", f"FREQAI_PRED_PERSIST_EXIT={'1' if cfg['pred_persist_exit'] else '0'}"]
+        if cfg.get("pred_persist_exit_n") is not None:
+            env_args += ["-e", f"FREQAI_PRED_PERSIST_EXIT_N={cfg['pred_persist_exit_n']}"]
+        if cfg.get("pred_persist_exit_level") is not None:
+            env_args += ["-e", f"FREQAI_PRED_PERSIST_EXIT_LEVEL={cfg['pred_persist_exit_level']}"]
+        if cfg.get("pred_persist_exit_min_loss") is not None:
+            env_args += ["-e", f"FREQAI_PRED_PERSIST_EXIT_MIN_LOSS={cfg['pred_persist_exit_min_loss']}"]
+        if cfg.get("time_limit_grace") is not None:
+            env_args += ["-e", f"FREQAI_TIME_LIMIT_GRACE={'1' if cfg['time_limit_grace'] else '0'}"]
+        if cfg.get("time_limit_grace_candles") is not None:
+            env_args += ["-e", f"FREQAI_TIME_LIMIT_GRACE_CANDLES={cfg['time_limit_grace_candles']}"]
+        if cfg.get("time_limit_grace_level") is not None:
+            env_args += ["-e", f"FREQAI_TIME_LIMIT_GRACE_LEVEL={cfg['time_limit_grace_level']}"]
+        if cfg.get("time_limit_grace_max_extensions") is not None:
+            env_args += ["-e", f"FREQAI_TIME_LIMIT_GRACE_MAX_EXTENSIONS={cfg['time_limit_grace_max_extensions']}"]
     return env_args
 
 

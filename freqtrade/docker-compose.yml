@@ -110,6 +110,24 @@ services:
       # Trailing-stop leverage/ATR fix (2026-08-31): DEFAULT OFF pending brain A/B. See strategy
       # custom_stoploss comment for the mismatch this corrects.
       - FREQAI_TRAIL_LEVERAGE_FIX=${FREQAI_TRAIL_LEVERAGE_FIX:-0}
+      # Persistence-gated prediction-disagreement early exit (2026-09-01): DEFAULT OFF.
+      # Redesign of FREQAI_PRED_DECAY_EXIT (single-candle, proven noisy — see that comment
+      # above) using the entry-side FREQAI_STABILITY_N pattern: requires N CONSECUTIVE
+      # candles of model disagreement before cutting a losing trade early. New, separate
+      # exit_reason "pred_persist_exit" so its effect is isolable from pred_decay_exit
+      # (which stays OFF). Pending brain A/B.
+      - FREQAI_PRED_PERSIST_EXIT=${FREQAI_PRED_PERSIST_EXIT:-0}
+      - FREQAI_PRED_PERSIST_EXIT_N=${FREQAI_PRED_PERSIST_EXIT_N:-3}
+      - FREQAI_PRED_PERSIST_EXIT_LEVEL=${FREQAI_PRED_PERSIST_EXIT_LEVEL:-0.0}
+      - FREQAI_PRED_PERSIST_EXIT_MIN_LOSS=${FREQAI_PRED_PERSIST_EXIT_MIN_LOSS:--0.002}
+      # Time-limit grace extension (2026-09-01): DEFAULT OFF (GRACE_CANDLES=0 → true no-op).
+      # custom_exit's time-limit branch force-closed unconditionally with zero model input.
+      # If the model STILL supports the trade's direction when the deadline hits, extend it
+      # by GRACE_CANDLES instead of blind-closing, capped at MAX_EXTENSIONS grants/trade.
+      - FREQAI_TIME_LIMIT_GRACE=${FREQAI_TIME_LIMIT_GRACE:-0}
+      - FREQAI_TIME_LIMIT_GRACE_CANDLES=${FREQAI_TIME_LIMIT_GRACE_CANDLES:-0}
+      - FREQAI_TIME_LIMIT_GRACE_LEVEL=${FREQAI_TIME_LIMIT_GRACE_LEVEL:-0.0}
+      - FREQAI_TIME_LIMIT_GRACE_MAX_EXTENSIONS=${FREQAI_TIME_LIMIT_GRACE_MAX_EXTENSIONS:-1}
       - FREQAI_PROGRESS_CUT_CANDLES=${FREQAI_PROGRESS_CUT_CANDLES:-3}
       - FREQAI_PROGRESS_CUT_PROFIT=${FREQAI_PROGRESS_CUT_PROFIT:--0.005}
       # Probe-scale (2026-06-23): DEFAULT OFF. Anti-martingale sizing — enter a reduced
