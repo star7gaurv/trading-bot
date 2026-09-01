@@ -168,7 +168,7 @@ _ACTIVE_TF, _ACTIVE_CFG = _active_tf_and_config()
 
 SEED_CONFIG_V23 = {
     "arch":               "v23",
-    "strategy":           "FinBuddyFreqAI_v23",
+    "strategy":           "CortexaAI_v23",
     "freqaimodel":        "LightGBMRegressor",
     "config_file":        _ACTIVE_CFG,   # follows active timeframe (single source of truth)
     "timeframe":          _ACTIVE_TF,
@@ -445,7 +445,7 @@ def _generate_aggressive_v23(n: int) -> list[dict]:
         v["timeframe"] = random.choice(allowed_tfs)
         v["short_threshold"] = -abs(v["short_threshold"])
         v["arch"] = "v23"
-        v["strategy"]    = "FinBuddyFreqAI_v23"
+        v["strategy"]    = "CortexaAI_v23"
         v["freqaimodel"] = "LightGBMRegressor"
         v["config_file"] = TF_CONFIG_MAP_V23[v["timeframe"]]
         key = tuple(sorted(v.items()))
@@ -541,7 +541,7 @@ def _generate_guided_aggressive(n: int) -> list[dict]:
                 attempts += 1
                 continue
             v["arch"]        = "v23"
-            v["strategy"]    = "FinBuddyFreqAI_v23"
+            v["strategy"]    = "CortexaAI_v23"
             v["freqaimodel"] = "LightGBMRegressor"
             v["config_file"] = TF_CONFIG_MAP_V23[v["timeframe"]]
         else:
@@ -748,7 +748,7 @@ def generate_bayesian(n: int, allowed_tfs: list[str] | None = None) -> list[dict
         tf = p["timeframe"]
         v  = {
             "arch":                  "v23",
-            "strategy":              "FinBuddyFreqAI_v23",
+            "strategy":              "CortexaAI_v23",
             "freqaimodel":           "LightGBMRegressor",
             "config_file":           TF_CONFIG_MAP_V23.get(tf, "v23_regression_15m_di_config.json"),
             "timeframe":             tf,
@@ -847,7 +847,7 @@ def _current_best_config(arch: str | None = None) -> dict | None:
            and r.get("metrics", {}).get("trades", 0) >= 20]
     if arch is not None:
         log = [r for r in log if (r.get("config", {}).get("arch") == arch
-                                   or (arch == "v23" and r.get("config", {}).get("strategy") == "FinBuddyFreqAI_v23")
+                                   or (arch == "v23" and r.get("config", {}).get("strategy") == "CortexaAI_v23")
                                    or (arch == "v22" and r.get("config", {}).get("strategy") == "FinBuddyFreqAI"))]
     if not log:
         return None

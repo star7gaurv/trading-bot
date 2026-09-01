@@ -1,7 +1,7 @@
 """
 BaselineEMACross_v1 — dumb-entry benchmark for the ML entry signal.
 
-Inherits EVERYTHING from FinBuddyFreqAI_v23 (FreqAI features/targets, ML-driven
+Inherits EVERYTHING from CortexaAI_v23 (FreqAI features/targets, ML-driven
 exits, ATR stops, leverage, circuit breaker, confirm gates) and replaces ONLY
 populate_entry_trend with a plain EMA20/50 crossover.
 
@@ -16,10 +16,10 @@ via target_version='baseline' on its queue entries.
 import talib.abstract as ta
 from pandas import DataFrame
 
-from FinBuddyFreqAI_v23 import FinBuddyFreqAI_v23
+from CortexaAI_v23 import CortexaAI_v23
 
 
-class BaselineEMACross_v1(FinBuddyFreqAI_v23):
+class BaselineEMACross_v1(CortexaAI_v23):
 
     def populate_entry_trend(self, df: DataFrame, metadata: dict) -> DataFrame:
         df["baseline_ema_fast"] = ta.EMA(df, timeperiod=20)

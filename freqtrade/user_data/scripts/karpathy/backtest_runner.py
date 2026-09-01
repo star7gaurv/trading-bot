@@ -50,7 +50,7 @@ def _run_backtest() -> dict | None:
     cmd = [
         "docker", "exec", CONTAINER,
         "freqtrade", "backtesting",
-        "--strategy", "FinBuddyFreqAI_v23",
+        "--strategy", "CortexaAI_v23",
         "--timerange", TIMERANGE,
         "--pairs", *PAIRS,
         "--export", "none",

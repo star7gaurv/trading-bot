@@ -10,7 +10,7 @@ Usage:
     python3 scripts/walk_forward.py \
         --start 2024-01-01 --end 2025-01-01 \
         --train-months 6 --test-months 1 --slide-months 1 \
-        --strategy FinBuddyFreqAI_v23 --timeframe 15m \
+        --strategy CortexaAI_v23 --timeframe 15m \
         --max-workers 3   # run up to 3 folds in parallel (default)
 
 v2 changes vs v1:
@@ -515,7 +515,7 @@ def main():
     p.add_argument("--train-months", type=int, default=6)
     p.add_argument("--test-months", type=int, default=1)
     p.add_argument("--slide-months", type=int, default=1)
-    p.add_argument("--strategy", default="FinBuddyFreqAI_v23")
+    p.add_argument("--strategy", default="CortexaAI_v23")
     p.add_argument("--timeframe", default="15m")
     p.add_argument("--config", help="Custom config filename inside user_data/")
     p.add_argument("--skip-download", action="store_true", help="Skip data download")

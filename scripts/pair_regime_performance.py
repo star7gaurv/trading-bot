@@ -22,7 +22,7 @@ Block rule (data-driven, confirmed by user 2026-05-19):
   n_trades >= 5  AND  WR < 40%  AND  PF < 0.7
   over a 30-day rolling lookback
 
-Wire-in: FinBuddyFreqAI_v23.py populate_entry_trend() loads the JSON and
+Wire-in: CortexaAI_v23.py populate_entry_trend() loads the JSON and
 zeros out enter_long / enter_short for any (pair, current_regime) that
 appears in the `blocked[]` list.
 

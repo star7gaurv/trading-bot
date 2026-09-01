@@ -51,14 +51,14 @@ try:
         return _orig_validate(self, X, y, sample_weight, fit=fit, outlier_check=outlier_check)
 
     _dsp.Pipeline._validate_arguments = _patched_validate
-    logger.info("[FinBuddyFreqAI] datasieve Pipeline.features_in patch applied")
+    logger.info("[CortexaAI] datasieve Pipeline.features_in patch applied")
 except Exception as _shim_err:
-    logger.debug(f"[FinBuddyFreqAI] datasieve shim skipped: {_shim_err}")
+    logger.debug(f"[CortexaAI] datasieve shim skipped: {_shim_err}")
 
 
-class FinBuddyFreqAI_v23(IStrategy):
+class CortexaAI_v23(IStrategy):
     """
-    FinBuddy FreqAI Strategy v23 — Conscious Brain (2026-05-17)
+    Cortexa AI Strategy v23 — Conscious Brain (2026-05-17)
 
     ARCHITECTURE: Regression, not classification.
       LightGBMRegressor predicts continuous future_return (% over next LABEL_PERIOD candles).
@@ -277,7 +277,7 @@ class FinBuddyFreqAI_v23(IStrategy):
         """
         import time as _time
         now_ts = _time.time()
-        ts, val = FinBuddyFreqAI_v23._today_pnl_cache
+        ts, val = CortexaAI_v23._today_pnl_cache
         if now_ts - ts < 60:
             return val
         from datetime import timezone as _tz
@@ -287,7 +287,7 @@ class FinBuddyFreqAI_v23(IStrategy):
             for t in Trade.get_trades_proxy(is_open=False)
             if t.close_date_utc and t.close_date_utc >= today
         )
-        FinBuddyFreqAI_v23._today_pnl_cache = (now_ts, val)
+        CortexaAI_v23._today_pnl_cache = (now_ts, val)
         return val
 
     def _label_period_candles(self) -> int:
@@ -539,13 +539,13 @@ class FinBuddyFreqAI_v23(IStrategy):
 
     def _load_historical_regime(self):
         """Load BTC-derived historical regime parquet once. Cached at class level."""
-        if FinBuddyFreqAI_v23._historical_regime_df is not None:
-            return FinBuddyFreqAI_v23._historical_regime_df
+        if CortexaAI_v23._historical_regime_df is not None:
+            return CortexaAI_v23._historical_regime_df
         try:
             df = pd.read_parquet(self._HISTORICAL_REGIME_FILE)
             df["date"] = pd.to_datetime(df["date"], utc=True).astype("datetime64[ns, UTC]")
             df = df.sort_values("date").reset_index(drop=True)
-            FinBuddyFreqAI_v23._historical_regime_df = df
+            CortexaAI_v23._historical_regime_df = df
             max_date = df['date'].max()
             now_utc = pd.Timestamp.now(tz="UTC")
             gap_days = (now_utc - max_date).days
@@ -555,8 +555,8 @@ class FinBuddyFreqAI_v23(IStrategy):
             return df
         except Exception as e:
             logger.warning(f"[Regime] Could not load historical regime parquet ({e}) — falling back to live regime file")
-            FinBuddyFreqAI_v23._historical_regime_df = pd.DataFrame()  # empty marker to skip retry
-            return FinBuddyFreqAI_v23._historical_regime_df
+            CortexaAI_v23._historical_regime_df = pd.DataFrame()  # empty marker to skip retry
+            return CortexaAI_v23._historical_regime_df
 
     def _get_current_regime(self, as_of: pd.Timestamp | None = None) -> str:
         """
@@ -610,48 +610,48 @@ class FinBuddyFreqAI_v23(IStrategy):
             mtime = os.path.getmtime(self._PAIR_REGIME_FILE)
         except OSError:
             return {}
-        if (FinBuddyFreqAI_v23._pair_regime_blocks is not None
-                and mtime <= FinBuddyFreqAI_v23._pair_regime_blocks_mtime):
-            return FinBuddyFreqAI_v23._pair_regime_blocks
+        if (CortexaAI_v23._pair_regime_blocks is not None
+                and mtime <= CortexaAI_v23._pair_regime_blocks_mtime):
+            return CortexaAI_v23._pair_regime_blocks
         try:
             with open(self._PAIR_REGIME_FILE) as f:
                 data = json.load(f)
             blocks: dict[str, set] = {}
             for b in data.get("blocked", []):
                 blocks.setdefault(b["pair"], set()).add(b["regime"])
-            FinBuddyFreqAI_v23._pair_regime_blocks       = blocks
-            FinBuddyFreqAI_v23._pair_regime_blocks_mtime = mtime
+            CortexaAI_v23._pair_regime_blocks       = blocks
+            CortexaAI_v23._pair_regime_blocks_mtime = mtime
             return blocks
         except Exception:
-            return FinBuddyFreqAI_v23._pair_regime_blocks or {}
+            return CortexaAI_v23._pair_regime_blocks or {}
 
     def _load_recent_wr(self) -> float:
         """Return the recent WR. Refreshes when JSON mtime changes."""
         try:
             mtime = os.path.getmtime(self._RECENT_WR_FILE)
         except OSError:
-            return FinBuddyFreqAI_v23._recent_wr_cache
-        if mtime <= FinBuddyFreqAI_v23._recent_wr_mtime:
-            return FinBuddyFreqAI_v23._recent_wr_cache
+            return CortexaAI_v23._recent_wr_cache
+        if mtime <= CortexaAI_v23._recent_wr_mtime:
+            return CortexaAI_v23._recent_wr_cache
         try:
             with open(self._RECENT_WR_FILE) as f:
                 data = json.load(f)
             wr = float(data.get("wr", 0.50))
-            FinBuddyFreqAI_v23._recent_wr_cache = wr
-            FinBuddyFreqAI_v23._recent_wr_mtime = mtime
+            CortexaAI_v23._recent_wr_cache = wr
+            CortexaAI_v23._recent_wr_mtime = mtime
             return wr
         except Exception:
-            return FinBuddyFreqAI_v23._recent_wr_cache
+            return CortexaAI_v23._recent_wr_cache
 
     def _load_historical_macro(self):
         """Load historical macro features (F&G + BTC strength). Cached at class level."""
-        if FinBuddyFreqAI_v23._historical_macro_df is not None:
-            return FinBuddyFreqAI_v23._historical_macro_df
+        if CortexaAI_v23._historical_macro_df is not None:
+            return CortexaAI_v23._historical_macro_df
         try:
             df = pd.read_parquet(self._HISTORICAL_MACRO_FILE)
             df["date"] = pd.to_datetime(df["date"], utc=True).astype("datetime64[ns, UTC]")
             df = df.sort_values("date").reset_index(drop=True)
-            FinBuddyFreqAI_v23._historical_macro_df = df
+            CortexaAI_v23._historical_macro_df = df
             max_date = df['date'].max()
             now_utc = pd.Timestamp.now(tz="UTC")
             gap_days = (now_utc - max_date).days
@@ -661,8 +661,8 @@ class FinBuddyFreqAI_v23(IStrategy):
             return df
         except Exception as e:
             logger.warning(f"[Macro] Could not load historical macro parquet ({e}) — using live combined_context")
-            FinBuddyFreqAI_v23._historical_macro_df = pd.DataFrame()
-            return FinBuddyFreqAI_v23._historical_macro_df
+            CortexaAI_v23._historical_macro_df = pd.DataFrame()
+            return CortexaAI_v23._historical_macro_df
 
     def _load_btc_15m(self) -> pd.DataFrame:
         """Load BTC/USDT_USDT 15m OHLCV feather once. Cached at class level.
@@ -670,19 +670,19 @@ class FinBuddyFreqAI_v23(IStrategy):
         Used to compute per-candle BTC return for the rel-strength feature.
         Falls back to empty DataFrame (feature defaults to 0.0) if file missing.
         """
-        if FinBuddyFreqAI_v23._btc_15m_df is not None:
-            return FinBuddyFreqAI_v23._btc_15m_df
+        if CortexaAI_v23._btc_15m_df is not None:
+            return CortexaAI_v23._btc_15m_df
         try:
             df = pd.read_feather(self._HISTORICAL_BTC_15M_FILE)
             df["date"] = pd.to_datetime(df["date"], utc=True).astype("datetime64[ns, UTC]")
             df = df[["date", "close"]].sort_values("date").reset_index(drop=True)
-            FinBuddyFreqAI_v23._btc_15m_df = df
+            CortexaAI_v23._btc_15m_df = df
             logger.info(f"[RelStrength] Loaded {len(df)} BTC 15m rows from {df['date'].min()} to {df['date'].max()}")
             return df
         except Exception as e:
             logger.warning(f"[RelStrength] Could not load BTC 15m feather ({e}) — rel_strength_btc defaulting to 0.0")
-            FinBuddyFreqAI_v23._btc_15m_df = pd.DataFrame()
-            return FinBuddyFreqAI_v23._btc_15m_df
+            CortexaAI_v23._btc_15m_df = pd.DataFrame()
+            return CortexaAI_v23._btc_15m_df
 
     def _get_btc_returns(self, dataframe: DataFrame, windows: tuple) -> dict[str, pd.Series]:
         """Return per-candle BTC pct_change at each window, aligned to dataframe dates.
@@ -734,13 +734,13 @@ class FinBuddyFreqAI_v23(IStrategy):
         Built by scripts/build_historical_funding.py — refreshed daily via cron.
         Falls back to live funding rate (single value, repeated) if parquet missing.
         """
-        if FinBuddyFreqAI_v23._historical_funding_df is not None:
-            return FinBuddyFreqAI_v23._historical_funding_df
+        if CortexaAI_v23._historical_funding_df is not None:
+            return CortexaAI_v23._historical_funding_df
         try:
             df = pd.read_parquet(self._HISTORICAL_FUNDING_FILE)
             df["date"] = pd.to_datetime(df["date"], utc=True).astype("datetime64[ns, UTC]")
             df = df.sort_values("date").reset_index(drop=True)
-            FinBuddyFreqAI_v23._historical_funding_df = df
+            CortexaAI_v23._historical_funding_df = df
             max_date = df["date"].max()
             gap_days = (pd.Timestamp.now(tz="UTC") - max_date).days
             logger.info(
@@ -755,8 +755,8 @@ class FinBuddyFreqAI_v23(IStrategy):
             return df
         except Exception as e:
             logger.warning(f"[Funding] Could not load historical parquet ({e}) — using live cache fallback")
-            FinBuddyFreqAI_v23._historical_funding_df = pd.DataFrame()
-            return FinBuddyFreqAI_v23._historical_funding_df
+            CortexaAI_v23._historical_funding_df = pd.DataFrame()
+            return CortexaAI_v23._historical_funding_df
 
     def _get_funding_series(self, dataframe: DataFrame) -> dict[str, pd.Series]:
         """
@@ -797,14 +797,14 @@ class FinBuddyFreqAI_v23(IStrategy):
         Built by scripts/build_historical_funding_perpair.py, refreshed daily.
         Falls back to empty dict (features default to 0.0) if parquet missing.
         """
-        if FinBuddyFreqAI_v23._historical_funding_perpair is not None:
-            return FinBuddyFreqAI_v23._historical_funding_perpair
+        if CortexaAI_v23._historical_funding_perpair is not None:
+            return CortexaAI_v23._historical_funding_perpair
         try:
             df = pd.read_parquet(self._HISTORICAL_FUNDING_PERPAIR_FILE)
             df["date"] = pd.to_datetime(df["date"], utc=True).astype("datetime64[ns, UTC]")
             df = df.sort_values(["symbol", "date"]).reset_index(drop=True)
             by_sym = {sym: grp.reset_index(drop=True) for sym, grp in df.groupby("symbol")}
-            FinBuddyFreqAI_v23._historical_funding_perpair = by_sym
+            CortexaAI_v23._historical_funding_perpair = by_sym
             max_date = df["date"].max()
             gap_days = (pd.Timestamp.now(tz="UTC") - max_date).days
             logger.info(
@@ -819,7 +819,7 @@ class FinBuddyFreqAI_v23(IStrategy):
             return by_sym
         except Exception as e:
             logger.warning(f"[FundingPP] Could not load ({e}) — per-pair funding defaulting to 0")
-            FinBuddyFreqAI_v23._historical_funding_perpair = {}
+            CortexaAI_v23._historical_funding_perpair = {}
             return {}
 
     def _get_pair_funding_series(self, dataframe: "DataFrame", pair: str) -> dict:
@@ -852,8 +852,8 @@ class FinBuddyFreqAI_v23(IStrategy):
 
     def _load_historical_oi_perpair(self) -> dict:
         """Load per-pair OI history as dict[symbol -> DataFrame]. Cached at class level."""
-        if FinBuddyFreqAI_v23._historical_oi_perpair is not None:
-            return FinBuddyFreqAI_v23._historical_oi_perpair
+        if CortexaAI_v23._historical_oi_perpair is not None:
+            return CortexaAI_v23._historical_oi_perpair
         try:
             df = pd.read_parquet(self._HISTORICAL_OI_PERPAIR_FILE)
             df["date"] = pd.to_datetime(df["date"], utc=True).astype("datetime64[ns, UTC]")
@@ -861,12 +861,12 @@ class FinBuddyFreqAI_v23(IStrategy):
                 sym: g.sort_values("date").reset_index(drop=True)
                 for sym, g in df.groupby("symbol")
             }
-            FinBuddyFreqAI_v23._historical_oi_perpair = by_sym
+            CortexaAI_v23._historical_oi_perpair = by_sym
             logger.info(f"[OI-perpair] Loaded {len(df)} rows for {len(by_sym)} symbols")
             return by_sym
         except Exception as e:
             logger.warning(f"[OI-perpair] load failed ({e}) — features default to 0.0")
-            FinBuddyFreqAI_v23._historical_oi_perpair = {}
+            CortexaAI_v23._historical_oi_perpair = {}
             return {}
 
     def _get_pair_oi_series(self, dataframe: "DataFrame", pair: str) -> dict:
@@ -895,13 +895,13 @@ class FinBuddyFreqAI_v23(IStrategy):
 
     def _load_historical_oi(self):
         """Load historical BTC Open Interest. Cached at class level."""
-        if FinBuddyFreqAI_v23._historical_oi_df is not None:
-            return FinBuddyFreqAI_v23._historical_oi_df
+        if CortexaAI_v23._historical_oi_df is not None:
+            return CortexaAI_v23._historical_oi_df
         try:
             df = pd.read_parquet(self._HISTORICAL_OI_FILE)
             df["date"] = pd.to_datetime(df["date"], utc=True).astype("datetime64[ns, UTC]")
             df = df.sort_values("date").reset_index(drop=True)
-            FinBuddyFreqAI_v23._historical_oi_df = df
+            CortexaAI_v23._historical_oi_df = df
             max_date = df["date"].max()
             gap_days = (pd.Timestamp.now(tz="UTC") - max_date).days
             logger.info(
@@ -913,8 +913,8 @@ class FinBuddyFreqAI_v23(IStrategy):
             return df
         except Exception as e:
             logger.warning(f"[OI] Could not load historical OI parquet ({e})")
-            FinBuddyFreqAI_v23._historical_oi_df = pd.DataFrame()
-            return FinBuddyFreqAI_v23._historical_oi_df
+            CortexaAI_v23._historical_oi_df = pd.DataFrame()
+            return CortexaAI_v23._historical_oi_df
 
     def _get_oi_series(self, dataframe: DataFrame) -> dict[str, pd.Series]:
         """

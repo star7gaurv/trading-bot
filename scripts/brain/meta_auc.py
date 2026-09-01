@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """meta_auc.py — score the meta-model's out-of-sample separation (the Phase-3 GO/NO-GO gate).
 
-Reads the per-pair parquets dumped by FinBuddyFreqAI_v23 when a backtest runs with
+Reads the per-pair parquets dumped by CortexaAI_v23 when a backtest runs with
 FREQAI_META_DUMP=1 (cols: date, do_predict, pred_long, pred_short, y_long, y_short), pools
 them, and computes ROC AUC of the meta predictions vs the freshly-recomputed ground-truth
 labels over do_predict==1 candles.

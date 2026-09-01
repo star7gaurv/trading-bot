@@ -230,7 +230,7 @@ def run_one(
         "backtesting",
         "--config", BASE_CONFIG,
         "--config", overlay_container,
-        "--strategy", "FinBuddyFreqAI_v23",
+        "--strategy", "CortexaAI_v23",
         "--freqaimodel", "LightGBMRegressor",
         "--timerange", timerange,
         "--timeframe", "5m",

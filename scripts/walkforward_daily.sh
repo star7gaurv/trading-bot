@@ -68,7 +68,7 @@ python3 "$SCRIPT" \
     --train-months 5 \
     --test-months 2 \
     --slide-months 2 \
-    --strategy FinBuddyFreqAI_v23 \
+    --strategy CortexaAI_v23 \
     --timeframe "$ACTIVE_TF" \
     --config config.json \
     --skip-download \

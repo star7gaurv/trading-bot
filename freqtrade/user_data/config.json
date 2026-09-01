@@ -100,7 +100,7 @@
     "bot_name": "freqtrade",
     "initial_state": "running",
     "force_entry_enable": true,
-    "strategy": "FinBuddyFreqAI_v23",
+    "strategy": "CortexaAI_v23",
     "strategy_path": "user_data/strategies",
     "internals": {
         "process_throttle_secs": 5

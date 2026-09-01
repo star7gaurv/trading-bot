@@ -123,7 +123,7 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 > The 752-trade / +17.6 USDT figure below is the **15m** track record — now historical; the 1h model starts fresh.
 
 ### FreqTrade
-- Running **`FinBuddyFreqAI_v23.py` (v23)** in dry-run mode on **Binance Futures USDT-M** — long+short
+- Running **`CortexaAI_v23.py` (v23)** in dry-run mode on **Binance Futures USDT-M** — long+short
 - FreqAI identifier: **`finbuddy_v23_tf1h_1782044602`** (1h timeframe switch 2026-06-21; previous: `finbuddy_v23_nosvm_1780729988` bumped 2026-06-06 — SVM disabled to fix do_predict=0 bug)
 - FreqAI model: **LightGBMRegressor** (predicts z-scored `&-future_return`, N(0,1) distribution). **DI disabled (DI_threshold=0)** and **SVM disabled** (verified live config 2026-06-12 — the datasieve "could not find step di" log line is cosmetic).
 - **1000 USDT** virtual wallet, max 8 open trades
@@ -262,7 +262,8 @@ Standard layer 4 features include 3 funding-rate features (`%-funding_rate`, `%-
 
 ## Current Strategy
 
-### ✅ Active: `FinBuddyFreqAI_v23.py` v23 — Regression + Per-Pair-Per-Regime Gate
+### ✅ Active: `CortexaAI_v23.py` v23 — Regression + Per-Pair-Per-Regime Gate
+*(renamed from `FinBuddyFreqAI_v23.py` 2026-09-01 — Cortexa rebrand, file/class only, no logic change)*
 - Binance Futures USDT-M (perpetual, isolated margin), **1h base TF** (switched from 15m 2026-06-21; switchable via the dashboard timeframe switcher), **25 pairs** (TON removed 2026-07-08, delisted; trimmed 2026-05-24), `can_short=True`
 - **LightGBMRegressor**: predicts `&-future_return` (regression target, no classifier bias)
 - **2x Leverage**: Implemented via `leverage()` callback.
@@ -379,7 +380,7 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 | N8N admin | see server — not documented here (was hardcoded until 2026-07-05 security pass) |
 | Telegram Chat ID | `5622292536` |
 | Docker Compose path | `/home/ubuntu/var/www/html/trade/` |
-| Active strategy | `freqtrade/user_data/strategies/FinBuddyFreqAI_v23.py` |
+| Active strategy | `freqtrade/user_data/strategies/CortexaAI_v23.py` |
 | GitHub repo | `git@github.com:star7gaurv/trading-bot.git` |
 
 ---

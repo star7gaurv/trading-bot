@@ -48,7 +48,7 @@ def send_wf_message(run_id: str, summary: dict) -> bool:
     verdict_str   = " · ".join(verdict_lines) if verdict_lines else ""
 
     # Shorten the run_id for display: strip the strategy prefix, keep date+timestamp.
-    # e.g. "FinBuddyFreqAI_v23_2025-08-01_2026-05-01_20260522T220002"
+    # e.g. "CortexaAI_v23_2025-08-01_2026-05-01_20260522T220002"
     #   → "2025-08-01 → 2026-05-01 (20260522T220002)"
     try:
         parts = run_id.split("_")

@@ -13,7 +13,7 @@ Why funding rate as a model feature:
   - Strongest published correlation with 1–4h crypto perp price moves of any
     cheap signal. High positive funding → longs overcrowded → mean-reversion
     pressure. High negative funding → shorts overcrowded → squeeze risk.
-  - Already used as a trade-time GATE in FinBuddyFreqAI_v23 (block longs when
+  - Already used as a trade-time GATE in CortexaAI_v23 (block longs when
     funding > 0.05% / 8h). Adding it as a model FEATURE lets LightGBM learn
     nonlinear interactions (e.g. funding × momentum × regime).
 

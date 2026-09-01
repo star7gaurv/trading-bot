@@ -60,7 +60,7 @@
   "bot_name": "finbuddy_backtest_v18",
   "initial_state": "running",
   "stoploss": -0.08,
-  "strategy": "FinBuddyFreqAI_v23",
+  "strategy": "CortexaAI_v23",
   "strategy_path": "user_data/strategies",
   "internals": {
     "process_throttle_secs": 5

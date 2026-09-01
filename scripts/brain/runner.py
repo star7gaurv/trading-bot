@@ -571,7 +571,7 @@ def _run_hypothesis_group(
             "freqtrade",
             "backtesting",
             "--config", f"/freqtrade/user_data/{tmp_config}",
-            "--strategy", cfg.get("strategy", "FinBuddyFreqAI_v23"),
+            "--strategy", cfg.get("strategy", "CortexaAI_v23"),
             "--freqaimodel", cfg.get("freqaimodel", "LightGBMRegressor"),
             "--timerange", timerange,
             "--timeframe", cfg.get("timeframe", "15m"),

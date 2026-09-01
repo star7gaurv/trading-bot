@@ -30,7 +30,7 @@ python3 "$SCRIPT" \
     --train-months 6 \
     --test-months 1 \
     --slide-months 1 \
-    --strategy FinBuddyFreqAI_v23 \
+    --strategy CortexaAI_v23 \
     --timeframe 15m \
     --skip-download >> "$LOG" 2>&1
 

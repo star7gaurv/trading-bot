@@ -608,7 +608,7 @@ def _load_pair_regime_blocks_map() -> dict[str, set]:
 def _direction_status(side: str, row: dict, regime: str, gated: bool,
                       entering: bool) -> str:
     """Why is this side (long/short) entering or not? Determined by elimination —
-    replicates FinBuddyFreqAI_v23.populate_entry_trend gate order exactly, so the
+    replicates CortexaAI_v23.populate_entry_trend gate order exactly, so the
     reason is authoritative without needing to recompute the centered prediction."""
     if entering:
         return "enter"
@@ -1012,7 +1012,7 @@ async def whitelist(_: dict = Depends(require_auth)):
 
 
 _ENV_FILE = REPO_ROOT / "freqtrade" / ".env"
-_STRATEGY_FILE = REPO_ROOT / "freqtrade/user_data/strategies/FinBuddyFreqAI_v23.py"
+_STRATEGY_FILE = REPO_ROOT / "freqtrade/user_data/strategies/CortexaAI_v23.py"
 
 
 def _read_env_file(path: Path) -> dict[str, str]:

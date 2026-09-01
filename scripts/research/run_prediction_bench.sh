@@ -27,7 +27,7 @@ FREQAI_DUMP_PREDICTIONS=1 docker-compose run --rm --no-deps \
   -e FREQAI_DUMP_PREDICTIONS=1 \
   freqtrade backtesting \
   --config "/freqtrade/user_data/${CONFIG}" \
-  --strategy FinBuddyFreqAI_v23 \
+  --strategy CortexaAI_v23 \
   --freqaimodel LightGBMRegressor \
   --timerange "$TIMERANGE" \
   --timeframe "$TF" \

@@ -140,7 +140,7 @@ services:
       # Time-limit exit horizon is now derived from config.json's label_period_candles
       # (single source of truth) inside the strategy — FREQAI_LABEL_CANDLES env var
       # removed 2026-06-21 (went stale at 12 after the 1h switch). See
-      # FinBuddyFreqAI_v23._label_period_candles().
+      # CortexaAI_v23._label_period_candles().
       - FREQTRADE__FREQAI__IDENTIFIER=${FREQTRADE__FREQAI__IDENTIFIER:-}
     volumes:
       - "./user_data:/freqtrade/user_data"
