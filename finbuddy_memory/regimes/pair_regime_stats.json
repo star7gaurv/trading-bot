@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-03T19:00:01.384976+00:00",
+  "updated": "2026-09-03T19:30:01.796059+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -188,6 +188,15 @@
         "pf": 0.665,
         "profit_usdt": -0.95,
         "avg_profit_pct": -0.134
+      },
+      "BULL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 4.3,
+        "avg_profit_pct": 3.81
       }
     },
     "RENDER/USDT:USDT": {
