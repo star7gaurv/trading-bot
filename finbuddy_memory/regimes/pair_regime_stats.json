@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-03T06:00:01.412104+00:00",
+  "updated": "2026-09-03T06:30:01.193808+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -11,24 +11,13 @@
   "stats": {
     "NEAR/USDT:USDT": {
       "NEUTRAL": {
-        "n": 20,
-        "wins": 13,
+        "n": 19,
+        "wins": 12,
         "losses": 7,
-        "wr": 0.65,
-        "pf": 0.835,
-        "profit_usdt": -2.16,
-        "avg_profit_pct": -0.137
-      }
-    },
-    "FIL/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 10,
-        "wins": 6,
-        "losses": 4,
-        "wr": 0.6,
-        "pf": 0.574,
-        "profit_usdt": -1.4,
-        "avg_profit_pct": -0.179
+        "wr": 0.6316,
+        "pf": 0.728,
+        "profit_usdt": -3.57,
+        "avg_profit_pct": -0.239
       }
     },
     "UNI/USDT:USDT": {
@@ -42,13 +31,13 @@
         "avg_profit_pct": 0.47
       },
       "BULL": {
-        "n": 1,
+        "n": 2,
         "wins": 0,
-        "losses": 1,
+        "losses": 2,
         "wr": 0.0,
         "pf": 0.0,
-        "profit_usdt": -1.81,
-        "avg_profit_pct": -1.61
+        "profit_usdt": -7.07,
+        "avg_profit_pct": -3.17
       }
     },
     "AVAX/USDT:USDT": {
@@ -188,6 +177,17 @@
         "pf": 0.0,
         "profit_usdt": -1.37,
         "avg_profit_pct": -0.587
+      }
+    },
+    "FIL/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 9,
+        "wins": 6,
+        "losses": 3,
+        "wr": 0.6667,
+        "pf": 0.665,
+        "profit_usdt": -0.95,
+        "avg_profit_pct": -0.134
       }
     },
     "RENDER/USDT:USDT": {
