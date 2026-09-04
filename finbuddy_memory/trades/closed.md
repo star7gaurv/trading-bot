@@ -869,3 +869,6 @@
 | 2026-09-04 05:02:08 | ETH/USDT:USDT | LONG | 6h01m | +0.80% | +0.91 | time_limit_exit | BULL | freqai_regression_v23_lo |
 | 2026-09-04 05:02:33 | WIF/USDT:USDT | LONG | 6h02m | -0.47% | -0.54 | time_limit_exit | BULL | freqai_regression_v23_lo |
 | 2026-09-04 07:09:07 | BTC/USDT:USDT | LONG | 6h00m | -0.47% | -0.38 | time_limit_exit | BULL | freqai_regression_v23_lo |
+| 2026-09-04 09:02:16 | LTC/USDT:USDT | LONG | 6h01m | +0.50% | +0.57 | time_limit_exit | BULL | freqai_regression_v23_lo |
+| 2026-09-04 09:01:07 | ARB/USDT:USDT | LONG | 6h00m | +0.14% | +0.16 | time_limit_exit | BULL | freqai_regression_v23_lo |
+| 2026-09-04 09:03:56 | APT/USDT:USDT | LONG | 6h01m | -2.43% | -2.77 | time_limit_exit | BULL | freqai_regression_v23_lo |
