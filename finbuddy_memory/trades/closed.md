@@ -864,3 +864,5 @@
 | 2026-09-04 01:08:23 | ARB/USDT:USDT | LONG | 4h07m | +3.50% | +3.97 | exit_signal | BULL | freqai_regression_v23_lo |
 | 2026-09-04 03:00:36 | OP/USDT:USDT | LONG | 6h00m | -2.75% | -3.12 | time_limit_exit | BULL | freqai_regression_v23_lo |
 | 2026-09-04 03:00:46 | ENA/USDT:USDT | LONG | 6h00m | -0.40% | -0.45 | time_limit_exit | BULL | freqai_regression_v23_lo |
+| 2026-09-04 04:00:34 | UNI/USDT:USDT | LONG | 6h00m | -0.72% | -0.81 | time_limit_exit | BULL | freqai_regression_v23_lo |
+| 2026-09-04 04:01:55 | FET/USDT:USDT | LONG | 6h01m | -0.05% | -0.06 | time_limit_exit | BULL | freqai_regression_v23_lo |
