@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-04T03:00:01.236578+00:00",
+  "updated": "2026-09-04T03:30:02.021779+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -80,6 +80,15 @@
         "pf": 0.469,
         "profit_usdt": -2.49,
         "avg_profit_pct": -0.636
+      },
+      "BULL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -3.12,
+        "avg_profit_pct": -2.75
       }
     },
     "SUI/USDT:USDT": {
@@ -113,6 +122,15 @@
         "pf": 3.25,
         "profit_usdt": 2.25,
         "avg_profit_pct": 0.477
+      },
+      "BULL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.45,
+        "avg_profit_pct": -0.4
       }
     },
     "ONDO/USDT:USDT": {
