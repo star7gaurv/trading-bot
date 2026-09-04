@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-04T04:00:01.460606+00:00",
+  "updated": "2026-09-04T04:30:01.574878+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -31,13 +31,13 @@
         "avg_profit_pct": 0.47
       },
       "BULL": {
-        "n": 4,
+        "n": 5,
         "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 2.129,
-        "profit_usdt": 7.98,
-        "avg_profit_pct": 1.815
+        "losses": 3,
+        "wr": 0.4,
+        "pf": 1.91,
+        "profit_usdt": 7.17,
+        "avg_profit_pct": 1.308
       }
     },
     "AVAX/USDT:USDT": {
@@ -248,6 +248,15 @@
         "pf": 0.897,
         "profit_usdt": -0.08,
         "avg_profit_pct": -0.037
+      },
+      "BULL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.06,
+        "avg_profit_pct": -0.05
       }
     },
     "LTC/USDT:USDT": {
