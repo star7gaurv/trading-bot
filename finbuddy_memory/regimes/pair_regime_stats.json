@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-04T12:30:01.924872+00:00",
+  "updated": "2026-09-04T13:00:01.286754+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -31,13 +31,13 @@
         "avg_profit_pct": 0.47
       },
       "BULL": {
-        "n": 5,
+        "n": 6,
         "wins": 2,
-        "losses": 3,
-        "wr": 0.4,
-        "pf": 1.91,
-        "profit_usdt": 7.17,
-        "avg_profit_pct": 1.308
+        "losses": 4,
+        "wr": 0.3333,
+        "pf": 1.306,
+        "profit_usdt": 3.53,
+        "avg_profit_pct": 0.548
       }
     },
     "AVAX/USDT:USDT": {
@@ -113,13 +113,13 @@
         "avg_profit_pct": 0.111
       },
       "BULL": {
-        "n": 1,
+        "n": 2,
         "wins": 0,
-        "losses": 1,
+        "losses": 2,
         "wr": 0.0,
         "pf": 0.0,
-        "profit_usdt": -0.54,
-        "avg_profit_pct": -0.47
+        "profit_usdt": -7.4,
+        "avg_profit_pct": -3.25
       }
     },
     "ENA/USDT:USDT": {
@@ -153,13 +153,13 @@
         "avg_profit_pct": 0.419
       },
       "BULL": {
-        "n": 8,
+        "n": 9,
         "wins": 4,
-        "losses": 4,
-        "wr": 0.5,
-        "pf": 0.304,
-        "profit_usdt": -13.24,
-        "avg_profit_pct": -1.734
+        "losses": 5,
+        "wr": 0.4444,
+        "pf": 0.237,
+        "profit_usdt": -18.6,
+        "avg_profit_pct": -2.063
       }
     },
     "ADA/USDT:USDT": {
@@ -204,13 +204,13 @@
         "avg_profit_pct": 0.08
       },
       "BULL": {
-        "n": 1,
+        "n": 2,
         "wins": 0,
-        "losses": 1,
+        "losses": 2,
         "wr": 0.0,
         "pf": 0.0,
-        "profit_usdt": -0.38,
-        "avg_profit_pct": -0.47
+        "profit_usdt": -2.26,
+        "avg_profit_pct": -1.395
       }
     },
     "DOT/USDT:USDT": {
@@ -253,6 +253,15 @@
         "pf": 3.978,
         "profit_usdt": 2.71,
         "avg_profit_pct": 0.384
+      },
+      "BULL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -5.4,
+        "avg_profit_pct": -4.72
       }
     },
     "POL/USDT:USDT": {
@@ -297,13 +306,13 @@
         "avg_profit_pct": 0.213
       },
       "BULL": {
-        "n": 1,
+        "n": 2,
         "wins": 1,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 0.57,
-        "avg_profit_pct": 0.5
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 0.184,
+        "profit_usdt": -2.53,
+        "avg_profit_pct": -1.1
       }
     },
     "LDO/USDT:USDT": {
@@ -330,24 +339,46 @@
     },
     "ARB/USDT:USDT": {
       "BULL": {
-        "n": 2,
+        "n": 3,
         "wins": 2,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 4.13,
-        "avg_profit_pct": 1.82
+        "losses": 1,
+        "wr": 0.6667,
+        "pf": 0.578,
+        "profit_usdt": -3.02,
+        "avg_profit_pct": -0.86
       }
     },
     "ETH/USDT:USDT": {
       "BULL": {
-        "n": 2,
+        "n": 3,
         "wins": 2,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 2.03,
-        "avg_profit_pct": 0.895
+        "losses": 1,
+        "wr": 0.6667,
+        "pf": 0.567,
+        "profit_usdt": -1.55,
+        "avg_profit_pct": -0.463
+      }
+    },
+    "1000PEPE/USDT:USDT": {
+      "BULL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -5.14,
+        "avg_profit_pct": -4.5
+      }
+    },
+    "XRP/USDT:USDT": {
+      "BULL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -4.31,
+        "avg_profit_pct": -3.75
       }
     }
   },
