@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-04T09:00:01.285299+00:00",
+  "updated": "2026-09-04T09:30:01.803955+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -182,6 +182,15 @@
         "pf": 8.36,
         "profit_usdt": 1.84,
         "avg_profit_pct": 0.588
+      },
+      "BULL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -2.77,
+        "avg_profit_pct": -2.43
       }
     },
     "BTC/USDT:USDT": {
@@ -286,6 +295,15 @@
         "pf": 3.273,
         "profit_usdt": 0.5,
         "avg_profit_pct": 0.213
+      },
+      "BULL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 0.57,
+        "avg_profit_pct": 0.5
       }
     },
     "LDO/USDT:USDT": {
@@ -312,13 +330,13 @@
     },
     "ARB/USDT:USDT": {
       "BULL": {
-        "n": 1,
-        "wins": 1,
+        "n": 2,
+        "wins": 2,
         "losses": 0,
         "wr": 1.0,
         "pf": null,
-        "profit_usdt": 3.97,
-        "avg_profit_pct": 3.5
+        "profit_usdt": 4.13,
+        "avg_profit_pct": 1.82
       }
     },
     "ETH/USDT:USDT": {
