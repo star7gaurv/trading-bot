@@ -873,3 +873,13 @@
 | 2026-09-04 09:01:07 | ARB/USDT:USDT | LONG | 6h00m | +0.14% | +0.16 | time_limit_exit | BULL | freqai_regression_v23_lo |
 | 2026-09-04 09:03:56 | APT/USDT:USDT | LONG | 6h01m | -2.43% | -2.77 | time_limit_exit | BULL | freqai_regression_v23_lo |
 | 2026-09-04 09:21:16 | ETH/USDT:USDT | LONG | 2h12m | +0.99% | +1.12 | trailing_stop_loss | BULL | freqai_regression_v23_lo |
+| 2026-09-04 12:30:33 | ONDO/USDT:USDT | LONG | 3h29m | -4.70% | -5.36 | stop_loss | BULL | freqai_regression_v23_lo |
+| 2026-09-04 12:33:09 | 1000PEPE/USDT:USDT | LONG | 3h30m | -4.50% | -5.14 | daily_flatten | BULL | freqai_regression_v23_lo |
+| 2026-09-04 12:32:18 | WIF/USDT:USDT | LONG | 3h28m | -6.03% | -6.86 | stop_loss | BULL | freqai_regression_v23_lo |
+| 2026-09-04 12:31:29 | BTC/USDT:USDT | LONG | 3h10m | -2.32% | -1.88 | stop_loss | BULL | freqai_regression_v23_lo |
+| 2026-09-04 12:30:33 | RENDER/USDT:USDT | LONG | 2h39m | -4.72% | -5.40 | stop_loss | BULL | freqai_regression_v23_lo |
+| 2026-09-04 12:30:24 | LTC/USDT:USDT | LONG | 2h29m | -2.70% | -3.10 | stop_loss | BULL | freqai_regression_v23_lo |
+| 2026-09-04 12:33:10 | ARB/USDT:USDT | LONG | 2h30m | -6.22% | -7.15 | daily_flatten | BULL | freqai_regression_v23_lo |
+| 2026-09-04 12:32:18 | XRP/USDT:USDT | LONG | 1h27m | -3.75% | -4.31 | stop_loss | BULL | freqai_regression_v23_lo |
+| 2026-09-04 12:33:10 | UNI/USDT:USDT | LONG | 0h02m | -3.25% | -3.64 | daily_flatten | BULL | freqai_regression_v23_lo |
+| 2026-09-04 12:32:15 | ETH/USDT:USDT | LONG | 0h00m | -3.18% | -3.58 | stop_loss | BULL | freqai_regression_v23_lo |
