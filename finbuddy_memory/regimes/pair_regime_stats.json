@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-05T06:00:01.481042+00:00",
+  "updated": "2026-09-05T06:30:01.766312+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "UNI/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 2,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 0.74,
-        "avg_profit_pct": 0.47
-      },
-      "BULL": {
-        "n": 6,
-        "wins": 2,
-        "losses": 4,
-        "wr": 0.3333,
-        "pf": 1.306,
-        "profit_usdt": 3.53,
-        "avg_profit_pct": 0.548
-      }
-    },
     "AVAX/USDT:USDT": {
       "NEUTRAL": {
         "n": 4,
@@ -293,6 +273,26 @@
         "pf": 0.0,
         "profit_usdt": -0.06,
         "avg_profit_pct": -0.05
+      }
+    },
+    "UNI/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 0.71,
+        "avg_profit_pct": 0.91
+      },
+      "BULL": {
+        "n": 6,
+        "wins": 2,
+        "losses": 4,
+        "wr": 0.3333,
+        "pf": 1.306,
+        "profit_usdt": 3.53,
+        "avg_profit_pct": 0.548
       }
     },
     "LTC/USDT:USDT": {
