@@ -883,3 +883,4 @@
 | 2026-09-04 12:32:18 | XRP/USDT:USDT | LONG | 1h27m | -3.75% | -4.31 | stop_loss | BULL | freqai_regression_v23_lo |
 | 2026-09-04 12:33:10 | UNI/USDT:USDT | LONG | 0h02m | -3.25% | -3.64 | daily_flatten | BULL | freqai_regression_v23_lo |
 | 2026-09-04 12:32:15 | ETH/USDT:USDT | LONG | 0h00m | -3.18% | -3.58 | stop_loss | BULL | freqai_regression_v23_lo |
+| 2026-09-05 17:00:22 | UNI/USDT:USDT | LONG | 3h45m | +7.33% | +7.78 | exit_signal | BULL | freqai_regression_v23_lo |
