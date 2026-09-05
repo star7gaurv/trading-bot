@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-05T07:00:01.657828+00:00",
+  "updated": "2026-09-05T07:30:01.496962+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "AVAX/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 4,
-        "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 4.086,
-        "profit_usdt": 1.79,
-        "avg_profit_pct": 0.583
-      }
-    },
     "NEAR/USDT:USDT": {
       "NEUTRAL": {
         "n": 17,
@@ -253,6 +242,17 @@
         "pf": 0.633,
         "profit_usdt": -0.58,
         "avg_profit_pct": -0.123
+      }
+    },
+    "AVAX/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 3,
+        "wins": 2,
+        "losses": 1,
+        "wr": 0.6667,
+        "pf": 5.78,
+        "profit_usdt": 1.96,
+        "avg_profit_pct": 0.857
       }
     },
     "FET/USDT:USDT": {
