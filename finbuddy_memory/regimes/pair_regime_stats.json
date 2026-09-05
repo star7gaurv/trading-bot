@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-05T21:00:01.574662+00:00",
+  "updated": "2026-09-05T21:30:01.296318+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -244,13 +244,13 @@
         "avg_profit_pct": -0.123
       },
       "BULL": {
-        "n": 1,
+        "n": 2,
         "wins": 1,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 0.35,
-        "avg_profit_pct": 0.31
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 1.296,
+        "profit_usdt": 0.08,
+        "avg_profit_pct": 0.03
       }
     },
     "AVAX/USDT:USDT": {
