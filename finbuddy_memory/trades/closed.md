@@ -886,3 +886,4 @@
 | 2026-09-05 17:00:22 | UNI/USDT:USDT | LONG | 3h45m | +7.33% | +7.78 | exit_signal | BULL | freqai_regression_v23_lo |
 | 2026-09-05 19:20:12 | POL/USDT:USDT | LONG | 6h04m | +0.31% | +0.35 | time_limit_exit | BULL | freqai_regression_v23_lo |
 | 2026-09-05 21:10:26 | POL/USDT:USDT | LONG | 0h49m | -0.25% | -0.27 | exit_signal | BULL | freqai_regression_v23_lo |
+| 2026-09-06 09:00:39 | UNI/USDT:USDT | LONG | 6h00m | -3.67% | -3.94 | time_limit_exit | BULL | freqai_regression_v23_lo |
