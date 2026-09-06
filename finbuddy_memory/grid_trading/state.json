@@ -1,23 +1,5 @@
 {
   "grids": {
-    "ENA": {
-      "symbol": "ENA",
-      "entry_price": 0.15775,
-      "low": 0.1340875,
-      "high": 0.1814125,
-      "n_levels": 10,
-      "position_usdt": 300.0,
-      "spacing_abs": 0.00525833,
-      "spacing_pct": 3.3333,
-      "er": 0.154,
-      "vol_pct": 1.8,
-      "deployed_at": "2026-08-28T04:40:03.558204+00:00",
-      "last_price": 0.17677,
-      "last_price_ts": "2026-09-06T00:40:02.966315+00:00",
-      "total_crossings": 14,
-      "fees_paid": 0.51,
-      "accrued_pnl": 13.789986
-    },
     "POL": {
       "symbol": "POL",
       "entry_price": 0.08658,
@@ -30,8 +12,8 @@
       "er": 0.061,
       "vol_pct": 1.42,
       "deployed_at": "2026-08-31T14:40:03.449421+00:00",
-      "last_price": 0.09796,
-      "last_price_ts": "2026-09-06T00:40:03.116539+00:00",
+      "last_price": 0.09888,
+      "last_price_ts": "2026-09-06T01:40:04.082981+00:00",
       "total_crossings": 0,
       "fees_paid": 0.3,
       "accrued_pnl": 0.0
@@ -48,13 +30,31 @@
       "er": 0.078,
       "vol_pct": 1.43,
       "deployed_at": "2026-09-03T21:40:03.376237+00:00",
-      "last_price": 0.2141,
-      "last_price_ts": "2026-09-06T00:40:03.268929+00:00",
+      "last_price": 0.2157,
+      "last_price_ts": "2026-09-06T01:40:04.233402+00:00",
       "total_crossings": 1,
       "fees_paid": 0.315,
       "accrued_pnl": 0.985
+    },
+    "ENA": {
+      "symbol": "ENA",
+      "entry_price": 0.18883,
+      "low": 0.1605055,
+      "high": 0.2171545,
+      "n_levels": 10,
+      "position_usdt": 300.0,
+      "spacing_abs": 0.00629433,
+      "spacing_pct": 3.3333,
+      "er": 0.0,
+      "vol_pct": 1.84,
+      "deployed_at": "2026-09-06T01:40:04.398717+00:00",
+      "last_price": 0.18883,
+      "last_price_ts": "2026-09-06T01:40:04.398730+00:00",
+      "total_crossings": 0,
+      "fees_paid": 0.3,
+      "accrued_pnl": 0.0
     }
   },
-  "realized_pnl": 55.49335,
-  "last_update": "2026-09-06T00:40:03.282698+00:00"
+  "realized_pnl": 70.713335,
+  "last_update": "2026-09-06T01:40:05.018685+00:00"
 }
