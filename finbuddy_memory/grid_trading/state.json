@@ -1,23 +1,5 @@
 {
   "grids": {
-    "POL": {
-      "symbol": "POL",
-      "entry_price": 0.08658,
-      "low": 0.073593,
-      "high": 0.099567,
-      "n_levels": 10,
-      "position_usdt": 300.0,
-      "spacing_abs": 0.002886,
-      "spacing_pct": 3.3333,
-      "er": 0.061,
-      "vol_pct": 1.42,
-      "deployed_at": "2026-08-31T14:40:03.449421+00:00",
-      "last_price": 0.09902,
-      "last_price_ts": "2026-09-06T03:40:02.072885+00:00",
-      "total_crossings": 0,
-      "fees_paid": 0.3,
-      "accrued_pnl": 0.0
-    },
     "WIF": {
       "symbol": "WIF",
       "entry_price": 0.2171,
@@ -30,8 +12,8 @@
       "er": 0.078,
       "vol_pct": 1.43,
       "deployed_at": "2026-09-03T21:40:03.376237+00:00",
-      "last_price": 0.2152,
-      "last_price_ts": "2026-09-06T03:40:02.227304+00:00",
+      "last_price": 0.2137,
+      "last_price_ts": "2026-09-06T04:40:02.701375+00:00",
       "total_crossings": 1,
       "fees_paid": 0.315,
       "accrued_pnl": 0.985
@@ -48,13 +30,31 @@
       "er": 0.0,
       "vol_pct": 1.84,
       "deployed_at": "2026-09-06T01:40:04.398717+00:00",
-      "last_price": 0.1792,
-      "last_price_ts": "2026-09-06T03:40:02.376437+00:00",
+      "last_price": 0.17587,
+      "last_price_ts": "2026-09-06T04:40:02.850354+00:00",
       "total_crossings": 1,
       "fees_paid": 0.315,
       "accrued_pnl": 0.984999
+    },
+    "ARB": {
+      "symbol": "ARB",
+      "entry_price": 0.1916,
+      "low": 0.16286,
+      "high": 0.22034,
+      "n_levels": 10,
+      "position_usdt": 300.0,
+      "spacing_abs": 0.00638667,
+      "spacing_pct": 3.3333,
+      "er": 0.23,
+      "vol_pct": 1.81,
+      "deployed_at": "2026-09-06T04:40:03.016469+00:00",
+      "last_price": 0.1916,
+      "last_price_ts": "2026-09-06T04:40:03.016483+00:00",
+      "total_crossings": 0,
+      "fees_paid": 0.3,
+      "accrued_pnl": 0.0
     }
   },
-  "realized_pnl": 70.713335,
-  "last_update": "2026-09-06T03:40:02.390127+00:00"
+  "realized_pnl": 70.413335,
+  "last_update": "2026-09-06T04:40:03.625169+00:00"
 }
