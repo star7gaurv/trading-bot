@@ -4,8 +4,21 @@
 
 **Project:** Cortexa — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status**: 🟢 v23 LIVE on **1h** (`finbuddy_v23_tf1h_1782044602` — switched from 15m 2026-06-21 via the dashboard timeframe switcher; label 6 candles, informative ['4h','1d']) · **LT=0.7/ST=−0.6** (asymmetric, raised 2026-06-17 to stop the bleed) · K_TP=3.0/K_SL=2.0 · DI+SVM disabled · regime BEAR (genuine — BTC ≈ −15%/mo) · short-only by design · 15m era track record was 752 trades / +17.6 USDT / 41% WR (now historical — 1h model starts fresh) · family model cache active · promote.py identifier→.env gap FIXED 2026-06-21 (commit 2f430d74)  
-**Last Updated**: 2026-06-19 UTC (meta-labeling NO-GO; brain windows made honest; pagination root-caused — see CLAUDE.md June 19 session entry)
+**Status**: 🔴🟢 v23 LIVE on **1h** (`finbuddy_v23_mom_features_1788780906` — 2026-09-07, added multi-day BTC momentum features; previous `finbuddy_v23_tf1h_1782044602`) · LT=0.7/ST=−0.6 · K_TP=3.0/K_SL=3.5 · DI+SVM disabled · **edge gate ACTIVE (new entries paused)** since 2026-09-07 — walk-forward has failed 197 straight runs since 06-05 and live IC has been ~0 since the 08-25 regime flip; `scripts/edge_monitor.py` now pauses new entries automatically until either recovers (open trades still exit normally) · family model cache active  
+**Last Updated**: 2026-09-07 UTC — diagnosed why Directional keeps losing + why nothing acted on it; shipped an autonomous edge gate (live, verified active), fixed the `ic_monitor.py` horizon bug, added continuous multi-day BTC momentum features, gave the brain a rolling `recent_90d` validation window + the live bot's actual config to test against (it had never tested either). Full detail: CLAUDE.md 2026-09-07 session entry + auto-memory `project_20260907_edge_gate_and_brain_fixes.md`.
+
+### 2026-09-07 — Edge gate + brain self-awareness fixes (see CLAUDE.md for full detail)
+Diagnosed (measured, not theoretical): live model IC ~0 since the 08-25 BULL flip; walk-forward has
+returned `pass=False` for 197 STRAIGHT runs since 06-05 with nothing ever acting on it; the 30d-return
+regime rule is structurally 2-4 weeks late (missed the 08-17→21 rally, flipped BULL after it ended,
+forced 10 stopped-out longs into the following chop); the brain had never tested the live bot's actual
+config or the current market, only fixed 2024/2025 quarters. Shipped same session: `edge_monitor.py`
+(cron */30min, pauses new entries when IC≤0 or WF-fail-streak≥5, confirmed firing live), `ic_monitor.py`
+horizon fix, `%-btc_mom_3d/7d/14d` continuous momentum features (new identifier), brain `recent_90d`
+rolling window + `LIVE_SEED_CONFIG_V23()` + `promote.py` gate + daily `queue_recent_validation.py`.
+Deliberately not done: softening the regime hard-gate into a sizing multiplier (queued for brain A/B,
+not flipped live); a possible pre-existing TF-mismatch in `%-rel_strength_btc_*` since the 06-21 1h
+switch (found, flagged, not touched — needs its own retrain/A-B).
 
 ### 2026-06-13 → 06-19 — Turnaround + entry-tuning exhausted (summary; details in CLAUDE.md)
 - **Honest diagnosis:** the EXIT is the alpha (exit_signal ~90% WR / +309 USDT), the ENTRY is a coin

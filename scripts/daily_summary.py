@@ -231,12 +231,33 @@ def main() -> None:
     except Exception:
         pass
 
+    # Edge health (2026-09-07): surface the system's own honest measurement of
+    # whether it currently has any edge, instead of burying it in a file only
+    # SSH reveals. See scripts/edge_monitor.py — this is the SAME state the
+    # live strategy reads to gate new entries, just displayed here too.
+    edge_active = False
+    try:
+        edge_state = json.loads(
+            Path("/home/ubuntu/var/www/html/trade/finbuddy_memory/analytics/edge_state.json").read_text()
+        )
+        edge_active = bool(edge_state.get("gate_active"))
+        ic30 = edge_state.get("live_ic_30d")
+        streak = edge_state.get("wf_fail_streak", 0)
+        ic_str = f"{ic30:+.4f}" if ic30 is not None else "n/a"
+        if edge_active:
+            fields["Edge Gate"] = f"🔴 PAUSED — live IC(30d) {ic_str} · WF fail streak {streak}"
+        else:
+            fields["Edge Gate"] = f"🟢 open — live IC(30d) {ic_str} · WF fail streak {streak}"
+    except Exception:
+        pass
+
     ok = tg_send(
         subsystem=Subsystem.DIGEST,
-        status=Status.INFO,
+        status=(Status.ACTION if edge_active else Status.INFO),
         title=f"{now_utc().strftime('%Y-%m-%d')} morning report",
         fields=fields,
-        context="Daily 8am digest · no action required",
+        context="Daily 8am digest · no action required" if not edge_active
+                else "Edge gate is pausing new entries — see finbuddy_memory/analytics/edge_state.json",
     )
     print(f"Daily digest sent: {ok}")
     sys.exit(0 if ok else 1)

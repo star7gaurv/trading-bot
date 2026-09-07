@@ -114,17 +114,24 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ---
 
-## What Is Live and Working Right Now (verified 2026-06-21 UTC by Claude Code via `docker exec` — TIMEFRAME NOW **1h**, identifier `finbuddy_v23_tf1h_1782044602`, thresholds 0.7/−0.6, SVM off)
+## What Is Live and Working Right Now (verified 2026-09-07 UTC by Claude Code via `docker exec` — TIMEFRAME **1h**, identifier `finbuddy_v23_mom_features_1788780906`, thresholds 0.7/−0.6, SVM off, **edge gate ACTIVE**)
 
-> ⚠️ **2026-06-21: live FLIPPED from 15m → 1h** via the dashboard timeframe switcher (`apply_timeframe.py 1h`;
-> `timeframe_profiles.json` active=1h). config.json + freqtrade/.env both on `finbuddy_v23_tf1h_1782044602`
-> (container retrained, up & verified). label_period 6 candles, include_timeframes ['4h','1d'].
-> config.json/.env are currently **uncommitted** in the working tree (the live container is already running them).
-> The 752-trade / +17.6 USDT figure below is the **15m** track record — now historical; the 1h model starts fresh.
+> 🔴 **2026-09-07: edge gate is ACTIVE (new entries paused).** Diagnosed and fixed a real gap this
+> session: walk-forward has failed 197 STRAIGHT runs since 2026-06-05 and live IC has been ~0 since
+> the 2026-08-25 regime flip, but nothing ever acted on it — trading continued unchanged through the
+> whole losing streak. `scripts/edge_monitor.py` (cron */30min) now reads both signals and pauses
+> NEW entries (never touches exits) via `finbuddy_memory/analytics/edge_state.json` when either goes
+> non-positive. It activated immediately on deploy because both already say so. See
+> [[finbuddy_memory/... project_20260907_directional_loss_diagnosis]] and the 2026-09-07 session note
+> below for the full diagnosis + fix list. Also shipped: multi-day BTC momentum features (feature-
+> shape change → identifier bumped), rolling `recent_90d` brain validation window (was: brain only
+> ever tested 2024/2025 history, never the actual live config or the current market), `ic_monitor.py`
+> horizon bug fix (was hardcoded to 12 candles, stale since the 06-21 1h switch moved it to 6).
 
 ### FreqTrade
 - Running **`CortexaAI_v23.py` (v23)** in dry-run mode on **Binance Futures USDT-M** — long+short
-- FreqAI identifier: **`finbuddy_v23_tf1h_1782044602`** (1h timeframe switch 2026-06-21; previous: `finbuddy_v23_nosvm_1780729988` bumped 2026-06-06 — SVM disabled to fix do_predict=0 bug)
+- FreqAI identifier: **`finbuddy_v23_mom_features_1788780906`** (2026-09-07: added multi-day BTC momentum features %-btc_mom_3d/7d/14d — feature-shape change, bumped from `finbuddy_v23_tf1h_1782044602`; previous: `finbuddy_v23_nosvm_1780729988` bumped 2026-06-06 — SVM disabled to fix do_predict=0 bug)
+- **Edge gate (2026-09-07, default ON, `FREQAI_EDGE_GATE`)**: `scripts/edge_monitor.py` (cron */30min) pauses NEW long/short entries (open trades still exit normally) whenever live 30d rolling IC ≤0 (n≥300) OR the walk-forward FAIL streak ≥5. State in `finbuddy_memory/analytics/edge_state.json`, read by the strategy LIVE/DRY-RUN only (never backtest — see `_load_edge_gate()` docstring). Telegram-alerts on state flips. This is the fix for "keeps losing and nothing acts on it."
 - FreqAI model: **LightGBMRegressor** (predicts z-scored `&-future_return`, N(0,1) distribution). **DI disabled (DI_threshold=0)** and **SVM disabled** (verified live config 2026-06-12 — the datasieve "could not find step di" log line is cosmetic).
 - **1000 USDT** virtual wallet, max 8 open trades
 - **Confidence-based leverage** (commit `60d4fb4`): 1x / 2x / 3x tiers based on `centered_pred / threshold` ratio. Fallback LOW (1x).
@@ -421,6 +428,94 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 ---
 
 ## Session History Summary
+
+### September 7, 2026 — Diagnosis + autonomous edge gate + brain/regime self-awareness fixes
+
+**Context:** Gaurav asked why Directional keeps losing, why other analysis says "it's fine" when it
+isn't, and why every regime change requires manual retuning — defeating the project's core purpose
+of a self-tuning brain. Diagnosed first (measured, not theoretical), then fixed everything found.
+
+**Diagnosis (measured against live `tradesv3.sqlite` + `historic_predictions.pkl` + WF history):**
+- Live model's rolling IC has been **~0.00 since the 2026-08-25 BULL regime flip** (was 0.03–0.04
+  before); 2x-leverage "high confidence" trades lose MORE than 1x — prediction magnitude carries no
+  information right now.
+- **Walk-forward has failed 197 STRAIGHT runs since 2026-06-05** (3 months) — `walk_forward.py`
+  correctly computes `pass=False` every time (verified, not a bug), but nothing ever read that
+  verdict and acted on it. Trading continued unchanged through the entire streak. This is the
+  concrete version of "detects failure but isn't self-aware enough to respond."
+- Regime detector (`regime_core.py`) is a 30-day-return/90-day-SMA rule, inherently 2-4 weeks late.
+  BTC's +25% rally 2026-08-17→21 produced ~2 trades (regime hadn't flipped yet); the BULL flip
+  landed 2026-08-25 AFTER the rally ended, forcing long-only entries into the following chop (10
+  stopped-out longs, -48 USDT). This is the literal mechanism behind "I have to retune every regime
+  change" — the gate is a lagging switch, not an adaptive system.
+- `ic_monitor.py` hardcoded `LABEL_PERIOD=12`, stale since the 2026-06-21 1h switch moved the live
+  model to `label_period_candles=6` — the weekly IC report had been measuring the wrong horizon for
+  ~2.5 months.
+- The brain had **never validated the exact live config**: only ~5 of ~215 completed 1h experiments
+  since 07-01 even used `label_period_candles=6` (live's value; brain's own seed uses 12), and no
+  experiment ever tested live's actual threshold/K_SL/K_TP combination together. Every brain test
+  window is a fixed 2024/2025 calendar quarter — none evaluates the actual current market.
+
+**Fixes shipped, all live and verified working:**
+1. **`scripts/lib/live_predictions.py`** (new) — single source of truth for reading the live
+   predictions store + computing IC, replacing duplicated logic and fixing the horizon bug at the
+   source (`ic_monitor.py` now derives the horizon from `config.json`, never hardcodes it).
+2. **`scripts/edge_monitor.py`** (new, cron */30min) — the core fix. Reads live 30d rolling IC +
+   walk-forward FAIL streak, writes `finbuddy_memory/analytics/edge_state.json`. Strategy reads it
+   via `_load_edge_gate()` and pauses NEW entries only (open trades exit normally) when either
+   signal is non-positive — LIVE/DRY-RUN runmode only, verified inert in backtest (smoke-tested:
+   backtest produced trades despite `gate_active=True` in the state file). Default ON
+   (`FREQAI_EDGE_GATE=1`), same posture as the existing daily-loss-limit breaker. **Activated
+   immediately on deploy** (confirmed via container logs: `[EdgeGate] BTC/USDT:USDT: entries
+   paused`) because both signals already say the current config has no edge. Telegram-alerts on
+   state flips; deployment announcement sent manually since the first write has no prior state to
+   flip against.
+3. **`daily_summary.py`** — added an "Edge Gate" field (🔴/🟢 + live IC + WF streak) to the 8am
+   digest, with `Status.ACTION` when paused, so this is visible without SSH.
+4. **Multi-day BTC momentum features** (`%-btc_mom_3d/7d/14d`, strategy `feature_engineering_standard`)
+   — continuous, real-time-scaled (fixed 15m-candle windows regardless of the pair's active
+   timeframe) market momentum given directly to the regression model, instead of only the single
+   discrete lagging regime bucket. Deliberately NOT a second hand-built discrete regime classifier —
+   this project has hit the unreachable-threshold/deadlock bug class from exactly that pattern 4+
+   times; a continuous feature the regression model weights itself carries the same "no classes, no
+   imbalance" reasoning v23 already used for the primary target. Feature-shape change → identifier
+   bumped to `finbuddy_v23_mom_features_1788780906`, fresh training smoke-tested via docker backtest
+   before deploying live.
+5. **Brain: `recent_90d` rolling window** (`hypothesis_gen.py`, `runner.py`) — a window that
+   recomputes to "today minus 90 days" every time the brain runs, so it never goes stale like a
+   fixed calendar quarter (this project has already had to manually rename 3 windows once their
+   bull/bear label stopped matching reality). `promote.py` gained a matching
+   `RECENT_WINDOW_REQUIRED` gate (mirrors the existing `BEAR_2026Q1_REQUIRED` pattern exactly): a
+   config tested on `recent_90d` needs WR≥50% there or it can't be promoted.
+6. **`hypothesis_gen.LIVE_SEED_CONFIG_V23()`** (new) — builds the brain's config dict straight from
+   `freqtrade/.env` + `config.json`, so the brain can (and now does) test the EXACT config that's
+   actually trading, not just its own drifted default seed.
+7. **`scripts/brain/queue_recent_validation.py`** (new, daily cron 05:00 UTC) — queues the live
+   config, the brain's default seed, and the analyst's current best_bull/best_bear candidates, all
+   onto `recent_90d`, with dedup. First run queued 4 experiments; re-runs daily as the window slides
+   forward, so the brain keeps checking itself against "now" indefinitely — this is the actual
+   ongoing self-tuning-to-current-market mechanism the project's stated goal requires.
+
+**Verification, not assumed:** every script syntax-checked and smoke-run; strategy changes verified
+inert in a real docker backtest before deploying (proves the edge gate and new features can't
+retroactively corrupt WF/brain measurement); live container restarted twice (edge gate, then
+identifier bump for the momentum features) with clean logs both times; edge gate confirmed firing
+live via container logs before declaring it deployed; explicit Telegram deployment notice sent.
+
+**Deliberately NOT done this session (scope discipline, not oversight):** softening the regime
+system's hard entry-block into a sizing multiplier (would be a real trading-behavior change — queued
+for brain A/B instead of flipped live, per this project's own established discipline for every prior
+behavior-changing lever); breadth/cross-pair regime confirmation (needs per-pair data plumbing not
+yet built — flagged as a next step, not attempted half-built); a possible pre-existing timeframe
+mismatch in `%-rel_strength_btc_14/28/56` between the pair's own TF and the always-15m BTC feather
+(introduced by the 2026-06-21 1h switch, predates this session) — noted but not touched, since fixing
+it changes what an already-trained-since-June feature means and needs its own dedicated retrain/A-B,
+not a hot patch bundled into an unrelated fix.
+
+**What to watch:** first full retrain under the new identifier (in progress at session end); the 4
+`recent_90d` validation experiments completing over the next 1-2 days via the existing brain cron;
+whether the edge gate clears on its own once IC/WF recover, or whether it stays active long enough to
+need investigation past "it's correctly reporting no edge."
 
 ### July 14, 2026 — Manual trade-control: force-exit + pause/resume, dashboard + Telegram (commit `c0967af53`)
 

@@ -486,6 +486,7 @@ class CortexaAI_v23(IStrategy):
     _HISTORICAL_OI_PERPAIR_FILE      = "/freqtrade/finbuddy_memory/historical/oi_perpair.parquet"
     _COMBINED_CTX_FILE = "/freqtrade/user_data/data/external/combined_context.json"
     _PAIR_REGIME_FILE  = "/freqtrade/finbuddy_memory/regimes/pair_regime_stats.json"
+    _EDGE_STATE_FILE   = "/freqtrade/finbuddy_memory/analytics/edge_state.json"
 
     # Class-level caches: loaded once, shared across all strategy instances.
     _historical_regime_df  = None
@@ -497,6 +498,10 @@ class CortexaAI_v23(IStrategy):
     # Pair-regime block cache: refreshed when JSON mtime changes (every 30 min via cron).
     _pair_regime_blocks       = None    # dict[pair] -> set[regime]
     _pair_regime_blocks_mtime = 0.0
+    # Edge-gate cache: refreshed when JSON mtime changes (every 30 min via cron,
+    # scripts/edge_monitor.py). See _load_edge_gate() docstring.
+    _edge_gate_state       = None
+    _edge_gate_state_mtime = 0.0
 
     # ---------------------------------------------------------------------- #
     # Serve-time prediction centering window (FIXED 2026-06-08).             #
@@ -624,6 +629,57 @@ class CortexaAI_v23(IStrategy):
             return blocks
         except Exception:
             return CortexaAI_v23._pair_regime_blocks or {}
+
+    def _load_edge_gate(self) -> dict:
+        """Autonomous entry circuit breaker (2026-09-07). Returns
+        {"active": bool, "reasons": [str]}.
+
+        Why this exists: the 2026-09-07 session found the system already
+        measures its own failure correctly and continuously (walk_forward.py
+        grade() returned pass=False for 197 straight runs; live IC has been
+        ~0 since the 2026-08-25 regime flip) but nothing ever acted on that
+        measurement — trading continued unchanged through the whole losing
+        streak. scripts/edge_monitor.py (cron, */30 min) computes the live
+        30d rolling IC and the walk-forward FAIL streak and writes
+        finbuddy_memory/analytics/edge_state.json; this reads it.
+
+        LIVE/DRY-RUN ONLY — deliberately NOT applied in populate_entry_trend
+        for BACKTEST/HYPEROPT runmodes. edge_state.json is a single today's-
+        snapshot, not a per-candle historical series; if it were applied to a
+        backtest it would retroactively zero out entries across the ENTIRE
+        tested date range whenever gate_active happens to be true at analysis
+        time — corrupting every WF fold and brain experiment (which call this
+        same code path) with an artifact having nothing to do with that
+        historical window. The caller (populate_entry_trend) checks
+        self.dp.runmode before applying this.
+
+        AND-only (can only remove entries the primary signal already wants,
+        mirrors every other gate in this file) and NEVER touches exits/trade
+        management — an open position still runs its normal stop/trail/
+        time-limit/exit-signal logic while the gate is active. Fails OPEN
+        (returns inactive) on any read error, same posture as every other
+        state file in this class — a monitoring bug must not silently halt
+        trading with no visibility; watchdog.py's staleness checks cover that.
+        """
+        try:
+            mtime = os.path.getmtime(self._EDGE_STATE_FILE)
+        except OSError:
+            return {"active": False, "reasons": []}
+        if (CortexaAI_v23._edge_gate_state is not None
+                and mtime <= CortexaAI_v23._edge_gate_state_mtime):
+            return CortexaAI_v23._edge_gate_state
+        try:
+            with open(self._EDGE_STATE_FILE) as f:
+                data = json.load(f)
+            state = {
+                "active": bool(data.get("gate_active", False)),
+                "reasons": data.get("reasons", []),
+            }
+            CortexaAI_v23._edge_gate_state       = state
+            CortexaAI_v23._edge_gate_state_mtime = mtime
+            return state
+        except Exception:
+            return CortexaAI_v23._edge_gate_state or {"active": False, "reasons": []}
 
     def _load_recent_wr(self) -> float:
         """Return the recent WR. Refreshes when JSON mtime changes."""
@@ -1497,6 +1553,34 @@ class CortexaAI_v23(IStrategy):
             macros = self._get_macro_series(dataframe)
             dataframe["%-fear_greed"]    = macros["fear_greed"]
             dataframe["%-btc_strength"]  = macros["btc_strength"]
+
+            # Multi-day BTC momentum (2026-09-07 session — "broader perspective" fix).
+            # The only market-wide trend signal the model previously had was
+            # %-regime_numeric: a single DISCRETE bucket (-2..+2) updated at most every
+            # 4h by a rule using ONLY a 30-day return + 90-day SMA (regime_core.py). The
+            # 2026-09-07 diagnosis measured this lagging by 2-4 weeks in practice — e.g.
+            # BTC's +25% rally 2026-08-17→21 produced almost no entries (regime was still
+            # NEUTRAL/pre-flip), then the BULL flip landed 2026-08-25 AFTER the rally
+            # ended and forced long-only entries into the following chop (10 stopped-out
+            # longs). Rather than hand-build a second, faster discrete regime classifier
+            # (this project has already hit unreachable-threshold / deadlock bugs from
+            # exactly that pattern 4+ times — see reference_brain_gates.md), this gives
+            # the regression model CONTINUOUS multi-horizon momentum directly — the same
+            # design choice v23 already made for the primary target (regression over
+            # classification: "no classes -> no imbalance"). The model decides how much
+            # weight a 3-day vs 14-day move deserves; no new magic threshold to drift out
+            # of date. Computed via the same _get_btc_returns() merge_asof helper as
+            # rel_strength_btc above, but in FIXED real-world-day candle counts on the
+            # loaded 15m BTC feather (288/672/1344 = 3d/7d/14d @ 15m) — NOT the pair's own
+            # timeframe candle count, so this stays correctly real-time-scaled regardless
+            # of which base timeframe the strategy is currently running (1h today, was
+            # 15m before 2026-06-21, switchable again via the dashboard timeframe
+            # switcher). Applies to every pair including BTC itself (unlike rel_strength,
+            # which is pair-vs-BTC and undefined for BTC).
+            _mom_candles_15m = {"3d": 3 * 96, "7d": 7 * 96, "14d": 14 * 96}
+            btc_mom = self._get_btc_returns(dataframe, tuple(_mom_candles_15m.values()))
+            for _label, _w in _mom_candles_15m.items():
+                dataframe[f"%-btc_mom_{_label}"] = btc_mom[_w]
             # BTC perp funding rate (added 2026-05-19): strongest cheap signal for
             # 1–4h crypto perp moves. Already used as a long-block gate; now also
             # fed to LightGBM so the model can learn funding × momentum × regime.
@@ -2127,6 +2211,20 @@ class CortexaAI_v23(IStrategy):
             meta_thr = float(os.getenv("FREQAI_META_THRESHOLD", "0.5"))
             enter_long = enter_long & (dataframe["&-meta_long"] > meta_thr)
 
+        # Edge gate (2026-09-07, default ON). LIVE/DRY-RUN ONLY — see
+        # _load_edge_gate() docstring for why this must never touch backtest/
+        # hyperopt runmodes. AND-only, blocks NEW entries only; open trades
+        # keep exiting normally. Default on (like the daily-loss-limit /
+        # daily-flatten circuit breakers) because pausing new risk while the
+        # system's own measured edge is non-positive cannot make live
+        # behavior worse than it is today.
+        if (os.getenv("FREQAI_EDGE_GATE", "1") == "1"
+                and self.dp.runmode.value in ("live", "dry_run")):
+            edge_gate = self._load_edge_gate()
+            if edge_gate.get("active"):
+                enter_long = enter_long & False
+                logger.info(f"[EdgeGate] {pair}: entries paused — {edge_gate.get('reasons')}")
+
         dataframe.loc[enter_long, "enter_long"] = 1
         dataframe.loc[enter_long, "enter_tag"]  = "freqai_regression_v23_long"
 
@@ -2170,6 +2268,13 @@ class CortexaAI_v23(IStrategy):
         if os.getenv("FREQAI_META_LABEL", "0") == "1" and "&-meta_short" in dataframe.columns:
             meta_thr = float(os.getenv("FREQAI_META_THRESHOLD", "0.5"))
             enter_short = enter_short & (dataframe["&-meta_short"] > meta_thr)
+
+        # Edge gate, short side (mirror of the long-side gate above).
+        if (os.getenv("FREQAI_EDGE_GATE", "1") == "1"
+                and self.dp.runmode.value in ("live", "dry_run")):
+            edge_gate = self._load_edge_gate()
+            if edge_gate.get("active"):
+                enter_short = enter_short & False
 
         dataframe.loc[enter_short, "enter_short"] = 1
         dataframe.loc[enter_short, "enter_tag"]   = "freqai_regression_v23_short"

@@ -19,6 +19,7 @@ from __future__ import annotations
 import itertools
 import json
 import random
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -126,6 +127,32 @@ WINDOWS = {
                                           # it is a survival/drawdown gate, inspected separately.
 }
 
+
+def _recent_window_timerange(days: int = 90, end_buffer_days: int = 1) -> str:
+    """Rolling "today minus N days" timerange, recomputed every time this
+    module is imported (2026-09-07 session).
+
+    Why: every fixed window above (bull_2024Q1, bear_2026Q1, ...) is a static
+    calendar quarter — it goes stale the moment the market moves on, and the
+    project has already had to manually rename 3 of them once their "bull"/
+    "bear" label stopped matching reality (2026-06-19 session). Meanwhile the
+    2026-09-07 diagnosis found NO brain experiment had ever evaluated a
+    config on the actual last-90-days market, and NONE used the live .env's
+    real values (see LIVE_SEED_CONFIG_V23 below) — the brain was validating
+    hypotheses on 2024/2025 history while a materially different config ran
+    live. This window never needs manual renaming: it always means "the
+    market as of whenever this experiment queued", by construction.
+    end_buffer_days trims the trailing edge slightly so download_data_daily's
+    once-a-day forward-increment has always caught up.
+    """
+    end = datetime.now(timezone.utc) - timedelta(days=end_buffer_days)
+    start = end - timedelta(days=days)
+    return f"{start:%Y%m%d}-{end:%Y%m%d}"
+
+
+RECENT_WINDOW_NAME = "recent_90d"
+WINDOWS[RECENT_WINDOW_NAME] = _recent_window_timerange(90)
+
 # Window order for queue generation: bull→bear pairs so the runner tests
 # each config on one bull AND one bear back-to-back (~3h to both results).
 # REBALANCED 2026-06-19 to use GENUINE bull windows. The old rotation used
@@ -212,6 +239,51 @@ SEED_CONFIG_V22 = {
 
 # Back-compat alias
 SEED_CONFIG = SEED_CONFIG_V23
+
+
+def LIVE_SEED_CONFIG_V23() -> dict:
+    """The config the LIVE bot is ACTUALLY running right now, read straight
+    from freqtrade/.env + config.json (2026-09-07 session).
+
+    Why this exists: SEED_CONFIG_V23 above (the brain's own baseline) has
+    drifted from live for months — e.g. label_period_candles=12 vs live's 6,
+    long_threshold=0.3 vs live's 0.7, k_sl=2.0 vs live's 3.5. The 2026-09-07
+    diagnosis found only ~5 of ~215 completed 1h brain experiments since
+    2026-07-01 even used lp=6, and none used the exact live threshold/K_SL/
+    K_TP combination together. The brain has essentially never validated the
+    config that is actually trading. This function closes that gap — call it
+    fresh (not a module-level constant) so it always reflects whatever is
+    live at generation time, including after a future promotion changes it.
+    """
+    import sys as _sys
+    _lib = str(Path(__file__).resolve().parents[1] / "lib")
+    if _lib not in _sys.path:
+        _sys.path.insert(0, _lib)
+    from ft_creds import read_freqtrade_env
+
+    env = read_freqtrade_env()
+    cfg_path = Path(__file__).resolve().parents[2] / "freqtrade/user_data/config.json"
+    try:
+        live_cfg = json.loads(cfg_path.read_text())
+        fp = live_cfg.get("freqai", {}).get("feature_parameters", {})
+        label_period = int(fp.get("label_period_candles", 6))
+        filter_di = bool(fp.get("DI_threshold", 0))
+        filter_svm = bool(fp.get("use_SVM_to_remove_outliers", False))
+    except Exception:
+        label_period, filter_di, filter_svm = 6, False, False
+
+    cfg = dict(SEED_CONFIG_V23)  # same shape (arch/strategy/freqaimodel/config_file/etc.)
+    cfg.update({
+        "long_threshold":       float(env.get("FREQAI_LONG_THRESHOLD", 0.7)),
+        "short_threshold":      float(env.get("FREQAI_SHORT_THRESHOLD", -0.6)),
+        "k_sl":                 float(env.get("FREQAI_K_SL", 3.5)),
+        "k_tp":                 float(env.get("FREQAI_K_TP", 3.0)),
+        "stability_n":          int(env.get("FREQAI_STABILITY_N", 1)),
+        "label_period_candles": label_period,
+        "filter_di":            filter_di,
+        "filter_svm":           filter_svm,
+    })
+    return cfg
 
 
 # ── SAFE BAND (architecture-aware) ────────────────────────────────────────

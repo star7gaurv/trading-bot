@@ -92,6 +92,15 @@ def _filter_pairs_for_window(pairs: list[str], window: str) -> list[str]:
         "bear_2025Q4": "20251001",   #  bull_2025Q4→bear_2025Q4; added genuine bull_2024Q4.)
         "bear_2026Q1": "20260101",
     }
+    # recent_90d (2026-09-07): rolling "today minus 90 days" window (see
+    # hypothesis_gen.py RECENT_WINDOW_NAME) — its start date isn't fixed, so
+    # it can't live in the static dict above. Compute it the same way
+    # hypothesis_gen.py's _recent_window_timerange() does.
+    if window == "recent_90d":
+        _WINDOW_STARTS = dict(_WINDOW_STARTS)
+        _WINDOW_STARTS["recent_90d"] = (
+            datetime.now(timezone.utc) - timedelta(days=91)
+        ).strftime("%Y%m%d")
     start_str = _WINDOW_STARTS.get(window)
     if not start_str:
         return pairs  # unknown window — pass through unchanged

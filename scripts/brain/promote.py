@@ -63,6 +63,18 @@ MIN_PER_RUN_PROFIT_FLOOR = -0.3    # percent — tighten to -0.1 once WR routine
 # WR=37.5%) because lt=3.25 + broken centering produced <16 mean-reversion trades. That was a
 # SYMPTOM of the centering bug, not a bad market. Now fixed → gate restored to its safety role.
 BEAR_2026Q1_REQUIRED = "bear_2026Q1"
+
+# RECENT-MARKET GATE (2026-09-07 session). Same shape as BEAR_2026Q1_REQUIRED above, but
+# for hypothesis_gen.py's RECENT_WINDOW_NAME ("recent_90d") — a ROLLING last-90-days window
+# that is recomputed every time the brain runs, instead of a fixed calendar quarter that goes
+# stale (bear_2026Q1 itself is already a fixed Jan-Apr 2026 window; by late 2026 it will be as
+# stale as bull_2024Q2 was). The 2026-09-07 diagnosis found the brain had NEVER validated any
+# config — including the live one — against the actual current market; every past promotion
+# check only proved a config worked on 2024/2025 history. If tested on recent_90d, require at
+# least one result with WR >= 50% (mirrors the bear_2026Q1 rule exactly). Untested → allow
+# through (cross-window auto-queue + scripts/brain/queue_recent_validation.py schedule it).
+RECENT_WINDOW_REQUIRED = "recent_90d"
+
 BASELINE_FILE = ROOT / "finbuddy_memory" / "promotions" / "live_baseline.json"
 
 
@@ -252,6 +264,17 @@ def find_candidates() -> list[dict]:
                 for r in bear_recent_runs
             ):
                 continue  # tested but no WR >= 50% on current market → skip
+
+        # Rolling recent-market gate (2026-09-07): "recent_90d" has neither "bull" nor
+        # "bear" in its name (like crash_2022) so it only lands in g["runs"], not the
+        # bull_runs/bear_runs buckets grouped above — filter it out of the flat list.
+        if RECENT_WINDOW_REQUIRED:
+            recent_runs = [r for r in g["runs"] if r.get("window") == RECENT_WINDOW_REQUIRED]
+            if recent_runs and not any(
+                r["metrics"].get("wr", 0) >= 0.50
+                for r in recent_runs
+            ):
+                continue  # tested but no WR >= 50% on the actual current market → skip
 
         bull_profits = [r["metrics"]["profit_pct"] for r in g["bull_runs"]]
         # For bear performance, exclude bear_2026Q1 from the avg/floor check.

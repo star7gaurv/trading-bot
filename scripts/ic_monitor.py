@@ -4,121 +4,68 @@ ic_monitor.py — weekly out-of-sample Information Coefficient report.
 
 Measures whether the live model's predictions actually predict: Spearman rank
 correlation between every live prediction in historic_predictions.pkl and the
-realized forward return over the label horizon (12 candles), per pair, for
-(a) the full stored history and (b) a rolling 30-day window.
+realized forward return over the label horizon, per pair, for (a) the full
+stored history and (b) a rolling 30-day window.
 
 Output:
-  - finbuddy_memory/analytics/pair_ic.json   (consumed by dashboards / future gating)
+  - finbuddy_memory/analytics/pair_ic.json   (consumed by dashboards / edge_monitor.py)
   - Telegram digest (best/worst pairs, pooled IC)
 
-Measurement only — does NOT gate anything. Pair IC-gating is a pending product
-decision (2026-06-11 plan, C4); this script supplies the evidence.
+Measurement only for the weekly per-pair breakdown — does NOT gate anything
+itself. The system-wide pooled 30d number this script computes is now ALSO
+consumed live (every 30min) by edge_monitor.py, which DOES gate new entries
+when it goes non-positive — see that script + CLAUDE.md 2026-09-07 session.
 
 Cron: weekly. Pure pandas — runs on the host, no docker needed.
+
+2026-09-07: LABEL_PERIOD used to be hardcoded to 12 — went stale on
+2026-06-21 when the live 1h switch moved label_period_candles to 6, so this
+report silently measured the wrong horizon for ~2.5 months. Now reads it from
+config.json via scripts/lib/live_predictions.py (same source the strategy's
+own _label_period_candles() uses) so it can never drift again.
 """
 from __future__ import annotations
 
 import json
-import pickle
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 from lib.telegram_template import Subsystem, Status, send  # noqa: E402
+from lib.live_predictions import (  # noqa: E402
+    label_period_candles, load_predictions, pair_ic, pooled_ic,
+)
 
 OUT_FILE = ROOT / "finbuddy_memory/analytics/pair_ic.json"
-LABEL_PERIOD = 12  # candles; matches config.json label_period_candles
-
-
-def _predictions_pkl() -> Path:
-    """The LIVE bot writes historic_predictions.pkl inside its IDENTIFIER
-    subdir — the root models/historic_predictions.pkl is an orphan frozen at
-    2026-06-07 (bug found 2026-06-12: first IC report silently analyzed it).
-    Resolve the identifier from freqtrade/.env; fall back to the newest
-    identifier-dir pickle, then the root file."""
-    env = ROOT / "freqtrade/.env"
-    if env.exists():
-        for line in env.read_text().splitlines():
-            if line.startswith("FREQTRADE__FREQAI__IDENTIFIER="):
-                ident = line.split("=", 1)[1].strip()
-                p = ROOT / f"freqtrade/user_data/models/{ident}/historic_predictions.pkl"
-                if p.exists():
-                    return p
-    candidates = sorted(
-        ROOT.glob("freqtrade/user_data/models/*/historic_predictions.pkl"),
-        key=lambda p: p.stat().st_mtime, reverse=True,
-    )
-    if candidates:
-        return candidates[0]
-    return ROOT / "freqtrade/user_data/models/historic_predictions.pkl"
-
-
-PREDICTIONS_PKL = _predictions_pkl()
-
-
-def _spearman(a: pd.Series, b: pd.Series) -> float:
-    return float(a.rank().corr(b.rank()))
-
-
-def _pair_ic(df: pd.DataFrame, since: datetime | None = None) -> dict | None:
-    df = df.copy()
-    df["date_pred"] = pd.to_datetime(df["date_pred"], utc=True)
-    df = df.sort_values("date_pred").drop_duplicates("date_pred")
-    close = pd.to_numeric(df["close_price"], errors="coerce").replace(0, np.nan)
-    pred = pd.to_numeric(df["&-future_return"], errors="coerce")
-    do_pred = pd.to_numeric(df["do_predict"], errors="coerce")
-    fwd = close.shift(-LABEL_PERIOD) / close - 1
-    mask = (do_pred == 1) & fwd.notna() & pred.notna()
-    if since is not None:
-        mask &= df["date_pred"] >= since
-    n = int(mask.sum())
-    if n < 50:
-        return None
-    return {
-        "n": n,
-        "ic": round(_spearman(pred[mask], fwd[mask]), 4),
-        "sign_hit": round(float((np.sign(pred[mask]) == np.sign(fwd[mask])).mean()), 4),
-    }
 
 
 def main() -> int:
-    with open(PREDICTIONS_PKL, "rb") as f:
-        hp = pickle.load(f)
+    label_period = label_period_candles()
+    hp = load_predictions()
 
     cutoff_30d = datetime.now(timezone.utc) - timedelta(days=30)
     report: dict = {
         "generated": datetime.now(timezone.utc).isoformat(),
-        "label_period_candles": LABEL_PERIOD,
+        "label_period_candles": label_period,
         "pairs": {},
     }
-    pooled_pred, pooled_fwd = [], []
     for pair, df in hp.items():
-        full = _pair_ic(df)
+        full = pair_ic(df, label_period)
         if full is None:
             continue
-        recent = _pair_ic(df, since=cutoff_30d)
+        recent = pair_ic(df, label_period, since=cutoff_30d)
         report["pairs"][pair] = {"full": full, "rolling_30d": recent}
-        # pooled (full history)
-        d = df.copy()
-        d["date_pred"] = pd.to_datetime(d["date_pred"], utc=True)
-        d = d.sort_values("date_pred").drop_duplicates("date_pred")
-        close = pd.to_numeric(d["close_price"], errors="coerce").replace(0, np.nan)
-        pred = pd.to_numeric(d["&-future_return"], errors="coerce")
-        fwd = close.shift(-LABEL_PERIOD) / close - 1
-        m = (pd.to_numeric(d["do_predict"], errors="coerce") == 1) & fwd.notna() & pred.notna()
-        pooled_pred += pred[m].tolist()
-        pooled_fwd += fwd[m].tolist()
 
-    if pooled_pred:
-        report["pooled"] = {
-            "n": len(pooled_pred),
-            "ic": round(_spearman(pd.Series(pooled_pred), pd.Series(pooled_fwd)), 4),
-        }
+    pooled = pooled_ic(hp, label_period)
+    if pooled is not None:
+        report["pooled"] = pooled
+    pooled_30d = pooled_ic(hp, label_period, since=cutoff_30d)
+    if pooled_30d is not None:
+        report["pooled_30d"] = pooled_30d
 
     OUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     OUT_FILE.write_text(json.dumps(report, indent=2))
@@ -135,18 +82,21 @@ def main() -> int:
         Status.INFO,
         "Weekly prediction-quality (IC) report",
         fields={
-            "Pooled IC": report.get("pooled", {}).get("ic", "n/a"),
+            "Pooled IC (all-time)": pooled.get("ic") if pooled else "n/a",
+            "Pooled IC (30d)": pooled_30d.get("ic") if pooled_30d else "n/a",
             "Pairs IC>0": f"{pos}/{len(ranked)}",
             "Best": best,
             "Worst": worst,
         },
-        context=f"Spearman IC vs {LABEL_PERIOD}-candle forward return, "
-                f"{report.get('pooled', {}).get('n', 0)} OOS predictions. "
+        context=f"Spearman IC vs {label_period}-candle forward return "
+                f"({pooled.get('n', 0) if pooled else 0} OOS predictions). "
                 f"Full report: finbuddy_memory/analytics/pair_ic.json",
         silent=True,
     )
     print(f"[ic_monitor] wrote {OUT_FILE} — pooled IC="
-          f"{report.get('pooled', {}).get('ic')} over {len(ranked)} pairs")
+          f"{pooled.get('ic') if pooled else None} (30d: "
+          f"{pooled_30d.get('ic') if pooled_30d else None}) "
+          f"over {len(ranked)} pairs, label_period={label_period}")
     return 0
 
 
