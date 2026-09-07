@@ -1,9 +1,9 @@
 {
   "$schema": "https://schema.freqtrade.io/schema.json",
-  "_comment": "v18 backtest config \u2014 1h TF, BTC/ETH/SOL/XRP/DOGE, LightGBMClassifier (no LLM). Matches live config except stake_amount=200 fixed and no Telegram.",
-  "max_open_trades": 4,
+  "_comment": "v23 1h brain backtest config. FIXED 2026-09-07 (see the 2026-09-07 long=0 investigation): this file was created from a stale v18-era template at the 2026-06-21 1h switch and never brought in line with live \u2014 model_training_parameters was a bare {n_estimators, learning_rate} stub missing live's L1/L2 regularization (reg_alpha/reg_lambda), num_leaves, min_child_samples, num_threads; max_open_trades/stake_amount/stoploss also diverged from live's 8/unlimited/-0.04. Decisively reproduced: swapping ONLY this file's model_training_parameters in for live's, with identical strategy/thresholds/pairs, reproduced the brain's exact reported result (107 trades, 0 longs, 50.5% WR) that a matching-live-hyperparameters run did not. Every 1h-timeframe brain experiment since 2026-06-21 (which is every experiment \u2014 live has been 1h this whole time) trained under these diverged hyperparameters. Now matches live's model_training_parameters/max_open_trades/stake_amount/stoploss exactly; pair_whitelist stays illustrative (every real experiment overrides it via _create_pair_group_config).",
+  "max_open_trades": 8,
   "stake_currency": "USDT",
-  "stake_amount": 200,
+  "stake_amount": "unlimited",
   "tradable_balance_ratio": 0.99,
   "fiat_display_currency": "USD",
   "dry_run": true,
@@ -22,7 +22,27 @@
       "ETH/USDT:USDT",
       "SOL/USDT:USDT",
       "XRP/USDT:USDT",
-      "DOGE/USDT:USDT"
+      "LTC/USDT:USDT",
+      "DOT/USDT:USDT",
+      "ADA/USDT:USDT",
+      "AVAX/USDT:USDT",
+      "LINK/USDT:USDT",
+      "NEAR/USDT:USDT",
+      "ARB/USDT:USDT",
+      "OP/USDT:USDT",
+      "APT/USDT:USDT",
+      "SUI/USDT:USDT",
+      "UNI/USDT:USDT",
+      "ENA/USDT:USDT",
+      "TAO/USDT:USDT",
+      "ONDO/USDT:USDT",
+      "POL/USDT:USDT",
+      "1000PEPE/USDT:USDT",
+      "WIF/USDT:USDT",
+      "FET/USDT:USDT",
+      "RENDER/USDT:USDT",
+      "FIL/USDT:USDT",
+      "LDO/USDT:USDT"
     ],
     "pair_blacklist": [
       "BNB/.*",
@@ -57,9 +77,9 @@
     "username": "disabled",
     "password": "disabled"
   },
-  "bot_name": "finbuddy_backtest_v18",
+  "bot_name": "cortexa_backtest_v23_1h",
   "initial_state": "running",
-  "stoploss": -0.08,
+  "stoploss": -0.04,
   "strategy": "CortexaAI_v23",
   "strategy_path": "user_data/strategies",
   "internals": {
@@ -93,7 +113,12 @@
     },
     "model_training_parameters": {
       "n_estimators": 100,
-      "learning_rate": 0.05
+      "learning_rate": 0.03,
+      "num_threads": 2,
+      "min_child_samples": 50,
+      "num_leaves": 31,
+      "reg_alpha": 0.1,
+      "reg_lambda": 0.1
     }
   },
   "freqaimodel": "LightGBMRegressor",

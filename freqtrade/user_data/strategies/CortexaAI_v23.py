@@ -1390,6 +1390,24 @@ class CortexaAI_v23(IStrategy):
         #   3) funding-rate guard  (HTTP/cache read, ~10–500 ms)
         # Previously funding-rate ran before cluster cap, making wasted Binance
         # HTTP calls every time a cluster-full pair tried to enter.
+        #
+        # LIVE/DRY-RUN ONLY for gates 2 and 3 (2026-09-07 fix — see the "long=0"
+        # investigation). _get_combined_context() and _get_btc_funding_rate() both
+        # read TODAY's live snapshot with zero date-awareness — no historical lookup,
+        # no runmode check. In a backtest this meant EVERY simulated candle across the
+        # ENTIRE tested date range was gated by whatever the live market happened to be
+        # doing at the exact moment the backtest was LAUNCHED, not the actual simulated
+        # date. Decisively reproduced: today's live market_cap_change_24h_pct was
+        # -3.07% (just past the -3.0% block threshold) while investigating 4 separate
+        # recent_90d brain experiments that had reported zero long entries; the macro
+        # gate's per-candle log line confirmed it firing on every long attempt. This
+        # also means every historical brain/WF/backtest result that ever passed through
+        # this function inherited unreproducible noise from whatever live conditions
+        # happened to exist at run time — same root cause class, same fix pattern, as
+        # the pair-regime gate's existing FREQAI_DISABLE_PAIR_REGIME_GATE bypass (that
+        # gate's own comment: "live stats here contaminates results" — never applied to
+        # these two gates until now). Live/dry-run behavior is byte-identical.
+        _live_runmode = self.dp.runmode.value in ("live", "dry_run")
 
         # 0. Re-entry cooldown after stop-loss (2026-06-11): a (pair, side) that
         # just stopped out may not re-enter while the prediction is still pinned
@@ -1429,39 +1447,45 @@ class CortexaAI_v23(IStrategy):
                 return False
 
         # 2. Macro safety gate — reads combined_context.json from external fetchers.
-        ctx = self._get_combined_context()
-        fear_greed = ctx.get("fear_greed", 50)
-        market_change = ctx.get("market_cap_change_24h_pct", 0)
+        # LIVE/DRY-RUN ONLY (see 2026-09-07 note above _live_runmode) — this file has
+        # no historical series, only "right now".
+        if _live_runmode:
+            ctx = self._get_combined_context()
+            fear_greed = ctx.get("fear_greed", 50)
+            market_change = ctx.get("market_cap_change_24h_pct", 0)
 
-        if side == "long":
-            if fear_greed < 20:
-                logger.info(f"[MacroGate] Blocking long on {pair}: Fear & Greed={fear_greed} (Extreme Fear)")
-                return False
-            if market_change < -3.0:
-                logger.info(f"[MacroGate] Blocking long on {pair}: market cap 24h change={market_change:.2f}% (crash signal)")
-                return False
-        else:  # short
-            if fear_greed > 80:
-                logger.info(f"[MacroGate] Blocking short on {pair}: Fear & Greed={fear_greed} (Extreme Greed)")
-                return False
+            if side == "long":
+                if fear_greed < 20:
+                    logger.info(f"[MacroGate] Blocking long on {pair}: Fear & Greed={fear_greed} (Extreme Fear)")
+                    return False
+                if market_change < -3.0:
+                    logger.info(f"[MacroGate] Blocking long on {pair}: market cap 24h change={market_change:.2f}% (crash signal)")
+                    return False
+            else:  # short
+                if fear_greed > 80:
+                    logger.info(f"[MacroGate] Blocking short on {pair}: Fear & Greed={fear_greed} (Extreme Greed)")
+                    return False
 
         # 3. Funding-rate crowding guard (symmetric since Bug C fix 2026-05-20).
         # Block longs when longs overcrowded (funding strongly positive) AND
         # block shorts when shorts overcrowded (funding strongly negative).
-        funding = self._get_btc_funding_rate()
-        if funding is not None:
-            if side == "long" and funding > self._FUNDING_CROWDED_THRESHOLD:
-                logger.info(
-                    f"[FundingGuard] Blocking long on {pair}: "
-                    f"BTC funding={funding:.4%} > +{self._FUNDING_CROWDED_THRESHOLD:.4%} (longs crowded)"
-                )
-                return False
-            if side == "short" and funding < -self._FUNDING_CROWDED_THRESHOLD:
-                logger.info(
-                    f"[FundingGuard] Blocking short on {pair}: "
-                    f"BTC funding={funding:.4%} < -{self._FUNDING_CROWDED_THRESHOLD:.4%} (shorts crowded)"
-                )
-                return False
+        # LIVE/DRY-RUN ONLY (see 2026-09-07 note above _live_runmode) — this also
+        # made a real Binance HTTP call unconditionally during backtesting.
+        if _live_runmode:
+            funding = self._get_btc_funding_rate()
+            if funding is not None:
+                if side == "long" and funding > self._FUNDING_CROWDED_THRESHOLD:
+                    logger.info(
+                        f"[FundingGuard] Blocking long on {pair}: "
+                        f"BTC funding={funding:.4%} > +{self._FUNDING_CROWDED_THRESHOLD:.4%} (longs crowded)"
+                    )
+                    return False
+                if side == "short" and funding < -self._FUNDING_CROWDED_THRESHOLD:
+                    logger.info(
+                        f"[FundingGuard] Blocking short on {pair}: "
+                        f"BTC funding={funding:.4%} < -{self._FUNDING_CROWDED_THRESHOLD:.4%} (shorts crowded)"
+                    )
+                    return False
 
         return True
 
@@ -2332,6 +2356,41 @@ class CortexaAI_v23(IStrategy):
                 pdump.to_parquet(outdir / f"{safe}.parquet")
             except Exception as e:
                 logger.warning(f"[pred dump] {metadata.get('pair')}: {e}")
+
+        # ENTRY-GATE DEBUG DUMP (2026-09-07, default OFF, FREQAI_DUMP_ENTRY_DEBUG=1).
+        # Mirrors FREQAI_DUMP_PREDICTIONS above (write-only, touches no entry decision,
+        # env unset in live -> byte-identical) but captures every gate the LONG side
+        # passes through, per candle, for the "why is long=0" investigation
+        # (2026-09-07: 4 different configs, ~240 combined recent_90d trades, zero longs
+        # despite the window spanning the 08-25 BULL flip). Lets each gate's pass-rate
+        # be measured directly instead of inferred from entry counts alone.
+        if os.getenv("FREQAI_DUMP_ENTRY_DEBUG", "0") == "1":
+            try:
+                from pathlib import Path as _P
+                edump = pd.DataFrame({
+                    "date":               dataframe["date"],
+                    "close":              dataframe["close"],
+                    "regime":             dataframe.get("regime"),
+                    "do_predict":         dataframe.get("do_predict", 1),
+                    "centered_pred":      centered_pred,
+                    "dynamic_long_threshold": long_thresh,
+                    "long_above":         long_above,
+                    "long_stable":        long_stable,
+                    "is_long_regime":     is_long_regime,
+                    "ta_gate_ema":        dataframe["close"] > dataframe["ema_50"],
+                    "ta_gate_rsi":        dataframe["rsi_14"] < 68,
+                    "ta_gate_bb":         dataframe["bb_pct"] < 0.90,
+                    "volatility_ok":      volatility_ok,
+                    "bounce_ok_long":     bounce_ok_long,
+                    "ta_long":            ta_long,
+                    "enter_long_final":   enter_long,
+                })
+                outdir = _P("/freqtrade/user_data/entry_debug_dump")
+                outdir.mkdir(parents=True, exist_ok=True)
+                safe = metadata["pair"].replace("/", "_").replace(":", "_")
+                edump.to_parquet(outdir / f"{safe}.parquet")
+            except Exception as e:
+                logger.warning(f"[entry debug dump] {metadata.get('pair')}: {e}")
 
         return dataframe
 
