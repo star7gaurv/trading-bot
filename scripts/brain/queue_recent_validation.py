@@ -25,6 +25,19 @@ same rule as generate_and_queue() (CLAUDE.md Fix 13).
 
 Cron: daily, ahead of the other brain crons, so recent_90d's date keeps
 sliding forward and the brain never stops checking itself against "now".
+
+2026-09-07 (same-day fix, first live run): the analyst_report.json best_bull/
+best_bear candidates are cached from whenever they were last discovered
+(here: 2026-06-25/06-28, BEFORE the 2026-07-19 FinBuddy->Cortexa rebrand AND
+possibly on a different active timeframe than today's). Queuing their config
+dict verbatim crashed both experiments — "Impossible to load Strategy
+'FinBuddyFreqAI_v23'" (the file was renamed to CortexaAI_v23 at the rebrand;
+that class no longer exists). Fix: only the TUNED parameters
+(_TUNED_PARAM_KEYS below) are pulled from the analyst's candidate; every
+infra field (strategy/config_file/timeframe/freqaimodel/arch) comes from the
+CURRENT SEED_CONFIG_V23, so "does this discovered parameter combination hold
+up today" is tested on infra that's actually valid today, not stale metadata
+from whenever it was discovered.
 """
 from __future__ import annotations
 
@@ -40,11 +53,37 @@ from promote import _config_hash  # noqa: E402
 ROOT = Path(__file__).resolve().parents[2]
 ANALYST_REPORT = ROOT / "finbuddy_memory/experiments/analyst_report.json"
 
+# What actually counts as "the tuning this candidate discovered", as opposed to
+# infra metadata (strategy class name, config file, timeframe, model type) that
+# can go stale between when a candidate was found and when it's re-tested.
+_TUNED_PARAM_KEYS = (
+    "long_threshold", "short_threshold", "k_sl", "k_tp", "stability_n",
+    "label_period_candles", "filter_di", "filter_svm", "feature_set",
+    "n_estimators", "entry_mode",
+)
+
+
+def _rebase_on_current_infra(candidate_cfg: dict) -> dict:
+    """Current SEED_CONFIG_V23 (live infra: strategy/config_file/timeframe/
+    freqaimodel/arch) + candidate_cfg's tuned params on top. See module
+    docstring's 2026-09-07 note for why this exists."""
+    cfg = dict(hg.SEED_CONFIG_V23)
+    for k in _TUNED_PARAM_KEYS:
+        if k in candidate_cfg:
+            cfg[k] = candidate_cfg[k]
+    return cfg
+
 
 def _already_covered() -> set[tuple[str, str]]:
+    """Any (config_hash, window) pair that has EVER appeared in the queue or
+    log, any status — including scout_failed/failed. 2026-09-07 same-day fix:
+    filtering to only ("queued","running","completed") let a same-UTC-day
+    rerun of this script (recent_90d's timerange is stable within a day)
+    resubmit configs that already had a real scout_failed answer, wasting a
+    duplicate backtest for no new information. Mirrors generate_and_queue()'s
+    Fix 13 dedup, which has no status filter at all."""
     queued = {(_config_hash(r["config"]), r.get("window", "")) for r in read_queue()}
-    logged = {(_config_hash(r["config"]), r.get("window", ""))
-              for r in read_log() if r.get("status") in ("queued", "running", "completed")}
+    logged = {(_config_hash(r["config"]), r.get("window", "")) for r in read_log()}
     return queued | logged
 
 
@@ -76,9 +115,10 @@ def main() -> int:
                 cfg = (cand or {}).get("config")
                 if cfg:
                     candidates.append((
-                        dict(cfg), "seed",
-                        f"recent-market validation: does analyst's {key} "
-                        f"(found on {cand.get('window')}) hold up on the current market?",
+                        _rebase_on_current_infra(cfg), "seed",
+                        f"recent-market validation: does analyst's {key}'s tuning "
+                        f"(found on {cand.get('window')}) hold up on the current "
+                        f"market, rebased on today's infra?",
                     ))
         except Exception as e:
             print(f"[queue_recent_validation] WARN: could not read analyst report: {e}",
