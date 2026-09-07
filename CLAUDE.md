@@ -512,10 +512,41 @@ mismatch in `%-rel_strength_btc_14/28/56` between the pair's own TF and the alwa
 it changes what an already-trained-since-June feature means and needs its own dedicated retrain/A-B,
 not a hot patch bundled into an unrelated fix.
 
-**What to watch:** first full retrain under the new identifier (in progress at session end); the 4
-`recent_90d` validation experiments completing over the next 1-2 days via the existing brain cron;
-whether the edge gate clears on its own once IC/WF recover, or whether it stays active long enough to
-need investigation past "it's correctly reporting no edge."
+**Same-day follow-up — investigated why all 4 `recent_90d` validation experiments showed ZERO longs
+(commit `52413fade`).** Found and fixed a real, previously-invisible bug, NOT just a re-confirmation:
+`confirm_trade_entry()`'s macro safety gate (`_get_combined_context()`) and funding-rate crowding
+gate (`_get_btc_funding_rate()`, a live Binance API call) both read TODAY's live snapshot
+unconditionally — no historical series, no runmode check, ever. In a backtest this means every
+simulated candle across the whole tested range is gated by whatever the live market happened to be
+doing at the exact moment the backtest was *launched*, not the candle's actual date. Confirmed:
+`combined_context.json`'s `market_cap_change_24h_pct` was −3.07% (just past the gate's −3.0% block)
+at the exact time all 4 experiments ran, blocking every long attempt regardless of real historical
+price action. **This is not a today-only bug** — this code path has never had a runmode check, so it
+has silently applied to every brain experiment and every walk-forward run ever executed, a likely
+contributor to the brain's high noise rate and WF's non-reproducibility, independent of the
+entry-signal-quality problem diagnosed above. Fixed: both gates now check
+`self.dp.runmode.value in ("live","dry_run")`, matching the edge gate's own pattern and this
+project's existing `FREQAI_DISABLE_PAIR_REGIME_GATE` precedent (never applied here before). Verified
+decisively: an identical scoped backtest went from 0/61 longs before the fix to 15/61 after. Also
+fixed a second, smaller, independently-real issue found along the way: `v23_regression_1h_config.json`
+(created from a stale v18-era template at the 06-21 switch) had never been aligned with live's
+`model_training_parameters` (missing `reg_alpha`/`reg_lambda`/`num_leaves`/`min_child_samples`),
+`max_open_trades` (4 vs 8), `stake_amount` (200 vs unlimited), or `stoploss` (−0.08 vs −0.04) — every
+1h brain experiment since the switch trained under diverged hyperparameters; now matches live.
+
+**Re-ran all 4 `recent_90d` experiments with the fix applied** (direct `runner._run_scout()` calls,
+bypassing the queue for a fast answer): longs are now genuinely represented (73/101/50/30 out of
+180/273/106/105 trades respectively, vs 0/0/0/0 before). **The core diagnosis is unchanged and now
+independently reconfirmed on correct data**: all four still fail the promotion bar by a wide margin
+(PF 0.57–0.64 vs required >1.2, Sharpe −4 to −7 vs required >0.5) — nothing currently known has real
+edge on the actual current market. The earlier same-session all-short numbers should not be cited;
+see auto-memory `project_20260907_long_zero_investigation.md` for the full corrected table.
+
+**What to watch:** first full retrain under the new identifier; the daily `recent_90d` validation
+cron continuing to check the brain against the current market; whether the edge gate clears on its
+own once IC/WF recover, or stays active long enough to need investigation past "it's correctly
+reporting no edge"; whether the `confirm_trade_entry` fix measurably changes WF/brain reproducibility
+now that it's no longer contaminated by live market noise at run time.
 
 ### July 14, 2026 — Manual trade-control: force-exit + pause/resume, dashboard + Telegram (commit `c0967af53`)
 

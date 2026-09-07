@@ -7,6 +7,18 @@
 **Status**: 🔴🟢 v23 LIVE on **1h** (`finbuddy_v23_mom_features_1788780906` — 2026-09-07, added multi-day BTC momentum features; previous `finbuddy_v23_tf1h_1782044602`) · LT=0.7/ST=−0.6 · K_TP=3.0/K_SL=3.5 · DI+SVM disabled · **edge gate ACTIVE (new entries paused)** since 2026-09-07 — walk-forward has failed 197 straight runs since 06-05 and live IC has been ~0 since the 08-25 regime flip; `scripts/edge_monitor.py` now pauses new entries automatically until either recovers (open trades still exit normally) · family model cache active  
 **Last Updated**: 2026-09-07 UTC — diagnosed why Directional keeps losing + why nothing acted on it; shipped an autonomous edge gate (live, verified active), fixed the `ic_monitor.py` horizon bug, added continuous multi-day BTC momentum features, gave the brain a rolling `recent_90d` validation window + the live bot's actual config to test against (it had never tested either). Full detail: CLAUDE.md 2026-09-07 session entry + auto-memory `project_20260907_edge_gate_and_brain_fixes.md`.
 
+### 2026-09-07 (same day, follow-up) — confirm_trade_entry live-data-in-backtest bug fixed
+Investigating why 4 `recent_90d` validation experiments showed zero longs found a real, previously-
+invisible bug: `confirm_trade_entry`'s macro/funding gates read TODAY's live market snapshot
+unconditionally, even during backtests — no runmode check, ever. Every historical brain/WF backtest
+has been silently gated by whatever live conditions existed at the moment it happened to run, not
+the simulated candle's actual date. Fixed (runmode-gated, byte-identical live behavior); verified
+0→15 longs on an identical before/after backtest. Re-ran all 4 validations with the fix: longs are
+now real, and the core diagnosis holds independently — still no edge (PF 0.57-0.64) on the current
+market. Also fixed `v23_regression_1h_config.json`'s stale model-training hyperparameters (diverged
+from live since the 06-21 1h switch). Detail: CLAUDE.md same-day follow-up entry, auto-memory
+`project_20260907_long_zero_investigation.md`.
+
 ### 2026-09-07 — Edge gate + brain self-awareness fixes (see CLAUDE.md for full detail)
 Diagnosed (measured, not theoretical): live model IC ~0 since the 08-25 BULL flip; walk-forward has
 returned `pass=False` for 197 STRAIGHT runs since 06-05 with nothing ever acting on it; the 30d-return
