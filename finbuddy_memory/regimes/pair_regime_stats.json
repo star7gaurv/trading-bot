@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-07T14:30:01.525278+00:00",
+  "updated": "2026-09-07T15:00:01.165310+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -295,13 +295,13 @@
         "avg_profit_pct": 0.91
       },
       "BULL": {
-        "n": 11,
-        "wins": 4,
+        "n": 12,
+        "wins": 5,
         "losses": 7,
-        "wr": 0.3636,
-        "pf": 1.485,
-        "profit_usdt": 8.12,
-        "avg_profit_pct": 0.695
+        "wr": 0.4167,
+        "pf": 1.552,
+        "profit_usdt": 9.24,
+        "avg_profit_pct": 0.722
       }
     },
     "LTC/USDT:USDT": {
