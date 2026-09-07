@@ -7,15 +7,24 @@ Cron: 0 4 * * *  (daily 4am, after most overnight backtests finish)
 What it removes:
 1. Brain FreqAI model dirs (brain_* and wf_*) older than --max-age-days (default 2)
    (brain_scout_* alone generates ~15–20 GB/week; must prune aggressively)
-2. Backtest result zips older than --max-age-days (default 14)
-3. Brain log files older than --max-age-days (default 14)
+2. sub-train-* retrain artifacts under RETIRED production identifiers, and any
+   orphaned top-level sub-train-* dirs (2026-09-07 — added after a retired
+   identifier silently grew to 82GB/89% of the disk; see
+   cleanup_retired_identifiers() docstring for the full root cause). Never
+   touches the CURRENT live identifier or any identifier's small metadata
+   (historic_predictions.pkl etc.) — only sub-train-* bloat.
+3. Backtest result zips older than --max-age-days (default 14)
+4. Brain log files older than --max-age-days (default 14)
 
 What it preserves:
 - finbuddy_memory/experiments/log.jsonl    (full brain history, append-only)
 - finbuddy_memory/experiments/queue.jsonl  (pending hypotheses)
 - finbuddy_memory/promotions/             (proposal/apply history)
 - backtest zips referenced in pending promotions
-- live (non-brain) freqai models (sub-train-* dirs)
+- the live FreqAI identifier's models (read fresh from freqtrade/.env each run)
+- every identifier's historic_predictions.pkl / pair_dictionary.json /
+  global_metadata.json / run_params.json / backtesting_predictions/ — only
+  sub-train-* per-retrain artifacts are ever removed
 
 Safe to run — never touches the live FreqTrade container's active model.
 Uses sudo rm -rf for dirs owned by Docker root (ubuntu has passwordless sudo).
@@ -122,6 +131,100 @@ def cleanup_brain_models(max_age_days: int, keep_top_k: int, dry_run: bool = Fal
     return count, freed
 
 
+def _live_identifier() -> str | None:
+    """Read the currently-live FreqAI identifier from freqtrade/.env — this
+    directory must NEVER be touched by any cleanup here."""
+    env_path = ROOT / "freqtrade" / ".env"
+    try:
+        for line in env_path.read_text().splitlines():
+            if line.startswith("FREQTRADE__FREQAI__IDENTIFIER="):
+                return line.split("=", 1)[1].strip()
+    except Exception:
+        pass
+    return None
+
+
+def cleanup_retired_identifiers(max_age_days: int, dry_run: bool = False) -> tuple[int, int]:
+    """Purge sub-train-* bloat from RETIRED production FreqAI identifiers
+    (2026-09-07 — found during a disk-usage investigation: one retired
+    identifier, finbuddy_v23_tf1h_1782044602, had silently grown to 82GB /
+    89% of the entire disk over its ~2.5-month live lifetime).
+
+    Root cause this closes: cleanup_brain_models() above only ever matched
+    brain_*/wf_*/fam_*/wfam_* — the brain's OWN scratch dirs. It never
+    covered a retired LIVE identifier (finbuddy_v23_<descriptor>_<ts>, bumped
+    on every feature change or promotion) at all. Combined with FreqAI's
+    purge_old_models defaulting to keeping every retrain forever, a single
+    identifier that lived a few months at a 4h retrain cadence across 25
+    pairs could and did balloon into tens of GB with zero automated cleanup.
+    live config.json now sets purge_old_models=true (keeps 2 most recent
+    per pair going forward) — this function is the second, durable layer:
+    it catches whatever a future promotion/rename still leaves behind for
+    identifiers that stop being live, and also purges the orphaned
+    top-level sub-train-* dirs found alongside the 82GB one (structurally
+    invalid — not nested under any identifier — debris from an old bug).
+
+    NEVER deletes an identifier's small metadata (historic_predictions.pkl,
+    pair_dictionary.json, global_metadata.json, run_params.json,
+    backtesting_predictions/) — only its sub-train-* retrain artifacts.
+    scripts/research/cross_sectional_backtest.py depends on exactly this
+    preserved historic_predictions.pkl surviving under a retired identifier
+    (it needs a longer history than the live rolling 9-day window has).
+    """
+    live_id = _live_identifier()
+    scratch_prefixes = ("brain_", "wf_", "fam_", "wfam_")
+    cutoff = time.time() - max_age_days * 86400
+    count = 0
+    freed = 0
+
+    for d in MODELS_DIR.iterdir():
+        if not d.is_dir():
+            continue
+        # Orphaned top-level sub-train-* (not nested under any identifier) —
+        # always safe, no live/retired distinction needed.
+        if d.name.startswith("sub-train-"):
+            try:
+                if d.stat().st_mtime > cutoff:
+                    continue
+                size = _dir_size(d)
+            except FileNotFoundError:
+                continue
+            if dry_run:
+                print(f"  [DRY-RUN] would remove orphaned {d.name} ({size/1024/1024:.1f}MB)")
+            else:
+                try:
+                    _rmtree_sudo(d)
+                    count += 1
+                    freed += size
+                except Exception as e:
+                    print(f"  WARN: failed to remove {d.name}: {e}", file=sys.stderr)
+            continue
+
+        if d.name.startswith(scratch_prefixes):
+            continue  # handled by cleanup_brain_models()
+        if live_id and d.name == live_id:
+            continue  # the actual live model — never touch
+
+        for sub in d.glob("sub-train-*"):
+            try:
+                if sub.stat().st_mtime > cutoff:
+                    continue
+                size = _dir_size(sub)
+            except FileNotFoundError:
+                continue
+            if dry_run:
+                print(f"  [DRY-RUN] would remove {d.name}/{sub.name} ({size/1024/1024:.1f}MB)")
+            else:
+                try:
+                    _rmtree_sudo(sub)
+                    count += 1
+                    freed += size
+                except Exception as e:
+                    print(f"  WARN: failed to remove {d.name}/{sub.name}: {e}", file=sys.stderr)
+
+    return count, freed
+
+
 def cleanup_backtest_zips(max_age_days: int, dry_run: bool = False) -> tuple[int, int]:
     """Remove old backtest result zips + .meta.json files."""
     cutoff = time.time() - max_age_days * 86400
@@ -211,6 +314,11 @@ def main() -> int:
     n1, f1 = cleanup_brain_models(args.max_age_days, args.keep_top_k, args.dry_run)
     print(f"  removed {n1} dirs / {f1/1024/1024:.1f}MB")
 
+    print(f"Retired identifiers (sub-train-* older than {args.max_age_days}d; "
+          f"live identifier always preserved):")
+    n4, f4 = cleanup_retired_identifiers(args.max_age_days, args.dry_run)
+    print(f"  removed {n4} dirs / {f4/1024/1024:.1f}MB")
+
     print(f"Backtest zips (older than {args.zip_max_age_days}d):")
     n2, f2 = cleanup_backtest_zips(args.zip_max_age_days, args.dry_run)
     print(f"  removed {n2} files / {f2/1024/1024:.1f}MB")
@@ -220,7 +328,7 @@ def main() -> int:
     print(f"  removed {n3} files / {f3/1024/1024:.1f}MB")
 
     after_pct = disk_usage_pct()
-    total_mb = (f1 + f2 + f3) / 1024 / 1024
+    total_mb = (f1 + f2 + f3 + f4) / 1024 / 1024
     print(f"== done ==  disk: {after_pct}%  freed: {total_mb:.1f}MB")
 
     # Telegram alert if disk still > 80%
