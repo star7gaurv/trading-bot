@@ -1,5 +1,5 @@
 # Cortexa — Master Context
-Last updated: 2026-09-07 09:15 UTC
+Last updated: 2026-09-07 09:30 UTC
 
 ## Current Regime
 Regime: **BULL** | Confidence: 85.0% | Since: 2026-09-07
@@ -13,8 +13,8 @@ News Sentiment: 100.0% bullish
 Total Trades: 1204 | Win Rate: 43.1% | Total P&L: -3.82%
 
 ## Open Trades (2)
-- POL/USDT:USDT: Entry 0.10 | Current 0.10 | P&L: 1.45%
-- UNI/USDT:USDT: Entry 7.05 | Current 7.05 | P&L: -0.28%
+- POL/USDT:USDT: Entry 0.10 | Current 0.10 | P&L: 2.19%
+- UNI/USDT:USDT: Entry 7.05 | Current 7.03 | P&L: -0.99%
 ## Risk Flags
 - None
 
