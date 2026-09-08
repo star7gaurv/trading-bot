@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-08T21:30:02.621374+00:00",
+  "generated": "2026-09-08T22:00:01.977581+00:00",
   "gate_active": true,
   "reasons": [
     "201 consecutive walk-forward FAILs (since FinBuddyFreqAI_v23_2024-12-01_2026-06-01_20260605T183002)"
