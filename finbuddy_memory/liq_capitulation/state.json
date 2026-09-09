@@ -1,7 +1,18 @@
 {
-  "positions": {},
+  "positions": {
+    "FETUSDT": {
+      "symbol": "FETUSDT",
+      "side": "long",
+      "entry_price": 0.1754,
+      "notional": 200.0,
+      "entry_liq_z": 2.076,
+      "entry_liq_long_usd": 131964.0,
+      "opened_at": "2026-09-09T16:50:15.435983+00:00",
+      "fees_paid": 0.04
+    }
+  },
   "realized_pnl": 37.217205,
   "wins": 24,
   "losses": 20,
-  "last_update": "2026-09-09T15:50:15.788095+00:00"
+  "last_update": "2026-09-09T16:50:16.076263+00:00"
 }
