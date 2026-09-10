@@ -1,7 +1,28 @@
 {
-  "positions": {},
+  "positions": {
+    "WIFUSDT": {
+      "symbol": "WIFUSDT",
+      "side": "long",
+      "entry_price": 0.2044,
+      "notional": 200.0,
+      "entry_liq_z": 2.083,
+      "entry_liq_long_usd": 67303.0,
+      "opened_at": "2026-09-09T23:50:16.042844+00:00",
+      "fees_paid": 0.04
+    },
+    "RENDERUSDT": {
+      "symbol": "RENDERUSDT",
+      "side": "long",
+      "entry_price": 1.467,
+      "notional": 200.0,
+      "entry_liq_z": 2.006,
+      "entry_liq_long_usd": 61771.0,
+      "opened_at": "2026-09-09T23:50:16.774341+00:00",
+      "fees_paid": 0.04
+    }
+  },
   "realized_pnl": 28.357273,
   "wins": 24,
   "losses": 21,
-  "last_update": "2026-09-09T22:50:16.010302+00:00"
+  "last_update": "2026-09-09T23:50:17.367085+00:00"
 }
