@@ -1,0 +1,16 @@
+[Unit]
+Description=Cortexa Docs — static site server (localhost only)
+After=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/var/www/html/trade/site
+ExecStart=/usr/bin/python3 -m http.server 8123 --bind 127.0.0.1
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:/home/ubuntu/.finbuddy/logs/docs_server.log
+StandardError=append:/home/ubuntu/.finbuddy/logs/docs_server.log
+
+[Install]
+WantedBy=multi-user.target
