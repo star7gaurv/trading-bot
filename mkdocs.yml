@@ -113,17 +113,29 @@ nav:
       - architecture.md
   - Strategy & Brain:
       - strategy.md
+      - strategy/risk-engine.md
+      - strategy/manual-control.md
+      - strategy/backtest-history.md
       - brain.md
+  - Data & Signals:
+      - data/regime-detection.md
+      - data/external-feeds.md
+      - data/features.md
   - Modules:
       - modules/directional.md
       - modules/grid-trading.md
       - modules/pairs-trading.md
       - modules/funding-farm.md
       - modules/arbitrage.md
+  - Platform:
+      - platform/roadmap.md
+      - platform/vision.md
   - Operations:
       - operations/cron-reference.md
       - operations/monitoring.md
       - operations/disk-and-cleanup.md
+      - operations/security.md
+      - operations/dashboard.md
   - Reference:
       - third-party.md
       - coverage.md
