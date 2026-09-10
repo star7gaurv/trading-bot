@@ -1,7 +1,7 @@
 {
-  "wallet_usdt": 1000.0,
-  "realized_pnl": 0.0,
-  "captures": 0,
-  "observations": 7,
-  "last_run": "2026-07-17T10:53:01.441827+00:00"
+  "wallet_usdt": 1003.3863975271181,
+  "realized_pnl": 3.3863975271181417,
+  "captures": 1,
+  "observations": 24,
+  "last_run": "2026-09-10T10:59:01.783364+00:00"
 }
