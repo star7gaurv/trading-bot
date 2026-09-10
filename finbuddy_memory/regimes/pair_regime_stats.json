@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-10T05:00:01.282316+00:00",
+  "updated": "2026-09-10T05:30:01.791594+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "BTC/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": 0.0,
-        "avg_profit_pct": 0.0
-      },
-      "BULL": {
-        "n": 2,
-        "wins": 0,
-        "losses": 2,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -2.26,
-        "avg_profit_pct": -1.395
-      }
-    },
     "DOT/USDT:USDT": {
       "NEUTRAL": {
         "n": 2,
@@ -355,6 +335,17 @@
         "pf": 0.567,
         "profit_usdt": -1.55,
         "avg_profit_pct": -0.463
+      }
+    },
+    "BTC/USDT:USDT": {
+      "BULL": {
+        "n": 2,
+        "wins": 0,
+        "losses": 2,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -2.26,
+        "avg_profit_pct": -1.395
       }
     },
     "1000PEPE/USDT:USDT": {
