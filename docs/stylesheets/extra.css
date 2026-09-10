@@ -1,0 +1,42 @@
+/* Light touch on top of Material's slate/teal palette to read closer to a
+   polished vendor dev-docs site (Shopify/Stripe-style): tighter type scale,
+   a slightly warmer dark background, and a subtler sidebar. */
+
+:root > * {
+  --md-code-font: "Roboto Mono", monospace;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color: #0e1116;
+  --md-default-fg-color--light: #9aa4b2;
+  --md-typeset-a-color: #2dd4bf;
+}
+
+.md-header {
+  box-shadow: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.md-nav__title {
+  font-weight: 600;
+}
+
+.md-typeset h1 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.md-typeset table:not([class]) {
+  font-size: 0.72rem;
+}
+
+.md-typeset code {
+  border-radius: 4px;
+}
+
+/* Reference/coverage tables get wide fast (long module paths) — let them
+   scroll their own container instead of the page. */
+.md-typeset table:not([class]) {
+  display: block;
+  overflow-x: auto;
+}

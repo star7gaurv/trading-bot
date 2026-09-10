@@ -1,35 +1,134 @@
-site_name: Cortexa Internal Docs
-site_description: Internal code documentation for the Cortexa brain, backend, and dashboard.
+site_name: Cortexa Docs
+site_description: >-
+  Internal documentation for Cortexa — the autonomous, self-evolving AI
+  brain behind the trading system. Strategy, brain, modules, operations,
+  and a fully auto-generated API reference.
 docs_dir: docs
 site_dir: site
 
 theme:
   name: material
   palette:
-    scheme: slate
-    primary: teal
+    # Shopify-dev-docs-style: dark by default, with a toggle to light.
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+  font:
+    text: Inter
+    code: Roboto Mono
   features:
+    # Top-level sections rendered as tabs (Overview / Modules / Operations /
+    # Reference), matching the Shopify dev-docs top nav bar.
+    - navigation.tabs
+    - navigation.tabs.sticky
+    # Left sidebar: grouped, collapsible sections with expand/collapse
+    # chevrons — the tree structure in the reference screenshot.
     - navigation.sections
+    - navigation.indexes
     - navigation.top
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
     - content.code.copy
+    - content.tabs.link
+    - content.tooltips
+  icon:
+    repo: fontawesome/brands/git-alt
+
+extra_css:
+  - stylesheets/extra.css
 
 plugins:
   - search
+  - section-index
+  - gen-files:
+      scripts:
+        - docs/gen_ref_pages.py
+        - docs/gen_cron_reference.py
+        - docs/gen_third_party.py
+        - docs/gen_coverage.py
+  - literate-nav:
+      nav_file: SUMMARY.md
   - mkdocstrings:
       handlers:
         python:
-          paths: [scripts, dashboard]
+          paths:
+            - scripts
+            - dashboard
+            - freqtrade/user_data/strategies
+            - freqtrade/user_data/scripts
+            - freqtrade/user_data/freqaimodels
           options:
             show_source: true
             show_root_heading: true
+            show_root_full_path: false
             docstring_style: google
+            docstring_section_style: table
             merge_init_into_class: true
-            show_if_no_docstring: false
+            show_if_no_docstring: true
+            show_signature_annotations: true
+            separate_signature: true
+            filters: ["!^_[^_]"]  # hide private helpers from class/module member lists
+            heading_level: 2
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - tables
+  - toc:
+      permalink: true
 
 nav:
-  - Home: index.md
-  - Confidentiality Style Guide: confidentiality.md
-  - Brain (hypothesis engine): brain.md
-  - Shared Libraries: lib.md
-  - Dashboard Backend: dashboard.md
-  - User Tutorials (ScribeHow setup): user-tutorials.md
+  - Overview:
+      - index.md
+      - getting-started.md
+      - architecture.md
+  - Strategy & Brain:
+      - strategy.md
+      - brain.md
+  - Modules:
+      - modules/directional.md
+      - modules/grid-trading.md
+      - modules/pairs-trading.md
+      - modules/funding-farm.md
+      - modules/arbitrage.md
+  - Operations:
+      - operations/cron-reference.md
+      - operations/monitoring.md
+      - operations/disk-and-cleanup.md
+  - Reference:
+      - third-party.md
+      - coverage.md
+      - reference/
+  - Contributing:
+      - contributing.md
+      - confidentiality.md
+      - user-tutorials.md
