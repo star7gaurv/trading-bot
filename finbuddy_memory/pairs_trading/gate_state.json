@@ -1,0 +1,11 @@
+{
+  "active": true,
+  "reasons": [
+    "reversion rate 2.3% < 15% over 215 closed positions \u2014 the core mean-reversion hypothesis isn't holding",
+    "profit factor 0.55 < 1.0 over 215 closed positions"
+  ],
+  "n": 215,
+  "reversion_rate": 0.0233,
+  "profit_factor": 0.5464,
+  "checked_at": "2026-09-10T11:59:39.671804+00:00"
+}

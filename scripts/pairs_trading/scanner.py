@@ -36,6 +36,72 @@ except Exception:
 
 CONFIG = ROOT / "freqtrade/user_data/config.json"
 DATA_DIR = ROOT / "freqtrade/user_data/data/binance/futures"
+LEDGER = ROOT / "finbuddy_memory/pairs_trading/ledger.jsonl"
+GATE_STATE_FILE = ROOT / "finbuddy_memory/pairs_trading/gate_state.json"
+
+# Reversion gate (2026-09-10). Same philosophy as the directional strategy's
+# edge_monitor.py (2026-09-07): a system that measures its own failure but
+# never acts on it isn't self-aware, it's just logging. Investigation this
+# session found the module's core hypothesis — that a stretched, correlated
+# spread reverts to its mean — has only actually happened on 5 of 215 closed
+# positions (2.3%) since inception; 206 (96%) instead hit the divergence stop
+# and never reverted at all. The 2026-07-08 half-life tightening (480h->72h)
+# did NOT fix this — losses continued afterward too. Right now the scanner
+# isn't opening anything anyway because correlations have broken down in the
+# current trending market (checked 2026-09-10: 0/300 pair combos clear both
+# the correlation and z-score bars at once) — but that's incidental, not
+# protective. The moment correlations recover, this module would resume
+# opening positions under the exact same losing mechanism with nothing to
+# stop it. This gate closes that gap: blocks NEW positions (never touches
+# managing/closing existing ones, mirrors edge_monitor's AND-only posture)
+# whenever the lifetime closed-position track record says the reversion
+# hypothesis isn't holding. Reversible the moment a redesign changes the
+# entry logic (see MIN_TRADES_FOR_GATE) or a human decides to retire the
+# module outright — this only pauses, it doesn't delete anything.
+MIN_TRADES_FOR_GATE = 30   # statistical floor before judging (matches this
+                           # project's own promote.py MIN_TOTAL_TRADES convention)
+MIN_REVERSION_RATE = 0.15  # measured lifetime rate is 2.3% — this is a generous bar
+MIN_PROFIT_FACTOR = 1.0    # measured lifetime PF is 0.546
+
+
+def _reversion_gate() -> dict:
+    """Read the full closed-position ledger and decide whether new entries
+    should be paused. Returns {"active": bool, "reasons": [...], stats}."""
+    if not LEDGER.exists():
+        return {"active": False, "reasons": [], "n": 0}
+    closes = []
+    for line in LEDGER.read_text().splitlines():
+        if not line.strip():
+            continue
+        try:
+            r = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if r.get("event") == "close":
+            closes.append(r)
+    n = len(closes)
+    if n < MIN_TRADES_FOR_GATE:
+        return {"active": False, "reasons": [], "n": n}
+
+    reverted = sum(1 for r in closes if str(r.get("reason", "")).startswith("reverted"))
+    reversion_rate = reverted / n
+    net = [float(r.get("net_pnl", 0.0)) for r in closes]
+    gross_win = sum(v for v in net if v > 0)
+    gross_loss = -sum(v for v in net if v < 0)
+    pf = (gross_win / gross_loss) if gross_loss > 0 else (float("inf") if gross_win > 0 else 0.0)
+
+    reasons = []
+    if reversion_rate < MIN_REVERSION_RATE:
+        reasons.append(
+            f"reversion rate {reversion_rate:.1%} < {MIN_REVERSION_RATE:.0%} "
+            f"over {n} closed positions — the core mean-reversion hypothesis "
+            f"isn't holding"
+        )
+    if pf < MIN_PROFIT_FACTOR:
+        reasons.append(f"profit factor {pf:.2f} < {MIN_PROFIT_FACTOR:.1f} over {n} closed positions")
+    return {"active": bool(reasons), "reasons": reasons, "n": n,
+            "reversion_rate": round(reversion_rate, 4), "profit_factor": round(pf, 4)}
+
 
 LOOKBACK = 720          # ~30d of 1h candles
 ENTRY_Z = 2.0
@@ -139,7 +205,40 @@ def main() -> int:
                      f"Pairs (paper): closed {key}",
                      fields={"Reason": reason}, silent=True)
 
-    # 2) scan for new opportunities
+    # 2) reversion gate (2026-09-10) — see MIN_TRADES_FOR_GATE block above.
+    # Blocks NEW positions only; step 1 above (managing/closing existing
+    # positions) already ran regardless of this gate.
+    gate = _reversion_gate()
+    prev_active = None
+    try:
+        prev_active = json.loads(GATE_STATE_FILE.read_text()).get("active")
+    except Exception:
+        pass
+    GATE_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    GATE_STATE_FILE.write_text(json.dumps({**gate, "checked_at": px._now()}, indent=2))
+    if prev_active is not None and prev_active != gate["active"] and _TG:
+        if gate["active"]:
+            send(Subsystem.WATCHDOG, Status.ACTION,
+                 "Pairs trading: reversion gate ACTIVATED — new positions paused",
+                 fields={"Reversion rate": f"{gate.get('reversion_rate', 0):.1%}",
+                         "Profit factor": gate.get("profit_factor"),
+                         "Closed positions": gate.get("n")},
+                 context="; ".join(gate["reasons"]))
+        else:
+            send(Subsystem.WATCHDOG, Status.OK,
+                 "Pairs trading: reversion gate CLEARED — new positions resumed",
+                 fields={"Reversion rate": f"{gate.get('reversion_rate', 0):.1%}",
+                         "Profit factor": gate.get("profit_factor")})
+    if gate["active"]:
+        print(f"[pairs] reversion gate ACTIVE — skipping new-entry scan: {gate['reasons']}")
+        state["last_update"] = px._now()
+        px.save_state(state)
+        s = px.summary()
+        print(f"[pairs] open={s['open_positions']} 7d_net={s['net_7d']} "
+              f"realized_total={s['realized_total']}")
+        return 0
+
+    # 3) scan for new opportunities
     syms = list(px_df.columns)
     cands = []
     for i in range(len(syms)):
