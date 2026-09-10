@@ -429,6 +429,40 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 
 ## Session History Summary
 
+### September 10, 2026 — Pairs-trading reversion gate, arbitrage feed daemon fix, full docs site
+
+**Bot not trading (carryover from 09-07):** confirmed the edge gate was still correctly active —
+zero new entries since it activated 09-07, WF fail streak now 205. Nothing structurally changed;
+still correctly refusing to trade on no measured edge.
+
+**Paper-module deep dive** (asked: multi-user vs arbitrage vs funding vs pairs vs docs? —
+recommended investigating grid + pairs + fixing arbitrage instead of any of those, since nothing
+has a proven live-capital-ready product yet):
+- **Grid trading confirmed genuinely working**: 21W/5L, +71.75 USDT realized across 9 coins, no
+  single lucky trade. The one real bright spot in the whole system.
+- **Pairs trading — structural problem, not bad luck**: of 215 closed positions, only 5 (2.3%)
+  ever actually mean-reverted; 206 hit the divergence stop instead. Shipped a reversion gate
+  (`_reversion_gate()` in `scanner.py`, commit `d6e6218bd`) mirroring `edge_monitor.py`'s exact
+  philosophy — blocks new positions when the module's own lifetime record says its premise isn't
+  holding (reversion rate <15% or PF<1.0). Doesn't decide redesign-vs-retire; that's still open.
+- **Arbitrage feed daemon fixed**: `finbuddy-arb-feed.service` was built in July but never
+  registered with systemd — ran manually once, got disconnected, never restarted. Installed,
+  enabled, verified flowing real data end to end. Tempered expectations: its only real prior data
+  (7 observations) showed 0/7 gaps cleared fee costs.
+
+**Full documentation site built** (commit `9e5505ebe`) — completes the MkDocs+mkdocstrings plan
+decided 2026-07-17 but never built. Shopify-dev-docs-style layout (dark theme, tabs, collapsible
+sidebar, search), plus four auto-generation scripts (the "Scribe for Python" ask) that regenerate
+the full API reference, cron reference, third-party integration map, and docstring-coverage report
+from live source/crontab on every build — nothing there can go stale the way a hand-written page
+can. Found+fixed 2 real bugs along the way: `scripts/platform/` shadows Python's own stdlib
+`platform` module (latent-bug risk, worth renaming), and a genuine duplicate-file collision
+(`build_historical_regime.py` exists as two different files in two different directories). Daily
+cron keeps the static build fresh. **Not deployed publicly** — this site names real internal
+details the project's own Confidentiality Style Guide says should stay internal; default access is
+`mkdocs serve` over an SSH tunnel. Full detail: auto-memory `project_20260910_docs_site.md` and
+`project_20260910_paper_modules_deep_dive.md`.
+
 ### September 7, 2026 — Diagnosis + autonomous edge gate + brain/regime self-awareness fixes
 
 **Context:** Gaurav asked why Directional keeps losing, why other analysis says "it's fine" when it
