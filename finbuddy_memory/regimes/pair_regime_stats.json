@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-11T06:00:02.113663+00:00",
+  "updated": "2026-09-11T06:30:02.064012+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "POL/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 6,
-        "wins": 2,
-        "losses": 4,
-        "wr": 0.3333,
-        "pf": 0.633,
-        "profit_usdt": -0.58,
-        "avg_profit_pct": -0.123
-      },
-      "BULL": {
-        "n": 4,
-        "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 1.032,
-        "profit_usdt": 0.02,
-        "avg_profit_pct": 0.0
-      }
-    },
     "ENA/USDT:USDT": {
       "NEUTRAL": {
         "n": 2,
@@ -67,6 +47,26 @@
         "pf": null,
         "profit_usdt": 4.3,
         "avg_profit_pct": 3.81
+      }
+    },
+    "POL/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 2,
+        "losses": 3,
+        "wr": 0.4,
+        "pf": 1.695,
+        "profit_usdt": 0.41,
+        "avg_profit_pct": 0.104
+      },
+      "BULL": {
+        "n": 4,
+        "wins": 2,
+        "losses": 2,
+        "wr": 0.5,
+        "pf": 1.032,
+        "profit_usdt": 0.02,
+        "avg_profit_pct": 0.0
       }
     },
     "NEAR/USDT:USDT": {
@@ -342,14 +342,5 @@
       }
     }
   },
-  "blocked": [
-    {
-      "pair": "POL/USDT:USDT",
-      "regime": "NEUTRAL",
-      "reason": "WR=33% PF=0.63 n=6 profit=-0.58",
-      "n": 6,
-      "wr": 0.3333,
-      "pf": 0.633
-    }
-  ]
+  "blocked": []
 }
