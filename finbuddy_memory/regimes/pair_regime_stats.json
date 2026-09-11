@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-11T12:00:01.867796+00:00",
+  "updated": "2026-09-11T12:30:01.862562+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,46 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ENA/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 0,
-        "losses": 2,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -0.61,
-        "avg_profit_pct": -0.39
-      },
-      "BULL": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -0.45,
-        "avg_profit_pct": -0.4
-      }
-    },
-    "FIL/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 6,
-        "wins": 5,
-        "losses": 1,
-        "wr": 0.8333,
-        "pf": 3.956,
-        "profit_usdt": 1.33,
-        "avg_profit_pct": 0.283
-      },
-      "BULL": {
-        "n": 1,
-        "wins": 1,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 4.3,
-        "avg_profit_pct": 3.81
-      }
-    },
     "POL/USDT:USDT": {
       "NEUTRAL": {
         "n": 5,
@@ -78,6 +38,26 @@
         "pf": 0.637,
         "profit_usdt": -2.18,
         "avg_profit_pct": -0.465
+      }
+    },
+    "FIL/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 4,
+        "losses": 1,
+        "wr": 0.8,
+        "pf": 3.911,
+        "profit_usdt": 1.31,
+        "avg_profit_pct": 0.334
+      },
+      "BULL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 4.3,
+        "avg_profit_pct": 3.81
       }
     },
     "AVAX/USDT:USDT": {
@@ -220,6 +200,26 @@
         "pf": 1.552,
         "profit_usdt": 9.24,
         "avg_profit_pct": 0.722
+      }
+    },
+    "ENA/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.39,
+        "avg_profit_pct": -0.5
+      },
+      "BULL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.45,
+        "avg_profit_pct": -0.4
       }
     },
     "LTC/USDT:USDT": {
