@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-12T17:00:02.204409+00:00",
+  "updated": "2026-09-12T17:30:01.873938+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "FET/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 3,
-        "wins": 2,
-        "losses": 1,
-        "wr": 0.6667,
-        "pf": 0.897,
-        "profit_usdt": -0.08,
-        "avg_profit_pct": -0.037
-      },
-      "BULL": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -0.06,
-        "avg_profit_pct": -0.05
-      }
-    },
     "SUI/USDT:USDT": {
       "NEUTRAL": {
         "n": 2,
@@ -69,6 +49,26 @@
         "pf": 1.473,
         "profit_usdt": 1.23,
         "avg_profit_pct": 0.32
+      }
+    },
+    "FET/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 0.859,
+        "profit_usdt": -0.11,
+        "avg_profit_pct": -0.075
+      },
+      "BULL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.06,
+        "avg_profit_pct": -0.05
       }
     },
     "AVAX/USDT:USDT": {
