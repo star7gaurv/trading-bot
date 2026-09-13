@@ -1,14 +1,14 @@
 {
-  "generated": "2026-09-13T13:30:02.573029+00:00",
+  "generated": "2026-09-13T14:00:02.555288+00:00",
   "gate_active": true,
   "reasons": [
-    "212 consecutive walk-forward FAILs (since FinBuddyFreqAI_v23_2024-12-01_2026-06-01_20260605T183002)"
+    "213 consecutive walk-forward FAILs (since FinBuddyFreqAI_v23_2024-12-01_2026-06-01_20260605T183002)"
   ],
   "live_ic_30d": 0.0744,
   "live_ic_30d_n": 3450,
   "live_ic_30d_do_predict_rate": 0.201,
   "label_period_candles": 6,
-  "wf_fail_streak": 212,
+  "wf_fail_streak": 213,
   "wf_fail_streak_since": "FinBuddyFreqAI_v23_2024-12-01_2026-06-01_20260605T183002",
   "wf_last_pass_run": "FinBuddyFreqAI_v23_2025-11-01_2026-06-01_20260604T220001",
   "thresholds": {
