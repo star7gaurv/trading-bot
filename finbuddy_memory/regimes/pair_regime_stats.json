@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-13T09:00:01.558105+00:00",
+  "updated": "2026-09-13T09:30:01.835557+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,46 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "RENDER/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 7,
-        "wins": 5,
-        "losses": 2,
-        "wr": 0.7143,
-        "pf": 3.091,
-        "profit_usdt": 1.84,
-        "avg_profit_pct": 0.336
-      },
-      "BULL": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -5.4,
-        "avg_profit_pct": -4.72
-      }
-    },
-    "FIL/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 1,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 0.22,
-        "avg_profit_pct": 0.28
-      },
-      "BULL": {
-        "n": 1,
-        "wins": 1,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 4.3,
-        "avg_profit_pct": 3.81
-      }
-    },
     "POL/USDT:USDT": {
       "NEUTRAL": {
         "n": 2,
@@ -78,6 +38,26 @@
         "pf": 0.304,
         "profit_usdt": -1.81,
         "avg_profit_pct": -0.767
+      }
+    },
+    "RENDER/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 6,
+        "wins": 4,
+        "losses": 2,
+        "wr": 0.6667,
+        "pf": 2.977,
+        "profit_usdt": 1.74,
+        "avg_profit_pct": 0.37
+      },
+      "BULL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -5.4,
+        "avg_profit_pct": -4.72
       }
     },
     "FET/USDT:USDT": {
@@ -231,6 +211,17 @@
         "pf": 0.0,
         "profit_usdt": -0.56,
         "avg_profit_pct": -0.5
+      }
+    },
+    "FIL/USDT:USDT": {
+      "BULL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 4.3,
+        "avg_profit_pct": 3.81
       }
     },
     "ARB/USDT:USDT": {
