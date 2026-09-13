@@ -20,7 +20,8 @@ What this script does (every 30 min, cheap — no docker, no backtest):
      summary.json files (walk_forward.py already computes pass/fail
      correctly — grade() — this just counts how many times in a row it's
      been False).
-  3. Sets gate_active=True (block NEW entries only — see strategy side,
+  3. Sets gate_active=True (THROTTLES new entries to high-conviction-only,
+     capped at 1x leverage — see strategy side's FREQAI_EDGE_GATE_THROTTLE_RATIO;
      never touches exit/management logic) when EITHER:
        - live 30d pooled IC <= FREQAI_EDGE_GATE_IC_MIN (default 0.0), with a
          minimum sample size so a data gap can't trip it, OR
@@ -33,13 +34,21 @@ What this script does (every 30 min, cheap — no docker, no backtest):
      signal, not noise.
 
 This is a circuit breaker, not a fix: gate_active does not create edge, it
-stops the bot from taking new directional risk while there measurably isn't
-any, while leaving existing positions to their normal exits. It is on by
-default (FREQAI_EDGE_GATE=1 in the strategy), same posture as the existing
-daily-loss-limit / daily-flatten circuit breakers, because "don't open new
-risk on a measured-zero edge" cannot make the live system worse than it is
-today — every historical loss this session diagnosed happened because this
-control did not exist.
+throttles the bot's new directional risk down to the strongest-conviction
+signals only while broad-population edge measurably isn't there, while
+leaving existing positions to their normal exits. It is on by default
+(FREQAI_EDGE_GATE=1 in the strategy), same posture as the existing
+daily-loss-limit / daily-flatten circuit breakers.
+
+CHANGED 2026-09-13: this used to block ALL new entries outright. Gaurav's
+explicit feedback was that a full stop is worse than reduced trading —
+"it shows something" — even while the measured edge is weak, so a fully
+silent bot is not actually the safer product outcome. The strategy side
+(CortexaAI_v23.populate_entry_trend / leverage()) now reads gate_active as
+"require top-tier conviction (>=2x the dynamic threshold, tunable via
+FREQAI_EDGE_GATE_THROTTLE_RATIO) and cap leverage at 1x" instead of "block
+everything." This script's detection logic (IC + WF streak) is unchanged —
+only the strategy's response to gate_active changed.
 """
 from __future__ import annotations
 
@@ -163,27 +172,28 @@ def main() -> int:
         if gate_active:
             send(
                 Subsystem.WATCHDOG, Status.ACTION,
-                "Edge gate ACTIVATED — new entries paused",
+                "Edge gate ACTIVATED — entries throttled to high-conviction only",
                 fields={
                     "Live IC (30d)": f"{ic_val:+.4f}" if ic_val is not None else "n/a",
                     "WF fail streak": streak,
                     "Reasons": "; ".join(reasons),
                 },
-                context="No new long/short entries will open until the model's measured "
-                        "edge recovers. Open trades are unaffected — normal exits still fire. "
-                        "Set FREQAI_EDGE_GATE=0 in freqtrade/.env to override.",
-                action="Investigate before overriding — this fired because the system's own "
+                context="New entries now require top-tier conviction (2x the dynamic "
+                        "threshold) and trade at 1x leverage only — fewer AND smaller, not "
+                        "zero. Open trades are unaffected — normal exits still fire. "
+                        "Set FREQAI_EDGE_GATE=0 in freqtrade/.env to disable the throttle.",
+                action="Investigate before disabling — this fired because the system's own "
                        "measurements (live IC, walk-forward) say the current config has no edge.",
             )
         else:
             send(
                 Subsystem.WATCHDOG, Status.OK,
-                "Edge gate CLEARED — entries resumed",
+                "Edge gate CLEARED — full entry frequency + normal leverage resumed",
                 fields={
                     "Live IC (30d)": f"{ic_val:+.4f}" if ic_val is not None else "n/a",
                     "WF fail streak": streak,
                 },
-                context="Measured edge recovered above threshold; new entries allowed again.",
+                context="Measured edge recovered above threshold; throttle and leverage cap lifted.",
             )
 
     return 0

@@ -114,19 +114,36 @@ Gaurav is the sole builder. He manages everything from his **mobile phone via Te
 
 ---
 
-## What Is Live and Working Right Now (verified 2026-09-07 UTC by Claude Code via `docker exec` — TIMEFRAME **1h**, identifier `finbuddy_v23_mom_features_1788780906`, thresholds 0.7/−0.6, SVM off, **edge gate ACTIVE**)
+## What Is Live and Working Right Now (verified 2026-09-13 UTC by Claude Code via `docker exec` — TIMEFRAME **1h**, identifier `finbuddy_v23_mom_features_1788780906`, thresholds 0.7/−0.6, SVM off, **edge gate ACTIVE → THROTTLED (not blocked)**)
 
-> 🔴 **2026-09-07: edge gate is ACTIVE (new entries paused).** Diagnosed and fixed a real gap this
-> session: walk-forward has failed 197 STRAIGHT runs since 2026-06-05 and live IC has been ~0 since
-> the 2026-08-25 regime flip, but nothing ever acted on it — trading continued unchanged through the
-> whole losing streak. `scripts/edge_monitor.py` (cron */30min) now reads both signals and pauses
-> NEW entries (never touches exits) via `finbuddy_memory/analytics/edge_state.json` when either goes
-> non-positive. It activated immediately on deploy because both already say so. See
-> [[finbuddy_memory/... project_20260907_directional_loss_diagnosis]] and the 2026-09-07 session note
-> below for the full diagnosis + fix list. Also shipped: multi-day BTC momentum features (feature-
-> shape change → identifier bumped), rolling `recent_90d` brain validation window (was: brain only
-> ever tested 2024/2025 history, never the actual live config or the current market), `ic_monitor.py`
-> horizon bug fix (was hardcoded to 12 candles, stale since the 06-21 1h switch moved it to 6).
+> 🟡 **2026-09-13: edge gate is ACTIVE but now THROTTLES instead of fully blocking.** Gaurav's
+> explicit feedback: a full stop for days at a time showed nothing happening and that's worse than
+> reduced trading, even while measured edge is weak. `populate_entry_trend` now requires
+> `centered_pred` to clear `FREQAI_EDGE_GATE_THROTTLE_RATIO` (default 1.5×) the dynamic threshold
+> instead of nulling entries outright, and `leverage()` caps size at 1x on these trades regardless of
+> tier — "trade less AND smaller," not "trade zero." Checked against the live predictions store
+> before picking 1.5: at ratio 2.0 (the 3x-leverage HIGH tier) longs go to ~zero entirely (the
+> model's known long-side weakness — see `docs/modules/directional.md`'s "zero longs mystery"); 1.5
+> keeps a real trickle on both sides (~17 long / ~96 short qualifying candles over the last 30 days,
+> pooled across 25 pairs, before the stability/regime/TA gates that already run). Honest caveat: live
+> IC has actually recovered to **+0.0744** (n=3450, healthy) — the gate is active purely on the
+> walk-forward leg now (**213** straight FAILs), and those WF numbers are real, not a measurement
+> bug (checked actual summary.json content: PF 0.68–0.84, Sharpe −3 to −4 on 285–950 real simulated
+> trades per window) — so the throttle is a deliberate risk/visibility tradeoff, not a claim that the
+> system suddenly has edge. See the 2026-09-13 session note below.
+>
+> 🔴 **2026-09-07 (superseded above): edge gate went ACTIVE (originally: new entries paused).**
+> Diagnosed and fixed a real gap this session: walk-forward has failed 197 STRAIGHT runs since
+> 2026-06-05 and live IC has been ~0 since the 2026-08-25 regime flip, but nothing ever acted on it —
+> trading continued unchanged through the whole losing streak. `scripts/edge_monitor.py` (cron
+> */30min) reads both signals and writes `finbuddy_memory/analytics/edge_state.json` when either goes
+> non-positive (unchanged 2026-09-13 — only the strategy's RESPONSE to gate_active changed, from
+> block to throttle). See [[finbuddy_memory/... project_20260907_directional_loss_diagnosis]] and the
+> 2026-09-07 session note below for the full diagnosis + fix list. Also shipped that session:
+> multi-day BTC momentum features (feature-shape change → identifier bumped), rolling `recent_90d`
+> brain validation window (was: brain only ever tested 2024/2025 history, never the actual live
+> config or the current market), `ic_monitor.py` horizon bug fix (was hardcoded to 12 candles, stale
+> since the 06-21 1h switch moved it to 6).
 
 ### FreqTrade
 - Running **`CortexaAI_v23.py` (v23)** in dry-run mode on **Binance Futures USDT-M** — long+short
@@ -428,6 +445,62 @@ Fully specced in `finbuddy_memory/docs/signal-contract.md`. Key fields:
 ---
 
 ## Session History Summary
+
+### September 13, 2026 — Edge gate: full block → throttle (Gaurav's explicit product override)
+
+**Gaurav's instruction, verbatim intent:** "do not keep stop the directional trades, it is better
+that it shows something at least — why have you totally stopped everything." Directional had been
+at zero new entries continuously since the edge gate activated 2026-09-07 (WF fail streak now
+**213**, up from 197). This was a deliberate policy override of the 09-07 session's design, not a
+bug report — the gate was working exactly as built. Gaurav's call: a fully silent bot is a worse
+product outcome than a reduced, honest amount of visible activity, even while measured edge is weak.
+
+**What was actually measured before changing anything (not assumed):**
+- `finbuddy_memory/analytics/edge_state.json`: live 30d pooled IC has recovered to **+0.0744**
+  (n=3450) — healthy and positive, no longer the ~0 IC that triggered the gate on 09-07. The gate is
+  now active on the **walk-forward leg alone** (213 straight FAILs, streak min=5).
+- Read the actual `walkforward_results/*/summary.json` content (not just `pass: false`) to check
+  whether the WF failure is a real measurement or an artifact: it's real. Daily WF window
+  (`2026-02-01→2026-09-01`, 285 trades): WR 47.7%, Sharpe **−4.317**, PF **0.680**. Deep WF window
+  (`2025-03-01→2026-09-01`, 700-950 trades): WR ~51.5-51.8% (passes), Sharpe −2.8 to −3.2, PF
+  0.81-0.84. Consistent, non-noise numbers — not a broken/empty-result bug. Recent daily-WF runs
+  repeat identically day to day because of the family model cache reusing the same trained fold
+  (expected behavior, not a new bug).
+
+**Fix shipped — throttle, not unconditional re-enable** (`freqtrade/user_data/strategies/CortexaAI_v23.py`):
+Rather than either extreme (leave the full block in place, or flip `FREQAI_EDGE_GATE=0` and revert
+to the WF-confirmed-unprofitable full population of entries), `populate_entry_trend`'s edge-gate
+branch changed from `enter_long/enter_short & False` to requiring `centered_pred` clear
+`FREQAI_EDGE_GATE_THROTTLE_RATIO` (env, default **1.5**×) the dynamic threshold — the same
+conviction-ratio concept `leverage()` already used for its 2x tier. `leverage()` additionally forces
+these trades to 1x regardless of which tier they'd naturally score, so gate-active trading is
+"fewer AND smaller," never "fewer but bigger."
+- **Ratio choice checked against real data, not guessed:** computed candle counts from the live
+  `historic_predictions.pkl` at ratio 1.2/1.3/1.5/1.75/2.0. At 2.0 (the natural HIGH/3x-tier choice)
+  longs go to **zero** — the model's known long-side weakness (see `docs/modules/directional.md`'s
+  "zero longs mystery") means it essentially never reaches 2x its own threshold on the long side. 1.5
+  was the smallest ratio that still leaves a genuine trickle on both sides (~17 long / ~96 short
+  qualifying candles pooled across 25 pairs over 30 days, before the stability filter, TA gates, and
+  regime gates that already run downstream — so the real trade count will be lower still, but
+  non-zero on both directions).
+- Updated `_load_edge_gate()`'s docstring, `edge_monitor.py`'s module docstring + Telegram alert
+  copy, and `daily_summary.py`'s Edge Gate digest field (🔴 PAUSED → 🟡 THROTTLED) so nothing still
+  says "blocked"/"paused" now that the actual behavior is reduced-not-zero. `edge_monitor.py`'s
+  detection logic (computing IC + WF streak, writing `edge_state.json`) is **unchanged** — only the
+  strategy's response to `gate_active=True` changed.
+- **Verified, not assumed:** syntax-checked; ran a real 2-pair/1-week docker backtest to confirm the
+  new code paths (both gated behind `self.dp.runmode.value in ("live","dry_run")`, same as before)
+  don't touch backtest and don't crash; live container restarted twice (first for the throttle logic,
+  second after an env-var-list docstring addition), clean startup logs both times, no exceptions.
+
+**What this is not:** not a claim the system now has confirmed edge — WF's real numbers (PF
+0.68-0.84, Sharpe −3 to −4) are unchanged and still say the full population of signals loses money.
+This is a bounded exception for the highest-conviction subset, sized down to 1x, so the operator sees
+the bot is alive without reverting to the exact behavior that produced the losses the 09-07 session
+diagnosed. **What to watch:** whether throttled trades (tagged in logs as `[EdgeGate] ... throttled
+to conf_ratio>=1.5`) show up at a reasonable cadence over the next few days, and whether their
+win rate looks meaningfully different from the untouched WF population (if the conviction filter is
+doing real work, it should).
 
 ### September 10, 2026 — Pairs-trading reversion gate, arbitrage feed daemon fix, full docs site
 

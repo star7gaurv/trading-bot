@@ -85,6 +85,9 @@ class CortexaAI_v23(IStrategy):
       FREQAI_K_TP             float  default 2.0  — trail lock level (ATR×K_TP)
       FREQAI_K_SL             float  default 1.0  — initial stop (ATR×K_SL)
       FINBUDDY_RECENT_WR      float  default 0.50 — written by trade_postmortem cron
+      FREQAI_EDGE_GATE_THROTTLE_RATIO  float  default 1.5 — conviction-ratio bar for new
+        entries while scripts/edge_monitor.py reports no measured edge (see _load_edge_gate()).
+        2026-09-13: throttles instead of blocking outright — see that method's docstring.
     """
     INTERFACE_VERSION = 3
 
@@ -660,6 +663,13 @@ class CortexaAI_v23(IStrategy):
         (returns inactive) on any read error, same posture as every other
         state file in this class — a monitoring bug must not silently halt
         trading with no visibility; watchdog.py's staleness checks cover that.
+
+        NOTE (2026-09-13): "active" no longer means a full stop. The caller
+        (populate_entry_trend) throttles to high-conviction-only entries and
+        leverage() caps size at 1x — see the FREQAI_EDGE_GATE_THROTTLE_RATIO
+        comment at each call site. This method's return value and this
+        docstring's "the gate" language are unchanged; only the response to
+        active=True changed, from block to throttle.
         """
         try:
             mtime = os.path.getmtime(self._EDGE_STATE_FILE)
@@ -1285,6 +1295,19 @@ class CortexaAI_v23(IStrategy):
                 # the prior "MED defensively" gave 2x to sub-threshold trades.
                 lev = self._LEV_LOW
                 tier = "FALLBACK"
+
+            # Edge gate throttle mode (2026-09-13): when the system's own
+            # measured edge is non-positive, entries are already restricted
+            # to MED-conviction-or-better (see FREQAI_EDGE_GATE_THROTTLE_RATIO
+            # in populate_entry_trend) — this trade would otherwise score
+            # MED/2x or HIGH/3x by the table above. Force LOW/1x instead so
+            # reduced-edge trading means fewer AND smaller trades, never
+            # fewer-but-bigger ones.
+            if (os.getenv("FREQAI_EDGE_GATE", "1") == "1"
+                    and self.dp.runmode.value in ("live", "dry_run")
+                    and self._load_edge_gate().get("active")):
+                lev = self._LEV_LOW
+                tier = f"{tier}+EDGE_GATE_CAP"
 
             final = min(lev, max_leverage)
             logger.info(
@@ -2235,19 +2258,39 @@ class CortexaAI_v23(IStrategy):
             meta_thr = float(os.getenv("FREQAI_META_THRESHOLD", "0.5"))
             enter_long = enter_long & (dataframe["&-meta_long"] > meta_thr)
 
-        # Edge gate (2026-09-07, default ON). LIVE/DRY-RUN ONLY — see
-        # _load_edge_gate() docstring for why this must never touch backtest/
-        # hyperopt runmodes. AND-only, blocks NEW entries only; open trades
-        # keep exiting normally. Default on (like the daily-loss-limit /
-        # daily-flatten circuit breakers) because pausing new risk while the
-        # system's own measured edge is non-positive cannot make live
-        # behavior worse than it is today.
+        # Edge gate (2026-09-07, default ON; THROTTLE not block since 2026-09-13).
+        # LIVE/DRY-RUN ONLY — see _load_edge_gate() docstring for why this must
+        # never touch backtest/hyperopt runmodes. AND-only, never touches
+        # exits; open trades keep exiting normally.
+        #
+        # 2026-09-13 change: a full stop (enter_long & False) produced zero
+        # visible trading for days at a time — Gaurav's explicit feedback was
+        # that showing nothing is worse than showing a reduced, honest amount
+        # of activity, even while the system's own measurement says edge is
+        # weak. So instead of nulling entries outright, gate_active now raises
+        # the bar to the same MED-conviction ratio used for the 2x leverage
+        # tier (centered_pred at least FREQAI_EDGE_GATE_THROTTLE_RATIO times
+        # its dynamic threshold, default 1.5) — only above-average-conviction
+        # signals still trade, weaker ones stay blocked. Checked against the
+        # live predictions store (2026-09-13): at ratio 2.0 longs go to ~zero
+        # (the model rarely reaches that bar long-side — see directional.md's
+        # "zero longs mystery"); 1.5 keeps a real but reduced trickle on both
+        # sides. leverage() additionally caps these trades at 1x regardless of
+        # which tier they'd naturally score (see EDGE_GATE_CAP there), so
+        # "trade less" and "trade smaller" both apply together rather than
+        # amplifying risk on the trades that do fire.
         if (os.getenv("FREQAI_EDGE_GATE", "1") == "1"
                 and self.dp.runmode.value in ("live", "dry_run")):
             edge_gate = self._load_edge_gate()
             if edge_gate.get("active"):
-                enter_long = enter_long & False
-                logger.info(f"[EdgeGate] {pair}: entries paused — {edge_gate.get('reasons')}")
+                throttle_ratio = float(os.getenv("FREQAI_EDGE_GATE_THROTTLE_RATIO", "1.5"))
+                long_thresh_safe = long_thresh.replace(0, np.nan)
+                long_conf_ratio = centered_pred / long_thresh_safe
+                enter_long = enter_long & (long_conf_ratio >= throttle_ratio)
+                logger.info(
+                    f"[EdgeGate] {pair}: throttled to conf_ratio>={throttle_ratio} "
+                    f"(was full block) — {edge_gate.get('reasons')}"
+                )
 
         dataframe.loc[enter_long, "enter_long"] = 1
         dataframe.loc[enter_long, "enter_tag"]  = "freqai_regression_v23_long"
@@ -2293,12 +2336,21 @@ class CortexaAI_v23(IStrategy):
             meta_thr = float(os.getenv("FREQAI_META_THRESHOLD", "0.5"))
             enter_short = enter_short & (dataframe["&-meta_short"] > meta_thr)
 
-        # Edge gate, short side (mirror of the long-side gate above).
+        # Edge gate, short side (mirror of the long-side throttle above —
+        # short_thresh is negative, so centered_pred/short_thresh is still a
+        # positive ratio when the prediction clears the short bar).
         if (os.getenv("FREQAI_EDGE_GATE", "1") == "1"
                 and self.dp.runmode.value in ("live", "dry_run")):
             edge_gate = self._load_edge_gate()
             if edge_gate.get("active"):
-                enter_short = enter_short & False
+                throttle_ratio = float(os.getenv("FREQAI_EDGE_GATE_THROTTLE_RATIO", "1.5"))
+                short_thresh_safe = short_thresh.replace(0, np.nan)
+                short_conf_ratio = centered_pred / short_thresh_safe
+                enter_short = enter_short & (short_conf_ratio >= throttle_ratio)
+                logger.info(
+                    f"[EdgeGate] {pair}: throttled to conf_ratio>={throttle_ratio} "
+                    f"(was full block) — {edge_gate.get('reasons')}"
+                )
 
         dataframe.loc[enter_short, "enter_short"] = 1
         dataframe.loc[enter_short, "enter_tag"]   = "freqai_regression_v23_short"

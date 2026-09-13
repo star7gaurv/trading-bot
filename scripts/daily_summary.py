@@ -245,7 +245,7 @@ def main() -> None:
         streak = edge_state.get("wf_fail_streak", 0)
         ic_str = f"{ic30:+.4f}" if ic30 is not None else "n/a"
         if edge_active:
-            fields["Edge Gate"] = f"🔴 PAUSED — live IC(30d) {ic_str} · WF fail streak {streak}"
+            fields["Edge Gate"] = f"🟡 THROTTLED (high-conviction only, 1x cap) — live IC(30d) {ic_str} · WF fail streak {streak}"
         else:
             fields["Edge Gate"] = f"🟢 open — live IC(30d) {ic_str} · WF fail streak {streak}"
     except Exception:
