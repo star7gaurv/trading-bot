@@ -1,7 +1,18 @@
 {
-  "positions": {},
+  "positions": {
+    "APTUSDT": {
+      "symbol": "APTUSDT",
+      "side": "long",
+      "entry_price": 0.5556,
+      "notional": 200.0,
+      "entry_liq_z": 2.115,
+      "entry_liq_long_usd": 455555.0,
+      "opened_at": "2026-09-15T19:50:15.668077+00:00",
+      "fees_paid": 0.04
+    }
+  },
   "realized_pnl": 23.101406,
   "wins": 24,
   "losses": 23,
-  "last_update": "2026-09-15T18:50:16.543142+00:00"
+  "last_update": "2026-09-15T19:50:16.301212+00:00"
 }
