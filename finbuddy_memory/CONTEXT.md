@@ -1,8 +1,8 @@
 # Cortexa — Master Context
-Last updated: 2026-09-15 00:00 UTC
+Last updated: 2026-09-15 00:15 UTC
 
 ## Current Regime
-Regime: **BULL** | Confidence: 85.0% | Since: 2026-09-14
+Regime: **BULL** | Confidence: 85.0% | Since: 2026-09-15
 
 ## Market Sentiment
 Fear & Greed: 57 (Greed)
