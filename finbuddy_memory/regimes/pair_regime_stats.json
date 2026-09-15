@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-15T00:00:01.745303+00:00",
+  "updated": "2026-09-15T00:30:01.370901+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -11,13 +11,13 @@
   "stats": {
     "WIF/USDT:USDT": {
       "NEUTRAL": {
-        "n": 7,
-        "wins": 3,
+        "n": 6,
+        "wins": 2,
         "losses": 4,
-        "wr": 0.4286,
-        "pf": 0.933,
-        "profit_usdt": -0.2,
-        "avg_profit_pct": -0.037
+        "wr": 0.3333,
+        "pf": 0.672,
+        "profit_usdt": -0.98,
+        "avg_profit_pct": -0.208
       },
       "BULL": {
         "n": 2,
@@ -284,5 +284,14 @@
       }
     }
   },
-  "blocked": []
+  "blocked": [
+    {
+      "pair": "WIF/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=33% PF=0.67 n=6 profit=-0.98",
+      "n": 6,
+      "wr": 0.3333,
+      "pf": 0.672
+    }
+  ]
 }
