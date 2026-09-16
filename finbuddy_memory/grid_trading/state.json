@@ -12,29 +12,11 @@
       "er": 0.013,
       "vol_pct": 1.72,
       "deployed_at": "2026-09-08T12:40:02.784955+00:00",
-      "last_price": 0.13971,
-      "last_price_ts": "2026-09-16T03:40:03.580391+00:00",
+      "last_price": 0.14221,
+      "last_price_ts": "2026-09-16T04:40:02.191273+00:00",
       "total_crossings": 4,
       "fees_paid": 0.36,
       "accrued_pnl": 3.940004
-    },
-    "ARB": {
-      "symbol": "ARB",
-      "entry_price": 0.13601,
-      "low": 0.1156085,
-      "high": 0.1564115,
-      "n_levels": 10,
-      "position_usdt": 300.0,
-      "spacing_abs": 0.00453367,
-      "spacing_pct": 3.3333,
-      "er": 0.085,
-      "vol_pct": 2.04,
-      "deployed_at": "2026-09-13T08:40:03.344859+00:00",
-      "last_price": 0.15128,
-      "last_price_ts": "2026-09-16T03:40:03.747808+00:00",
-      "total_crossings": 6,
-      "fees_paid": 0.39,
-      "accrued_pnl": 5.910006
     },
     "NEAR": {
       "symbol": "NEAR",
@@ -48,13 +30,31 @@
       "er": 0.072,
       "vol_pct": 1.38,
       "deployed_at": "2026-09-15T03:40:03.747188+00:00",
-      "last_price": 2.343,
-      "last_price_ts": "2026-09-16T03:40:03.910220+00:00",
+      "last_price": 2.36,
+      "last_price_ts": "2026-09-16T04:40:03.146099+00:00",
+      "total_crossings": 0,
+      "fees_paid": 0.3,
+      "accrued_pnl": 0.0
+    },
+    "ARB": {
+      "symbol": "ARB",
+      "entry_price": 0.15824,
+      "low": 0.134504,
+      "high": 0.181976,
+      "n_levels": 10,
+      "position_usdt": 300.0,
+      "spacing_abs": 0.00527467,
+      "spacing_pct": 3.3333,
+      "er": 0.06,
+      "vol_pct": 1.97,
+      "deployed_at": "2026-09-16T04:40:03.329848+00:00",
+      "last_price": 0.15824,
+      "last_price_ts": "2026-09-16T04:40:03.329864+00:00",
       "total_crossings": 0,
       "fees_paid": 0.3,
       "accrued_pnl": 0.0
     }
   },
-  "realized_pnl": 76.003331,
-  "last_update": "2026-09-16T03:40:03.934866+00:00"
+  "realized_pnl": 82.493338,
+  "last_update": "2026-09-16T04:40:03.945894+00:00"
 }
