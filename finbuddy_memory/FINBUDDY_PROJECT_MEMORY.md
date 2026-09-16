@@ -4,8 +4,24 @@
 
 **Project:** Cortexa — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status**: 🔴🟡 v23 LIVE on **1h** (`finbuddy_v23_mom_features_1788780906` — 2026-09-07, added multi-day BTC momentum features; previous `finbuddy_v23_tf1h_1782044602`) · LT=0.7/ST=−0.6 · K_TP=3.0/K_SL=3.5 · DI+SVM disabled · **edge gate ACTIVE but THROTTLING, not blocking (since 2026-09-13)** — WF fail streak 213; live IC recovered to +0.0744 (healthy) so the gate is now driven by the WF leg alone; entries require 1.5x conviction + capped at 1x leverage instead of zero, per Gaurav's explicit override ("don't totally stop it, show something") · pairs trading's own reversion gate ALSO active since 2026-09-10 (same philosophy, not yet throttled) · grid trading is the one module with a genuinely positive paper track record (+71.75 USDT, 21W/5L) · family model cache active  
-**Last Updated**: 2026-09-13 UTC — changed the edge gate from a full entry block to a conviction-throttle (1.5x threshold) + 1x leverage cap, after Gaurav pushed back on directional showing zero trades for days. Live IC checked and found healthy (+0.0744); WF's real failure (PF 0.68-0.84, Sharpe -3 to -4) verified genuine, not a measurement bug, before deciding the fix. Full detail: CLAUDE.md 2026-09-13 session entry + auto-memory `project_20260913_edge_gate_throttle.md`.
+**Status**: 🔴🟡 Private research system, dry-run/paper only · v23 directional on **1h** (`finbuddy_v23_mom_features_1788780906`) · LT=0.7/ST=−0.6 · K_TP=3.0/K_SL=3.5 · DI+SVM disabled · edge gate ACTIVE and THROTTLING at observed runtime ratio **1.2** with 1x leverage cap · directional validation negative (1,204 closed, -37.72 USDT, WR 43.3%, PF 0.951; latest daily/deep WF PF 0.680/0.801) · raw WF streak 221 but duplicated (243 summaries, 88 unique) · grid/arbitrage/liquidation paper P&L UNVERIFIED pending realistic fills and canonical accounting · pairs negative/gated · no module ready for real capital or customers
+**Last Updated**: 2026-09-16 UTC — complete system audit and truth reset. Full evidence: `docs/audit/2026-09-16-complete-audit.md`; required work: `docs/platform/remediation-register.md`; reusable non-market-making controls from the shared MM discussion: `docs/platform/cortexa-controls.md`.
+
+### 2026-09-16 — Complete audit and roadmap reset
+
+The platform is operationally strong for a solo prototype (containers/resources healthy; 42
+observed cron jobs healthy), but profitability is not proved. The audit downgraded grid and
+arbitrage profit claims to unverified estimates because their simulators omit essential
+order/fill/inventory behavior; liquidation fills are also optimistic. Directional dry-run and both
+current WF views are negative. The brain has 5,406 experiment records but no current z-scored
+winner; its meta-model is effectively random.
+
+Priority is now financial truth before more strategy breadth: canonical P&L/inventory ledger,
+realistic paper execution, WF evidence deduplication, frozen prospective validation, central
+portfolio exposure/risk/capital allocation, durable order lifecycle, exchange reconciliation,
+execution-quality metrics, secrets/security cleanup, tested backup/restore, pinned releases, CI,
+and repository hygiene. Cortexa remains Cortexa; continuous quoting, spread/inventory-skew engines,
+manufactured volume, ultra-low-latency rewrites, and premature microservices are explicitly out.
 
 ### 2026-09-07 (same day, follow-up) — confirm_trade_entry live-data-in-backtest bug fixed
 Investigating why 4 `recent_90d` validation experiments showed zero longs found a real, previously-
