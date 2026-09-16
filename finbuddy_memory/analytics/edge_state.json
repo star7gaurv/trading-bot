@@ -1,23 +1,23 @@
 {
-  "generated": "2026-09-16T22:30:02.412372+00:00",
+  "generated": "2026-09-16T23:00:02.583614+00:00",
   "gate_active": true,
   "reasons": [
-    "82 consecutive unique walk-forward FAILs (221 raw executions; since FinBuddyFreqAI_v23_2024-12-01_2026-06-01_20260605T183002)"
+    "83 consecutive unique walk-forward FAILs (222 raw executions; since FinBuddyFreqAI_v23_2024-12-01_2026-06-01_20260605T183002)"
   ],
   "live_ic_30d": 0.0882,
   "live_ic_30d_n": 5425,
-  "live_ic_30d_do_predict_rate": 0.311,
+  "live_ic_30d_do_predict_rate": 0.312,
   "label_period_candles": 6,
-  "wf_fail_streak": 82,
-  "wf_fail_streak_unique": 82,
-  "wf_fail_streak_raw": 221,
+  "wf_fail_streak": 83,
+  "wf_fail_streak_unique": 83,
+  "wf_fail_streak_raw": 222,
   "wf_fail_streak_since": "FinBuddyFreqAI_v23_2024-12-01_2026-06-01_20260605T183002",
   "wf_last_pass_run": "FinBuddyFreqAI_v23_2025-11-01_2026-06-01_20260604T220001",
   "wf_evidence": {
-    "raw_total": 243,
-    "unique_total": 88,
+    "raw_total": 244,
+    "unique_total": 89,
     "duplicate_total": 155,
-    "duplicate_ratio": 0.6378600823045267,
+    "duplicate_ratio": 0.6352459016393442,
     "conflicting_groups": 0,
     "estimated_duplicate_compute_hours": 55.5,
     "estimated_duration_coverage": 155
