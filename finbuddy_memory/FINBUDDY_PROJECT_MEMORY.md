@@ -4,8 +4,18 @@
 
 **Project:** Cortexa — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
-**Status**: 🔴🟡 Private research system, dry-run/paper only · v23 directional on **1h** (`finbuddy_v23_mom_features_1788780906`) · LT=0.7/ST=−0.6 · K_TP=3.0/K_SL=3.5 · DI+SVM disabled · edge gate ACTIVE and THROTTLING at observed runtime ratio **1.2** with 1x leverage cap · directional validation negative (1,204 closed, -37.72 USDT, WR 43.3%, PF 0.951; latest daily/deep WF PF 0.680/0.801) · raw WF streak 221 but duplicated (243 summaries, 88 unique) · grid/arbitrage/liquidation paper P&L UNVERIFIED pending realistic fills and canonical accounting · pairs negative/gated · no module ready for real capital or customers
-**Last Updated**: 2026-09-16 UTC — complete system audit and truth reset. Full evidence: `docs/audit/2026-09-16-complete-audit.md`; required work: `docs/platform/remediation-register.md`; reusable non-market-making controls from the shared MM discussion: `docs/platform/cortexa-controls.md`.
+**Status**: 🔴🟡 Private research system, dry-run/paper only · v23 directional on **1h** (`finbuddy_v23_mom_features_1788780906`) · LT=0.7/ST=−0.6 · K_TP=3.0/K_SL=3.5 · DI+SVM disabled · edge gate ACTIVE and THROTTLING at observed runtime ratio **1.2** with 1x leverage cap · directional validation negative (1,204 closed, -37.72 USDT, WR 43.3%, PF 0.951; latest daily/deep WF PF 0.680/0.801) · WF gate now uses 82 unique consecutive failures while preserving 221 raw failures (243 summaries, 88 unique, 155 duplicates) · grid/arbitrage/liquidation paper P&L UNVERIFIED pending realistic fills and canonical accounting · pairs negative/gated · no module ready for real capital or customers
+**Last Updated**: 2026-09-16 UTC — P0-05 WF evidence deduplication completed after the full audit. Full evidence: `docs/audit/2026-09-16-complete-audit.md`; required work: `docs/platform/remediation-register.md`; reusable non-market-making controls: `docs/platform/cortexa-controls.md`.
+
+### 2026-09-16 — Walk-forward evidence deduplication complete (P0-05)
+
+Added immutable evidence manifests for new WF summaries, pre-run duplicate detection, legacy
+exact-result grouping, raw/unique streak reporting, dashboard evidence-quality metrics, history
+duplicate badges, and daily-digest transparency. Historical scan: 243 readable summaries, 88
+unique groups, 155 duplicates, 82 unique consecutive FAILs versus 221 raw FAILs, with approximately
+57.87 hours of plausible duplicate runtime across all 155 duplicates. The edge gate remains active
+and now uses the unique streak. Six regression tests, Python syntax checks, and the dashboard
+production build pass. No historical summary was deleted and no entry/exit/leverage logic changed.
 
 ### 2026-09-16 — Complete audit and roadmap reset
 
