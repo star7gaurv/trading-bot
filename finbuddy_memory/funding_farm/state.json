@@ -1,5 +1,12 @@
 {
   "positions": {},
   "realized_pnl": -0.75,
-  "last_accrual": "2026-09-17T12:05:03.189386+00:00"
+  "last_accrual": "2026-09-17T13:05:03.228171+00:00",
+  "execution": {
+    "attempts": 0,
+    "filled": 0,
+    "rejected": 0,
+    "failed_legs": 0,
+    "execution_loss": 0.0
+  }
 }
