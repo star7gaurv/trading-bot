@@ -1,0 +1,22 @@
+{
+  "blockers": [],
+  "endpoint": "/sapi/v1/account/apiRestrictions",
+  "exchange": "binance",
+  "least_privilege_ok": true,
+  "non_custodial_ok": true,
+  "required_access_ok": true,
+  "scopes": {
+    "enableFutures": true,
+    "enableInternalTransfer": false,
+    "enableMargin": false,
+    "enablePortfolioMarginTrading": false,
+    "enableReading": true,
+    "enableSpotAndMarginTrading": true,
+    "enableVanillaOptions": false,
+    "enableWithdrawals": false,
+    "ipRestrict": true,
+    "permitsUniversalTransfer": false
+  },
+  "verified_at": "2026-09-17T09:08:00.248299Z",
+  "warnings": []
+}
