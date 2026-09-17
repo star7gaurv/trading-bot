@@ -868,3 +868,10 @@ Three structural fixes addressing root causes found across 11 smoke tests:
 ---
 
 *This hub must be updated at the end of every major session. It is the high-level single source of truth for the project.*
+
+### Database architecture decision — deferred (2026-09-17)
+
+- Keep the single-bot development runtime on `freqtrade/user_data/tradesv3.sqlite` for now.
+- The unused platform prototype currently targets local PostgreSQL database `finbuddy_platform`; it is not connected to the bot and will not be adopted as the production database. MySQL HeatWave is not currently configured.
+- Before any database switch, remove direct SQLite filename coupling from accounting/postmortem tools, build a driver-enabled pinned image, shadow-copy into an empty target, reconcile trades/orders/open positions/P&L, prove backup and rollback, then cut over during planned downtime.
+- Product decision: PostgreSQL is not an approved future target. Before production, choose standard MySQL or MySQL HeatWave after database abstraction, driver/image work, shadow migration, parity checks, backup, and rollback testing.
