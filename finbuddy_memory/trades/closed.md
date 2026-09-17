@@ -896,3 +896,4 @@
 | 2026-09-17 01:15:22 | ARB/USDT:USDT | LONG | 6h00m | +1.88% | +2.07 | time_limit_exit | BULL | freqai_regression_v23_lo |
 | 2026-09-17 08:00:34 | ARB/USDT:USDT | LONG | 6h00m | -0.07% | -0.07 | time_limit_exit | BULL | freqai_regression_v23_lo |
 | 2026-09-17 14:00:22 | 1000PEPE/USDT:USDT | LONG | 4h59m | +2.37% | +2.62 | exit_signal | BULL | freqai_regression_v23_lo |
+| 2026-09-17 15:10:25 | ARB/USDT:USDT | LONG | 6h00m | -2.13% | -2.35 | time_limit_exit | BULL | freqai_regression_v23_lo |
