@@ -1,5 +1,12 @@
 {
   "positions": {},
   "realized_pnl": -53.670020276100374,
-  "last_update": "2026-09-17T11:20:06.417210+00:00"
+  "last_update": "2026-09-17T12:20:06.263714+00:00",
+  "execution": {
+    "attempts": 0,
+    "filled": 0,
+    "rejected": 0,
+    "failed_legs": 0,
+    "execution_loss": 0.0
+  }
 }
