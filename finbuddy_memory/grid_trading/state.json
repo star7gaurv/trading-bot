@@ -12,8 +12,8 @@
       "er": 0.013,
       "vol_pct": 1.72,
       "deployed_at": "2026-09-08T12:40:02.784955+00:00",
-      "last_price": 0.16748,
-      "last_price_ts": "2026-09-18T08:40:02.275670+00:00",
+      "last_price": 0.16651,
+      "last_price_ts": "2026-09-18T09:40:02.854734+00:00",
       "total_crossings": 6,
       "fees_paid": 0.39,
       "accrued_pnl": 5.910006
@@ -30,8 +30,8 @@
       "er": 0.102,
       "vol_pct": 1.42,
       "deployed_at": "2026-09-18T01:40:05.511472+00:00",
-      "last_price": 3.4625000000000004,
-      "last_price_ts": "2026-09-18T08:40:02.693245+00:00",
+      "last_price": 3.4385000000000003,
+      "last_price_ts": "2026-09-18T09:40:03.160775+00:00",
       "execution_model": "book_v1",
       "quote_cash": 214.7887842304,
       "base_qty": 26.484393659068,
@@ -127,7 +127,7 @@
       },
       "fees_paid": 0.08797536,
       "slippage_cost": 0.03547536,
-      "last_equity": 306.49099727,
+      "last_equity": 305.85537183,
       "closing": false
     },
     "ARB": {
@@ -142,8 +142,8 @@
       "er": 0.043,
       "vol_pct": 1.93,
       "deployed_at": "2026-09-18T03:40:03.562191+00:00",
-      "last_price": 0.207095,
-      "last_price_ts": "2026-09-18T08:40:03.000105+00:00",
+      "last_price": 0.20771499999999998,
+      "last_price_ts": "2026-09-18T09:40:03.486244+00:00",
       "execution_model": "book_v1",
       "quote_cash": 89.955,
       "base_qty": 952.906498840577,
@@ -239,12 +239,12 @@
       },
       "fees_paid": 0.0869916,
       "slippage_cost": 0.0344916,
-      "last_equity": 287.29717138,
+      "last_equity": 287.88797341,
       "closing": false
     }
   },
   "realized_pnl": 104.347799,
-  "last_update": "2026-09-18T08:40:03.021100+00:00",
+  "last_update": "2026-09-18T09:40:03.508756+00:00",
   "execution": {
     "submitted": 33,
     "filled": 12,
