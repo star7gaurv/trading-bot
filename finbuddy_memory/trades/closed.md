@@ -899,3 +899,4 @@
 | 2026-09-17 15:10:25 | ARB/USDT:USDT | LONG | 6h00m | -2.13% | -2.35 | time_limit_exit | BULL | freqai_regression_v23_lo |
 | 2026-09-18 01:00:19 | ADA/USDT:USDT | LONG | 5h00m | +1.59% | +1.75 | exit_signal | BULL | freqai_regression_v23_lo |
 | 2026-09-18 03:00:18 | BTC/USDT:USDT | LONG | 6h00m | +0.51% | +0.39 | exit_signal | BULL | freqai_regression_v23_lo |
+| 2026-09-18 14:00:23 | XRP/USDT:USDT | LONG | 3h00m | +2.48% | +2.74 | exit_signal | BULL | freqai_regression_v23_lo |
