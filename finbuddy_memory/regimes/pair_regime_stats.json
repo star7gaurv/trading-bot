@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-18T01:00:01.390726+00:00",
+  "updated": "2026-09-18T01:30:01.244247+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "RENDER/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 1,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 0.28,
-        "avg_profit_pct": 0.36
-      },
-      "BULL": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -5.4,
-        "avg_profit_pct": -4.72
-      }
-    },
     "LTC/USDT:USDT": {
       "NEUTRAL": {
         "n": 1,
@@ -212,6 +192,17 @@
         "avg_profit_pct": -1.065
       }
     },
+    "RENDER/USDT:USDT": {
+      "BULL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -5.4,
+        "avg_profit_pct": -4.72
+      }
+    },
     "XRP/USDT:USDT": {
       "BULL": {
         "n": 1,
@@ -232,6 +223,17 @@
         "pf": 1.032,
         "profit_usdt": 0.02,
         "avg_profit_pct": 0.0
+      }
+    },
+    "ADA/USDT:USDT": {
+      "BULL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 1.75,
+        "avg_profit_pct": 1.59
       }
     }
   },
