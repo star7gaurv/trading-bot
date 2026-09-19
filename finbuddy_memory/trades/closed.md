@@ -901,3 +901,4 @@
 | 2026-09-18 03:00:18 | BTC/USDT:USDT | LONG | 6h00m | +0.51% | +0.39 | exit_signal | BULL | freqai_regression_v23_lo |
 | 2026-09-18 14:00:23 | XRP/USDT:USDT | LONG | 3h00m | +2.48% | +2.74 | exit_signal | BULL | freqai_regression_v23_lo |
 | 2026-09-18 18:00:54 | ENA/USDT:USDT | LONG | 6h00m | +0.78% | +0.86 | time_limit_exit | BULL | freqai_regression_v23_lo |
+| 2026-09-19 01:00:55 | ENA/USDT:USDT | LONG | 2h00m | +4.06% | +4.50 | exit_signal | BULL | freqai_regression_v23_lo |
