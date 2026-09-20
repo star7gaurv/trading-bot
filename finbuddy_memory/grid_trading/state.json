@@ -12,8 +12,8 @@
       "er": 0.043,
       "vol_pct": 1.93,
       "deployed_at": "2026-09-18T03:40:03.562191+00:00",
-      "last_price": 0.212145,
-      "last_price_ts": "2026-09-20T05:40:02.269801+00:00",
+      "last_price": 0.208395,
+      "last_price_ts": "2026-09-20T06:40:02.706145+00:00",
       "execution_model": "book_v1",
       "quote_cash": 59.97,
       "base_qty": 1099.87698355514,
@@ -98,7 +98,7 @@
       },
       "fees_paid": 0.0929874,
       "slippage_cost": 0.0404874,
-      "last_equity": 293.30340268,
+      "last_equity": 289.17886399,
       "closing": false
     },
     "UNI": {
@@ -113,8 +113,8 @@
       "er": 0.108,
       "vol_pct": 1.48,
       "deployed_at": "2026-09-19T01:40:03.782623+00:00",
-      "last_price": 8.8025,
-      "last_price_ts": "2026-09-20T05:40:02.572805+00:00",
+      "last_price": 8.7685,
+      "last_price_ts": "2026-09-20T06:40:03.025670+00:00",
       "execution_model": "book_v1",
       "quote_cash": 152.3718921087,
       "base_qty": 16.617252361531,
@@ -210,7 +210,7 @@
       },
       "fees_paid": 0.08748348,
       "slippage_cost": 0.03498348,
-      "last_equity": 298.64525602,
+      "last_equity": 298.08026944,
       "closing": false
     },
     "NEAR": {
@@ -225,8 +225,8 @@
       "er": 0.159,
       "vol_pct": 1.47,
       "deployed_at": "2026-09-19T08:40:04.003736+00:00",
-      "last_price": 3.4735,
-      "last_price_ts": "2026-09-20T05:40:02.880816+00:00",
+      "last_price": 3.4345,
+      "last_price_ts": "2026-09-20T06:40:03.337107+00:00",
       "execution_model": "book_v1",
       "quote_cash": 89.955,
       "base_qty": 57.053866411972,
@@ -322,12 +322,12 @@
       },
       "fees_paid": 0.0869916,
       "slippage_cost": 0.0344916,
-      "last_equity": 288.13160498,
+      "last_equity": 285.90650419,
       "closing": false
     }
   },
   "realized_pnl": 122.922267,
-  "last_update": "2026-09-20T05:40:02.898011+00:00",
+  "last_update": "2026-09-20T06:40:03.365157+00:00",
   "execution": {
     "submitted": 55,
     "filled": 22,
