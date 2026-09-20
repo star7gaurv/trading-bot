@@ -12,8 +12,8 @@
       "er": 0.043,
       "vol_pct": 1.93,
       "deployed_at": "2026-09-18T03:40:03.562191+00:00",
-      "last_price": 0.209765,
-      "last_price_ts": "2026-09-20T07:40:02.630060+00:00",
+      "last_price": 0.21468500000000001,
+      "last_price_ts": "2026-09-20T08:40:02.679356+00:00",
       "execution_model": "book_v1",
       "quote_cash": 59.97,
       "base_qty": 1099.87698355514,
@@ -98,7 +98,7 @@
       },
       "fees_paid": 0.0929874,
       "slippage_cost": 0.0404874,
-      "last_equity": 290.68569546,
+      "last_equity": 296.09709021,
       "closing": false
     },
     "UNI": {
@@ -113,8 +113,8 @@
       "er": 0.108,
       "vol_pct": 1.48,
       "deployed_at": "2026-09-19T01:40:03.782623+00:00",
-      "last_price": 8.712499999999999,
-      "last_price_ts": "2026-09-20T07:40:02.938035+00:00",
+      "last_price": 8.7715,
+      "last_price_ts": "2026-09-20T08:40:02.983364+00:00",
       "execution_model": "book_v1",
       "quote_cash": 152.3718921087,
       "base_qty": 16.617252361531,
@@ -210,7 +210,7 @@
       },
       "fees_paid": 0.08748348,
       "slippage_cost": 0.03498348,
-      "last_equity": 297.14970331,
+      "last_equity": 298.1301212,
       "closing": false
     },
     "NEAR": {
@@ -225,8 +225,8 @@
       "er": 0.159,
       "vol_pct": 1.47,
       "deployed_at": "2026-09-19T08:40:04.003736+00:00",
-      "last_price": 3.4665,
-      "last_price_ts": "2026-09-20T07:40:03.239106+00:00",
+      "last_price": 3.5294999999999996,
+      "last_price_ts": "2026-09-20T08:40:03.292681+00:00",
       "execution_model": "book_v1",
       "quote_cash": 89.955,
       "base_qty": 57.053866411972,
@@ -322,12 +322,12 @@
       },
       "fees_paid": 0.0869916,
       "slippage_cost": 0.0344916,
-      "last_equity": 287.73222792,
+      "last_equity": 291.3266215,
       "closing": false
     }
   },
   "realized_pnl": 122.922267,
-  "last_update": "2026-09-20T07:40:03.270005+00:00",
+  "last_update": "2026-09-20T08:40:03.307573+00:00",
   "execution": {
     "submitted": 55,
     "filled": 22,
