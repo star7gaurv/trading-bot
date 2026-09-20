@@ -1,17 +1,17 @@
 {
-  "wallet_usdt": 1307.1522227898224,
-  "realized_pnl": 307.1522227898225,
-  "captures": 1581,
-  "observations": 42435,
-  "last_run": "2026-09-20T22:14:01.428580+00:00",
+  "wallet_usdt": 1307.0854525717962,
+  "realized_pnl": 307.08545257179617,
+  "captures": 1582,
+  "observations": 42489,
+  "last_run": "2026-09-20T22:29:01.495411+00:00",
   "execution": {
-    "attempts": 1939,
-    "filled": 1027,
+    "attempts": 1941,
+    "filled": 1028,
     "partial": 2,
-    "rejected": 910,
+    "rejected": 911,
     "failed_legs": 2,
     "emergency_hedges": 2,
     "unhedged_events": 0,
-    "execution_loss": 7.80418574
+    "execution_loss": 7.87095596
   }
 }
