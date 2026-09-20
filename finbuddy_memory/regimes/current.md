@@ -2,14 +2,14 @@
 regime: NEUTRAL
 confidence: 0.7
 since: 2026-09-20
-updated: 2026-09-20T08:00:03.021414+00:00
+updated: 2026-09-20T12:00:02.919417+00:00
 ---
 # Current Market Regime: NEUTRAL
 
 **Confidence:** 70.0%
 **Active since:** 2026-09-20
-**Previous regime:** BULL
-**Last updated:** 2026-09-20T08:00:03.021414+00:00
+**Previous regime:** NEUTRAL
+**Last updated:** 2026-09-20T12:00:02.919417+00:00
 
 ## Regime Reference
 | Regime | Brain Behavior |
