@@ -12,8 +12,8 @@
       "er": 0.043,
       "vol_pct": 1.93,
       "deployed_at": "2026-09-18T03:40:03.562191+00:00",
-      "last_price": 0.234165,
-      "last_price_ts": "2026-09-21T14:40:02.937185+00:00",
+      "last_price": 0.230485,
+      "last_price_ts": "2026-09-21T15:40:02.333823+00:00",
       "execution_model": "book_v1",
       "quote_cash": 157.2656763844,
       "base_qty": 683.096417886628,
@@ -65,7 +65,7 @@
       },
       "fees_paid": 0.11245043,
       "slippage_cost": 0.05995043,
-      "last_equity": 317.22294908,
+      "last_equity": 314.70915426,
       "closing": false
     },
     "UNI": {
@@ -80,8 +80,8 @@
       "er": 0.108,
       "vol_pct": 1.48,
       "deployed_at": "2026-09-19T01:40:03.782623+00:00",
-      "last_price": 8.8855,
-      "last_price_ts": "2026-09-21T14:40:03.394888+00:00",
+      "last_price": 8.871500000000001,
+      "last_price_ts": "2026-09-21T15:40:02.646394+00:00",
       "execution_model": "book_v1",
       "quote_cash": 152.3718921087,
       "base_qty": 16.617252361531,
@@ -177,7 +177,7 @@
       },
       "fees_paid": 0.08748348,
       "slippage_cost": 0.03498348,
-      "last_equity": 300.02448797,
+      "last_equity": 299.79184643,
       "closing": false
     },
     "ENA": {
@@ -192,8 +192,8 @@
       "er": 0.044,
       "vol_pct": 1.37,
       "deployed_at": "2026-09-21T03:40:04.289318+00:00",
-      "last_price": 0.22151500000000002,
-      "last_price_ts": "2026-09-21T14:40:03.719237+00:00",
+      "last_price": 0.21607500000000002,
+      "last_price_ts": "2026-09-21T15:40:02.964155+00:00",
       "execution_model": "book_v1",
       "quote_cash": 182.3568922845,
       "base_qty": 551.420565437812,
@@ -300,12 +300,12 @@
       },
       "fees_paid": 0.08148768,
       "slippage_cost": 0.02898768,
-      "last_equity": 304.50481884,
+      "last_equity": 301.50509096,
       "closing": false
     }
   },
   "realized_pnl": 147.458002,
-  "last_update": "2026-09-21T14:40:03.734717+00:00",
+  "last_update": "2026-09-21T15:40:02.979714+00:00",
   "execution": {
     "submitted": 66,
     "filled": 33,
