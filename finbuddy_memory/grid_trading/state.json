@@ -12,8 +12,8 @@
       "er": 0.043,
       "vol_pct": 1.93,
       "deployed_at": "2026-09-18T03:40:03.562191+00:00",
-      "last_price": 0.212865,
-      "last_price_ts": "2026-09-21T07:40:02.340632+00:00",
+      "last_price": 0.215045,
+      "last_price_ts": "2026-09-21T08:40:02.548919+00:00",
       "execution_model": "book_v1",
       "quote_cash": 59.97,
       "base_qty": 1099.87698355514,
@@ -98,7 +98,7 @@
       },
       "fees_paid": 0.0929874,
       "slippage_cost": 0.0404874,
-      "last_equity": 294.0953141,
+      "last_equity": 296.49304593,
       "closing": false
     },
     "UNI": {
@@ -113,8 +113,8 @@
       "er": 0.108,
       "vol_pct": 1.48,
       "deployed_at": "2026-09-19T01:40:03.782623+00:00",
-      "last_price": 8.5705,
-      "last_price_ts": "2026-09-21T07:40:02.664824+00:00",
+      "last_price": 8.791,
+      "last_price_ts": "2026-09-21T08:40:02.859754+00:00",
       "execution_model": "book_v1",
       "quote_cash": 152.3718921087,
       "base_qty": 16.617252361531,
@@ -210,7 +210,7 @@
       },
       "fees_paid": 0.08748348,
       "slippage_cost": 0.03498348,
-      "last_equity": 294.79005347,
+      "last_equity": 298.45415762,
       "closing": false
     },
     "ENA": {
@@ -225,8 +225,8 @@
       "er": 0.044,
       "vol_pct": 1.37,
       "deployed_at": "2026-09-21T03:40:04.289318+00:00",
-      "last_price": 0.214065,
-      "last_price_ts": "2026-09-21T07:40:02.978147+00:00",
+      "last_price": 0.21563500000000002,
+      "last_price_ts": "2026-09-21T08:40:03.183799+00:00",
       "execution_model": "book_v1",
       "quote_cash": 149.925,
       "base_qty": 700.403975970176,
@@ -344,12 +344,12 @@
       },
       "fees_paid": 0.075,
       "slippage_cost": 0.0225,
-      "last_equity": 299.85697712,
+      "last_equity": 300.95661136,
       "closing": false
     }
   },
   "realized_pnl": 147.458002,
-  "last_update": "2026-09-21T07:40:02.993217+00:00",
+  "last_update": "2026-09-21T08:40:03.199668+00:00",
   "execution": {
     "submitted": 66,
     "filled": 29,
