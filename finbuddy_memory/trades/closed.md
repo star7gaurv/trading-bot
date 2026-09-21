@@ -905,3 +905,4 @@
 | 2026-09-20 03:00:32 | ARB/USDT:USDT | LONG | 6h00m | -1.42% | -1.59 | time_limit_exit | BULL | freqai_regression_v23_lo |
 | 2026-09-20 21:02:03 | POL/USDT:USDT | SHORT | 6h01m | -2.99% | -2.29 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-09-21 01:00:40 | LINK/USDT:USDT | LONG | 1h00m | +1.51% | +1.16 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
+| 2026-09-21 08:00:24 | LINK/USDT:USDT | LONG | 6h00m | +0.47% | +0.36 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
