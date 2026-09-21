@@ -1,5 +1,5 @@
 # Cortexa — Master Context
-Last updated: 2026-09-21 19:15 UTC
+Last updated: 2026-09-21 19:30 UTC
 
 ## Current Regime
 Regime: **NEUTRAL** | Confidence: 70.0% | Since: 2026-09-21
@@ -10,11 +10,11 @@ BTC Dominance: 58.91%
 News Sentiment: 100.0% bullish
 
 ## Bot Performance
-Total Trades: 1221 | Win Rate: 43.5% | Total P&L: -2.58%
+Total Trades: 1221 | Win Rate: 43.5% | Total P&L: -2.54%
 
 ## Open Trades (2)
-- LINK/USDT:USDT: Entry 12.99 | Current 12.95 | P&L: -0.38%
-- ENA/USDT:USDT: Entry 0.21 | Current 0.21 | P&L: 0.35%
+- LINK/USDT:USDT: Entry 12.99 | Current 12.99 | P&L: -0.09%
+- ENA/USDT:USDT: Entry 0.21 | Current 0.21 | P&L: 0.59%
 ## Risk Flags
 - None
 
