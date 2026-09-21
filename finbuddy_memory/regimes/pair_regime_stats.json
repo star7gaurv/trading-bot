@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-21T21:00:01.546878+00:00",
+  "updated": "2026-09-21T21:30:02.092408+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -31,13 +31,13 @@
         "avg_profit_pct": 0.78
       },
       "NEUTRAL": {
-        "n": 2,
-        "wins": 2,
+        "n": 3,
+        "wins": 3,
         "losses": 0,
         "wr": 1.0,
         "pf": null,
-        "profit_usdt": 1.52,
-        "avg_profit_pct": 0.99
+        "profit_usdt": 1.96,
+        "avg_profit_pct": 0.85
       }
     },
     "SOL/USDT:USDT": {
