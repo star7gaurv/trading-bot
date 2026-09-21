@@ -907,3 +907,4 @@
 | 2026-09-21 01:00:40 | LINK/USDT:USDT | LONG | 1h00m | +1.51% | +1.16 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-09-21 08:00:24 | LINK/USDT:USDT | LONG | 6h00m | +0.47% | +0.36 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-09-21 10:46:27 | LTC/USDT:USDT | LONG | 4h46m | +3.19% | +2.45 | force_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-09-21 21:10:27 | LINK/USDT:USDT | LONG | 6h10m | +0.57% | +0.44 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
