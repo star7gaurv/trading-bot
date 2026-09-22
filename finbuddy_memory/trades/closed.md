@@ -914,3 +914,4 @@
 | 2026-09-22 06:00:39 | POL/USDT:USDT | LONG | 6h00m | -2.30% | -1.77 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-09-22 07:04:26 | ADA/USDT:USDT | LONG | 6h04m | -0.20% | -0.16 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-09-22 09:00:38 | LTC/USDT:USDT | LONG | 6h00m | +0.66% | +0.51 | time_limit_exit | BULL | freqai_regression_v23_lo |
+| 2026-09-22 13:00:39 | ADA/USDT:USDT | LONG | 3h00m | +0.85% | +0.95 | exit_signal | BULL | freqai_regression_v23_lo |
