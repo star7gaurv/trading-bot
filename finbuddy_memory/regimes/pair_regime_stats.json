@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-22T07:00:01.680756+00:00",
+  "updated": "2026-09-22T07:30:02.018127+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -252,6 +252,15 @@
         "pf": null,
         "profit_usdt": 1.75,
         "avg_profit_pct": 1.59
+      },
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.16,
+        "avg_profit_pct": -0.2
       }
     }
   },
