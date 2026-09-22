@@ -912,3 +912,4 @@
 | 2026-09-22 04:00:59 | LINK/USDT:USDT | LONG | 6h00m | -1.21% | -0.93 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-09-22 06:00:24 | ENA/USDT:USDT | LONG | 5h59m | +2.11% | +1.62 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-09-22 06:00:39 | POL/USDT:USDT | LONG | 6h00m | -2.30% | -1.77 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-09-22 07:04:26 | ADA/USDT:USDT | LONG | 6h04m | -0.20% | -0.16 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
