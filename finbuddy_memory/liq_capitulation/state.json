@@ -3,10 +3,25 @@
   "realized_pnl": 19.709671,
   "wins": 24,
   "losses": 24,
-  "last_update": "2026-09-22T19:50:16.287019+00:00",
-  "pending_orders": {},
+  "last_update": "2026-09-22T20:50:16.804572+00:00",
+  "pending_orders": {
+    "POLUSDT": {
+      "order_id": "f38ec067353345ff89f180ace3dd2519",
+      "status": "submitted",
+      "side": "buy",
+      "requested_notional": 200.0,
+      "limit_price": 0.10898,
+      "submitted_at": "2026-09-22T20:50:16.209274+00:00",
+      "expires_at": "2026-09-22T22:20:16.209274+00:00",
+      "book_bid": 0.10898,
+      "book_ask": 0.10899,
+      "symbol": "POLUSDT",
+      "liq_long_z": 2.186,
+      "liq_long_usd": 143252.0
+    }
+  },
   "execution": {
-    "submitted": 0,
+    "submitted": 1,
     "filled": 0,
     "partial": 0,
     "expired": 0,
