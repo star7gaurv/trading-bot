@@ -1,5 +1,5 @@
 # Cortexa — Master Context
-Last updated: 2026-09-22 08:30 UTC
+Last updated: 2026-09-22 08:45 UTC
 
 ## Current Regime
 Regime: **BULL** | Confidence: 85.0% | Since: 2026-09-22
@@ -10,10 +10,10 @@ BTC Dominance: 58.79%
 News Sentiment: 100.0% bullish
 
 ## Bot Performance
-Total Trades: 1226 | Win Rate: 43.6% | Total P&L: -2.63%
+Total Trades: 1226 | Win Rate: 43.6% | Total P&L: -2.56%
 
 ## Open Trades (1)
-- LTC/USDT:USDT: Entry 60.46 | Current 60.41 | P&L: -0.13%
+- LTC/USDT:USDT: Entry 60.46 | Current 60.93 | P&L: 0.73%
 ## Risk Flags
 - None
 
