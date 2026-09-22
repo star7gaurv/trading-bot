@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-22T19:00:01.270222+00:00",
+  "updated": "2026-09-22T19:30:01.652372+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -261,6 +261,17 @@
         "pf": 0.0,
         "profit_usdt": -0.16,
         "avg_profit_pct": -0.2
+      }
+    },
+    "DOT/USDT:USDT": {
+      "BULL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.43,
+        "avg_profit_pct": -0.38
       }
     }
   },
