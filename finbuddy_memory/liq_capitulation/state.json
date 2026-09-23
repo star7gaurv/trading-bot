@@ -1,27 +1,13 @@
 {
-  "positions": {
-    "DOTUSDT": {
-      "symbol": "DOTUSDT",
-      "side": "long",
-      "entry_price": 1.1016,
-      "notional": 200.0,
-      "entry_liq_z": 2.023,
-      "entry_liq_long_usd": 374906.0,
-      "opened_at": "2026-09-23T16:50:01.833495+00:00",
-      "fees_paid": 0.04,
-      "entry_slippage_cost": 0.04,
-      "execution_model": "book_v1",
-      "entry_fill_ratio": 1.0
-    }
-  },
-  "realized_pnl": 22.248651,
+  "positions": {},
+  "realized_pnl": 21.588528,
   "wins": 25,
-  "losses": 24,
-  "last_update": "2026-09-23T21:50:15.240176+00:00",
+  "losses": 25,
+  "last_update": "2026-09-23T22:50:17.172364+00:00",
   "pending_orders": {},
   "execution": {
     "submitted": 4,
-    "filled": 3,
+    "filled": 4,
     "partial": 0,
     "expired": 2,
     "rejected": 0
