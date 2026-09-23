@@ -12,8 +12,8 @@
       "er": 0.043,
       "vol_pct": 1.93,
       "deployed_at": "2026-09-18T03:40:03.562191+00:00",
-      "last_price": 0.240515,
-      "last_price_ts": "2026-09-23T00:40:02.623178+00:00",
+      "last_price": 0.240525,
+      "last_price_ts": "2026-09-23T01:40:02.573001+00:00",
       "execution_model": "book_v1",
       "quote_cash": 157.2656763844,
       "base_qty": 683.096417886628,
@@ -65,7 +65,7 @@
       },
       "fees_paid": 0.11245043,
       "slippage_cost": 0.05995043,
-      "last_equity": 321.56061133,
+      "last_equity": 321.5674423,
       "closing": false
     },
     "ENA": {
@@ -80,8 +80,8 @@
       "er": 0.044,
       "vol_pct": 1.37,
       "deployed_at": "2026-09-21T03:40:04.289318+00:00",
-      "last_price": 0.217105,
-      "last_price_ts": "2026-09-23T00:40:03.841720+00:00",
+      "last_price": 0.216045,
+      "last_price_ts": "2026-09-23T01:40:02.886489+00:00",
       "execution_model": "book_v1",
       "quote_cash": 152.3718922845,
       "base_qty": 693.77591337434,
@@ -177,7 +177,7 @@
       },
       "fees_paid": 0.08748348,
       "slippage_cost": 0.03498348,
-      "last_equity": 302.99411196,
+      "last_equity": 302.25870949,
       "closing": false
     },
     "NEAR": {
@@ -192,8 +192,8 @@
       "er": 0.177,
       "vol_pct": 1.6,
       "deployed_at": "2026-09-23T00:40:04.015482+00:00",
-      "last_price": 4.3965,
-      "last_price_ts": "2026-09-23T00:40:04.015257+00:00",
+      "last_price": 4.3614999999999995,
+      "last_price_ts": "2026-09-23T01:40:03.220678+00:00",
       "execution_model": "book_v1",
       "quote_cash": 149.925,
       "base_qty": 34.109052393562,
@@ -311,12 +311,12 @@
       },
       "fees_paid": 0.075,
       "slippage_cost": 0.0225,
-      "last_equity": 299.88544885,
+      "last_equity": 298.69163201,
       "closing": false
     }
   },
   "realized_pnl": 164.616872,
-  "last_update": "2026-09-23T00:40:04.612276+00:00",
+  "last_update": "2026-09-23T01:40:03.235615+00:00",
   "execution": {
     "submitted": 77,
     "filled": 40,
