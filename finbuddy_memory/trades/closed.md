@@ -917,3 +917,7 @@
 | 2026-09-22 13:00:39 | ADA/USDT:USDT | LONG | 3h00m | +0.85% | +0.95 | exit_signal | BULL | freqai_regression_v23_lo |
 | 2026-09-22 19:00:42 | DOT/USDT:USDT | LONG | 6h00m | -0.38% | -0.43 | time_limit_exit | BULL | freqai_regression_v23_lo |
 | 2026-09-23 12:09:01 | DOT/USDT:USDT | LONG | 6h08m | -2.51% | -2.80 | time_limit_exit | BULL | freqai_regression_v23_lo |
+| 2026-09-23 14:00:37 | ARB/USDT:USDT | LONG | 6h00m | -5.04% | -5.64 | time_limit_exit | BULL | freqai_regression_v23_lo |
+| 2026-09-23 14:14:32 | LTC/USDT:USDT | LONG | 4h14m | -5.76% | -6.44 | daily_flatten | BULL | freqai_regression_v23_lo |
+| 2026-09-23 14:14:32 | FET/USDT:USDT | LONG | 4h14m | -6.54% | -7.31 | daily_flatten | BULL | freqai_regression_v23_lo |
+| 2026-09-23 14:14:07 | FIL/USDT:USDT | LONG | 0h28m | -9.94% | -11.08 | stop_loss | BULL | freqai_regression_v23_lo |
