@@ -17,42 +17,13 @@
   "realized_pnl": 22.248651,
   "wins": 25,
   "losses": 24,
-  "last_update": "2026-09-23T16:50:02.148626+00:00",
-  "pending_orders": {
-    "ETHUSDT": {
-      "order_id": "c6a4fd44fe8b4b94ace9d183525dbeec",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 2657.04,
-      "submitted_at": "2026-09-23T15:50:16.014177+00:00",
-      "expires_at": "2026-09-23T17:20:16.014177+00:00",
-      "book_bid": 2657.04,
-      "book_ask": 2657.05,
-      "symbol": "ETHUSDT",
-      "liq_long_z": 2.366,
-      "liq_long_usd": 28982352.0
-    },
-    "OPUSDT": {
-      "order_id": "0aba2b1a098845bfb52de3f2bcf572a1",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 0.12303,
-      "submitted_at": "2026-09-23T15:50:17.544830+00:00",
-      "expires_at": "2026-09-23T17:20:17.544830+00:00",
-      "book_bid": 0.12303,
-      "book_ask": 0.12304,
-      "symbol": "OPUSDT",
-      "liq_long_z": 2.0,
-      "liq_long_usd": 309114.0
-    }
-  },
+  "last_update": "2026-09-23T17:50:15.592462+00:00",
+  "pending_orders": {},
   "execution": {
     "submitted": 4,
     "filled": 3,
     "partial": 0,
-    "expired": 0,
+    "expired": 2,
     "rejected": 0
   }
 }
