@@ -1,27 +1,13 @@
 {
-  "positions": {
-    "POLUSDT": {
-      "symbol": "POLUSDT",
-      "side": "long",
-      "entry_price": 0.10898,
-      "notional": 200.0,
-      "entry_liq_z": 2.186,
-      "entry_liq_long_usd": 143252.0,
-      "opened_at": "2026-09-22T21:50:01.962004+00:00",
-      "fees_paid": 0.04,
-      "entry_slippage_cost": 0.04,
-      "execution_model": "book_v1",
-      "entry_fill_ratio": 1.0
-    }
-  },
-  "realized_pnl": 19.709671,
-  "wins": 24,
+  "positions": {},
+  "realized_pnl": 22.248651,
+  "wins": 25,
   "losses": 24,
-  "last_update": "2026-09-23T02:50:15.079539+00:00",
+  "last_update": "2026-09-23T03:50:17.596251+00:00",
   "pending_orders": {},
   "execution": {
     "submitted": 1,
-    "filled": 1,
+    "filled": 2,
     "partial": 0,
     "expired": 0,
     "rejected": 0
