@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-24T12:00:01.675682+00:00",
+  "updated": "2026-09-24T12:30:01.379635+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -18,6 +18,15 @@
         "pf": 0.237,
         "profit_usdt": -18.6,
         "avg_profit_pct": -2.063
+      },
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -5.88,
+        "avg_profit_pct": -7.9
       }
     },
     "LINK/USDT:USDT": {
