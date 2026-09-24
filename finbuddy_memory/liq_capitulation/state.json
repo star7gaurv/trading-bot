@@ -1,42 +1,40 @@
 {
-  "positions": {},
+  "positions": {
+    "LTCUSDT": {
+      "symbol": "LTCUSDT",
+      "side": "long",
+      "entry_price": 66.99,
+      "notional": 200.0,
+      "entry_liq_z": 2.255,
+      "entry_liq_long_usd": 1056637.0,
+      "opened_at": "2026-09-24T11:50:02.292825+00:00",
+      "fees_paid": 0.04,
+      "entry_slippage_cost": 0.04,
+      "execution_model": "book_v1",
+      "entry_fill_ratio": 1.0
+    },
+    "ETHUSDT": {
+      "symbol": "ETHUSDT",
+      "side": "long",
+      "entry_price": 2648.11,
+      "notional": 200.0,
+      "entry_liq_z": 2.133,
+      "entry_liq_long_usd": 17522284.0,
+      "opened_at": "2026-09-24T11:50:02.444377+00:00",
+      "fees_paid": 0.04,
+      "entry_slippage_cost": 0.04,
+      "execution_model": "book_v1",
+      "entry_fill_ratio": 1.0
+    }
+  },
   "realized_pnl": 21.588528,
   "wins": 25,
   "losses": 25,
-  "last_update": "2026-09-24T10:50:17.584604+00:00",
-  "pending_orders": {
-    "LTCUSDT": {
-      "order_id": "5025d6c57aed47ff9b6ced3fff9a44d1",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 66.99,
-      "submitted_at": "2026-09-24T10:50:16.220112+00:00",
-      "expires_at": "2026-09-24T12:20:16.220112+00:00",
-      "book_bid": 66.99,
-      "book_ask": 67.0,
-      "symbol": "LTCUSDT",
-      "liq_long_z": 2.255,
-      "liq_long_usd": 1056637.0
-    },
-    "ETHUSDT": {
-      "order_id": "abaa5f750ab04840a800cd7fe57b6424",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 2648.11,
-      "submitted_at": "2026-09-24T10:50:16.968967+00:00",
-      "expires_at": "2026-09-24T12:20:16.968967+00:00",
-      "book_bid": 2648.11,
-      "book_ask": 2648.12,
-      "symbol": "ETHUSDT",
-      "liq_long_z": 2.133,
-      "liq_long_usd": 17522284.0
-    }
-  },
+  "last_update": "2026-09-24T11:50:15.138691+00:00",
+  "pending_orders": {},
   "execution": {
     "submitted": 6,
-    "filled": 4,
+    "filled": 6,
     "partial": 0,
     "expired": 2,
     "rejected": 0
