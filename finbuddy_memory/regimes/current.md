@@ -1,15 +1,15 @@
 ---
 regime: BULL
 confidence: 0.85
-since: 2026-09-23
-updated: 2026-09-23T20:00:02.786791+00:00
+since: 2026-09-24
+updated: 2026-09-24T00:00:02.988202+00:00
 ---
 # Current Market Regime: BULL
 
 **Confidence:** 85.0%
-**Active since:** 2026-09-23
+**Active since:** 2026-09-24
 **Previous regime:** BULL
-**Last updated:** 2026-09-23T20:00:02.786791+00:00
+**Last updated:** 2026-09-24T00:00:02.988202+00:00
 
 ## Regime Reference
 | Regime | Brain Behavior |
