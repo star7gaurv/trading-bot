@@ -921,3 +921,4 @@
 | 2026-09-23 14:14:32 | LTC/USDT:USDT | LONG | 4h14m | -5.76% | -6.44 | daily_flatten | BULL | freqai_regression_v23_lo |
 | 2026-09-23 14:14:32 | FET/USDT:USDT | LONG | 4h14m | -6.54% | -7.31 | daily_flatten | BULL | freqai_regression_v23_lo |
 | 2026-09-23 14:14:07 | FIL/USDT:USDT | LONG | 0h28m | -9.94% | -11.08 | stop_loss | BULL | freqai_regression_v23_lo |
+| 2026-09-24 12:00:18 | ONDO/USDT:USDT | SHORT | 1h59m | -7.90% | -5.88 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
