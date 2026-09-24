@@ -1,27 +1,13 @@
 {
-  "positions": {
-    "ETHUSDT": {
-      "symbol": "ETHUSDT",
-      "side": "long",
-      "entry_price": 2648.11,
-      "notional": 200.0,
-      "entry_liq_z": 2.133,
-      "entry_liq_long_usd": 17522284.0,
-      "opened_at": "2026-09-24T11:50:02.444377+00:00",
-      "fees_paid": 0.04,
-      "entry_slippage_cost": 0.04,
-      "execution_model": "book_v1",
-      "entry_fill_ratio": 1.0
-    }
-  },
-  "realized_pnl": 28.194642,
-  "wins": 26,
+  "positions": {},
+  "realized_pnl": 31.224935,
+  "wins": 27,
   "losses": 25,
-  "last_update": "2026-09-24T15:50:15.856227+00:00",
+  "last_update": "2026-09-24T16:50:17.511655+00:00",
   "pending_orders": {},
   "execution": {
     "submitted": 6,
-    "filled": 7,
+    "filled": 8,
     "partial": 0,
     "expired": 2,
     "rejected": 0
