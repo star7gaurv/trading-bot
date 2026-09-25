@@ -925,3 +925,4 @@
 | 2026-09-25 04:06:53 | SOL/USDT:USDT | LONG | 6h06m | +0.06% | +0.04 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-09-25 06:00:26 | DOT/USDT:USDT | LONG | 6h00m | -0.89% | -0.66 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-09-25 09:00:23 | TAO/USDT:USDT | LONG | 1h00m | +1.44% | +1.06 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
+| 2026-09-25 19:01:50 | WIF/USDT:USDT | LONG | 3h01m | +1.82% | +1.36 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
