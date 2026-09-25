@@ -924,3 +924,4 @@
 | 2026-09-24 12:00:18 | ONDO/USDT:USDT | SHORT | 1h59m | -7.90% | -5.88 | stop_loss | NEUTRAL | freqai_regression_v23_sh |
 | 2026-09-25 04:06:53 | SOL/USDT:USDT | LONG | 6h06m | +0.06% | +0.04 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-09-25 06:00:26 | DOT/USDT:USDT | LONG | 6h00m | -0.89% | -0.66 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-09-25 09:00:23 | TAO/USDT:USDT | LONG | 1h00m | +1.44% | +1.06 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
