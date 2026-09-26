@@ -12,8 +12,8 @@
       "er": 0.043,
       "vol_pct": 1.93,
       "deployed_at": "2026-09-18T03:40:03.562191+00:00",
-      "last_price": 0.221895,
-      "last_price_ts": "2026-09-26T13:40:02.630775+00:00",
+      "last_price": 0.224445,
+      "last_price_ts": "2026-09-26T14:40:02.130717+00:00",
       "execution_model": "book_v1",
       "quote_cash": 189.6975685125,
       "base_qty": 552.551498818235,
@@ -54,7 +54,7 @@
       },
       "fees_paid": 0.11893811,
       "slippage_cost": 0.06643811,
-      "last_equity": 312.30598334,
+      "last_equity": 313.71498966,
       "closing": false
     },
     "UNI": {
@@ -69,8 +69,8 @@
       "er": 0.103,
       "vol_pct": 1.68,
       "deployed_at": "2026-09-25T12:40:04.025224+00:00",
-      "last_price": 9.599499999999999,
-      "last_price_ts": "2026-09-26T13:40:02.939183+00:00",
+      "last_price": 9.648499999999999,
+      "last_price_ts": "2026-09-26T14:40:02.445017+00:00",
       "execution_model": "book_v1",
       "quote_cash": 119.94,
       "base_qty": 18.300380681316,
@@ -177,7 +177,7 @@
       },
       "fees_paid": 0.0809958,
       "slippage_cost": 0.0284958,
-      "last_equity": 295.61450435,
+      "last_equity": 296.511223,
       "closing": false
     },
     "ENA": {
@@ -192,8 +192,8 @@
       "er": 0.11,
       "vol_pct": 1.68,
       "deployed_at": "2026-09-25T13:40:04.181036+00:00",
-      "last_price": 0.279005,
-      "last_price_ts": "2026-09-26T13:40:03.262287+00:00",
+      "last_price": 0.279085,
+      "last_price_ts": "2026-09-26T14:40:02.763595+00:00",
       "execution_model": "book_v1",
       "quote_cash": 279.6525687885,
       "base_qty": 114.103880215041,
@@ -267,12 +267,12 @@
       },
       "fees_paid": 0.10095071,
       "slippage_cost": 0.04845071,
-      "last_equity": 311.48812189,
+      "last_equity": 311.4972502,
       "closing": false
     }
   },
   "realized_pnl": 205.529058,
-  "last_update": "2026-09-26T13:40:03.278688+00:00",
+  "last_update": "2026-09-26T14:40:02.778172+00:00",
   "execution": {
     "submitted": 99,
     "filled": 61,
