@@ -927,3 +927,4 @@
 | 2026-09-25 09:00:23 | TAO/USDT:USDT | LONG | 1h00m | +1.44% | +1.06 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-09-25 19:01:50 | WIF/USDT:USDT | LONG | 3h01m | +1.82% | +1.36 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-09-25 23:00:37 | DOT/USDT:USDT | LONG | 3h00m | +2.17% | +1.61 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
+| 2026-09-26 00:00:39 | FET/USDT:USDT | LONG | 4h00m | +3.26% | +2.43 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
