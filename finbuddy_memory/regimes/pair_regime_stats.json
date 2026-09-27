@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-27T02:30:01.332302+00:00",
+  "updated": "2026-09-27T03:00:01.776152+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ONDO/USDT:USDT": {
-      "BULL": {
-        "n": 6,
-        "wins": 2,
-        "losses": 4,
-        "wr": 0.3333,
-        "pf": 0.089,
-        "profit_usdt": -17.07,
-        "avg_profit_pct": -2.5
-      },
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -5.88,
-        "avg_profit_pct": -7.9
-      }
-    },
     "UNI/USDT:USDT": {
       "BULL": {
         "n": 12,
@@ -38,6 +18,26 @@
         "pf": 1.552,
         "profit_usdt": 9.24,
         "avg_profit_pct": 0.722
+      }
+    },
+    "ONDO/USDT:USDT": {
+      "BULL": {
+        "n": 5,
+        "wins": 2,
+        "losses": 3,
+        "wr": 0.4,
+        "pf": 0.13,
+        "profit_usdt": -11.21,
+        "avg_profit_pct": -1.972
+      },
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -5.88,
+        "avg_profit_pct": -7.9
       }
     },
     "FIL/USDT:USDT": {
@@ -314,14 +314,6 @@
     }
   },
   "blocked": [
-    {
-      "pair": "ONDO/USDT:USDT",
-      "regime": "BULL",
-      "reason": "WR=33% PF=0.09 n=6 profit=-17.07",
-      "n": 6,
-      "wr": 0.3333,
-      "pf": 0.089
-    },
     {
       "pair": "ARB/USDT:USDT",
       "regime": "BULL",
