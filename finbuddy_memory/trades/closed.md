@@ -938,3 +938,4 @@
 | 2026-09-27 05:11:13 | LTC/USDT:USDT | LONG | 6h00m | -0.46% | -0.35 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-09-27 11:00:42 | ONDO/USDT:USDT | SHORT | 6h00m | -2.87% | -2.15 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-09-27 11:09:32 | FIL/USDT:USDT | LONG | 6h09m | +0.80% | +0.60 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-09-27 18:05:23 | FIL/USDT:USDT | LONG | 6h05m | +1.24% | +0.93 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
