@@ -933,3 +933,4 @@
 | 2026-09-26 15:00:43 | FET/USDT:USDT | LONG | 0h45m | +2.86% | +2.14 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-09-26 22:00:44 | LTC/USDT:USDT | LONG | 6h00m | -1.56% | -1.17 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-09-26 23:00:26 | ENA/USDT:USDT | LONG | 6h00m | -1.19% | -0.89 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-09-27 00:00:29 | FET/USDT:USDT | LONG | 6h00m | -3.12% | -2.34 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
