@@ -12,8 +12,8 @@
       "er": 0.043,
       "vol_pct": 1.93,
       "deployed_at": "2026-09-18T03:40:03.562191+00:00",
-      "last_price": 0.210285,
-      "last_price_ts": "2026-09-28T13:40:02.843480+00:00",
+      "last_price": 0.204415,
+      "last_price_ts": "2026-09-28T14:40:02.675483+00:00",
       "execution_model": "book_v1",
       "quote_cash": 189.6975685125,
       "base_qty": 552.551498818235,
@@ -54,7 +54,7 @@
       },
       "fees_paid": 0.11893811,
       "slippage_cost": 0.06643811,
-      "last_equity": 305.89086044,
+      "last_equity": 302.64738314,
       "closing": false
     },
     "UNI": {
@@ -69,8 +69,8 @@
       "er": 0.103,
       "vol_pct": 1.68,
       "deployed_at": "2026-09-25T12:40:04.025224+00:00",
-      "last_price": 9.0505,
-      "last_price_ts": "2026-09-28T13:40:03.156254+00:00",
+      "last_price": 8.8385,
+      "last_price_ts": "2026-09-28T14:40:02.991850+00:00",
       "execution_model": "book_v1",
       "quote_cash": 92.4018921072,
       "base_qty": 21.580956607171,
@@ -144,7 +144,7 @@
       },
       "fees_paid": 0.09947508,
       "slippage_cost": 0.04697508,
-      "last_equity": 287.72033988,
+      "last_equity": 283.14517708,
       "closing": false
     },
     "NEAR": {
@@ -159,8 +159,8 @@
       "er": 0.17,
       "vol_pct": 1.73,
       "deployed_at": "2026-09-27T19:40:04.506315+00:00",
-      "last_price": 5.2275,
-      "last_price_ts": "2026-09-28T13:40:03.465826+00:00",
+      "last_price": 5.0515,
+      "last_price_ts": "2026-09-28T14:40:03.316539+00:00",
       "execution_model": "book_v1",
       "quote_cash": 89.955,
       "base_qty": 38.872784663702,
@@ -256,12 +256,12 @@
       },
       "fees_paid": 0.0869916,
       "slippage_cost": 0.0344916,
-      "last_equity": 293.16248183,
+      "last_equity": 286.32087173,
       "closing": false
     }
   },
   "realized_pnl": 217.613519,
-  "last_update": "2026-09-28T13:40:03.485729+00:00",
+  "last_update": "2026-09-28T14:40:03.331573+00:00",
   "execution": {
     "submitted": 110,
     "filled": 68,
