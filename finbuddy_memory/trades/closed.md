@@ -940,3 +940,4 @@
 | 2026-09-27 11:09:32 | FIL/USDT:USDT | LONG | 6h09m | +0.80% | +0.60 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-09-27 18:05:23 | FIL/USDT:USDT | LONG | 6h05m | +1.24% | +0.93 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-09-27 19:10:34 | FET/USDT:USDT | LONG | 4h10m | +2.07% | +1.55 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
+| 2026-09-28 00:45:28 | DOT/USDT:USDT | LONG | 6h00m | +0.31% | +0.23 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
