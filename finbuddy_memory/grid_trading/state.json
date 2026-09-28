@@ -12,8 +12,8 @@
       "er": 0.043,
       "vol_pct": 1.93,
       "deployed_at": "2026-09-18T03:40:03.562191+00:00",
-      "last_price": 0.222055,
-      "last_price_ts": "2026-09-28T00:40:02.570377+00:00",
+      "last_price": 0.22425499999999998,
+      "last_price_ts": "2026-09-28T01:40:02.935680+00:00",
       "execution_model": "book_v1",
       "quote_cash": 189.6975685125,
       "base_qty": 552.551498818235,
@@ -54,7 +54,7 @@
       },
       "fees_paid": 0.11893811,
       "slippage_cost": 0.06643811,
-      "last_equity": 312.39439158,
+      "last_equity": 313.61000488,
       "closing": false
     },
     "UNI": {
@@ -69,8 +69,8 @@
       "er": 0.103,
       "vol_pct": 1.68,
       "deployed_at": "2026-09-25T12:40:04.025224+00:00",
-      "last_price": 9.6055,
-      "last_price_ts": "2026-09-28T00:40:02.890655+00:00",
+      "last_price": 9.598500000000001,
+      "last_price_ts": "2026-09-28T01:40:03.280911+00:00",
       "execution_model": "book_v1",
       "quote_cash": 152.3718921072,
       "base_qty": 15.065230311104,
@@ -166,7 +166,7 @@
       },
       "fees_paid": 0.08748348,
       "slippage_cost": 0.03498348,
-      "last_equity": 297.08096186,
+      "last_equity": 296.97550525,
       "closing": false
     },
     "NEAR": {
@@ -181,8 +181,8 @@
       "er": 0.17,
       "vol_pct": 1.73,
       "deployed_at": "2026-09-27T19:40:04.506315+00:00",
-      "last_price": 5.3125,
-      "last_price_ts": "2026-09-28T00:40:03.203367+00:00",
+      "last_price": 5.3535,
+      "last_price_ts": "2026-09-28T01:40:03.608738+00:00",
       "execution_model": "book_v1",
       "quote_cash": 119.94,
       "base_qty": 33.087651976146,
@@ -289,12 +289,12 @@
       },
       "fees_paid": 0.0809958,
       "slippage_cost": 0.0284958,
-      "last_equity": 295.71815112,
+      "last_equity": 297.07474485,
       "closing": false
     }
   },
   "realized_pnl": 217.613519,
-  "last_update": "2026-09-28T00:40:03.219069+00:00",
+  "last_update": "2026-09-28T01:40:03.623559+00:00",
   "execution": {
     "submitted": 110,
     "filled": 65,
