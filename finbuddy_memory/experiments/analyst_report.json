@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-28T06:30:02.184246+00:00",
+  "generated_at": "2026-09-28T12:30:02.771888+00:00",
   "findings": {
     "dead_timeframes": [
       "5m",
@@ -164,7 +164,7 @@
         "avg_pf": 0.83
       },
       "bull_2024Q1": {
-        "n": 246,
+        "n": 247,
         "avg_wr": 0.382,
         "avg_pf": 0.586
       },
@@ -217,10 +217,10 @@
         "avg_trades_day": 7.27
       },
       "1h": {
-        "n": 398,
-        "avg_pf": 0.688,
+        "n": 399,
+        "avg_pf": 0.687,
         "avg_wr": 0.399,
-        "avg_trades_day": 3.66
+        "avg_trades_day": 3.68
       },
       "5m": {
         "n": 18,
@@ -242,18 +242,16 @@
       }
     }
   },
-  "pruned": 8,
+  "pruned": 7,
   "actions": [
     "Queued \u00d71 expansion to untested window recent_90d"
   ],
   "llm_insight": "",
   "manual_overrides": {
     "period_days": 7,
-    "force_exits": 1,
+    "force_exits": 0,
     "pauses": 0,
     "resumes": 0,
-    "by_pair": {
-      "LTC/USDT:USDT": 1
-    }
+    "by_pair": {}
   }
 }
