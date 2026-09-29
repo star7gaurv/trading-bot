@@ -942,3 +942,4 @@
 | 2026-09-27 19:10:34 | FET/USDT:USDT | LONG | 4h10m | +2.07% | +1.55 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-09-28 00:45:28 | DOT/USDT:USDT | LONG | 6h00m | +0.31% | +0.23 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-09-28 19:00:43 | ONDO/USDT:USDT | SHORT | 6h00m | +2.08% | +1.56 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-09-29 03:11:42 | ONDO/USDT:USDT | SHORT | 3h11m | +3.97% | +2.98 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
