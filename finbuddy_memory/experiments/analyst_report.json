@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-29T12:30:02.460709+00:00",
+  "generated_at": "2026-09-29T18:30:02.510956+00:00",
   "findings": {
     "dead_timeframes": [
       "5m",
@@ -164,9 +164,9 @@
         "avg_pf": 0.829
       },
       "bull_2024Q1": {
-        "n": 250,
-        "avg_wr": 0.382,
-        "avg_pf": 0.585
+        "n": 251,
+        "avg_wr": 0.383,
+        "avg_pf": 0.586
       },
       "bull_2024Q2": {
         "n": 109,
@@ -217,10 +217,10 @@
         "avg_trades_day": 7.27
       },
       "1h": {
-        "n": 403,
+        "n": 404,
         "avg_pf": 0.685,
         "avg_wr": 0.399,
-        "avg_trades_day": 3.75
+        "avg_trades_day": 3.76
       },
       "5m": {
         "n": 18,
@@ -242,7 +242,7 @@
       }
     }
   },
-  "pruned": 10,
+  "pruned": 12,
   "actions": [
     "Queued \u00d71 expansion to untested window recent_90d"
   ],
