@@ -1,8 +1,8 @@
 # Cortexa — Master Context
-Last updated: 2026-09-28 23:45 UTC
+Last updated: 2026-09-29 00:15 UTC
 
 ## Current Regime
-Regime: **NEUTRAL** | Confidence: 70.0% | Since: 2026-09-28
+Regime: **NEUTRAL** | Confidence: 70.0% | Since: 2026-09-29
 
 ## Market Sentiment
 Fear & Greed: 74 (Greed)
@@ -10,10 +10,10 @@ BTC Dominance: 58.27%
 News Sentiment: 92.9% bullish
 
 ## Bot Performance
-Total Trades: 1258 | Win Rate: 44.0% | Total P&L: -4.91%
+Total Trades: 1259 | Win Rate: 44.0% | Total P&L: -4.98%
 
-## Open Trades (0)
-- No open trades
+## Open Trades (1)
+- ONDO/USDT:USDT: Entry 0.52 | Current 0.52 | P&L: -0.91%
 ## Risk Flags
 - None
 
