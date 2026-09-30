@@ -950,3 +950,4 @@
 | 2026-09-30 04:10:25 | DOT/USDT:USDT | LONG | 6h00m | +0.63% | +0.47 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-09-30 09:00:44 | DOT/USDT:USDT | LONG | 4h00m | +1.42% | +1.08 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-09-30 13:00:21 | DOT/USDT:USDT | LONG | 2h00m | +1.78% | +1.35 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
+| 2026-09-30 21:56:45 | DOT/USDT:USDT | LONG | 6h01m | -0.91% | -0.69 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
