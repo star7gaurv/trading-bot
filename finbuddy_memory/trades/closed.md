@@ -946,3 +946,4 @@
 | 2026-09-29 14:01:29 | ONDO/USDT:USDT | SHORT | 6h01m | +1.57% | +1.18 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-09-29 18:03:19 | ENA/USDT:USDT | SHORT | 5h02m | +3.48% | +2.61 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
 | 2026-09-29 21:01:44 | ONDO/USDT:USDT | SHORT | 6h01m | +1.86% | +1.41 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-09-30 01:10:29 | ENA/USDT:USDT | SHORT | 6h10m | +0.56% | +0.42 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
