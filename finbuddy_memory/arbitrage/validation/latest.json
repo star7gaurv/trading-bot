@@ -1,0 +1,69 @@
+{
+  "verdict": "FAIL",
+  "metrics": {
+    "scope": "binance_spot_perpetual_basis",
+    "attempts": 36,
+    "captures": 36,
+    "rejections": 0,
+    "rejection_rate": 0.0,
+    "duration_days": 10.038,
+    "first_event": "2026-09-20T11:35:01.498325+00:00",
+    "last_event": "2026-09-30T12:30:02.690389+00:00",
+    "net_pnl": 8.32546567,
+    "stressed_net_pnl": 1.12436868,
+    "total_notional": 7201.09699071,
+    "break_even_extra_cost_pct": 0.00115614,
+    "wins": 26,
+    "losses": 10,
+    "win_rate": 0.722222,
+    "profit_factor": 33.894934,
+    "profit_factor_infinite": false,
+    "max_drawdown": 0.05649507,
+    "max_drawdown_pct": 0.00565,
+    "unhedged_events": 0,
+    "inventory_lifecycle_traced": false,
+    "source_snapshots_traced": false,
+    "feed": {
+      "age_s": 2.4125165939331055,
+      "entries": 6,
+      "depth_entries": 6,
+      "depth_coverage": 1.0
+    }
+  },
+  "thresholds": {
+    "minimum_days": 30.0,
+    "minimum_attempts": 200,
+    "minimum_captures": 100,
+    "minimum_win_rate": 0.5,
+    "minimum_profit_factor": 1.2,
+    "maximum_drawdown_pct": 10.0,
+    "maximum_feed_age_s": 60.0,
+    "minimum_depth_coverage": 0.95,
+    "stress_round_trip_cost_pct": 0.001
+  },
+  "gates": {
+    "feed_fresh": true,
+    "depth_coverage": true,
+    "prospective_duration": false,
+    "attempt_sample": false,
+    "capture_sample": false,
+    "positive_net_pnl": true,
+    "positive_after_cost_stress": true,
+    "win_rate": true,
+    "profit_factor": true,
+    "drawdown": true,
+    "no_unhedged_exposure": true,
+    "inventory_position_lifecycle": false,
+    "source_snapshot_traceability": false
+  },
+  "failed_gates": [
+    "prospective_duration",
+    "attempt_sample",
+    "capture_sample",
+    "inventory_position_lifecycle",
+    "source_snapshot_traceability"
+  ],
+  "interpretation": "Not pilot-ready. Modeled opening spreads must not be presented as realized returns.",
+  "evaluated_at": "2026-09-30T12:33:08.551587+00:00",
+  "schema_version": 1
+}
