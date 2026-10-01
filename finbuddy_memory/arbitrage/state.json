@@ -2,8 +2,8 @@
   "wallet_usdt": 1809.703605518451,
   "realized_pnl": 809.7036055184553,
   "captures": 5910,
-  "observations": 83201,
-  "last_run": "2026-10-01T03:45:01.559069+00:00",
+  "observations": 83238,
+  "last_run": "2026-10-01T04:00:01.251689+00:00",
   "execution": {
     "attempts": 10526,
     "filled": 5355,
