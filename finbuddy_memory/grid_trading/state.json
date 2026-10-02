@@ -12,8 +12,8 @@
       "er": 0.103,
       "vol_pct": 1.68,
       "deployed_at": "2026-09-25T12:40:04.025224+00:00",
-      "last_price": 9.2335,
-      "last_price_ts": "2026-10-02T04:40:03.777263+00:00",
+      "last_price": 9.1175,
+      "last_price_ts": "2026-10-02T05:40:02.129406+00:00",
       "execution_model": "book_v1",
       "quote_cash": 62.4168921072,
       "base_qty": 25.022129441442,
@@ -76,7 +76,7 @@
       },
       "fees_paid": 0.10547088,
       "slippage_cost": 0.05297088,
-      "last_equity": 293.4587243,
+      "last_equity": 290.55615729,
       "closing": false
     },
     "NEAR": {
@@ -91,8 +91,8 @@
       "er": 0.139,
       "vol_pct": 1.87,
       "deployed_at": "2026-09-30T12:40:03.996390+00:00",
-      "last_price": 5.0205,
-      "last_price_ts": "2026-10-02T04:40:04.074596+00:00",
+      "last_price": 4.9495000000000005,
+      "last_price_ts": "2026-10-02T05:40:02.436741+00:00",
       "execution_model": "book_v1",
       "quote_cash": 29.985,
       "base_qty": 51.55319819802,
@@ -166,7 +166,7 @@
       },
       "fees_paid": 0.0989832,
       "slippage_cost": 0.0464832,
-      "last_equity": 288.80783155,
+      "last_equity": 285.14755448,
       "closing": false
     },
     "ENA": {
@@ -181,8 +181,8 @@
       "er": 0.081,
       "vol_pct": 1.81,
       "deployed_at": "2026-10-02T04:40:04.240573+00:00",
-      "last_price": 0.247875,
-      "last_price_ts": "2026-10-02T04:40:04.240290+00:00",
+      "last_price": 0.24672,
+      "last_price_ts": "2026-10-02T05:40:02.753548+00:00",
       "execution_model": "book_v1",
       "quote_cash": 149.925,
       "base_qty": 605.040759135444,
@@ -300,12 +300,12 @@
       },
       "fees_paid": 0.075,
       "slippage_cost": 0.0225,
-      "last_equity": 299.89947817,
+      "last_equity": 299.20065609,
       "closing": false
     }
   },
   "realized_pnl": 201.597079,
-  "last_update": "2026-10-02T04:40:04.857617+00:00",
+  "last_update": "2026-10-02T05:40:02.768190+00:00",
   "execution": {
     "submitted": 143,
     "filled": 87,
