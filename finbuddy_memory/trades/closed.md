@@ -955,3 +955,4 @@
 | 2026-10-01 11:10:39 | DOT/USDT:USDT | LONG | 6h10m | -3.67% | -2.79 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-01 13:08:25 | NEAR/USDT:USDT | LONG | 5h08m | -9.66% | -7.16 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-02 11:01:44 | NEAR/USDT:USDT | LONG | 6h01m | -2.68% | -1.89 | time_limit_exit | BULL | freqai_regression_v23_lo |
+| 2026-10-02 18:40:49 | DOT/USDT:USDT | LONG | 1h40m | -5.21% | -5.67 | stop_loss | BULL | freqai_regression_v23_lo |
