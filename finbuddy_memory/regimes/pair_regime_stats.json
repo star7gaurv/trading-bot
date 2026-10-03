@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-03T10:00:02.155486+00:00",
+  "updated": "2026-10-03T10:30:01.976758+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "UNI/USDT:USDT": {
-      "BULL": {
-        "n": 10,
-        "wins": 5,
-        "losses": 5,
-        "wr": 0.5,
-        "pf": 2.688,
-        "profit_usdt": 16.31,
-        "avg_profit_pct": 1.5
-      }
-    },
     "FIL/USDT:USDT": {
       "BULL": {
         "n": 2,
@@ -38,6 +27,17 @@
         "pf": null,
         "profit_usdt": 2.52,
         "avg_profit_pct": 1.12
+      }
+    },
+    "UNI/USDT:USDT": {
+      "BULL": {
+        "n": 9,
+        "wins": 4,
+        "losses": 5,
+        "wr": 0.4444,
+        "pf": 1.828,
+        "profit_usdt": 8.0,
+        "avg_profit_pct": 0.832
       }
     },
     "ARB/USDT:USDT": {
