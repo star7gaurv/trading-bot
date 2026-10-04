@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-04T07:00:01.671930+00:00",
+  "updated": "2026-10-04T07:30:01.692937+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "BTC/USDT:USDT": {
-      "BULL": {
-        "n": 3,
-        "wins": 1,
-        "losses": 2,
-        "wr": 0.3333,
-        "pf": 0.173,
-        "profit_usdt": -1.87,
-        "avg_profit_pct": -0.76
-      }
-    },
     "LTC/USDT:USDT": {
       "BULL": {
         "n": 4,
@@ -131,6 +120,17 @@
         "pf": null,
         "profit_usdt": 1.36,
         "avg_profit_pct": 1.82
+      }
+    },
+    "BTC/USDT:USDT": {
+      "BULL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 0.207,
+        "profit_usdt": -1.49,
+        "avg_profit_pct": -0.905
       }
     },
     "RENDER/USDT:USDT": {
