@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-03T23:30:01.302978+00:00",
+  "updated": "2026-10-04T00:00:02.305400+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -153,6 +153,15 @@
         "pf": 0.0,
         "profit_usdt": -2.77,
         "avg_profit_pct": -2.43
+      },
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.77,
+        "avg_profit_pct": -1.04
       }
     },
     "ONDO/USDT:USDT": {
