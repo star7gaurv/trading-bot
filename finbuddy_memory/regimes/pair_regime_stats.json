@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-04T09:00:01.821199+00:00",
+  "updated": "2026-10-04T09:30:01.591563+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,77 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "LTC/USDT:USDT": {
-      "BULL": {
-        "n": 4,
-        "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 0.113,
-        "profit_usdt": -8.46,
-        "avg_profit_pct": -1.825
-      },
-      "NEUTRAL": {
-        "n": 4,
-        "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 2.079,
-        "profit_usdt": 1.64,
-        "avg_profit_pct": 0.53
-      }
-    },
-    "ARB/USDT:USDT": {
-      "BULL": {
-        "n": 7,
-        "wins": 2,
-        "losses": 5,
-        "wr": 0.2857,
-        "pf": 0.133,
-        "profit_usdt": -14.57,
-        "avg_profit_pct": -1.837
-      },
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 1,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 0.18,
-        "avg_profit_pct": 0.24
-      }
-    },
-    "APT/USDT:USDT": {
-      "BULL": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -2.77,
-        "avg_profit_pct": -2.43
-      },
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -0.77,
-        "avg_profit_pct": -1.04
-      }
-    },
-    "ETH/USDT:USDT": {
-      "BULL": {
-        "n": 2,
-        "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 0.313,
-        "profit_usdt": -2.46,
-        "avg_profit_pct": -1.095
-      }
-    },
     "ONDO/USDT:USDT": {
       "BULL": {
         "n": 1,
@@ -153,6 +82,46 @@
         "avg_profit_pct": -4.72
       }
     },
+    "LTC/USDT:USDT": {
+      "BULL": {
+        "n": 3,
+        "wins": 1,
+        "losses": 2,
+        "wr": 0.3333,
+        "pf": 0.053,
+        "profit_usdt": -9.03,
+        "avg_profit_pct": -2.6
+      },
+      "NEUTRAL": {
+        "n": 4,
+        "wins": 2,
+        "losses": 2,
+        "wr": 0.5,
+        "pf": 2.079,
+        "profit_usdt": 1.64,
+        "avg_profit_pct": 0.53
+      }
+    },
+    "ARB/USDT:USDT": {
+      "BULL": {
+        "n": 6,
+        "wins": 1,
+        "losses": 5,
+        "wr": 0.1667,
+        "pf": 0.123,
+        "profit_usdt": -14.73,
+        "avg_profit_pct": -2.167
+      },
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 0.18,
+        "avg_profit_pct": 0.24
+      }
+    },
     "XRP/USDT:USDT": {
       "BULL": {
         "n": 2,
@@ -173,6 +142,17 @@
         "pf": 1.234,
         "profit_usdt": 2.07,
         "avg_profit_pct": 0.303
+      }
+    },
+    "ETH/USDT:USDT": {
+      "BULL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -3.58,
+        "avg_profit_pct": -3.18
       }
     },
     "POL/USDT:USDT": {
@@ -330,13 +310,13 @@
     },
     "NEAR/USDT:USDT": {
       "NEUTRAL": {
-        "n": 1,
+        "n": 2,
         "wins": 0,
-        "losses": 1,
+        "losses": 2,
         "wr": 0.0,
         "pf": 0.0,
-        "profit_usdt": -7.16,
-        "avg_profit_pct": -9.66
+        "profit_usdt": -7.56,
+        "avg_profit_pct": -5.11
       },
       "BULL": {
         "n": 1,
@@ -346,6 +326,17 @@
         "pf": 0.0,
         "profit_usdt": -1.89,
         "avg_profit_pct": -2.68
+      }
+    },
+    "APT/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.77,
+        "avg_profit_pct": -1.04
       }
     },
     "OP/USDT:USDT": {
@@ -364,10 +355,10 @@
     {
       "pair": "ARB/USDT:USDT",
       "regime": "BULL",
-      "reason": "WR=29% PF=0.13 n=7 profit=-14.57",
-      "n": 7,
-      "wr": 0.2857,
-      "pf": 0.133
+      "reason": "WR=17% PF=0.12 n=6 profit=-14.73",
+      "n": 6,
+      "wr": 0.1667,
+      "pf": 0.123
     }
   ]
 }
