@@ -962,3 +962,5 @@
 | 2026-10-04 08:10:26 | ARB/USDT:USDT | LONG | 6h00m | +0.24% | +0.18 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-04 09:00:31 | NEAR/USDT:USDT | LONG | 6h00m | -0.56% | -0.40 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-04 10:01:15 | LTC/USDT:USDT | LONG | 6h00m | -0.02% | -0.02 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-04 14:00:36 | OP/USDT:USDT | LONG | 6h00m | -1.94% | -1.45 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-04 14:00:27 | DOT/USDT:USDT | LONG | 6h00m | +0.01% | +0.01 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
