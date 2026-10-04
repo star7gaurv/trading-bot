@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-04T04:00:01.546380+00:00",
+  "updated": "2026-10-04T04:30:01.897526+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,37 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "UNI/USDT:USDT": {
-      "BULL": {
-        "n": 8,
-        "wins": 3,
-        "losses": 5,
-        "wr": 0.375,
-        "pf": 1.13,
-        "profit_usdt": 1.26,
-        "avg_profit_pct": 0.175
-      }
-    },
-    "FET/USDT:USDT": {
-      "BULL": {
-        "n": 2,
-        "wins": 0,
-        "losses": 2,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -7.37,
-        "avg_profit_pct": -3.295
-      },
-      "NEUTRAL": {
-        "n": 6,
-        "wins": 5,
-        "losses": 1,
-        "wr": 0.8333,
-        "pf": 3.261,
-        "profit_usdt": 5.29,
-        "avg_profit_pct": 1.182
-      }
-    },
     "ETH/USDT:USDT": {
       "BULL": {
         "n": 3,
@@ -186,6 +155,17 @@
         "avg_profit_pct": -0.635
       }
     },
+    "UNI/USDT:USDT": {
+      "BULL": {
+        "n": 7,
+        "wins": 3,
+        "losses": 4,
+        "wr": 0.4286,
+        "pf": 1.234,
+        "profit_usdt": 2.07,
+        "avg_profit_pct": 0.303
+      }
+    },
     "POL/USDT:USDT": {
       "BULL": {
         "n": 4,
@@ -275,6 +255,26 @@
         "pf": 1.582,
         "profit_usdt": 2.41,
         "avg_profit_pct": 0.359
+      }
+    },
+    "FET/USDT:USDT": {
+      "BULL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -7.31,
+        "avg_profit_pct": -6.54
+      },
+      "NEUTRAL": {
+        "n": 6,
+        "wins": 5,
+        "losses": 1,
+        "wr": 0.8333,
+        "pf": 3.261,
+        "profit_usdt": 5.29,
+        "avg_profit_pct": 1.182
       }
     },
     "FIL/USDT:USDT": {
