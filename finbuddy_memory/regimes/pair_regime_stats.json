@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-04T05:00:01.567468+00:00",
+  "updated": "2026-10-04T05:30:01.205269+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,37 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ETH/USDT:USDT": {
-      "BULL": {
-        "n": 3,
-        "wins": 2,
-        "losses": 1,
-        "wr": 0.6667,
-        "pf": 0.567,
-        "profit_usdt": -1.55,
-        "avg_profit_pct": -0.463
-      }
-    },
-    "WIF/USDT:USDT": {
-      "BULL": {
-        "n": 2,
-        "wins": 0,
-        "losses": 2,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -7.4,
-        "avg_profit_pct": -3.25
-      },
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 1,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 1.36,
-        "avg_profit_pct": 1.82
-      }
-    },
     "BTC/USDT:USDT": {
       "BULL": {
         "n": 3,
@@ -102,6 +71,17 @@
         "avg_profit_pct": -1.04
       }
     },
+    "ETH/USDT:USDT": {
+      "BULL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 0.313,
+        "profit_usdt": -2.46,
+        "avg_profit_pct": -1.095
+      }
+    },
     "ONDO/USDT:USDT": {
       "BULL": {
         "n": 1,
@@ -131,6 +111,26 @@
         "pf": 0.51,
         "profit_usdt": -2.52,
         "avg_profit_pct": -1.065
+      }
+    },
+    "WIF/USDT:USDT": {
+      "BULL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -6.86,
+        "avg_profit_pct": -6.03
+      },
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 1.36,
+        "avg_profit_pct": 1.82
       }
     },
     "RENDER/USDT:USDT": {
