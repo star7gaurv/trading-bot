@@ -1,12 +1,12 @@
 {
-  "generated": "2026-10-05T05:30:02.391538+00:00",
+  "generated": "2026-10-05T06:00:02.792737+00:00",
   "gate_active": true,
   "reasons": [
     "88 consecutive unique walk-forward FAILs (227 raw executions; since FinBuddyFreqAI_v23_2024-12-01_2026-06-01_20260605T183002)"
   ],
   "live_ic_30d": 0.0617,
   "live_ic_30d_n": 16425,
-  "live_ic_30d_do_predict_rate": 0.925,
+  "live_ic_30d_do_predict_rate": 0.926,
   "label_period_candles": 6,
   "wf_fail_streak": 88,
   "wf_fail_streak_unique": 88,
