@@ -971,3 +971,4 @@
 | 2026-10-05 03:01:01 | SUI/USDT:USDT | LONG | 6h00m | +3.21% | +2.39 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-05 06:00:20 | NEAR/USDT:USDT | LONG | 3h00m | +1.58% | +1.17 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-05 09:00:25 | FET/USDT:USDT | LONG | 4h00m | +4.50% | +3.35 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-05 11:01:47 | APT/USDT:USDT | LONG | 1h01m | +0.87% | +0.66 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
