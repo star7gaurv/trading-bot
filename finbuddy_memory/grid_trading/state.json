@@ -12,8 +12,8 @@
       "er": 0.103,
       "vol_pct": 1.68,
       "deployed_at": "2026-09-25T12:40:04.025224+00:00",
-      "last_price": 9.122499999999999,
-      "last_price_ts": "2026-10-05T00:40:03.026311+00:00",
+      "last_price": 9.0735,
+      "last_price_ts": "2026-10-05T01:40:03.351233+00:00",
       "execution_model": "book_v1",
       "quote_cash": 62.4168921072,
       "base_qty": 25.022129441442,
@@ -76,7 +76,7 @@
       },
       "fees_paid": 0.10547088,
       "slippage_cost": 0.05297088,
-      "last_equity": 290.68126794,
+      "last_equity": 289.45518359,
       "closing": false
     },
     "NEAR": {
@@ -91,8 +91,8 @@
       "er": 0.139,
       "vol_pct": 1.87,
       "deployed_at": "2026-09-30T12:40:03.996390+00:00",
-      "last_price": 4.9025,
-      "last_price_ts": "2026-10-05T00:40:03.328388+00:00",
+      "last_price": 4.8645,
+      "last_price_ts": "2026-10-05T01:40:03.652877+00:00",
       "execution_model": "book_v1",
       "quote_cash": 29.985,
       "base_qty": 51.55319819802,
@@ -166,7 +166,7 @@
       },
       "fees_paid": 0.0989832,
       "slippage_cost": 0.0464832,
-      "last_equity": 282.72455417,
+      "last_equity": 280.76553263,
       "closing": false
     },
     "ENA": {
@@ -181,8 +181,8 @@
       "er": 0.081,
       "vol_pct": 1.81,
       "deployed_at": "2026-10-02T04:40:04.240573+00:00",
-      "last_price": 0.241865,
-      "last_price_ts": "2026-10-05T00:40:03.638548+00:00",
+      "last_price": 0.239675,
+      "last_price_ts": "2026-10-05T01:40:03.959118+00:00",
       "execution_model": "book_v1",
       "quote_cash": 89.955,
       "base_qty": 855.301629312522,
@@ -278,12 +278,12 @@
       },
       "fees_paid": 0.0869916,
       "slippage_cost": 0.0344916,
-      "last_equity": 296.82252857,
+      "last_equity": 294.94941801,
       "closing": false
     }
   },
   "realized_pnl": 201.597079,
-  "last_update": "2026-10-05T00:40:03.656532+00:00",
+  "last_update": "2026-10-05T01:40:03.978100+00:00",
   "execution": {
     "submitted": 143,
     "filled": 89,
