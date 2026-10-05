@@ -974,3 +974,5 @@
 | 2026-10-05 11:01:47 | APT/USDT:USDT | LONG | 1h01m | +0.87% | +0.66 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-05 14:58:17 | LINK/USDT:USDT | LONG | 2h37m | -2.55% | -1.92 | stop_loss | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-05 19:12:34 | BTC/USDT:USDT | LONG | 6h00m | -0.59% | -0.50 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-05 20:58:52 | ETH/USDT:USDT | LONG | 6h00m | +0.24% | +0.18 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-05 21:12:04 | ARB/USDT:USDT | LONG | 4h11m | +2.38% | +1.77 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
