@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-05T21:00:01.167941+00:00",
+  "updated": "2026-10-05T21:30:01.334845+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "POL/USDT:USDT": {
-      "BULL": {
-        "n": 3,
-        "wins": 1,
-        "losses": 2,
-        "wr": 0.3333,
-        "pf": 0.476,
-        "profit_usdt": -0.33,
-        "avg_profit_pct": -0.103
-      },
-      "NEUTRAL": {
-        "n": 2,
-        "wins": 0,
-        "losses": 2,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -4.06,
-        "avg_profit_pct": -2.645
-      }
-    },
     "UNI/USDT:USDT": {
       "BULL": {
         "n": 5,
@@ -38,6 +18,26 @@
         "pf": 0.603,
         "profit_usdt": -2.07,
         "avg_profit_pct": -0.392
+      }
+    },
+    "POL/USDT:USDT": {
+      "BULL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 0.833,
+        "profit_usdt": -0.06,
+        "avg_profit_pct": -0.03
+      },
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 0,
+        "losses": 2,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -4.06,
+        "avg_profit_pct": -2.645
       }
     },
     "ARB/USDT:USDT": {
@@ -51,13 +51,13 @@
         "avg_profit_pct": -1.356
       },
       "NEUTRAL": {
-        "n": 2,
-        "wins": 2,
+        "n": 3,
+        "wins": 3,
         "losses": 0,
         "wr": 1.0,
         "pf": null,
-        "profit_usdt": 0.62,
-        "avg_profit_pct": 0.415
+        "profit_usdt": 2.39,
+        "avg_profit_pct": 1.07
       }
     },
     "1000PEPE/USDT:USDT": {
@@ -328,6 +328,17 @@
         "pf": null,
         "profit_usdt": 2.39,
         "avg_profit_pct": 3.21
+      }
+    },
+    "ETH/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "wr": 1.0,
+        "pf": null,
+        "profit_usdt": 0.18,
+        "avg_profit_pct": 0.24
       }
     }
   },
