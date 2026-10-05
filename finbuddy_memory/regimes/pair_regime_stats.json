@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-05T19:00:01.456061+00:00",
+  "updated": "2026-10-05T19:30:01.254068+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -11,13 +11,13 @@
   "stats": {
     "POL/USDT:USDT": {
       "BULL": {
-        "n": 4,
-        "wins": 2,
+        "n": 3,
+        "wins": 1,
         "losses": 2,
-        "wr": 0.5,
-        "pf": 1.032,
-        "profit_usdt": 0.02,
-        "avg_profit_pct": 0.0
+        "wr": 0.3333,
+        "pf": 0.476,
+        "profit_usdt": -0.33,
+        "avg_profit_pct": -0.103
       },
       "NEUTRAL": {
         "n": 2,
@@ -100,6 +100,15 @@
         "pf": null,
         "profit_usdt": 0.39,
         "avg_profit_pct": 0.51
+      },
+      "NEUTRAL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -0.5,
+        "avg_profit_pct": -0.59
       }
     },
     "XRP/USDT:USDT": {
