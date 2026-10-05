@@ -12,8 +12,8 @@
       "er": 0.103,
       "vol_pct": 1.68,
       "deployed_at": "2026-09-25T12:40:04.025224+00:00",
-      "last_price": 9.1955,
-      "last_price_ts": "2026-10-05T02:40:02.468933+00:00",
+      "last_price": 9.1395,
+      "last_price_ts": "2026-10-05T03:40:02.295063+00:00",
       "execution_model": "book_v1",
       "quote_cash": 62.4168921072,
       "base_qty": 25.022129441442,
@@ -76,7 +76,7 @@
       },
       "fees_paid": 0.10547088,
       "slippage_cost": 0.05297088,
-      "last_equity": 292.50788339,
+      "last_equity": 291.10664414,
       "closing": false
     },
     "NEAR": {
@@ -91,8 +91,8 @@
       "er": 0.139,
       "vol_pct": 1.87,
       "deployed_at": "2026-09-30T12:40:03.996390+00:00",
-      "last_price": 4.9775,
-      "last_price_ts": "2026-10-05T02:40:02.780945+00:00",
+      "last_price": 4.875500000000001,
+      "last_price_ts": "2026-10-05T03:40:02.590538+00:00",
       "execution_model": "book_v1",
       "quote_cash": 29.985,
       "base_qty": 51.55319819802,
@@ -166,7 +166,7 @@
       },
       "fees_paid": 0.0989832,
       "slippage_cost": 0.0464832,
-      "last_equity": 286.59104403,
+      "last_equity": 281.33261781,
       "closing": false
     },
     "ENA": {
@@ -181,8 +181,8 @@
       "er": 0.081,
       "vol_pct": 1.81,
       "deployed_at": "2026-10-02T04:40:04.240573+00:00",
-      "last_price": 0.240285,
-      "last_price_ts": "2026-10-05T02:40:03.087252+00:00",
+      "last_price": 0.240375,
+      "last_price_ts": "2026-10-05T03:40:02.907977+00:00",
       "execution_model": "book_v1",
       "quote_cash": 89.955,
       "base_qty": 855.301629312522,
@@ -278,12 +278,12 @@
       },
       "fees_paid": 0.0869916,
       "slippage_cost": 0.0344916,
-      "last_equity": 295.471152,
+      "last_equity": 295.54812915,
       "closing": false
     }
   },
   "realized_pnl": 201.597079,
-  "last_update": "2026-10-05T02:40:03.101962+00:00",
+  "last_update": "2026-10-05T03:40:02.938359+00:00",
   "execution": {
     "submitted": 143,
     "filled": 89,
