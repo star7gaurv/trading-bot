@@ -987,3 +987,4 @@
 | 2026-10-06 12:12:15 | NEAR/USDT:USDT | LONG | 6h00m | +0.96% | +0.69 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-06 15:41:37 | APT/USDT:USDT | LONG | 6h01m | +1.56% | +1.16 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-06 16:00:32 | FET/USDT:USDT | LONG | 6h00m | -1.61% | -1.19 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-06 21:20:51 | APT/USDT:USDT | LONG | 5h20m | +0.70% | +0.52 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
