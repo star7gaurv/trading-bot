@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-06T02:00:01.231853+00:00",
+  "updated": "2026-10-06T02:30:01.409393+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -102,13 +102,13 @@
         "avg_profit_pct": 0.51
       },
       "NEUTRAL": {
-        "n": 1,
+        "n": 2,
         "wins": 0,
-        "losses": 1,
+        "losses": 2,
         "wr": 0.0,
         "pf": 0.0,
-        "profit_usdt": -0.5,
-        "avg_profit_pct": -0.59
+        "profit_usdt": -0.78,
+        "avg_profit_pct": -0.46
       }
     },
     "XRP/USDT:USDT": {
@@ -204,13 +204,13 @@
         "avg_profit_pct": -6.54
       },
       "NEUTRAL": {
-        "n": 7,
+        "n": 8,
         "wins": 6,
-        "losses": 1,
-        "wr": 0.8571,
-        "pf": 4.692,
-        "profit_usdt": 8.64,
-        "avg_profit_pct": 1.656
+        "losses": 2,
+        "wr": 0.75,
+        "pf": 4.207,
+        "profit_usdt": 8.37,
+        "avg_profit_pct": 1.402
       }
     },
     "FIL/USDT:USDT": {
@@ -257,13 +257,13 @@
     },
     "TAO/USDT:USDT": {
       "NEUTRAL": {
-        "n": 1,
+        "n": 2,
         "wins": 1,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 1.06,
-        "avg_profit_pct": 1.44
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 2.524,
+        "profit_usdt": 0.64,
+        "avg_profit_pct": 0.44
       }
     },
     "WIF/USDT:USDT": {
@@ -321,13 +321,13 @@
     },
     "SUI/USDT:USDT": {
       "NEUTRAL": {
-        "n": 1,
+        "n": 2,
         "wins": 1,
-        "losses": 0,
-        "wr": 1.0,
-        "pf": null,
-        "profit_usdt": 2.39,
-        "avg_profit_pct": 3.21
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 2.598,
+        "profit_usdt": 1.47,
+        "avg_profit_pct": 0.985
       }
     },
     "ETH/USDT:USDT": {
