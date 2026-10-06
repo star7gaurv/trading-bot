@@ -976,3 +976,7 @@
 | 2026-10-05 19:12:34 | BTC/USDT:USDT | LONG | 6h00m | -0.59% | -0.50 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-05 20:58:52 | ETH/USDT:USDT | LONG | 6h00m | +0.24% | +0.18 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-05 21:12:04 | ARB/USDT:USDT | LONG | 4h11m | +2.38% | +1.77 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-06 02:10:35 | BTC/USDT:USDT | LONG | 6h10m | -0.33% | -0.28 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-06 02:10:40 | TAO/USDT:USDT | LONG | 6h10m | -0.56% | -0.42 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-06 02:00:39 | FET/USDT:USDT | LONG | 6h00m | -0.37% | -0.27 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-06 02:10:35 | SUI/USDT:USDT | LONG | 6h00m | -1.24% | -0.92 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
