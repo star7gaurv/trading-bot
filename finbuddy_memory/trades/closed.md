@@ -986,3 +986,4 @@
 | 2026-10-06 11:01:51 | BTC/USDT:USDT | LONG | 6h01m | +0.60% | +0.51 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-06 12:12:15 | NEAR/USDT:USDT | LONG | 6h00m | +0.96% | +0.69 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-06 15:41:37 | APT/USDT:USDT | LONG | 6h01m | +1.56% | +1.16 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-06 16:00:32 | FET/USDT:USDT | LONG | 6h00m | -1.61% | -1.19 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
