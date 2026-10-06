@@ -982,3 +982,4 @@
 | 2026-10-06 02:10:35 | SUI/USDT:USDT | LONG | 6h00m | -1.24% | -0.92 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-06 06:12:06 | ETH/USDT:USDT | LONG | 6h01m | -0.81% | -0.60 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-06 07:00:33 | APT/USDT:USDT | LONG | 6h00m | -1.97% | -1.46 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-06 09:00:29 | FET/USDT:USDT | LONG | 6h00m | +0.47% | +0.35 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
