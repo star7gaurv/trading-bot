@@ -12,8 +12,8 @@
       "er": 0.139,
       "vol_pct": 1.87,
       "deployed_at": "2026-09-30T12:40:03.996390+00:00",
-      "last_price": 4.9165,
-      "last_price_ts": "2026-10-07T04:40:02.564238+00:00",
+      "last_price": 5.0035,
+      "last_price_ts": "2026-10-07T05:40:02.328852+00:00",
       "execution_model": "book_v1",
       "quote_cash": 29.985,
       "base_qty": 51.55319819802,
@@ -87,7 +87,7 @@
       },
       "fees_paid": 0.0989832,
       "slippage_cost": 0.0464832,
-      "last_equity": 283.44629894,
+      "last_equity": 287.93142718,
       "closing": false
     },
     "ENA": {
@@ -102,8 +102,8 @@
       "er": 0.081,
       "vol_pct": 1.81,
       "deployed_at": "2026-10-02T04:40:04.240573+00:00",
-      "last_price": 0.224875,
-      "last_price_ts": "2026-10-07T04:40:02.864146+00:00",
+      "last_price": 0.231995,
+      "last_price_ts": "2026-10-07T05:40:02.633183+00:00",
       "execution_model": "book_v1",
       "quote_cash": 92.4018919526,
       "base_qty": 858.519500876304,
@@ -177,7 +177,7 @@
       },
       "fees_paid": 0.09947508,
       "slippage_cost": 0.04697508,
-      "last_equity": 285.46146471,
+      "last_equity": 291.57412356,
       "closing": false
     },
     "WIF": {
@@ -192,8 +192,8 @@
       "er": 0.006,
       "vol_pct": 1.33,
       "deployed_at": "2026-10-07T01:40:04.641904+00:00",
-      "last_price": 0.23125,
-      "last_price_ts": "2026-10-07T04:40:03.165661+00:00",
+      "last_price": 0.23275,
+      "last_price_ts": "2026-10-07T05:40:02.936253+00:00",
       "execution_model": "book_v1",
       "quote_cash": 89.955,
       "base_qty": 872.97930790414,
@@ -289,12 +289,12 @@
       },
       "fees_paid": 0.0869916,
       "slippage_cost": 0.0344916,
-      "last_equity": 291.83146495,
+      "last_equity": 293.14093391,
       "closing": false
     }
   },
   "realized_pnl": 171.811772,
-  "last_update": "2026-10-07T04:40:03.181385+00:00",
+  "last_update": "2026-10-07T05:40:02.951565+00:00",
   "execution": {
     "submitted": 154,
     "filled": 96,
