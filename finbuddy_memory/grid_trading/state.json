@@ -12,8 +12,8 @@
       "er": 0.139,
       "vol_pct": 1.87,
       "deployed_at": "2026-09-30T12:40:03.996390+00:00",
-      "last_price": 5.1325,
-      "last_price_ts": "2026-10-07T17:40:02.640496+00:00",
+      "last_price": 5.2115,
+      "last_price_ts": "2026-10-07T18:40:02.584141+00:00",
       "execution_model": "book_v1",
       "quote_cash": 29.985,
       "base_qty": 51.55319819802,
@@ -87,7 +87,7 @@
       },
       "fees_paid": 0.0989832,
       "slippage_cost": 0.0464832,
-      "last_equity": 294.58178975,
+      "last_equity": 298.65449241,
       "closing": false
     },
     "ENA": {
@@ -102,8 +102,8 @@
       "er": 0.081,
       "vol_pct": 1.81,
       "deployed_at": "2026-10-02T04:40:04.240573+00:00",
-      "last_price": 0.225135,
-      "last_price_ts": "2026-10-07T17:40:02.947305+00:00",
+      "last_price": 0.224195,
+      "last_price_ts": "2026-10-07T18:40:02.894272+00:00",
       "execution_model": "book_v1",
       "quote_cash": 92.4018919526,
       "base_qty": 858.519500876304,
@@ -177,7 +177,7 @@
       },
       "fees_paid": 0.09947508,
       "slippage_cost": 0.04697508,
-      "last_equity": 285.68467978,
+      "last_equity": 284.87767145,
       "closing": false
     },
     "WIF": {
@@ -192,8 +192,8 @@
       "er": 0.006,
       "vol_pct": 1.33,
       "deployed_at": "2026-10-07T01:40:04.641904+00:00",
-      "last_price": 0.22805,
-      "last_price_ts": "2026-10-07T17:40:03.247478+00:00",
+      "last_price": 0.22925,
+      "last_price_ts": "2026-10-07T18:40:03.195542+00:00",
       "execution_model": "book_v1",
       "quote_cash": 59.97,
       "base_qty": 1003.930463331639,
@@ -278,12 +278,12 @@
       },
       "fees_paid": 0.0929874,
       "slippage_cost": 0.0404874,
-      "last_equity": 288.91634216,
+      "last_equity": 290.12105872,
       "closing": false
     }
   },
   "realized_pnl": 171.811772,
-  "last_update": "2026-10-07T17:40:03.264177+00:00",
+  "last_update": "2026-10-07T18:40:03.210730+00:00",
   "execution": {
     "submitted": 154,
     "filled": 97,
