@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-07T00:00:02.362207+00:00",
+  "updated": "2026-10-07T00:30:01.571220+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -11,13 +11,13 @@
   "stats": {
     "UNI/USDT:USDT": {
       "BULL": {
-        "n": 3,
-        "wins": 2,
+        "n": 2,
+        "wins": 1,
         "losses": 1,
-        "wr": 0.6667,
-        "pf": 3.829,
-        "profit_usdt": 2.32,
-        "avg_profit_pct": 0.713
+        "wr": 0.5,
+        "pf": 1.366,
+        "profit_usdt": 0.3,
+        "avg_profit_pct": 0.125
       }
     },
     "POL/USDT:USDT": {
