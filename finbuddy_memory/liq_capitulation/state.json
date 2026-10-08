@@ -1,28 +1,27 @@
 {
-  "positions": {},
+  "positions": {
+    "LTCUSDT": {
+      "symbol": "LTCUSDT",
+      "side": "long",
+      "entry_price": 64.41,
+      "notional": 200.0,
+      "entry_liq_z": 2.113,
+      "entry_liq_long_usd": 995456.0,
+      "opened_at": "2026-10-08T06:50:02.093189+00:00",
+      "fees_paid": 0.04,
+      "entry_slippage_cost": 0.04,
+      "execution_model": "book_v1",
+      "entry_fill_ratio": 1.0
+    }
+  },
   "realized_pnl": 19.589374,
   "wins": 27,
   "losses": 28,
-  "last_update": "2026-10-08T05:50:15.671402+00:00",
-  "pending_orders": {
-    "LTCUSDT": {
-      "order_id": "ff7ddbf1d01f47ba90d91c4ee1c28b3f",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 64.41,
-      "submitted_at": "2026-10-08T05:50:15.015827+00:00",
-      "expires_at": "2026-10-08T07:20:15.015827+00:00",
-      "book_bid": 64.41,
-      "book_ask": 64.42,
-      "symbol": "LTCUSDT",
-      "liq_long_z": 2.113,
-      "liq_long_usd": 995456.0
-    }
-  },
+  "last_update": "2026-10-08T06:50:20.628709+00:00",
+  "pending_orders": {},
   "execution": {
     "submitted": 10,
-    "filled": 14,
+    "filled": 15,
     "partial": 0,
     "expired": 2,
     "rejected": 0
