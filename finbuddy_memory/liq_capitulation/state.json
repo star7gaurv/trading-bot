@@ -1,18 +1,5 @@
 {
   "positions": {
-    "ONDOUSDT": {
-      "symbol": "ONDOUSDT",
-      "side": "long",
-      "entry_price": 0.4467,
-      "notional": 200.0,
-      "entry_liq_z": 2.267,
-      "entry_liq_long_usd": 1327740.0,
-      "opened_at": "2026-10-08T17:50:02.438874+00:00",
-      "fees_paid": 0.04,
-      "entry_slippage_cost": 0.04,
-      "execution_model": "book_v1",
-      "entry_fill_ratio": 1.0
-    },
     "DOTUSDT": {
       "symbol": "DOTUSDT",
       "side": "long",
@@ -40,14 +27,29 @@
       "entry_fill_ratio": 1.0
     }
   },
-  "realized_pnl": 18.23961,
-  "wins": 27,
+  "realized_pnl": 35.483608,
+  "wins": 28,
   "losses": 29,
-  "last_update": "2026-10-08T17:50:03.193787+00:00",
-  "pending_orders": {},
+  "last_update": "2026-10-08T18:50:17.482495+00:00",
+  "pending_orders": {
+    "LDOUSDT": {
+      "order_id": "6c276a1397124b94b06ad60b4a70841d",
+      "status": "submitted",
+      "side": "buy",
+      "requested_notional": 200.0,
+      "limit_price": 0.4024,
+      "submitted_at": "2026-10-08T18:50:15.910726+00:00",
+      "expires_at": "2026-10-08T20:20:15.910726+00:00",
+      "book_bid": 0.4024,
+      "book_ask": 0.4026,
+      "symbol": "LDOUSDT",
+      "liq_long_z": 2.017,
+      "liq_long_usd": 431887.0
+    }
+  },
   "execution": {
-    "submitted": 13,
-    "filled": 19,
+    "submitted": 14,
+    "filled": 20,
     "partial": 0,
     "expired": 2,
     "rejected": 0
