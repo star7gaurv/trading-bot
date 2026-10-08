@@ -7,6 +7,17 @@
 **Status**: 🔴🟡 Private research system, dry-run/paper only · v23 directional on **1h** (`finbuddy_v23_mom_features_1788780906`) · LT=0.7/ST=−0.6 · K_TP=3.0/K_SL=3.5 · DI+SVM disabled · edge gate ACTIVE and THROTTLING at observed runtime ratio **1.2** with 1x leverage cap · directional validation negative (1,204 closed, -37.72 USDT, WR 43.3%, PF 0.951; latest daily/deep WF PF 0.680/0.801) · WF gate now uses 83 unique consecutive failures while preserving 222 raw failures (244 summaries, 89 unique, 155 duplicates) · grid/arbitrage/liquidation paper P&L UNVERIFIED pending realistic fills and canonical accounting · pairs negative/gated · no module ready for real capital or customers
 **Last Updated**: 2026-10-06 UTC — Multi-tenant HeatWave foundation and customer/super-admin portals are active; live execution remains blocked. Full evidence: `docs/audit/2026-09-16-complete-audit.md`; SaaS status: `docs/platform/saas-foundation-status.md`; required work: `docs/platform/remediation-register.md`.
 
+### 2026-10-08 - Customer intelligence surface and ownership plan implemented
+
+The customer portal is now organized around Intelligence, all five strategy modules, tenant
+Portfolio, and Safety; exchange connections and team/security are explicitly secondary settings.
+The customer-safe API exposes each module's central posture, current brain decision, execution
+eligibility, evidence grade, limitations and freshness, while HeatWave tenant trades are separately
+attributed by strategy id. A dedicated safety page explains the exact release blockers and rejects
+any promise that every trade will profit. The durable customer-versus-super-admin capability map
+and remaining governance phases are in `docs/platform/customer-super-admin-plan.md`. Live
+execution remains fail-closed and no trading logic changed.
+
 ### 2026-10-06 — Customer product boundary corrected
 
 The first customer portal iteration incorrectly exposed only onboarding, exchange credentials, team invitations and a manual paper-order test. That contradicted ADR-001 and the master vision: Cortexa is one shared intelligence across all strategy modules, not an account-setup utility. The portal now makes Directional, Funding Rate, Pairs, Grid and Arbitrage primary customer navigation; exposes shared regime and honest module evidence; separates shared research P&L from tenant P&L; and shows tenant-isolated HeatWave balances, orders and trades. Exchange and team/security workflows remain secondary sections. Manual arbitrary paper-order testing was removed from the customer workflow. Super-admin customer links open in a protected new tab. The standing rule is now explicit in `CLAUDE.md` so this product boundary cannot silently regress.
