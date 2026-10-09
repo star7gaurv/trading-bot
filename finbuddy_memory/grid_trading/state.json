@@ -12,8 +12,8 @@
       "er": 0.017,
       "vol_pct": 1.37,
       "deployed_at": "2026-10-08T15:40:03.981440+00:00",
-      "last_price": 0.211505,
-      "last_price_ts": "2026-10-09T01:40:02.277105+00:00",
+      "last_price": 0.212195,
+      "last_price_ts": "2026-10-09T02:40:02.501224+00:00",
       "execution_model": "book_v1",
       "quote_cash": 152.3718928098,
       "base_qty": 720.462242741811,
@@ -109,7 +109,7 @@
       },
       "fees_paid": 0.08748348,
       "slippage_cost": 0.04116904,
-      "last_equity": 304.75325946,
+      "last_equity": 305.25037841,
       "closing": false
     },
     "ONDO": {
@@ -124,8 +124,8 @@
       "er": 0.028,
       "vol_pct": 1.31,
       "deployed_at": "2026-10-08T15:40:04.821446+00:00",
-      "last_price": 0.47045,
-      "last_price_ts": "2026-10-09T01:40:02.575747+00:00",
+      "last_price": 0.47095,
+      "last_price_ts": "2026-10-09T02:40:02.804084+00:00",
       "execution_model": "book_v1",
       "quote_cash": 184.8037840615,
       "base_qty": 256.863511257447,
@@ -210,7 +210,7 @@
       },
       "fees_paid": 0.09397115,
       "slippage_cost": 0.04147115,
-      "last_equity": 305.64522293,
+      "last_equity": 305.77365469,
       "closing": false
     },
     "NEAR": {
@@ -225,11 +225,11 @@
       "er": 0.048,
       "vol_pct": 1.43,
       "deployed_at": "2026-10-08T17:40:03.905260+00:00",
-      "last_price": 4.5425,
-      "last_price_ts": "2026-10-09T01:40:02.878844+00:00",
+      "last_price": 4.6425,
+      "last_price_ts": "2026-10-09T02:40:03.101642+00:00",
       "execution_model": "book_v1",
-      "quote_cash": 149.925,
-      "base_qty": 32.983836238068,
+      "quote_cash": 182.150150454,
+      "base_qty": 26.002627686571,
       "orders": {
         "b9453151bfaa456396b328fdd2b2cd92": {
           "order_id": "b9453151bfaa456396b328fdd2b2cd92",
@@ -286,17 +286,6 @@
           "book_bid": 4.546,
           "book_ask": 4.547
         },
-        "131ec5be45ec4856a6818a91ff98467c": {
-          "order_id": "131ec5be45ec4856a6818a91ff98467c",
-          "status": "submitted",
-          "side": "sell",
-          "requested_notional": 32.23159677332829,
-          "limit_price": 4.61690788,
-          "submitted_at": "2026-10-08T17:40:03.905033+00:00",
-          "expires_at": "2026-10-22T17:40:03.905033+00:00",
-          "book_bid": 4.546,
-          "book_ask": 4.547
-        },
         "1a4bdbec77e54b32a7ba4d02d6236ae2": {
           "order_id": "1a4bdbec77e54b32a7ba4d02d6236ae2",
           "status": "submitted",
@@ -342,17 +331,17 @@
           "book_ask": 4.547
         }
       },
-      "fees_paid": 0.075,
-      "slippage_cost": 0.0225,
-      "last_equity": 299.75407611,
+      "fees_paid": 0.08144632,
+      "slippage_cost": 0.02894632,
+      "last_equity": 302.86734949,
       "closing": false
     }
   },
   "realized_pnl": 69.189653,
-  "last_update": "2026-10-09T01:40:02.893550+00:00",
+  "last_update": "2026-10-09T02:40:03.116339+00:00",
   "execution": {
     "submitted": 187,
-    "filled": 113,
+    "filled": 114,
     "partial": 0,
     "expired": 2,
     "rejected": 0
