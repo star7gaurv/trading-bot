@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-10T18:00:01.311703+00:00",
+  "updated": "2026-10-10T18:30:01.555685+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -255,13 +255,13 @@
     },
     "TAO/USDT:USDT": {
       "NEUTRAL": {
-        "n": 2,
+        "n": 3,
         "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 2.524,
-        "profit_usdt": 0.64,
-        "avg_profit_pct": 0.44
+        "losses": 2,
+        "wr": 0.3333,
+        "pf": 1.377,
+        "profit_usdt": 0.29,
+        "avg_profit_pct": 0.14
       }
     },
     "WIF/USDT:USDT": {
