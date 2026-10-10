@@ -998,3 +998,6 @@
 | 2026-10-10 14:11:45 | LDO/USDT:USDT | LONG | 6h11m | +0.01% | +0.00 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-10 15:00:40 | 1000PEPE/USDT:USDT | LONG | 6h00m | +0.07% | +0.06 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-10 16:00:26 | FIL/USDT:USDT | LONG | 6h00m | +0.14% | +0.10 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-10 17:02:26 | XRP/USDT:USDT | LONG | 6h02m | -0.20% | -0.15 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-10 17:00:16 | APT/USDT:USDT | LONG | 5h59m | +4.37% | +3.26 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-10 17:03:06 | FET/USDT:USDT | LONG | 6h02m | -0.80% | -0.59 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
