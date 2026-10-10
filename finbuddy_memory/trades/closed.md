@@ -994,3 +994,5 @@
 | 2026-10-10 02:00:19 | ONDO/USDT:USDT | LONG | 4h00m | +2.81% | +2.09 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-10 05:02:23 | SUI/USDT:USDT | LONG | 1h02m | +0.89% | +0.66 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-10 10:10:37 | APT/USDT:USDT | LONG | 6h00m | -2.43% | -1.81 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-10 14:11:35 | ARB/USDT:USDT | LONG | 6h11m | +0.86% | +0.64 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-10 14:11:45 | LDO/USDT:USDT | LONG | 6h11m | +0.01% | +0.00 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
