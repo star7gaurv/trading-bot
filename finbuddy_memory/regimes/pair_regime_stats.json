@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-10T05:00:01.366378+00:00",
+  "updated": "2026-10-10T05:30:01.946860+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -301,13 +301,13 @@
     },
     "SUI/USDT:USDT": {
       "NEUTRAL": {
-        "n": 2,
-        "wins": 1,
+        "n": 3,
+        "wins": 2,
         "losses": 1,
-        "wr": 0.5,
-        "pf": 2.598,
-        "profit_usdt": 1.47,
-        "avg_profit_pct": 0.985
+        "wr": 0.6667,
+        "pf": 3.315,
+        "profit_usdt": 2.13,
+        "avg_profit_pct": 0.953
       }
     },
     "ETH/USDT:USDT": {
