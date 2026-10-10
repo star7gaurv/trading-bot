@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-09T18:30:02.227660+00:00",
+  "generated_at": "2026-10-10T00:30:02.353436+00:00",
   "findings": {
     "dead_timeframes": [
       "5m",
@@ -159,9 +159,9 @@
     },
     "window_stats": {
       "bear_2025Q1": {
-        "n": 294,
+        "n": 295,
         "avg_wr": 0.461,
-        "avg_pf": 0.816
+        "avg_pf": 0.815
       },
       "bull_2024Q1": {
         "n": 256,
@@ -217,10 +217,10 @@
         "avg_trades_day": 7.27
       },
       "1h": {
-        "n": 427,
+        "n": 428,
         "avg_pf": 0.676,
         "avg_wr": 0.399,
-        "avg_trades_day": 4.25
+        "avg_trades_day": 4.27
       },
       "5m": {
         "n": 18,
