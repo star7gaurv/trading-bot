@@ -9,6 +9,12 @@
 
 ### 2026-10-11 — Durable super-admin module governance implemented
 
+Follow-up priority correction: customer and tenant administration must come first. A dedicated
+Customers & Tenants section now exposes provisioning, organization scope, search of displayed
+records, tenant/user/account suspension, session and credential revocation. Governance moves to
+Research. Server-side customer pagination/details, memberships, recovery, invitations and
+subscription lifecycle are the next delivery priorities, ahead of further allocator work.
+
 HeatWave revision `0007` adds the immutable global baseline for Directional, Funding, Pairs,
 Grid and Arbitrage. The super-admin portal now has a dedicated Module Governance screen for
 customer visibility, paper eligibility, evidence grades, lifecycle, capital budget, gross/net
