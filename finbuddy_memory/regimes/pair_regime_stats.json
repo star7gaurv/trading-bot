@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-11T09:30:01.911998+00:00",
+  "updated": "2026-10-11T10:00:01.486646+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -142,13 +142,13 @@
     },
     "LINK/USDT:USDT": {
       "NEUTRAL": {
-        "n": 5,
+        "n": 6,
         "wins": 3,
-        "losses": 2,
-        "wr": 0.6,
-        "pf": 0.688,
-        "profit_usdt": -0.89,
-        "avg_profit_pct": -0.242
+        "losses": 3,
+        "wr": 0.5,
+        "pf": 0.62,
+        "profit_usdt": -1.2,
+        "avg_profit_pct": -0.27
       }
     },
     "LTC/USDT:USDT": {
