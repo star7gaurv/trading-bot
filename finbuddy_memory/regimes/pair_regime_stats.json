@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-11T00:00:01.874780+00:00",
+  "updated": "2026-10-11T00:30:01.274367+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -100,13 +100,13 @@
         "avg_profit_pct": 2.48
       },
       "NEUTRAL": {
-        "n": 1,
+        "n": 2,
         "wins": 0,
-        "losses": 1,
+        "losses": 2,
         "wr": 0.0,
         "pf": 0.0,
-        "profit_usdt": -0.15,
-        "avg_profit_pct": -0.2
+        "profit_usdt": -0.27,
+        "avg_profit_pct": -0.175
       }
     },
     "ENA/USDT:USDT": {
