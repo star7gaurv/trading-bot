@@ -5,7 +5,17 @@
 **Project:** Cortexa — Autonomous AI Brain for Crypto Trading  
 **Owner:** Gaurav (star7gaurav@gmail.com)  
 **Status**: 🔴🟡 Private research system, dry-run/paper only · v23 directional on **1h** (`finbuddy_v23_mom_features_1788780906`) · LT=0.7/ST=−0.6 · K_TP=3.0/K_SL=3.5 · DI+SVM disabled · edge gate ACTIVE and THROTTLING at observed runtime ratio **1.2** with 1x leverage cap · directional validation negative (1,204 closed, -37.72 USDT, WR 43.3%, PF 0.951; latest daily/deep WF PF 0.680/0.801) · WF gate now uses 83 unique consecutive failures while preserving 222 raw failures (244 summaries, 89 unique, 155 duplicates) · grid/arbitrage/liquidation paper P&L UNVERIFIED pending realistic fills and canonical accounting · pairs negative/gated · no module ready for real capital or customers
-**Last Updated**: 2026-10-06 UTC — Multi-tenant HeatWave foundation and customer/super-admin portals are active; live execution remains blocked. Full evidence: `docs/audit/2026-09-16-complete-audit.md`; SaaS status: `docs/platform/saas-foundation-status.md`; required work: `docs/platform/remediation-register.md`.
+**Last Updated**: 2026-10-11 UTC — Multi-tenant HeatWave foundation, customer/super-admin portals, and global module governance are active; live execution remains blocked. Full evidence: `docs/audit/2026-09-16-complete-audit.md`; SaaS status: `docs/platform/saas-foundation-status.md`; required work: `docs/platform/remediation-register.md`.
+
+### 2026-10-11 — Durable super-admin module governance implemented
+
+HeatWave revision `0007` adds the immutable global baseline for Directional, Funding, Pairs,
+Grid and Arbitrage. The super-admin portal now has a dedicated Module Governance screen for
+customer visibility, paper eligibility, evidence grades, lifecycle, capital budget, gross/net
+exposure and position limits. Changes are append-only versioned audit events; the customer API
+folds the effective policy into the module catalog. Total module capital budget is transactionally
+capped at 100%. The API rejects unknown fields and exposes no live-enable mutation. The runtime
+has read access to the baseline but cannot change it; live execution remains blocked.
 
 ### 2026-10-08 - Customer intelligence surface and ownership plan implemented
 

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-11T11:00:01.219565+00:00",
+  "updated": "2026-10-11T11:30:01.208445+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -297,13 +297,13 @@
     },
     "APT/USDT:USDT": {
       "NEUTRAL": {
-        "n": 10,
+        "n": 11,
         "wins": 5,
-        "losses": 5,
-        "wr": 0.5,
-        "pf": 1.549,
-        "profit_usdt": 2.81,
-        "avg_profit_pct": 0.377
+        "losses": 6,
+        "wr": 0.4545,
+        "pf": 1.384,
+        "profit_usdt": 2.2,
+        "avg_profit_pct": 0.268
       }
     },
     "OP/USDT:USDT": {
@@ -319,13 +319,13 @@
     },
     "SUI/USDT:USDT": {
       "NEUTRAL": {
-        "n": 4,
+        "n": 5,
         "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 1.658,
-        "profit_usdt": 1.21,
-        "avg_profit_pct": 0.407
+        "losses": 3,
+        "wr": 0.4,
+        "pf": 1.074,
+        "profit_usdt": 0.21,
+        "avg_profit_pct": 0.06
       }
     },
     "ETH/USDT:USDT": {
