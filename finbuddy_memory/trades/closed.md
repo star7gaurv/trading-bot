@@ -1004,3 +1004,4 @@
 | 2026-10-10 18:00:23 | TAO/USDT:USDT | LONG | 6h00m | -0.46% | -0.35 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-10 20:11:51 | OP/USDT:USDT | LONG | 6h00m | +3.02% | +2.25 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-10 21:00:21 | ARB/USDT:USDT | LONG | 4h00m | +1.12% | +0.84 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-11 00:00:28 | XRP/USDT:USDT | LONG | 6h00m | -0.15% | -0.12 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
