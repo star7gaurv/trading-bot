@@ -1009,3 +1009,5 @@
 | 2026-10-11 04:00:26 | APT/USDT:USDT | LONG | 6h00m | -0.49% | -0.37 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-11 06:01:01 | ADA/USDT:USDT | LONG | 6h00m | -0.96% | -0.72 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-11 09:22:42 | LINK/USDT:USDT | LONG | 6h00m | -0.41% | -0.31 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-11 11:00:41 | APT/USDT:USDT | LONG | 6h00m | -0.82% | -0.61 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-11 11:00:31 | SUI/USDT:USDT | LONG | 6h00m | -1.33% | -1.00 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
