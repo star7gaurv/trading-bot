@@ -1006,3 +1006,4 @@
 | 2026-10-10 21:00:21 | ARB/USDT:USDT | LONG | 4h00m | +1.12% | +0.84 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-11 00:00:28 | XRP/USDT:USDT | LONG | 6h00m | -0.15% | -0.12 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-11 03:00:38 | SUI/USDT:USDT | LONG | 6h00m | -1.23% | -0.92 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-11 04:00:26 | APT/USDT:USDT | LONG | 6h00m | -0.49% | -0.37 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
