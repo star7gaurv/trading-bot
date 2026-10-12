@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-12T05:00:02.132965+00:00",
+  "updated": "2026-10-12T05:30:01.939049+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -330,13 +330,13 @@
     },
     "ETH/USDT:USDT": {
       "NEUTRAL": {
-        "n": 2,
-        "wins": 1,
+        "n": 3,
+        "wins": 2,
         "losses": 1,
-        "wr": 0.5,
-        "pf": 0.3,
-        "profit_usdt": -0.42,
-        "avg_profit_pct": -0.285
+        "wr": 0.6667,
+        "pf": 1.317,
+        "profit_usdt": 0.19,
+        "avg_profit_pct": 0.087
       }
     },
     "LDO/USDT:USDT": {
