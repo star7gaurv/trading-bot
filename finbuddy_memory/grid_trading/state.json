@@ -12,8 +12,8 @@
       "er": 0.028,
       "vol_pct": 1.31,
       "deployed_at": "2026-10-08T15:40:04.821446+00:00",
-      "last_price": 0.46315,
-      "last_price_ts": "2026-10-13T00:40:02.771863+00:00",
+      "last_price": 0.47155,
+      "last_price_ts": "2026-10-13T01:40:03.196711+00:00",
       "execution_model": "book_v1",
       "quote_cash": 249.6675681231,
       "base_qty": 128.106541974228,
@@ -76,7 +76,7 @@
       },
       "fees_paid": 0.10694651,
       "slippage_cost": 0.05444651,
-      "last_equity": 309.00011304,
+      "last_equity": 310.07620799,
       "closing": false
     },
     "NEAR": {
@@ -91,8 +91,8 @@
       "er": 0.034,
       "vol_pct": 1.47,
       "deployed_at": "2026-10-12T22:40:03.885068+00:00",
-      "last_price": 5.0415,
-      "last_price_ts": "2026-10-13T00:40:03.074452+00:00",
+      "last_price": 5.1585,
+      "last_price_ts": "2026-10-13T01:40:03.491283+00:00",
       "execution_model": "book_v1",
       "quote_cash": 149.925,
       "base_qty": 29.476710568886,
@@ -210,7 +210,7 @@
       },
       "fees_paid": 0.075,
       "slippage_cost": 0.0225,
-      "last_equity": 298.53183633,
+      "last_equity": 301.98061147,
       "closing": false
     },
     "FET": {
@@ -225,8 +225,8 @@
       "er": 0.006,
       "vol_pct": 1.32,
       "deployed_at": "2026-10-12T22:40:04.688850+00:00",
-      "last_price": 0.20955000000000001,
-      "last_price_ts": "2026-10-13T00:40:03.380387+00:00",
+      "last_price": 0.20905,
+      "last_price_ts": "2026-10-13T01:40:03.799874+00:00",
       "execution_model": "book_v1",
       "quote_cash": 119.94,
       "base_qty": 827.195756413465,
@@ -333,12 +333,12 @@
       },
       "fees_paid": 0.0809958,
       "slippage_cost": 0.0284958,
-      "last_equity": 293.27887076,
+      "last_equity": 292.86527288,
       "closing": false
     }
   },
   "realized_pnl": 58.177119,
-  "last_update": "2026-10-13T00:40:03.396280+00:00",
+  "last_update": "2026-10-13T01:40:03.814266+00:00",
   "execution": {
     "submitted": 242,
     "filled": 149,
