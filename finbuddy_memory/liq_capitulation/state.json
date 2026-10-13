@@ -3,28 +3,13 @@
   "realized_pnl": 50.103018,
   "wins": 30,
   "losses": 29,
-  "last_update": "2026-10-13T02:50:14.288963+00:00",
-  "pending_orders": {
-    "WIFUSDT": {
-      "order_id": "9caabc1637534bd28fe244ee4261ea1b",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 0.2024,
-      "submitted_at": "2026-10-13T01:50:14.705729+00:00",
-      "expires_at": "2026-10-13T03:20:14.705729+00:00",
-      "book_bid": 0.2024,
-      "book_ask": 0.2025,
-      "symbol": "WIFUSDT",
-      "liq_long_z": 2.069,
-      "liq_long_usd": 151834.0
-    }
-  },
+  "last_update": "2026-10-13T03:50:15.487172+00:00",
+  "pending_orders": {},
   "execution": {
     "submitted": 15,
     "filled": 22,
     "partial": 0,
-    "expired": 3,
+    "expired": 4,
     "rejected": 0
   }
 }
