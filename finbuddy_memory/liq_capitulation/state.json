@@ -25,31 +25,29 @@
       "entry_slippage_cost": 0.04,
       "execution_model": "book_v1",
       "entry_fill_ratio": 1.0
+    },
+    "POLUSDT": {
+      "symbol": "POLUSDT",
+      "side": "long",
+      "entry_price": 0.09315,
+      "notional": 200.0,
+      "entry_liq_z": 2.069,
+      "entry_liq_long_usd": 205090.0,
+      "opened_at": "2026-10-15T06:50:02.709336+00:00",
+      "fees_paid": 0.04,
+      "entry_slippage_cost": 0.04,
+      "execution_model": "book_v1",
+      "entry_fill_ratio": 1.0
     }
   },
   "realized_pnl": 50.103018,
   "wins": 30,
   "losses": 29,
-  "last_update": "2026-10-15T05:50:15.124790+00:00",
-  "pending_orders": {
-    "POLUSDT": {
-      "order_id": "e3803af438a04f609d0037fbe31ae9e7",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 0.09315,
-      "submitted_at": "2026-10-15T05:50:14.472230+00:00",
-      "expires_at": "2026-10-15T07:20:14.472230+00:00",
-      "book_bid": 0.09315,
-      "book_ask": 0.09316,
-      "symbol": "POLUSDT",
-      "liq_long_z": 2.069,
-      "liq_long_usd": 205090.0
-    }
-  },
+  "last_update": "2026-10-15T06:50:03.163879+00:00",
+  "pending_orders": {},
   "execution": {
     "submitted": 19,
-    "filled": 24,
+    "filled": 25,
     "partial": 0,
     "expired": 5,
     "rejected": 0
