@@ -1,58 +1,57 @@
 {
-  "positions": {},
+  "positions": {
+    "WIFUSDT": {
+      "symbol": "WIFUSDT",
+      "side": "long",
+      "entry_price": 0.1917,
+      "notional": 200.0,
+      "entry_liq_z": 2.179,
+      "entry_liq_long_usd": 213950.0,
+      "opened_at": "2026-10-15T05:50:01.961282+00:00",
+      "fees_paid": 0.04,
+      "entry_slippage_cost": 0.04,
+      "execution_model": "book_v1",
+      "entry_fill_ratio": 1.0
+    },
+    "ETHUSDT": {
+      "symbol": "ETHUSDT",
+      "side": "long",
+      "entry_price": 2353.33,
+      "notional": 200.0,
+      "entry_liq_z": 2.041,
+      "entry_liq_long_usd": 102762699.0,
+      "opened_at": "2026-10-15T05:50:02.259913+00:00",
+      "fees_paid": 0.04,
+      "entry_slippage_cost": 0.04,
+      "execution_model": "book_v1",
+      "entry_fill_ratio": 1.0
+    }
+  },
   "realized_pnl": 50.103018,
   "wins": 30,
   "losses": 29,
-  "last_update": "2026-10-15T04:50:02.098066+00:00",
+  "last_update": "2026-10-15T05:50:15.124790+00:00",
   "pending_orders": {
-    "WIFUSDT": {
-      "order_id": "a34048f375e6435d92d9a0a5c5bb978f",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 0.1917,
-      "submitted_at": "2026-10-15T03:50:14.709093+00:00",
-      "expires_at": "2026-10-15T05:20:14.709093+00:00",
-      "book_bid": 0.1917,
-      "book_ask": 0.1918,
-      "symbol": "WIFUSDT",
-      "liq_long_z": 2.179,
-      "liq_long_usd": 213950.0
-    },
     "POLUSDT": {
-      "order_id": "7d602a2ee71b4fc2a983a5468b755135",
+      "order_id": "e3803af438a04f609d0037fbe31ae9e7",
       "status": "submitted",
       "side": "buy",
       "requested_notional": 200.0,
-      "limit_price": 0.09186,
-      "submitted_at": "2026-10-15T03:50:15.619281+00:00",
-      "expires_at": "2026-10-15T05:20:15.619281+00:00",
-      "book_bid": 0.09186,
-      "book_ask": 0.09187,
+      "limit_price": 0.09315,
+      "submitted_at": "2026-10-15T05:50:14.472230+00:00",
+      "expires_at": "2026-10-15T07:20:14.472230+00:00",
+      "book_bid": 0.09315,
+      "book_ask": 0.09316,
       "symbol": "POLUSDT",
       "liq_long_z": 2.069,
       "liq_long_usd": 205090.0
-    },
-    "ETHUSDT": {
-      "order_id": "02fed1c0ac9a4252a2d172e23d721fa9",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 2353.33,
-      "submitted_at": "2026-10-15T03:50:16.434765+00:00",
-      "expires_at": "2026-10-15T05:20:16.434765+00:00",
-      "book_bid": 2353.33,
-      "book_ask": 2353.34,
-      "symbol": "ETHUSDT",
-      "liq_long_z": 2.041,
-      "liq_long_usd": 102762699.0
     }
   },
   "execution": {
-    "submitted": 18,
-    "filled": 22,
+    "submitted": 19,
+    "filled": 24,
     "partial": 0,
-    "expired": 4,
+    "expired": 5,
     "rejected": 0
   }
 }
