@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-15T14:00:02.409916+00:00",
+  "generated": "2026-10-15T14:30:02.647812+00:00",
   "gate_active": true,
   "reasons": [
     "live 30d IC -0.0006 <= +0.00 (n=17750, horizon=6 candles)",
