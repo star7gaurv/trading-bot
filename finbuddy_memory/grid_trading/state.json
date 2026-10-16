@@ -12,8 +12,8 @@
       "er": 0.028,
       "vol_pct": 1.31,
       "deployed_at": "2026-10-08T15:40:04.821446+00:00",
-      "last_price": 0.45155,
-      "last_price_ts": "2026-10-16T19:40:02.777379+00:00",
+      "last_price": 0.45405,
+      "last_price_ts": "2026-10-16T20:40:02.393690+00:00",
       "execution_model": "book_v1",
       "quote_cash": 219.6825681231,
       "base_qty": 196.982581384854,
@@ -65,7 +65,7 @@
       },
       "fees_paid": 0.11294231,
       "slippage_cost": 0.06044231,
-      "last_equity": 308.63005275,
+      "last_equity": 309.1225092,
       "closing": false
     },
     "NEAR": {
@@ -80,8 +80,8 @@
       "er": 0.034,
       "vol_pct": 1.47,
       "deployed_at": "2026-10-12T22:40:03.885068+00:00",
-      "last_price": 4.9635,
-      "last_price_ts": "2026-10-16T19:40:03.076320+00:00",
+      "last_price": 4.999499999999999,
+      "last_price_ts": "2026-10-16T20:40:02.701346+00:00",
       "execution_model": "book_v1",
       "quote_cash": 124.744861429,
       "base_qty": 35.745603688072,
@@ -144,7 +144,7 @@
       },
       "fees_paid": 0.10594496,
       "slippage_cost": 0.05344496,
-      "last_equity": 302.16816533,
+      "last_equity": 303.45500707,
       "closing": false
     },
     "FET": {
@@ -159,8 +159,8 @@
       "er": 0.006,
       "vol_pct": 1.32,
       "deployed_at": "2026-10-12T22:40:04.688850+00:00",
-      "last_price": 0.19665,
-      "last_price_ts": "2026-10-16T19:40:03.378392+00:00",
+      "last_price": 0.19915,
+      "last_price_ts": "2026-10-16T20:40:03.012904+00:00",
       "execution_model": "book_v1",
       "quote_cash": 29.985,
       "base_qty": 1273.474920270988,
@@ -234,12 +234,12 @@
       },
       "fees_paid": 0.0989832,
       "slippage_cost": 0.0464832,
-      "last_equity": 280.41384307,
+      "last_equity": 283.59753037,
       "closing": false
     }
   },
   "realized_pnl": 58.177119,
-  "last_update": "2026-10-16T19:40:03.393268+00:00",
+  "last_update": "2026-10-16T20:40:03.027607+00:00",
   "execution": {
     "submitted": 242,
     "filled": 158,
