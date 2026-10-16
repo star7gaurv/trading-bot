@@ -12,8 +12,8 @@
       "er": 0.028,
       "vol_pct": 1.31,
       "deployed_at": "2026-10-08T15:40:04.821446+00:00",
-      "last_price": 0.45875,
-      "last_price_ts": "2026-10-16T16:40:02.968332+00:00",
+      "last_price": 0.45325,
+      "last_price_ts": "2026-10-16T17:40:02.654902+00:00",
       "execution_model": "book_v1",
       "quote_cash": 219.6825681231,
       "base_qty": 196.982581384854,
@@ -65,7 +65,7 @@
       },
       "fees_paid": 0.11294231,
       "slippage_cost": 0.06044231,
-      "last_equity": 310.04832733,
+      "last_equity": 308.96492314,
       "closing": false
     },
     "NEAR": {
@@ -80,8 +80,8 @@
       "er": 0.034,
       "vol_pct": 1.47,
       "deployed_at": "2026-10-12T22:40:03.885068+00:00",
-      "last_price": 5.0975,
-      "last_price_ts": "2026-10-16T16:40:03.270966+00:00",
+      "last_price": 5.0365,
+      "last_price_ts": "2026-10-16T17:40:02.953684+00:00",
       "execution_model": "book_v1",
       "quote_cash": 124.744861429,
       "base_qty": 35.745603688072,
@@ -144,7 +144,7 @@
       },
       "fees_paid": 0.10594496,
       "slippage_cost": 0.05344496,
-      "last_equity": 306.95807623,
+      "last_equity": 304.7775944,
       "closing": false
     },
     "FET": {
@@ -159,8 +159,8 @@
       "er": 0.006,
       "vol_pct": 1.32,
       "deployed_at": "2026-10-12T22:40:04.688850+00:00",
-      "last_price": 0.20035,
-      "last_price_ts": "2026-10-16T16:40:03.576067+00:00",
+      "last_price": 0.19935,
+      "last_price_ts": "2026-10-16T17:40:03.266213+00:00",
       "execution_model": "book_v1",
       "quote_cash": 29.985,
       "base_qty": 1273.474920270988,
@@ -234,12 +234,12 @@
       },
       "fees_paid": 0.0989832,
       "slippage_cost": 0.0464832,
-      "last_equity": 285.12570028,
+      "last_equity": 283.85222536,
       "closing": false
     }
   },
   "realized_pnl": 58.177119,
-  "last_update": "2026-10-16T16:40:03.593229+00:00",
+  "last_update": "2026-10-16T17:40:03.282053+00:00",
   "execution": {
     "submitted": 242,
     "filled": 158,
