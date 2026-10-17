@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-17T01:00:01.854630+00:00",
+  "updated": "2026-10-17T01:30:01.348197+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -11,13 +11,13 @@
   "stats": {
     "ARB/USDT:USDT": {
       "BULL": {
-        "n": 5,
-        "wins": 1,
+        "n": 4,
+        "wins": 0,
         "losses": 4,
-        "wr": 0.2,
-        "pf": 0.215,
-        "profit_usdt": -7.58,
-        "avg_profit_pct": -1.356
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -9.65,
+        "avg_profit_pct": -2.165
       },
       "NEUTRAL": {
         "n": 5,
@@ -352,14 +352,6 @@
     }
   },
   "blocked": [
-    {
-      "pair": "ARB/USDT:USDT",
-      "regime": "BULL",
-      "reason": "WR=20% PF=0.21 n=5 profit=-7.58",
-      "n": 5,
-      "wr": 0.2,
-      "pf": 0.215
-    },
     {
       "pair": "ETH/USDT:USDT",
       "regime": "NEUTRAL",
