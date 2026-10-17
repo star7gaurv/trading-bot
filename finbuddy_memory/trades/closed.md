@@ -1019,3 +1019,4 @@
 | 2026-10-12 16:01:01 | ONDO/USDT:USDT | LONG | 6h00m | -2.26% | -1.70 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-13 11:02:17 | ETH/USDT:USDT | LONG | 6h01m | -0.83% | -0.61 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-13 21:00:30 | ETH/USDT:USDT | LONG | 6h00m | -0.31% | -0.23 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-10-17 04:00:46 | NEAR/USDT:USDT | SHORT | 6h00m | -1.47% | -1.03 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
