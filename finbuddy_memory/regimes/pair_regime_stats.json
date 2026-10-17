@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-17T04:00:01.436987+00:00",
+  "updated": "2026-10-17T04:30:02.090399+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -277,13 +277,13 @@
     },
     "NEAR/USDT:USDT": {
       "NEUTRAL": {
-        "n": 5,
+        "n": 6,
         "wins": 2,
-        "losses": 3,
-        "wr": 0.4,
-        "pf": 0.206,
-        "profit_usdt": -7.16,
-        "avg_profit_pct": -1.93
+        "losses": 4,
+        "wr": 0.3333,
+        "pf": 0.185,
+        "profit_usdt": -8.19,
+        "avg_profit_pct": -1.853
       },
       "BULL": {
         "n": 1,
@@ -352,6 +352,14 @@
     }
   },
   "blocked": [
+    {
+      "pair": "NEAR/USDT:USDT",
+      "regime": "NEUTRAL",
+      "reason": "WR=33% PF=0.18 n=6 profit=-8.19",
+      "n": 6,
+      "wr": 0.3333,
+      "pf": 0.185
+    },
     {
       "pair": "ETH/USDT:USDT",
       "regime": "NEUTRAL",
