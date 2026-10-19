@@ -12,8 +12,8 @@
       "er": 0.028,
       "vol_pct": 1.31,
       "deployed_at": "2026-10-08T15:40:04.821446+00:00",
-      "last_price": 0.43155,
-      "last_price_ts": "2026-10-19T17:40:02.781357+00:00",
+      "last_price": 0.42975,
+      "last_price_ts": "2026-10-19T18:40:02.951466+00:00",
       "execution_model": "book_v1",
       "quote_cash": 189.6975681231,
       "base_qty": 268.363203957324,
@@ -54,7 +54,7 @@
       },
       "fees_paid": 0.11893811,
       "slippage_cost": 0.06643811,
-      "last_equity": 305.50970879,
+      "last_equity": 305.02665502,
       "closing": false
     },
     "NEAR": {
@@ -69,8 +69,8 @@
       "er": 0.034,
       "vol_pct": 1.47,
       "deployed_at": "2026-10-12T22:40:03.885068+00:00",
-      "last_price": 4.951499999999999,
-      "last_price_ts": "2026-10-19T17:40:03.083329+00:00",
+      "last_price": 4.955500000000001,
+      "last_price_ts": "2026-10-19T18:40:03.261793+00:00",
       "execution_model": "book_v1",
       "quote_cash": 124.744861429,
       "base_qty": 35.745603688072,
@@ -133,7 +133,7 @@
       },
       "fees_paid": 0.10594496,
       "slippage_cost": 0.05344496,
-      "last_equity": 301.73921809,
+      "last_equity": 301.88220051,
       "closing": false
     },
     "FIL": {
@@ -148,8 +148,8 @@
       "er": 0.03,
       "vol_pct": 1.34,
       "deployed_at": "2026-10-17T17:40:04.042854+00:00",
-      "last_price": 1.0098500000000001,
-      "last_price_ts": "2026-10-19T17:40:03.387373+00:00",
+      "last_price": 1.01065,
+      "last_price_ts": "2026-10-19T18:40:03.566216+00:00",
       "execution_model": "book_v1",
       "quote_cash": 121.9133775753,
       "base_qty": 169.232431465961,
@@ -234,12 +234,12 @@
       },
       "fees_paid": 0.09338455,
       "slippage_cost": 0.04088455,
-      "last_equity": 292.81274849,
+      "last_equity": 292.94813444,
       "closing": false
     }
   },
   "realized_pnl": 27.171793,
-  "last_update": "2026-10-19T17:40:03.402444+00:00",
+  "last_update": "2026-10-19T18:40:03.581192+00:00",
   "execution": {
     "submitted": 253,
     "filled": 165,
