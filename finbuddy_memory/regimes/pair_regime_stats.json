@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-21T10:30:01.226265+00:00",
+  "updated": "2026-10-21T11:00:01.829576+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "LTC/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 6,
-        "wins": 3,
-        "losses": 3,
-        "wr": 0.5,
-        "pf": 2.896,
-        "profit_usdt": 2.92,
-        "avg_profit_pct": 0.64
-      },
-      "BULL": {
-        "n": 2,
-        "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 0.079,
-        "profit_usdt": -5.93,
-        "avg_profit_pct": -2.55
-      }
-    },
     "LINK/USDT:USDT": {
       "NEUTRAL": {
         "n": 4,
@@ -80,6 +60,26 @@
         "pf": null,
         "profit_usdt": 0.95,
         "avg_profit_pct": 0.85
+      }
+    },
+    "LTC/USDT:USDT": {
+      "BULL": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "wr": 0.5,
+        "pf": 0.079,
+        "profit_usdt": -5.93,
+        "avg_profit_pct": -2.55
+      },
+      "NEUTRAL": {
+        "n": 5,
+        "wins": 2,
+        "losses": 3,
+        "wr": 0.4,
+        "pf": 1.305,
+        "profit_usdt": 0.47,
+        "avg_profit_pct": 0.13
       }
     },
     "DOT/USDT:USDT": {
