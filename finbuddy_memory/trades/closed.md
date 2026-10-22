@@ -1021,3 +1021,4 @@
 | 2026-10-13 21:00:30 | ETH/USDT:USDT | LONG | 6h00m | -0.31% | -0.23 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-10-17 04:00:46 | NEAR/USDT:USDT | SHORT | 6h00m | -1.47% | -1.03 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-10-18 15:04:03 | APT/USDT:USDT | SHORT | 5h03m | +3.81% | +2.84 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
+| 2026-10-22 16:00:27 | SOL/USDT:USDT | SHORT | 6h00m | -0.62% | -0.46 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
