@@ -12,8 +12,8 @@
       "er": 0.034,
       "vol_pct": 1.47,
       "deployed_at": "2026-10-12T22:40:03.885068+00:00",
-      "last_price": 4.8495,
-      "last_price_ts": "2026-10-22T20:40:02.243194+00:00",
+      "last_price": 4.906499999999999,
+      "last_price_ts": "2026-10-22T21:40:02.871595+00:00",
       "execution_model": "book_v1",
       "quote_cash": 124.744861429,
       "base_qty": 35.745603688072,
@@ -76,7 +76,7 @@
       },
       "fees_paid": 0.10594496,
       "slippage_cost": 0.05344496,
-      "last_equity": 298.09316651,
+      "last_equity": 300.13066592,
       "closing": false
     },
     "FIL": {
@@ -91,8 +91,8 @@
       "er": 0.03,
       "vol_pct": 1.34,
       "deployed_at": "2026-10-17T17:40:04.042854+00:00",
-      "last_price": 0.95955,
-      "last_price_ts": "2026-10-22T20:40:02.529455+00:00",
+      "last_price": 0.98595,
+      "last_price_ts": "2026-10-22T21:40:03.176090+00:00",
       "execution_model": "book_v1",
       "quote_cash": 61.9433775753,
       "base_qty": 230.506902241373,
@@ -155,7 +155,7 @@
       },
       "fees_paid": 0.10537615,
       "slippage_cost": 0.05287615,
-      "last_equity": 283.12627562,
+      "last_equity": 289.21165784,
       "closing": false
     },
     "APT": {
@@ -170,8 +170,8 @@
       "er": 0.013,
       "vol_pct": 1.34,
       "deployed_at": "2026-10-22T16:40:04.002622+00:00",
-      "last_price": 0.75635,
-      "last_price_ts": "2026-10-22T20:40:02.813128+00:00",
+      "last_price": 0.76155,
+      "last_price_ts": "2026-10-22T21:40:03.491325+00:00",
       "execution_model": "book_v1",
       "quote_cash": 149.925,
       "base_qty": 195.232365756956,
@@ -289,12 +289,12 @@
       },
       "fees_paid": 0.075,
       "slippage_cost": 0.0225,
-      "last_equity": 297.58899984,
+      "last_equity": 298.60420814,
       "closing": false
     }
   },
   "realized_pnl": 31.94917,
-  "last_update": "2026-10-22T20:40:02.827902+00:00",
+  "last_update": "2026-10-22T21:40:03.506115+00:00",
   "execution": {
     "submitted": 264,
     "filled": 169,
