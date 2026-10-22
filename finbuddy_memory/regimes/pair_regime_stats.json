@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-22T04:00:02.054011+00:00",
+  "updated": "2026-10-22T04:30:02.096526+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "LINK/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 3,
-        "wins": 0,
-        "losses": 3,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -3.16,
-        "avg_profit_pct": -1.39
-      }
-    },
     "ENA/USDT:USDT": {
       "NEUTRAL": {
         "n": 4,
@@ -257,6 +246,17 @@
         "pf": 1.074,
         "profit_usdt": 0.21,
         "avg_profit_pct": 0.06
+      }
+    },
+    "LINK/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 2,
+        "wins": 0,
+        "losses": 2,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -2.23,
+        "avg_profit_pct": -1.48
       }
     },
     "BTC/USDT:USDT": {
