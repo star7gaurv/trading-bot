@@ -1029,3 +1029,4 @@
 | 2026-10-23 12:00:28 | BTC/USDT:USDT | SHORT | 6h00m | +0.12% | +0.10 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-10-23 12:00:27 | APT/USDT:USDT | SHORT | 6h00m | +0.62% | +0.47 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-10-23 13:00:37 | TAO/USDT:USDT | SHORT | 6h00m | +1.06% | +0.79 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-10-23 14:00:31 | LTC/USDT:USDT | SHORT | 6h00m | +0.81% | +0.60 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
