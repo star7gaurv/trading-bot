@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-23T10:00:01.476617+00:00",
+  "updated": "2026-10-23T10:30:01.905354+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -40,13 +40,13 @@
         "avg_profit_pct": -5.04
       },
       "NEUTRAL": {
-        "n": 5,
-        "wins": 5,
+        "n": 6,
+        "wins": 6,
         "losses": 0,
         "wr": 1.0,
         "pf": null,
-        "profit_usdt": 3.87,
-        "avg_profit_pct": 1.038
+        "profit_usdt": 5.77,
+        "avg_profit_pct": 1.287
       }
     },
     "LTC/USDT:USDT": {
@@ -122,13 +122,13 @@
     },
     "SOL/USDT:USDT": {
       "NEUTRAL": {
-        "n": 2,
+        "n": 3,
         "wins": 1,
-        "losses": 1,
-        "wr": 0.5,
-        "pf": 0.087,
-        "profit_usdt": -0.42,
-        "avg_profit_pct": -0.28
+        "losses": 2,
+        "wr": 0.3333,
+        "pf": 0.078,
+        "profit_usdt": -0.47,
+        "avg_profit_pct": -0.207
       }
     },
     "TAO/USDT:USDT": {
