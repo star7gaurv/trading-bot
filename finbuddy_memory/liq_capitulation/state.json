@@ -3,10 +3,25 @@
   "realized_pnl": 46.609451,
   "wins": 30,
   "losses": 32,
-  "last_update": "2026-10-23T19:50:15.461108+00:00",
-  "pending_orders": {},
+  "last_update": "2026-10-23T20:50:16.371246+00:00",
+  "pending_orders": {
+    "LTCUSDT": {
+      "order_id": "9d75236e05424998aef0d2ec43d64613",
+      "status": "submitted",
+      "side": "buy",
+      "requested_notional": 200.0,
+      "limit_price": 58.2,
+      "submitted_at": "2026-10-23T20:50:15.755923+00:00",
+      "expires_at": "2026-10-23T22:20:15.755923+00:00",
+      "book_bid": 58.2,
+      "book_ask": 58.21,
+      "symbol": "LTCUSDT",
+      "liq_long_z": 2.022,
+      "liq_long_usd": 659050.0
+    }
+  },
   "execution": {
-    "submitted": 19,
+    "submitted": 20,
     "filled": 28,
     "partial": 0,
     "expired": 5,
