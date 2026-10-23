@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-23T07:00:01.355378+00:00",
+  "updated": "2026-10-23T07:30:02.301923+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -60,13 +60,13 @@
         "avg_profit_pct": -5.76
       },
       "NEUTRAL": {
-        "n": 5,
+        "n": 6,
         "wins": 2,
-        "losses": 3,
-        "wr": 0.4,
-        "pf": 1.305,
-        "profit_usdt": 0.47,
-        "avg_profit_pct": 0.13
+        "losses": 4,
+        "wr": 0.3333,
+        "pf": 0.736,
+        "profit_usdt": -0.72,
+        "avg_profit_pct": -0.157
       }
     },
     "FET/USDT:USDT": {
