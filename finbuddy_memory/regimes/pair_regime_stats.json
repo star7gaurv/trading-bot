@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-23T12:00:01.826383+00:00",
+  "updated": "2026-10-23T12:30:01.173806+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,26 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "DOT/USDT:USDT": {
-      "BULL": {
-        "n": 2,
-        "wins": 0,
-        "losses": 2,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -8.47,
-        "avg_profit_pct": -3.86
-      },
-      "NEUTRAL": {
-        "n": 10,
-        "wins": 7,
-        "losses": 3,
-        "wr": 0.7,
-        "pf": 1.585,
-        "profit_usdt": 2.42,
-        "avg_profit_pct": 0.324
-      }
-    },
     "ARB/USDT:USDT": {
       "BULL": {
         "n": 1,
@@ -131,6 +111,26 @@
         "avg_profit_pct": -0.207
       }
     },
+    "DOT/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 10,
+        "wins": 7,
+        "losses": 3,
+        "wr": 0.7,
+        "pf": 1.585,
+        "profit_usdt": 2.42,
+        "avg_profit_pct": 0.324
+      },
+      "BULL": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -5.67,
+        "avg_profit_pct": -5.21
+      }
+    },
     "TAO/USDT:USDT": {
       "NEUTRAL": {
         "n": 3,
@@ -186,13 +186,13 @@
     },
     "APT/USDT:USDT": {
       "NEUTRAL": {
-        "n": 15,
-        "wins": 8,
+        "n": 16,
+        "wins": 9,
         "losses": 7,
-        "wr": 0.5333,
-        "pf": 2.023,
-        "profit_usdt": 9.5,
-        "avg_profit_pct": 0.851
+        "wr": 0.5625,
+        "pf": 2.073,
+        "profit_usdt": 9.97,
+        "avg_profit_pct": 0.836
       }
     },
     "OP/USDT:USDT": {
@@ -230,13 +230,13 @@
     },
     "BTC/USDT:USDT": {
       "NEUTRAL": {
-        "n": 3,
-        "wins": 1,
+        "n": 4,
+        "wins": 2,
         "losses": 2,
-        "wr": 0.3333,
-        "pf": 0.654,
-        "profit_usdt": -0.27,
-        "avg_profit_pct": -0.107
+        "wr": 0.5,
+        "pf": 0.782,
+        "profit_usdt": -0.17,
+        "avg_profit_pct": -0.05
       }
     },
     "ETH/USDT:USDT": {
