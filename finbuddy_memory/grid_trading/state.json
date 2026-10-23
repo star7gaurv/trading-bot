@@ -12,8 +12,8 @@
       "er": 0.034,
       "vol_pct": 1.47,
       "deployed_at": "2026-10-12T22:40:03.885068+00:00",
-      "last_price": 4.7715,
-      "last_price_ts": "2026-10-23T20:40:02.244873+00:00",
+      "last_price": 4.7995,
+      "last_price_ts": "2026-10-23T21:40:02.249763+00:00",
       "execution_model": "book_v1",
       "quote_cash": 124.744861429,
       "base_qty": 35.745603688072,
@@ -76,7 +76,7 @@
       },
       "fees_paid": 0.10594496,
       "slippage_cost": 0.05344496,
-      "last_equity": 295.30500943,
+      "last_equity": 296.30588633,
       "closing": false
     },
     "FIL": {
@@ -91,8 +91,8 @@
       "er": 0.03,
       "vol_pct": 1.34,
       "deployed_at": "2026-10-17T17:40:04.042854+00:00",
-      "last_price": 0.96695,
-      "last_price_ts": "2026-10-23T20:40:02.545661+00:00",
+      "last_price": 0.97645,
+      "last_price_ts": "2026-10-23T21:40:02.549243+00:00",
       "execution_model": "book_v1",
       "quote_cash": 61.9433775753,
       "base_qty": 230.506902241373,
@@ -155,7 +155,7 @@
       },
       "fees_paid": 0.10537615,
       "slippage_cost": 0.05287615,
-      "last_equity": 284.8320267,
+      "last_equity": 287.02184227,
       "closing": false
     },
     "APT": {
@@ -170,8 +170,8 @@
       "er": 0.013,
       "vol_pct": 1.34,
       "deployed_at": "2026-10-22T16:40:04.002622+00:00",
-      "last_price": 0.74435,
-      "last_price_ts": "2026-10-23T20:40:02.853186+00:00",
+      "last_price": 0.74985,
+      "last_price_ts": "2026-10-23T21:40:02.854331+00:00",
       "execution_model": "book_v1",
       "quote_cash": 119.94,
       "base_qty": 234.909490961317,
@@ -278,12 +278,12 @@
       },
       "fees_paid": 0.0809958,
       "slippage_cost": 0.0284958,
-      "last_equity": 294.7948796,
+      "last_equity": 296.0868818,
       "closing": false
     }
   },
   "realized_pnl": 31.94917,
-  "last_update": "2026-10-23T20:40:02.868766+00:00",
+  "last_update": "2026-10-23T21:40:02.869365+00:00",
   "execution": {
     "submitted": 264,
     "filled": 170,
