@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-24T12:00:01.989399+00:00",
+  "updated": "2026-10-24T12:30:01.473949+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ONDO/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 9,
-        "wins": 6,
-        "losses": 3,
-        "wr": 0.6667,
-        "pf": 1.055,
-        "profit_usdt": 0.54,
-        "avg_profit_pct": 0.072
-      }
-    },
     "SOL/USDT:USDT": {
       "NEUTRAL": {
         "n": 3,
@@ -115,6 +104,17 @@
         "pf": null,
         "profit_usdt": 2.62,
         "avg_profit_pct": 0.875
+      }
+    },
+    "ONDO/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 8,
+        "wins": 6,
+        "losses": 2,
+        "wr": 0.75,
+        "pf": 2.668,
+        "profit_usdt": 6.42,
+        "avg_profit_pct": 1.069
       }
     },
     "NEAR/USDT:USDT": {
