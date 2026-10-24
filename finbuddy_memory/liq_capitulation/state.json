@@ -3,28 +3,13 @@
   "realized_pnl": 42.831745,
   "wins": 30,
   "losses": 33,
-  "last_update": "2026-10-24T16:50:15.212563+00:00",
-  "pending_orders": {
-    "NEARUSDT": {
-      "order_id": "d6d7d2d2adb04b4ebadc119afc8abf48",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 4.345,
-      "submitted_at": "2026-10-24T15:50:15.178656+00:00",
-      "expires_at": "2026-10-24T17:20:15.178656+00:00",
-      "book_bid": 4.345,
-      "book_ask": 4.346,
-      "symbol": "NEARUSDT",
-      "liq_long_z": 2.28,
-      "liq_long_usd": 10496143.0
-    }
-  },
+  "last_update": "2026-10-24T17:50:13.744033+00:00",
+  "pending_orders": {},
   "execution": {
     "submitted": 21,
     "filled": 30,
     "partial": 0,
-    "expired": 5,
+    "expired": 6,
     "rejected": 0
   }
 }
