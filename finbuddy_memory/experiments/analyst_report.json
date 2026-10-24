@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-24T12:30:02.006079+00:00",
+  "generated_at": "2026-10-24T18:30:02.634675+00:00",
   "findings": {
     "dead_timeframes": [
       "5m",
@@ -242,7 +242,7 @@
       }
     }
   },
-  "pruned": 2,
+  "pruned": 5,
   "actions": [
     "Queued \u00d71 expansion to untested window recent_90d"
   ],
