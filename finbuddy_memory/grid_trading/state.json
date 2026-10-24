@@ -12,8 +12,8 @@
       "er": 0.034,
       "vol_pct": 1.47,
       "deployed_at": "2026-10-12T22:40:03.885068+00:00",
-      "last_price": 4.6265,
-      "last_price_ts": "2026-10-24T07:40:02.676602+00:00",
+      "last_price": 4.5465,
+      "last_price_ts": "2026-10-24T08:40:02.293618+00:00",
       "execution_model": "book_v1",
       "quote_cash": 124.744861429,
       "base_qty": 35.745603688072,
@@ -76,7 +76,7 @@
       },
       "fees_paid": 0.10594496,
       "slippage_cost": 0.05344496,
-      "last_equity": 290.12189689,
+      "last_equity": 287.2622486,
       "closing": false
     },
     "FIL": {
@@ -91,8 +91,8 @@
       "er": 0.03,
       "vol_pct": 1.34,
       "deployed_at": "2026-10-17T17:40:04.042854+00:00",
-      "last_price": 0.94685,
-      "last_price_ts": "2026-10-24T07:40:02.979175+00:00",
+      "last_price": 0.94215,
+      "last_price_ts": "2026-10-24T08:40:02.594226+00:00",
       "execution_model": "book_v1",
       "quote_cash": 61.9433775753,
       "base_qty": 230.506902241373,
@@ -155,7 +155,7 @@
       },
       "fees_paid": 0.10537615,
       "slippage_cost": 0.05287615,
-      "last_equity": 280.19883796,
+      "last_equity": 279.11545552,
       "closing": false
     },
     "APT": {
@@ -170,8 +170,8 @@
       "er": 0.013,
       "vol_pct": 1.34,
       "deployed_at": "2026-10-22T16:40:04.002622+00:00",
-      "last_price": 0.72355,
-      "last_price_ts": "2026-10-24T07:40:03.280456+00:00",
+      "last_price": 0.71885,
+      "last_price_ts": "2026-10-24T08:40:02.899662+00:00",
       "execution_model": "book_v1",
       "quote_cash": 89.955,
       "base_qty": 275.971470379049,
@@ -267,12 +267,12 @@
       },
       "fees_paid": 0.0869916,
       "slippage_cost": 0.0344916,
-      "last_equity": 289.63415739,
+      "last_equity": 288.33709148,
       "closing": false
     }
   },
   "realized_pnl": 31.94917,
-  "last_update": "2026-10-24T07:40:03.295443+00:00",
+  "last_update": "2026-10-24T08:40:02.914354+00:00",
   "execution": {
     "submitted": 264,
     "filled": 171,
