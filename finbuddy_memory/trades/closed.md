@@ -1031,3 +1031,4 @@
 | 2026-10-23 13:00:37 | TAO/USDT:USDT | SHORT | 6h00m | +1.06% | +0.79 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-10-23 14:00:31 | LTC/USDT:USDT | SHORT | 6h00m | +0.81% | +0.60 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-10-23 20:00:24 | APT/USDT:USDT | SHORT | 6h00m | +2.62% | +1.97 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
+| 2026-10-25 03:00:38 | SOL/USDT:USDT | SHORT | 6h00m | -0.90% | -0.68 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
