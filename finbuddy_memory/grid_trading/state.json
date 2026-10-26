@@ -12,8 +12,8 @@
       "er": 0.034,
       "vol_pct": 1.47,
       "deployed_at": "2026-10-12T22:40:03.885068+00:00",
-      "last_price": 4.5335,
-      "last_price_ts": "2026-10-26T09:40:02.623837+00:00",
+      "last_price": 4.5595,
+      "last_price_ts": "2026-10-26T10:40:03.087795+00:00",
       "execution_model": "book_v1",
       "quote_cash": 94.759861429,
       "base_qty": 42.398502922834,
@@ -65,7 +65,7 @@
       },
       "fees_paid": 0.11194076,
       "slippage_cost": 0.05944076,
-      "last_equity": 286.97347443,
+      "last_equity": 288.07583551,
       "closing": false
     },
     "APT": {
@@ -80,8 +80,8 @@
       "er": 0.013,
       "vol_pct": 1.34,
       "deployed_at": "2026-10-22T16:40:04.002622+00:00",
-      "last_price": 0.69785,
-      "last_price_ts": "2026-10-26T09:40:02.949683+00:00",
+      "last_price": 0.69715,
+      "last_price_ts": "2026-10-26T10:40:03.390152+00:00",
       "execution_model": "book_v1",
       "quote_cash": 59.97,
       "base_qty": 318.518472148725,
@@ -166,7 +166,7 @@
       },
       "fees_paid": 0.0929874,
       "slippage_cost": 0.0404874,
-      "last_equity": 282.24811579,
+      "last_equity": 282.02515286,
       "closing": false
     },
     "ENA": {
@@ -181,8 +181,8 @@
       "er": 0.035,
       "vol_pct": 1.22,
       "deployed_at": "2026-10-24T14:40:03.773842+00:00",
-      "last_price": 0.207205,
-      "last_price_ts": "2026-10-26T09:40:03.589094+00:00",
+      "last_price": 0.207945,
+      "last_price_ts": "2026-10-26T10:40:03.697205+00:00",
       "execution_model": "book_v1",
       "quote_cash": 247.2206762934,
       "base_qty": 304.173522439484,
@@ -267,12 +267,12 @@
       },
       "fees_paid": 0.09446303,
       "slippage_cost": 0.04861402,
-      "last_equity": 310.24695101,
+      "last_equity": 310.47203942,
       "closing": false
     }
   },
   "realized_pnl": 6.567368,
-  "last_update": "2026-10-26T09:40:03.603726+00:00",
+  "last_update": "2026-10-26T10:40:03.711735+00:00",
   "execution": {
     "submitted": 275,
     "filled": 179,
