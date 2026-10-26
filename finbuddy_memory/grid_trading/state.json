@@ -12,8 +12,8 @@
       "er": 0.034,
       "vol_pct": 1.47,
       "deployed_at": "2026-10-12T22:40:03.885068+00:00",
-      "last_price": 4.5245,
-      "last_price_ts": "2026-10-26T17:40:02.943159+00:00",
+      "last_price": 4.4905,
+      "last_price_ts": "2026-10-26T18:40:02.539532+00:00",
       "execution_model": "book_v1",
       "quote_cash": 94.759861429,
       "base_qty": 42.398502922834,
@@ -65,7 +65,7 @@
       },
       "fees_paid": 0.11194076,
       "slippage_cost": 0.05944076,
-      "last_equity": 286.5918879,
+      "last_equity": 285.1503388,
       "closing": false
     },
     "APT": {
@@ -80,8 +80,8 @@
       "er": 0.013,
       "vol_pct": 1.34,
       "deployed_at": "2026-10-22T16:40:04.002622+00:00",
-      "last_price": 0.70225,
-      "last_price_ts": "2026-10-26T17:40:03.247125+00:00",
+      "last_price": 0.69285,
+      "last_price_ts": "2026-10-26T18:40:02.856008+00:00",
       "execution_model": "book_v1",
       "quote_cash": 59.97,
       "base_qty": 318.518472148725,
@@ -166,7 +166,7 @@
       },
       "fees_paid": 0.0929874,
       "slippage_cost": 0.0404874,
-      "last_equity": 283.64959707,
+      "last_equity": 280.65552343,
       "closing": false
     },
     "ENA": {
@@ -181,8 +181,8 @@
       "er": 0.035,
       "vol_pct": 1.22,
       "deployed_at": "2026-10-24T14:40:03.773842+00:00",
-      "last_price": 0.210895,
-      "last_price_ts": "2026-10-26T17:40:03.549701+00:00",
+      "last_price": 0.208845,
+      "last_price_ts": "2026-10-26T18:40:03.162850+00:00",
       "execution_model": "book_v1",
       "quote_cash": 279.6525683912,
       "base_qty": 149.850192092932,
@@ -256,12 +256,12 @@
       },
       "fees_paid": 0.10095071,
       "slippage_cost": 0.0551017,
-      "last_equity": 311.25522465,
+      "last_equity": 310.94803176,
       "closing": false
     }
   },
   "realized_pnl": 6.567368,
-  "last_update": "2026-10-26T17:40:03.564796+00:00",
+  "last_update": "2026-10-26T18:40:03.177433+00:00",
   "execution": {
     "submitted": 275,
     "filled": 180,
