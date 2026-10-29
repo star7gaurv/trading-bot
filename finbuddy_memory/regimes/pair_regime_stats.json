@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-29T03:00:01.328001+00:00",
+  "updated": "2026-10-29T03:30:01.674749+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -11,13 +11,13 @@
   "stats": {
     "ONDO/USDT:USDT": {
       "NEUTRAL": {
-        "n": 6,
-        "wins": 5,
+        "n": 5,
+        "wins": 4,
         "losses": 1,
-        "wr": 0.8333,
-        "pf": 5.124,
-        "profit_usdt": 7.01,
-        "avg_profit_pct": 1.557
+        "wr": 0.8,
+        "pf": 3.371,
+        "profit_usdt": 4.03,
+        "avg_profit_pct": 1.074
       }
     },
     "ENA/USDT:USDT": {
