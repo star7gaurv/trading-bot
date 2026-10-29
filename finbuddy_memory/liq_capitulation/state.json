@@ -3,28 +3,13 @@
   "realized_pnl": 42.831745,
   "wins": 30,
   "losses": 33,
-  "last_update": "2026-10-29T03:50:14.842789+00:00",
-  "pending_orders": {
-    "ADAUSDT": {
-      "order_id": "3a12b643396d43eaac178ce7beec3ad7",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 0.1967,
-      "submitted_at": "2026-10-29T02:50:14.742277+00:00",
-      "expires_at": "2026-10-29T04:20:14.742277+00:00",
-      "book_bid": 0.1967,
-      "book_ask": 0.1968,
-      "symbol": "ADAUSDT",
-      "liq_long_z": 2.004,
-      "liq_long_usd": 1009423.0
-    }
-  },
+  "last_update": "2026-10-29T04:50:14.955071+00:00",
+  "pending_orders": {},
   "execution": {
     "submitted": 22,
     "filled": 30,
     "partial": 0,
-    "expired": 6,
+    "expired": 7,
     "rejected": 0
   }
 }
