@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-29T17:00:01.424632+00:00",
+  "updated": "2026-10-29T17:30:01.590256+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -172,13 +172,13 @@
     },
     "TAO/USDT:USDT": {
       "NEUTRAL": {
-        "n": 3,
+        "n": 4,
         "wins": 1,
-        "losses": 2,
-        "wr": 0.3333,
-        "pf": 1.026,
-        "profit_usdt": 0.02,
-        "avg_profit_pct": 0.013
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.382,
+        "profit_usdt": -1.28,
+        "avg_profit_pct": -0.422
       }
     },
     "LDO/USDT:USDT": {
