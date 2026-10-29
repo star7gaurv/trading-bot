@@ -1,19 +1,19 @@
 # Cortexa — Master Context
-Last updated: 2026-10-29 11:15 UTC
+Last updated: 2026-10-29 11:30 UTC
 
 ## Current Regime
 Regime: **NEUTRAL** | Confidence: 70.0% | Since: 2026-10-29
 
 ## Market Sentiment
 Fear & Greed: 51 (Neutral)
-BTC Dominance: 59.48%
+BTC Dominance: 60.01%
 News Sentiment: 93.3% bullish
 
 ## Bot Performance
-Total Trades: 1379 | Win Rate: 44.4% | Total P&L: -4.75%
+Total Trades: 1379 | Win Rate: 44.4% | Total P&L: -4.72%
 
 ## Open Trades (1)
-- TAO/USDT:USDT: Entry 251.88 | Current 251.84 | P&L: -0.02%
+- TAO/USDT:USDT: Entry 251.88 | Current 251.01 | P&L: 0.31%
 ## Risk Flags
 - None
 
