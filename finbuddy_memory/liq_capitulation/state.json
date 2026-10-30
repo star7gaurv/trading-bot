@@ -1,27 +1,13 @@
 {
-  "positions": {
-    "BTCUSDT": {
-      "symbol": "BTCUSDT",
-      "side": "long",
-      "entry_price": 79268.1,
-      "notional": 200.0,
-      "entry_liq_z": 2.516,
-      "entry_liq_long_usd": 80911472.0,
-      "opened_at": "2026-10-29T22:50:02.370489+00:00",
-      "fees_paid": 0.04,
-      "entry_slippage_cost": 0.04,
-      "execution_model": "book_v1",
-      "entry_fill_ratio": 1.0
-    }
-  },
-  "realized_pnl": 26.539577,
+  "positions": {},
+  "realized_pnl": 24.795914,
   "wins": 30,
-  "losses": 35,
-  "last_update": "2026-10-30T04:50:14.353374+00:00",
+  "losses": 36,
+  "last_update": "2026-10-30T05:50:16.994426+00:00",
   "pending_orders": {},
   "execution": {
     "submitted": 27,
-    "filled": 35,
+    "filled": 36,
     "partial": 0,
     "expired": 9,
     "rejected": 0
