@@ -17,42 +17,13 @@
   "realized_pnl": 26.539577,
   "wins": 30,
   "losses": 35,
-  "last_update": "2026-10-30T02:50:03.252605+00:00",
-  "pending_orders": {
-    "TAOUSDT": {
-      "order_id": "c62493e01b844540936dbd4d4f0456b4",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 228.58,
-      "submitted_at": "2026-10-30T01:50:15.254311+00:00",
-      "expires_at": "2026-10-30T03:20:15.254311+00:00",
-      "book_bid": 228.58,
-      "book_ask": 228.59,
-      "symbol": "TAOUSDT",
-      "liq_long_z": 2.206,
-      "liq_long_usd": 1294919.0
-    },
-    "SUIUSDT": {
-      "order_id": "62b4c61563144278b74bbfb89f1197b8",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 0.8561,
-      "submitted_at": "2026-10-30T01:50:16.035125+00:00",
-      "expires_at": "2026-10-30T03:20:16.035125+00:00",
-      "book_bid": 0.8561,
-      "book_ask": 0.8562,
-      "symbol": "SUIUSDT",
-      "liq_long_z": 2.088,
-      "liq_long_usd": 1651536.0
-    }
-  },
+  "last_update": "2026-10-30T03:50:15.360946+00:00",
+  "pending_orders": {},
   "execution": {
     "submitted": 27,
     "filled": 35,
     "partial": 0,
-    "expired": 7,
+    "expired": 9,
     "rejected": 0
   }
 }
