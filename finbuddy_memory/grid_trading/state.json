@@ -12,8 +12,8 @@
       "er": 0.035,
       "vol_pct": 1.22,
       "deployed_at": "2026-10-24T14:40:03.773842+00:00",
-      "last_price": 0.190245,
-      "last_price_ts": "2026-10-30T06:40:02.851329+00:00",
+      "last_price": 0.189525,
+      "last_price_ts": "2026-10-30T07:40:02.782855+00:00",
       "execution_model": "book_v1",
       "quote_cash": 189.6975683912,
       "base_qty": 653.197309942992,
@@ -54,7 +54,7 @@
       },
       "fees_paid": 0.11893811,
       "slippage_cost": 0.0730891,
-      "last_equity": 313.96509062,
+      "last_equity": 313.49478856,
       "closing": false
     },
     "NEAR": {
@@ -69,8 +69,8 @@
       "er": 0.094,
       "vol_pct": 1.29,
       "deployed_at": "2026-10-26T23:40:04.505789+00:00",
-      "last_price": 4.3095,
-      "last_price_ts": "2026-10-30T06:40:03.149198+00:00",
+      "last_price": 4.2575,
+      "last_price_ts": "2026-10-30T07:40:03.081295+00:00",
       "execution_model": "book_v1",
       "quote_cash": 94.8487842174,
       "base_qty": 47.96759038966,
@@ -122,7 +122,7 @@
       },
       "fees_paid": 0.11195856,
       "slippage_cost": 0.05945856,
-      "last_equity": 301.565115,
+      "last_equity": 299.0708003,
       "closing": false
     },
     "1000PEPE": {
@@ -137,8 +137,8 @@
       "er": 0.097,
       "vol_pct": 1.09,
       "deployed_at": "2026-10-29T20:40:03.763243+00:00",
-      "last_price": 0.00499915,
-      "last_price_ts": "2026-10-30T06:40:03.451745+00:00",
+      "last_price": 0.004851299999999999,
+      "last_price_ts": "2026-10-30T07:40:03.383399+00:00",
       "execution_model": "book_v1",
       "quote_cash": 59.97,
       "base_qty": 49544.09385743043,
@@ -223,12 +223,12 @@
       },
       "fees_paid": 0.0929874,
       "slippage_cost": 0.0404874,
-      "last_equity": 307.64835681,
+      "last_equity": 300.32326253,
       "closing": false
     }
   },
   "realized_pnl": -43.169339,
-  "last_update": "2026-10-30T06:40:03.466360+00:00",
+  "last_update": "2026-10-30T07:40:03.398343+00:00",
   "execution": {
     "submitted": 297,
     "filled": 198,
