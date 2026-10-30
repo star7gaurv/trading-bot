@@ -25,29 +25,16 @@
       "entry_slippage_cost": 0.04,
       "execution_model": "book_v1",
       "entry_fill_ratio": 1.0
-    },
-    "WIFUSDT": {
-      "symbol": "WIFUSDT",
-      "side": "long",
-      "entry_price": 0.1697,
-      "notional": 200.0,
-      "entry_liq_z": 2.251,
-      "entry_liq_long_usd": 230526.0,
-      "opened_at": "2026-10-29T22:50:02.670988+00:00",
-      "fees_paid": 0.04,
-      "entry_slippage_cost": 0.04,
-      "execution_model": "book_v1",
-      "entry_fill_ratio": 1.0
     }
   },
-  "realized_pnl": 42.831745,
+  "realized_pnl": 33.352594,
   "wins": 30,
-  "losses": 33,
-  "last_update": "2026-10-29T23:50:02.833297+00:00",
+  "losses": 34,
+  "last_update": "2026-10-30T00:50:16.588207+00:00",
   "pending_orders": {},
   "execution": {
     "submitted": 25,
-    "filled": 33,
+    "filled": 34,
     "partial": 0,
     "expired": 7,
     "rejected": 0
