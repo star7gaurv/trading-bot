@@ -1037,3 +1037,4 @@
 | 2026-10-29 17:02:21 | TAO/USDT:USDT | SHORT | 6h02m | -1.73% | -1.30 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-10-31 06:15:32 | DOT/USDT:USDT | LONG | 6h00m | -1.80% | -1.35 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-11-01 02:00:49 | NEAR/USDT:USDT | LONG | 6h00m | +0.61% | +0.43 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-11-01 04:03:47 | OP/USDT:USDT | LONG | 4h53m | +1.23% | +0.92 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
