@@ -12,8 +12,8 @@
       "er": 0.035,
       "vol_pct": 1.22,
       "deployed_at": "2026-10-24T14:40:03.773842+00:00",
-      "last_price": 0.182735,
-      "last_price_ts": "2026-11-02T00:40:02.086029+00:00",
+      "last_price": 0.185355,
+      "last_price_ts": "2026-11-02T01:40:02.395133+00:00",
       "execution_model": "book_v1",
       "quote_cash": 189.6975683912,
       "base_qty": 653.197309942992,
@@ -54,7 +54,7 @@
       },
       "fees_paid": 0.11893811,
       "slippage_cost": 0.0730891,
-      "last_equity": 309.05957882,
+      "last_equity": 310.77095578,
       "closing": false
     },
     "NEAR": {
@@ -69,8 +69,8 @@
       "er": 0.094,
       "vol_pct": 1.29,
       "deployed_at": "2026-10-26T23:40:04.505789+00:00",
-      "last_price": 4.2575,
-      "last_price_ts": "2026-11-02T00:40:02.399605+00:00",
+      "last_price": 4.3385,
+      "last_price_ts": "2026-11-02T01:40:02.694797+00:00",
       "execution_model": "book_v1",
       "quote_cash": 94.8487842174,
       "base_qty": 47.96759038966,
@@ -122,7 +122,7 @@
       },
       "fees_paid": 0.11195856,
       "slippage_cost": 0.05945856,
-      "last_equity": 299.0708003,
+      "last_equity": 302.95617512,
       "closing": false
     },
     "1000PEPE": {
@@ -137,8 +137,8 @@
       "er": 0.097,
       "vol_pct": 1.09,
       "deployed_at": "2026-10-29T20:40:03.763243+00:00",
-      "last_price": 0.00489535,
-      "last_price_ts": "2026-11-02T00:40:02.701257+00:00",
+      "last_price": 0.00495405,
+      "last_price_ts": "2026-11-02T01:40:03.022851+00:00",
       "execution_model": "book_v1",
       "quote_cash": 124.7893094528,
       "base_qty": 36833.96772075134,
@@ -201,12 +201,12 @@
       },
       "fees_paid": 0.10595386,
       "slippage_cost": 0.05345386,
-      "last_equity": 305.10447333,
+      "last_equity": 307.26662724,
       "closing": false
     }
   },
   "realized_pnl": -43.169339,
-  "last_update": "2026-11-02T00:40:02.716354+00:00",
+  "last_update": "2026-11-02T01:40:03.040724+00:00",
   "execution": {
     "submitted": 297,
     "filled": 200,
