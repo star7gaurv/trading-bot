@@ -12,8 +12,8 @@
       "er": 0.035,
       "vol_pct": 1.22,
       "deployed_at": "2026-10-24T14:40:03.773842+00:00",
-      "last_price": 0.170255,
-      "last_price_ts": "2026-11-03T10:40:02.420852+00:00",
+      "last_price": 0.170515,
+      "last_price_ts": "2026-11-03T11:40:02.573606+00:00",
       "execution_model": "book_v1",
       "quote_cash": 189.6975683912,
       "base_qty": 653.197309942992,
@@ -54,7 +54,7 @@
       },
       "fees_paid": 0.11893811,
       "slippage_cost": 0.0730891,
-      "last_equity": 300.9076764,
+      "last_equity": 301.0775077,
       "closing": false
     },
     "1000PEPE": {
@@ -69,8 +69,8 @@
       "er": 0.097,
       "vol_pct": 1.09,
       "deployed_at": "2026-10-29T20:40:03.763243+00:00",
-      "last_price": 0.00471085,
-      "last_price_ts": "2026-11-03T10:40:02.749915+00:00",
+      "last_price": 0.004794049999999999,
+      "last_price_ts": "2026-11-03T11:40:02.903591+00:00",
       "execution_model": "book_v1",
       "quote_cash": 124.7893094528,
       "base_qty": 36833.96772075134,
@@ -133,7 +133,7 @@
       },
       "fees_paid": 0.10595386,
       "slippage_cost": 0.05345386,
-      "last_equity": 298.30860629,
+      "last_equity": 301.3731924,
       "closing": false
     },
     "NEAR": {
@@ -148,8 +148,8 @@
       "er": 0.061,
       "vol_pct": 1.12,
       "deployed_at": "2026-11-03T03:40:04.288987+00:00",
-      "last_price": 3.8434999999999997,
-      "last_price_ts": "2026-11-03T10:40:03.074661+00:00",
+      "last_price": 3.8325,
+      "last_price_ts": "2026-11-03T11:40:03.249675+00:00",
       "execution_model": "book_v1",
       "quote_cash": 149.925,
       "base_qty": 39.426262716744,
@@ -267,12 +267,12 @@
       },
       "fees_paid": 0.075,
       "slippage_cost": 0.0225,
-      "last_equity": 301.45984075,
+      "last_equity": 301.02615186,
       "closing": false
     }
   },
   "realized_pnl": -66.220632,
-  "last_update": "2026-11-03T10:40:03.089196+00:00",
+  "last_update": "2026-11-03T11:40:03.264959+00:00",
   "execution": {
     "submitted": 308,
     "filled": 203,
