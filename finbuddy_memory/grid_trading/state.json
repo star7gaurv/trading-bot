@@ -12,8 +12,8 @@
       "er": 0.035,
       "vol_pct": 1.22,
       "deployed_at": "2026-10-24T14:40:03.773842+00:00",
-      "last_price": 0.170485,
-      "last_price_ts": "2026-11-03T15:40:02.831003+00:00",
+      "last_price": 0.17083500000000001,
+      "last_price_ts": "2026-11-03T16:40:02.023815+00:00",
       "execution_model": "book_v1",
       "quote_cash": 189.6975683912,
       "base_qty": 653.197309942992,
@@ -54,7 +54,7 @@
       },
       "fees_paid": 0.11893811,
       "slippage_cost": 0.0730891,
-      "last_equity": 301.05791178,
+      "last_equity": 301.28653084,
       "closing": false
     },
     "1000PEPE": {
@@ -69,8 +69,8 @@
       "er": 0.097,
       "vol_pct": 1.09,
       "deployed_at": "2026-10-29T20:40:03.763243+00:00",
-      "last_price": 0.004893949999999999,
-      "last_price_ts": "2026-11-03T15:40:03.149915+00:00",
+      "last_price": 0.00487515,
+      "last_price_ts": "2026-11-03T16:40:02.341326+00:00",
       "execution_model": "book_v1",
       "quote_cash": 124.7893094528,
       "base_qty": 36833.96772075134,
@@ -133,7 +133,7 @@
       },
       "fees_paid": 0.10595386,
       "slippage_cost": 0.05345386,
-      "last_equity": 305.05290578,
+      "last_equity": 304.36042719,
       "closing": false
     },
     "NEAR": {
@@ -148,8 +148,8 @@
       "er": 0.061,
       "vol_pct": 1.12,
       "deployed_at": "2026-11-03T03:40:04.288987+00:00",
-      "last_price": 3.8425000000000002,
-      "last_price_ts": "2026-11-03T15:40:03.452418+00:00",
+      "last_price": 3.8205,
+      "last_price_ts": "2026-11-03T16:40:02.649281+00:00",
       "execution_model": "book_v1",
       "quote_cash": 182.3568921087,
       "base_qty": 31.039875283983,
@@ -256,12 +256,12 @@
       },
       "fees_paid": 0.08148768,
       "slippage_cost": 0.02898768,
-      "last_equity": 301.62761289,
+      "last_equity": 300.94473563,
       "closing": false
     }
   },
   "realized_pnl": -66.220632,
-  "last_update": "2026-11-03T15:40:03.466911+00:00",
+  "last_update": "2026-11-03T16:40:02.664531+00:00",
   "execution": {
     "submitted": 308,
     "filled": 204,
