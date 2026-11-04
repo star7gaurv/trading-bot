@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-04T19:00:01.533659+00:00",
+  "updated": "2026-11-04T19:30:01.262459+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "BTC/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 4,
-        "wins": 2,
-        "losses": 2,
-        "wr": 0.5,
-        "pf": 0.782,
-        "profit_usdt": -0.17,
-        "avg_profit_pct": -0.05
-      }
-    },
     "ETH/USDT:USDT": {
       "NEUTRAL": {
         "n": 6,
@@ -40,6 +29,17 @@
         "pf": null,
         "profit_usdt": 5.15,
         "avg_profit_pct": 1.722
+      }
+    },
+    "BTC/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 3,
+        "wins": 2,
+        "losses": 1,
+        "wr": 0.6667,
+        "pf": 2.179,
+        "profit_usdt": 0.33,
+        "avg_profit_pct": 0.13
       }
     },
     "TAO/USDT:USDT": {
