@@ -1040,3 +1040,4 @@
 | 2026-11-01 04:03:47 | OP/USDT:USDT | LONG | 4h53m | +1.23% | +0.92 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-11-01 12:04:55 | APT/USDT:USDT | LONG | 6h04m | -0.56% | -0.42 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-11-03 19:10:40 | FET/USDT:USDT | SHORT | 6h00m | +1.00% | +0.75 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-11-04 03:00:26 | FET/USDT:USDT | SHORT | 4h50m | +3.24% | +2.43 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
