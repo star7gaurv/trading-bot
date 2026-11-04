@@ -316,3 +316,4 @@ um_threads=2** added to both config.json and 23_regression_15m_di_config.json. 
 - **2026-09-30 04:00 UTC** — 🎯 Trade milestone reached: 500 closed trades
 - **2026-10-02 12:00 UTC** — Regime changed: NEUTRAL → BULL
 - **2026-10-03 12:00 UTC** — Regime changed: BULL → NEUTRAL
+- **2026-11-04 12:00 UTC** — Regime changed: NEUTRAL → BEAR
