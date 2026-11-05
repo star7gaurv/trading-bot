@@ -1042,3 +1042,4 @@
 | 2026-11-03 19:10:40 | FET/USDT:USDT | SHORT | 6h00m | +1.00% | +0.75 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-11-04 03:00:26 | FET/USDT:USDT | SHORT | 4h50m | +3.24% | +2.43 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
 | 2026-11-05 02:00:28 | FIL/USDT:USDT | SHORT | 6h00m | -2.22% | -1.18 | time_limit_exit | BEAR | freqai_regression_v23_sh |
+| 2026-11-05 15:01:02 | FET/USDT:USDT | SHORT | 1h00m | +2.69% | +2.03 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
