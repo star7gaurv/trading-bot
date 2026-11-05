@@ -1,31 +1,5 @@
 {
   "positions": {
-    "FETUSDT": {
-      "symbol": "FETUSDT",
-      "side": "long",
-      "entry_price": 0.1476,
-      "notional": 200.0,
-      "entry_liq_z": 2.049,
-      "entry_liq_long_usd": 222214.0,
-      "opened_at": "2026-11-05T17:50:01.729047+00:00",
-      "fees_paid": 0.04,
-      "entry_slippage_cost": 0.04,
-      "execution_model": "book_v1",
-      "entry_fill_ratio": 1.0
-    },
-    "POLUSDT": {
-      "symbol": "POLUSDT",
-      "side": "long",
-      "entry_price": 0.09267,
-      "notional": 200.0,
-      "entry_liq_z": 2.035,
-      "entry_liq_long_usd": 73202.0,
-      "opened_at": "2026-11-05T17:50:01.878393+00:00",
-      "fees_paid": 0.04,
-      "entry_slippage_cost": 0.04,
-      "execution_model": "book_v1",
-      "entry_fill_ratio": 1.0
-    },
     "ENAUSDT": {
       "symbol": "ENAUSDT",
       "side": "long",
@@ -40,14 +14,14 @@
       "entry_fill_ratio": 1.0
     }
   },
-  "realized_pnl": 24.795914,
-  "wins": 30,
+  "realized_pnl": 31.755528,
+  "wins": 32,
   "losses": 36,
-  "last_update": "2026-11-05T18:50:02.342035+00:00",
+  "last_update": "2026-11-05T19:50:16.710873+00:00",
   "pending_orders": {},
   "execution": {
     "submitted": 30,
-    "filled": 39,
+    "filled": 41,
     "partial": 0,
     "expired": 9,
     "rejected": 0
