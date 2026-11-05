@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-05T16:00:01.552235+00:00",
+  "updated": "2026-11-05T16:30:02.199659+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "FET/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 3,
-        "losses": 2,
-        "wr": 0.6,
-        "pf": 2.927,
-        "profit_usdt": 3.43,
-        "avg_profit_pct": 0.904
-      }
-    },
     "APT/USDT:USDT": {
       "NEUTRAL": {
         "n": 13,
@@ -126,6 +115,17 @@
         "pf": 0.0,
         "profit_usdt": -0.27,
         "avg_profit_pct": -0.175
+      }
+    },
+    "FET/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 4,
+        "wins": 3,
+        "losses": 1,
+        "wr": 0.75,
+        "pf": 8.831,
+        "profit_usdt": 4.62,
+        "avg_profit_pct": 1.532
       }
     },
     "TAO/USDT:USDT": {
