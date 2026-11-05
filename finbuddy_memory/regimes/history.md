@@ -47,3 +47,4 @@
 | 2026-10-02 | NEUTRAL → BULL | Confidence: 85.0% |
 | 2026-10-03 | BULL → NEUTRAL | Confidence: 70.0% |
 | 2026-11-04 | NEUTRAL → BEAR | Confidence: 80.0% |
+| 2026-11-05 | BEAR → NEUTRAL | Confidence: 70.0% |
