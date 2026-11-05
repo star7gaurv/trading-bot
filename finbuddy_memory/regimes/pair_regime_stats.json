@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-05T06:00:01.620164+00:00",
+  "updated": "2026-11-05T06:30:01.334878+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "ETH/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 5,
-        "wins": 1,
-        "losses": 4,
-        "wr": 0.2,
-        "pf": 0.295,
-        "profit_usdt": -1.46,
-        "avg_profit_pct": -0.392
-      }
-    },
     "APT/USDT:USDT": {
       "NEUTRAL": {
         "n": 15,
@@ -194,6 +183,17 @@
         "avg_profit_pct": -0.41
       }
     },
+    "ETH/USDT:USDT": {
+      "NEUTRAL": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "wr": 0.25,
+        "pf": 0.415,
+        "profit_usdt": -0.86,
+        "avg_profit_pct": -0.287
+      }
+    },
     "SOL/USDT:USDT": {
       "NEUTRAL": {
         "n": 4,
@@ -228,14 +228,5 @@
       }
     }
   },
-  "blocked": [
-    {
-      "pair": "ETH/USDT:USDT",
-      "regime": "NEUTRAL",
-      "reason": "WR=20% PF=0.29 n=5 profit=-1.46",
-      "n": 5,
-      "wr": 0.2,
-      "pf": 0.295
-    }
-  ]
+  "blocked": []
 }
