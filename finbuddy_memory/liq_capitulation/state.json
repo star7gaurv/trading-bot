@@ -1,27 +1,13 @@
 {
-  "positions": {
-    "ENAUSDT": {
-      "symbol": "ENAUSDT",
-      "side": "long",
-      "entry_price": 0.16324,
-      "notional": 200.0,
-      "entry_liq_z": 2.035,
-      "entry_liq_long_usd": 1726863.0,
-      "opened_at": "2026-11-05T17:50:02.028737+00:00",
-      "fees_paid": 0.04,
-      "entry_slippage_cost": 0.04,
-      "execution_model": "book_v1",
-      "entry_fill_ratio": 1.0
-    }
-  },
-  "realized_pnl": 31.755528,
+  "positions": {},
+  "realized_pnl": 27.44056,
   "wins": 32,
-  "losses": 36,
-  "last_update": "2026-11-05T22:50:14.105140+00:00",
+  "losses": 37,
+  "last_update": "2026-11-05T23:50:15.792414+00:00",
   "pending_orders": {},
   "execution": {
     "submitted": 30,
-    "filled": 41,
+    "filled": 42,
     "partial": 0,
     "expired": 9,
     "rejected": 0
