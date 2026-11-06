@@ -1,12 +1,12 @@
 # Cortexa — Master Context
-Last updated: 2026-11-06 03:45 UTC
+Last updated: 2026-11-06 04:15 UTC
 
 ## Current Regime
 Regime: **NEUTRAL** | Confidence: 70.0% | Since: 2026-11-06
 
 ## Market Sentiment
 Fear & Greed: 28 (Fear)
-BTC Dominance: 59.19%
+BTC Dominance: 59.18%
 News Sentiment: 100.0% bullish
 
 ## Bot Performance
