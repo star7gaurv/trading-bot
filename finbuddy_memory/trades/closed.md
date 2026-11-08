@@ -1049,3 +1049,4 @@
 | 2026-11-08 00:02:50 | ARB/USDT:USDT | LONG | 4h02m | +0.85% | +0.64 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-11-08 00:00:31 | UNI/USDT:USDT | LONG | 2h45m | +2.17% | +1.53 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
 | 2026-11-08 08:00:45 | 1000PEPE/USDT:USDT | SHORT | 6h00m | -1.77% | -1.34 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
+| 2026-11-08 17:00:30 | ADA/USDT:USDT | SHORT | 1h00m | +0.90% | +0.68 | exit_signal | NEUTRAL | freqai_regression_v23_sh |
