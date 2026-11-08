@@ -1046,3 +1046,5 @@
 | 2026-11-06 22:01:10 | FIL/USDT:USDT | SHORT | 6h00m | +0.39% | +0.29 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-11-07 09:01:20 | FIL/USDT:USDT | SHORT | 6h01m | +0.73% | +0.55 | time_limit_exit | NEUTRAL | freqai_regression_v23_sh |
 | 2026-11-07 19:00:22 | UNI/USDT:USDT | LONG | 5h00m | +2.30% | +1.62 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
+| 2026-11-08 00:02:50 | ARB/USDT:USDT | LONG | 4h02m | +0.85% | +0.64 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
+| 2026-11-08 00:00:31 | UNI/USDT:USDT | LONG | 2h45m | +2.17% | +1.53 | exit_signal | NEUTRAL | freqai_regression_v23_lo |
