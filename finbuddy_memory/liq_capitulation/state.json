@@ -3,56 +3,13 @@
   "realized_pnl": 27.44056,
   "wins": 32,
   "losses": 37,
-  "last_update": "2026-11-08T23:50:02.753411+00:00",
-  "pending_orders": {
-    "ETHUSDT": {
-      "order_id": "92bb2ac29a594aeca7eff1e3be0d2be5",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 2122.32,
-      "submitted_at": "2026-11-08T22:50:14.930081+00:00",
-      "expires_at": "2026-11-09T00:20:14.930081+00:00",
-      "book_bid": 2122.32,
-      "book_ask": 2122.33,
-      "symbol": "ETHUSDT",
-      "liq_long_z": 2.447,
-      "liq_long_usd": 177783297.0
-    },
-    "BTCUSDT": {
-      "order_id": "81dc1c9b9332450bad409a855e65a451",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 74332.6,
-      "submitted_at": "2026-11-08T22:50:15.760968+00:00",
-      "expires_at": "2026-11-09T00:20:15.760968+00:00",
-      "book_bid": 74332.6,
-      "book_ask": 74332.7,
-      "symbol": "BTCUSDT",
-      "liq_long_z": 2.343,
-      "liq_long_usd": 88635310.0
-    },
-    "SUIUSDT": {
-      "order_id": "c6ddc235adff4e63a284f3d6dc58957b",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 0.8175,
-      "submitted_at": "2026-11-08T22:50:16.578956+00:00",
-      "expires_at": "2026-11-09T00:20:16.578956+00:00",
-      "book_bid": 0.8175,
-      "book_ask": 0.8176,
-      "symbol": "SUIUSDT",
-      "liq_long_z": 2.162,
-      "liq_long_usd": 2238312.0
-    }
-  },
+  "last_update": "2026-11-09T00:50:15.310541+00:00",
+  "pending_orders": {},
   "execution": {
     "submitted": 33,
     "filled": 42,
     "partial": 0,
-    "expired": 9,
+    "expired": 12,
     "rejected": 0
   }
 }
