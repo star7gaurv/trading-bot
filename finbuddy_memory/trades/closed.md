@@ -1053,3 +1053,4 @@
 | 2026-11-10 03:15:27 | AVAX/USDT:USDT | LONG | 6h00m | +0.35% | +0.24 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-11-10 03:15:27 | ARB/USDT:USDT | LONG | 6h00m | -1.26% | -0.96 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
 | 2026-11-10 12:00:44 | UNI/USDT:USDT | LONG | 6h00m | -1.14% | -0.80 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
+| 2026-11-10 13:00:24 | AVAX/USDT:USDT | LONG | 6h00m | -1.67% | -1.13 | time_limit_exit | NEUTRAL | freqai_regression_v23_lo |
