@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-10T00:00:02.070284+00:00",
+  "updated": "2026-11-10T00:30:01.574379+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -9,17 +9,6 @@
     "description": "Block pair-regime if n>=5 AND (WR<40% AND PF<0.7)"
   },
   "stats": {
-    "XRP/USDT:USDT": {
-      "NEUTRAL": {
-        "n": 1,
-        "wins": 0,
-        "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -0.12,
-        "avg_profit_pct": -0.15
-      }
-    },
     "SUI/USDT:USDT": {
       "NEUTRAL": {
         "n": 3,
