@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-11T05:00:02.027102+00:00",
+  "updated": "2026-11-11T05:30:01.668984+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -11,13 +11,13 @@
   "stats": {
     "ETH/USDT:USDT": {
       "NEUTRAL": {
-        "n": 4,
-        "wins": 1,
+        "n": 3,
+        "wins": 0,
         "losses": 3,
-        "wr": 0.25,
-        "pf": 0.415,
-        "profit_usdt": -0.86,
-        "avg_profit_pct": -0.287
+        "wr": 0.0,
+        "pf": 0.0,
+        "profit_usdt": -1.47,
+        "avg_profit_pct": -0.66
       }
     },
     "APT/USDT:USDT": {
