@@ -12,8 +12,8 @@
       "er": 0.097,
       "vol_pct": 1.09,
       "deployed_at": "2026-10-29T20:40:03.763243+00:00",
-      "last_price": 0.00436285,
-      "last_price_ts": "2026-11-12T13:40:02.365227+00:00",
+      "last_price": 0.00444105,
+      "last_price_ts": "2026-11-12T14:40:02.608048+00:00",
       "execution_model": "book_v1",
       "quote_cash": 127.2139641792,
       "base_qty": 37634.23843481121,
@@ -54,7 +54,7 @@
       },
       "fees_paid": 0.11843289,
       "slippage_cost": 0.06593289,
-      "last_equity": 291.40650133,
+      "last_equity": 294.34949878,
       "closing": false
     },
     "NEAR": {
@@ -69,8 +69,8 @@
       "er": 0.061,
       "vol_pct": 1.12,
       "deployed_at": "2026-11-03T03:40:04.288987+00:00",
-      "last_price": 3.3825000000000003,
-      "last_price_ts": "2026-11-12T13:40:02.966084+00:00",
+      "last_price": 3.4115,
+      "last_price_ts": "2026-11-12T14:40:02.909580+00:00",
       "execution_model": "book_v1",
       "quote_cash": 157.2656763261,
       "base_qty": 39.953239336902,
@@ -122,7 +122,7 @@
       },
       "fees_paid": 0.11245044,
       "slippage_cost": 0.05995044,
-      "last_equity": 292.40750838,
+      "last_equity": 293.56615232,
       "closing": false
     },
     "ENA": {
@@ -137,8 +137,8 @@
       "er": 0.113,
       "vol_pct": 1.28,
       "deployed_at": "2026-11-12T12:40:03.859642+00:00",
-      "last_price": 0.139495,
-      "last_price_ts": "2026-11-12T13:40:03.288956+00:00",
+      "last_price": 0.140835,
+      "last_price_ts": "2026-11-12T14:40:03.212480+00:00",
       "execution_model": "book_v1",
       "quote_cash": 149.925,
       "base_qty": 1074.414380503574,
@@ -256,12 +256,12 @@
       },
       "fees_paid": 0.075,
       "slippage_cost": 0.0225,
-      "last_equity": 299.80043401,
+      "last_equity": 301.24014928,
       "closing": false
     }
   },
   "realized_pnl": -92.392233,
-  "last_update": "2026-11-12T13:40:03.303733+00:00",
+  "last_update": "2026-11-12T14:40:03.227411+00:00",
   "execution": {
     "submitted": 330,
     "filled": 224,
