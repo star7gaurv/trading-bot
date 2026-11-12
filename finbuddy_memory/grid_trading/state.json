@@ -12,8 +12,8 @@
       "er": 0.097,
       "vol_pct": 1.09,
       "deployed_at": "2026-10-29T20:40:03.763243+00:00",
-      "last_price": 0.00446965,
-      "last_price_ts": "2026-11-12T07:40:02.934477+00:00",
+      "last_price": 0.00448175,
+      "last_price_ts": "2026-11-12T08:40:02.754855+00:00",
       "execution_model": "book_v1",
       "quote_cash": 157.1989641792,
       "base_qty": 30771.227538066516,
@@ -65,7 +65,7 @@
       },
       "fees_paid": 0.11243709,
       "slippage_cost": 0.05993709,
-      "last_equity": 294.73558134,
+      "last_equity": 295.1079132,
       "closing": false
     },
     "NEAR": {
@@ -80,11 +80,11 @@
       "er": 0.061,
       "vol_pct": 1.12,
       "deployed_at": "2026-11-03T03:40:04.288987+00:00",
-      "last_price": 3.5185,
-      "last_price_ts": "2026-11-12T07:40:03.240037+00:00",
+      "last_price": 3.4684999999999997,
+      "last_price_ts": "2026-11-12T08:40:03.096442+00:00",
       "execution_model": "book_v1",
-      "quote_cash": 187.2506763261,
-      "base_qty": 31.357165914775,
+      "quote_cash": 157.2656763261,
+      "base_qty": 39.953239336902,
       "orders": {
         "a4b3c1b1fdaf4b239ed8bd27a81abf98": {
           "order_id": "a4b3c1b1fdaf4b239ed8bd27a81abf98",
@@ -103,17 +103,6 @@
           "side": "buy",
           "requested_notional": 29.979004199160173,
           "limit_price": 3.36070403,
-          "submitted_at": "2026-11-03T03:40:04.288759+00:00",
-          "expires_at": "2026-11-17T03:40:04.288759+00:00",
-          "book_bid": 3.803,
-          "book_ask": 3.804
-        },
-        "2dd54958f71f4e09bbd9a49179a5c16a": {
-          "order_id": "2dd54958f71f4e09bbd9a49179a5c16a",
-          "status": "submitted",
-          "side": "buy",
-          "requested_notional": 29.979004199160173,
-          "limit_price": 3.48752305,
           "submitted_at": "2026-11-03T03:40:04.288759+00:00",
           "expires_at": "2026-11-17T03:40:04.288759+00:00",
           "book_bid": 3.803,
@@ -142,9 +131,9 @@
           "book_ask": 3.804
         }
       },
-      "fees_paid": 0.10645464,
-      "slippage_cost": 0.05395464,
-      "last_equity": 297.5808646,
+      "fees_paid": 0.11245044,
+      "slippage_cost": 0.05995044,
+      "last_equity": 295.84348697,
       "closing": false
     },
     "ENA": {
@@ -159,8 +148,8 @@
       "er": 0.035,
       "vol_pct": 1.35,
       "deployed_at": "2026-11-05T23:40:03.707192+00:00",
-      "last_price": 0.142705,
-      "last_price_ts": "2026-11-12T07:40:03.568800+00:00",
+      "last_price": 0.14119500000000001,
+      "last_price_ts": "2026-11-12T08:40:03.394566+00:00",
       "execution_model": "book_v1",
       "quote_cash": 93.9513916982,
       "base_qty": 1344.218286736732,
@@ -212,15 +201,15 @@
       },
       "fees_paid": 0.11177904,
       "slippage_cost": 0.06800753,
-      "last_equity": 285.77806231,
+      "last_equity": 283.74829269,
       "closing": false
     }
   },
   "realized_pnl": -73.68981,
-  "last_update": "2026-11-12T07:40:03.596056+00:00",
+  "last_update": "2026-11-12T08:40:03.409723+00:00",
   "execution": {
     "submitted": 319,
-    "filled": 219,
+    "filled": 220,
     "partial": 0,
     "expired": 9,
     "rejected": 0
