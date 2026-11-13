@@ -30,28 +30,13 @@
   "realized_pnl": 27.44056,
   "wins": 32,
   "losses": 37,
-  "last_update": "2026-11-13T05:50:02.686266+00:00",
-  "pending_orders": {
-    "ONDOUSDT": {
-      "order_id": "f4bcee3e940a41faa721e0af3d3ef074",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 0.3317,
-      "submitted_at": "2026-11-13T04:50:14.669855+00:00",
-      "expires_at": "2026-11-13T06:20:14.669855+00:00",
-      "book_bid": 0.3317,
-      "book_ask": 0.3318,
-      "symbol": "ONDOUSDT",
-      "liq_long_z": 2.18,
-      "liq_long_usd": 615114.0
-    }
-  },
+  "last_update": "2026-11-13T06:50:14.206951+00:00",
+  "pending_orders": {},
   "execution": {
     "submitted": 37,
     "filled": 44,
     "partial": 0,
-    "expired": 13,
+    "expired": 14,
     "rejected": 0
   }
 }
