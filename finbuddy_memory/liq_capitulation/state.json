@@ -12,12 +12,25 @@
       "entry_slippage_cost": 0.04,
       "execution_model": "book_v1",
       "entry_fill_ratio": 1.0
+    },
+    "ETHUSDT": {
+      "symbol": "ETHUSDT",
+      "side": "long",
+      "entry_price": 1926.67,
+      "notional": 200.0,
+      "entry_liq_z": 2.088,
+      "entry_liq_long_usd": 32569500.0,
+      "opened_at": "2026-11-13T05:50:02.367135+00:00",
+      "fees_paid": 0.04,
+      "entry_slippage_cost": 0.04,
+      "execution_model": "book_v1",
+      "entry_fill_ratio": 1.0
     }
   },
   "realized_pnl": 27.44056,
   "wins": 32,
   "losses": 37,
-  "last_update": "2026-11-13T04:50:16.182815+00:00",
+  "last_update": "2026-11-13T05:50:02.686266+00:00",
   "pending_orders": {
     "ONDOUSDT": {
       "order_id": "f4bcee3e940a41faa721e0af3d3ef074",
@@ -32,25 +45,11 @@
       "symbol": "ONDOUSDT",
       "liq_long_z": 2.18,
       "liq_long_usd": 615114.0
-    },
-    "ETHUSDT": {
-      "order_id": "25d23b2395cb4a91ba86937f2123b34f",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 1926.67,
-      "submitted_at": "2026-11-13T04:50:15.510747+00:00",
-      "expires_at": "2026-11-13T06:20:15.510747+00:00",
-      "book_bid": 1926.67,
-      "book_ask": 1926.68,
-      "symbol": "ETHUSDT",
-      "liq_long_z": 2.088,
-      "liq_long_usd": 32569500.0
     }
   },
   "execution": {
     "submitted": 37,
-    "filled": 43,
+    "filled": 44,
     "partial": 0,
     "expired": 13,
     "rejected": 0
