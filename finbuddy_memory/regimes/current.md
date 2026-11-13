@@ -1,15 +1,15 @@
 ---
 regime: BEAR
 confidence: 0.8
-since: 2026-11-12
-updated: 2026-11-12T20:00:03.008226+00:00
+since: 2026-11-13
+updated: 2026-11-13T00:00:03.537624+00:00
 ---
 # Current Market Regime: BEAR
 
 **Confidence:** 80.0%
-**Active since:** 2026-11-12
+**Active since:** 2026-11-13
 **Previous regime:** BEAR
-**Last updated:** 2026-11-12T20:00:03.008226+00:00
+**Last updated:** 2026-11-13T00:00:03.537624+00:00
 
 ## Regime Reference
 | Regime | Brain Behavior |
