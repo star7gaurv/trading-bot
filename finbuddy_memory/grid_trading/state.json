@@ -12,11 +12,11 @@
       "er": 0.061,
       "vol_pct": 1.12,
       "deployed_at": "2026-11-03T03:40:04.288987+00:00",
-      "last_price": 3.4314999999999998,
-      "last_price_ts": "2026-11-13T02:40:02.162771+00:00",
+      "last_price": 3.3575,
+      "last_price_ts": "2026-11-13T03:40:02.691666+00:00",
       "execution_model": "book_v1",
-      "quote_cash": 157.2656763261,
-      "base_qty": 39.953239336902,
+      "quote_cash": 127.2806763261,
+      "base_qty": 48.873692888166,
       "orders": {
         "a4b3c1b1fdaf4b239ed8bd27a81abf98": {
           "order_id": "a4b3c1b1fdaf4b239ed8bd27a81abf98",
@@ -24,17 +24,6 @@
           "side": "buy",
           "requested_notional": 29.979004199160173,
           "limit_price": 3.23388501,
-          "submitted_at": "2026-11-03T03:40:04.288759+00:00",
-          "expires_at": "2026-11-17T03:40:04.288759+00:00",
-          "book_bid": 3.803,
-          "book_ask": 3.804
-        },
-        "2f807bfa6f3e4fbd8488da18d8797e74": {
-          "order_id": "2f807bfa6f3e4fbd8488da18d8797e74",
-          "status": "submitted",
-          "side": "buy",
-          "requested_notional": 29.979004199160173,
-          "limit_price": 3.36070403,
           "submitted_at": "2026-11-03T03:40:04.288759+00:00",
           "expires_at": "2026-11-17T03:40:04.288759+00:00",
           "book_bid": 3.803,
@@ -63,9 +52,9 @@
           "book_ask": 3.804
         }
       },
-      "fees_paid": 0.11245044,
-      "slippage_cost": 0.05995044,
-      "last_equity": 294.36521711,
+      "fees_paid": 0.11844624,
+      "slippage_cost": 0.06594624,
+      "last_equity": 291.3741002,
       "closing": false
     },
     "ENA": {
@@ -80,11 +69,11 @@
       "er": 0.113,
       "vol_pct": 1.28,
       "deployed_at": "2026-11-12T12:40:03.859642+00:00",
-      "last_price": 0.138715,
-      "last_price_ts": "2026-11-13T02:40:02.468380+00:00",
+      "last_price": 0.135605,
+      "last_price_ts": "2026-11-13T03:40:02.999669+00:00",
       "execution_model": "book_v1",
-      "quote_cash": 149.925,
-      "base_qty": 1074.414380503574,
+      "quote_cash": 119.94,
+      "base_qty": 1292.786401610755,
       "orders": {
         "84006fa6f6dc455eae021acd330cf515": {
           "order_id": "84006fa6f6dc455eae021acd330cf515",
@@ -125,17 +114,6 @@
           "side": "buy",
           "requested_notional": 29.979004199160173,
           "limit_price": 0.13263039,
-          "submitted_at": "2026-11-12T12:40:03.859366+00:00",
-          "expires_at": "2026-11-26T12:40:03.859366+00:00",
-          "book_bid": 0.13958,
-          "book_ask": 0.13959
-        },
-        "01e5d01123fa49479a8d0628dba2c690": {
-          "order_id": "01e5d01123fa49479a8d0628dba2c690",
-          "status": "submitted",
-          "side": "buy",
-          "requested_notional": 29.979004199160173,
-          "limit_price": 0.13728409,
           "submitted_at": "2026-11-12T12:40:03.859366+00:00",
           "expires_at": "2026-11-26T12:40:03.859366+00:00",
           "book_bid": 0.13958,
@@ -197,9 +175,9 @@
           "book_ask": 0.13959
         }
       },
-      "fees_paid": 0.075,
-      "slippage_cost": 0.0225,
-      "last_equity": 298.96239079,
+      "fees_paid": 0.0809958,
+      "slippage_cost": 0.0284958,
+      "last_equity": 295.24829999,
       "closing": false
     },
     "1000PEPE": {
@@ -214,8 +192,8 @@
       "er": 0.03,
       "vol_pct": 1.4,
       "deployed_at": "2026-11-12T21:40:03.519982+00:00",
-      "last_price": 0.00459605,
-      "last_price_ts": "2026-11-13T02:40:02.772487+00:00",
+      "last_price": 0.004562699999999999,
+      "last_price_ts": "2026-11-13T03:40:03.302447+00:00",
       "execution_model": "book_v1",
       "quote_cash": 181.6916315637,
       "base_qty": 26161.440237044182,
@@ -322,15 +300,15 @@
       },
       "fees_paid": 0.0813546,
       "slippage_cost": 0.0288546,
-      "last_equity": 301.93091897,
+      "last_equity": 301.05843493,
       "closing": false
     }
   },
   "realized_pnl": -94.681858,
-  "last_update": "2026-11-13T02:40:02.788148+00:00",
+  "last_update": "2026-11-13T03:40:03.318317+00:00",
   "execution": {
     "submitted": 341,
-    "filled": 227,
+    "filled": 229,
     "partial": 0,
     "expired": 12,
     "rejected": 0
