@@ -1058,3 +1058,4 @@
 | 2026-11-13 02:10:33 | APT/USDT:USDT | SHORT | 6h00m | -0.47% | -0.25 | time_limit_exit | BEAR | freqai_regression_v23_sh |
 | 2026-11-13 04:00:31 | OP/USDT:USDT | SHORT | 5h00m | +5.22% | +2.78 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-11-13 13:00:48 | APT/USDT:USDT | SHORT | 6h00m | -1.03% | -0.55 | time_limit_exit | BEAR | freqai_regression_v23_sh |
+| 2026-11-13 21:00:34 | APT/USDT:USDT | SHORT | 6h00m | +1.71% | +0.91 | time_limit_exit | BEAR | freqai_regression_v23_sh |
