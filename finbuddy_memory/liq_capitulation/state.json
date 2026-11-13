@@ -3,10 +3,25 @@
   "realized_pnl": 27.44056,
   "wins": 32,
   "losses": 37,
-  "last_update": "2026-11-13T02:50:15.292071+00:00",
-  "pending_orders": {},
+  "last_update": "2026-11-13T03:50:16.117229+00:00",
+  "pending_orders": {
+    "BTCUSDT": {
+      "order_id": "184a67619ef5408a9e13e61e7ed898ca",
+      "status": "submitted",
+      "side": "buy",
+      "requested_notional": 200.0,
+      "limit_price": 69035.5,
+      "submitted_at": "2026-11-13T03:50:15.447183+00:00",
+      "expires_at": "2026-11-13T05:20:15.447183+00:00",
+      "book_bid": 69035.5,
+      "book_ask": 69035.6,
+      "symbol": "BTCUSDT",
+      "liq_long_z": 2.126,
+      "liq_long_usd": 32258876.0
+    }
+  },
   "execution": {
-    "submitted": 34,
+    "submitted": 35,
     "filled": 42,
     "partial": 0,
     "expired": 13,
