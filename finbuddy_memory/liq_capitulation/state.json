@@ -1,40 +1,13 @@
 {
-  "positions": {
-    "BTCUSDT": {
-      "symbol": "BTCUSDT",
-      "side": "long",
-      "entry_price": 69035.5,
-      "notional": 200.0,
-      "entry_liq_z": 2.126,
-      "entry_liq_long_usd": 32258876.0,
-      "opened_at": "2026-11-13T04:50:02.383429+00:00",
-      "fees_paid": 0.04,
-      "entry_slippage_cost": 0.04,
-      "execution_model": "book_v1",
-      "entry_fill_ratio": 1.0
-    },
-    "ETHUSDT": {
-      "symbol": "ETHUSDT",
-      "side": "long",
-      "entry_price": 1926.67,
-      "notional": 200.0,
-      "entry_liq_z": 2.088,
-      "entry_liq_long_usd": 32569500.0,
-      "opened_at": "2026-11-13T05:50:02.367135+00:00",
-      "fees_paid": 0.04,
-      "entry_slippage_cost": 0.04,
-      "execution_model": "book_v1",
-      "entry_fill_ratio": 1.0
-    }
-  },
-  "realized_pnl": 27.44056,
-  "wins": 32,
+  "positions": {},
+  "realized_pnl": 31.514384,
+  "wins": 34,
   "losses": 37,
-  "last_update": "2026-11-13T10:50:13.706305+00:00",
+  "last_update": "2026-11-13T11:50:16.939206+00:00",
   "pending_orders": {},
   "execution": {
     "submitted": 37,
-    "filled": 44,
+    "filled": 46,
     "partial": 0,
     "expired": 14,
     "rejected": 0
