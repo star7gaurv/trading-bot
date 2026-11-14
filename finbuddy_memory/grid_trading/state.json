@@ -12,8 +12,8 @@
       "er": 0.113,
       "vol_pct": 1.28,
       "deployed_at": "2026-11-12T12:40:03.859642+00:00",
-      "last_price": 0.11962500000000001,
-      "last_price_ts": "2026-11-14T16:40:02.261132+00:00",
+      "last_price": 0.12193999999999999,
+      "last_price_ts": "2026-11-14T17:40:02.150067+00:00",
       "execution_model": "book_v1",
       "quote_cash": 62.4168922696,
       "base_qty": 1767.628170261353,
@@ -76,7 +76,7 @@
       },
       "fees_paid": 0.10547088,
       "slippage_cost": 0.05297088,
-      "last_equity": 273.86941214,
+      "last_equity": 277.96147135,
       "closing": false
     },
     "NEAR": {
@@ -91,8 +91,8 @@
       "er": 0.098,
       "vol_pct": 1.06,
       "deployed_at": "2026-11-14T14:40:04.128486+00:00",
-      "last_price": 3.1094999999999997,
-      "last_price_ts": "2026-11-14T16:40:02.607134+00:00",
+      "last_price": 3.1755,
+      "last_price_ts": "2026-11-14T17:40:02.456707+00:00",
       "execution_model": "book_v1",
       "quote_cash": 119.94,
       "base_qty": 55.97396211981,
@@ -199,7 +199,7 @@
       },
       "fees_paid": 0.0809958,
       "slippage_cost": 0.0284958,
-      "last_equity": 293.99103521,
+      "last_equity": 297.68531671,
       "closing": false
     },
     "1000PEPE": {
@@ -214,8 +214,8 @@
       "er": 0.046,
       "vol_pct": 1.08,
       "deployed_at": "2026-11-14T15:40:04.187581+00:00",
-      "last_price": 0.00391925,
-      "last_price_ts": "2026-11-14T16:40:02.909156+00:00",
+      "last_price": 0.00398215,
+      "last_price_ts": "2026-11-14T17:40:02.761392+00:00",
       "execution_model": "book_v1",
       "quote_cash": 119.94,
       "base_qty": 44682.23629507569,
@@ -322,12 +322,12 @@
       },
       "fees_paid": 0.0809958,
       "slippage_cost": 0.0284958,
-      "last_equity": 295.0608546,
+      "last_equity": 297.87136726,
       "closing": false
     }
   },
   "realized_pnl": -130.638577,
-  "last_update": "2026-11-14T16:40:02.924321+00:00",
+  "last_update": "2026-11-14T17:40:02.776064+00:00",
   "execution": {
     "submitted": 363,
     "filled": 245,
