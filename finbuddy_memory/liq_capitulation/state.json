@@ -1,56 +1,53 @@
 {
-  "positions": {},
+  "positions": {
+    "ETHUSDT": {
+      "symbol": "ETHUSDT",
+      "side": "long",
+      "entry_price": 1774.6,
+      "notional": 200.0,
+      "entry_liq_z": 2.358,
+      "entry_liq_long_usd": 65898735.0,
+      "opened_at": "2026-11-14T22:50:02.631863+00:00",
+      "fees_paid": 0.04,
+      "entry_slippage_cost": 0.04,
+      "execution_model": "book_v1",
+      "entry_fill_ratio": 1.0
+    },
+    "TAOUSDT": {
+      "symbol": "TAOUSDT",
+      "side": "long",
+      "entry_price": 183.75,
+      "notional": 200.0,
+      "entry_liq_z": 2.089,
+      "entry_liq_long_usd": 1014448.0,
+      "opened_at": "2026-11-14T22:50:02.779297+00:00",
+      "fees_paid": 0.04,
+      "entry_slippage_cost": 0.04,
+      "execution_model": "book_v1",
+      "entry_fill_ratio": 1.0
+    },
+    "ADAUSDT": {
+      "symbol": "ADAUSDT",
+      "side": "long",
+      "entry_price": 0.1473,
+      "notional": 200.0,
+      "entry_liq_z": 2.06,
+      "entry_liq_long_usd": 2031763.0,
+      "opened_at": "2026-11-14T22:50:02.932043+00:00",
+      "fees_paid": 0.04,
+      "entry_slippage_cost": 0.04,
+      "execution_model": "book_v1",
+      "entry_fill_ratio": 1.0
+    }
+  },
   "realized_pnl": 31.514384,
   "wins": 34,
   "losses": 37,
-  "last_update": "2026-11-14T21:50:17.861001+00:00",
-  "pending_orders": {
-    "ETHUSDT": {
-      "order_id": "36e669e508fd4d36ab278c9fdfcd75a4",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 1774.6,
-      "submitted_at": "2026-11-14T21:50:15.461579+00:00",
-      "expires_at": "2026-11-14T23:20:15.461579+00:00",
-      "book_bid": 1774.6,
-      "book_ask": 1774.61,
-      "symbol": "ETHUSDT",
-      "liq_long_z": 2.358,
-      "liq_long_usd": 65898735.0
-    },
-    "TAOUSDT": {
-      "order_id": "bec24294238b4dd4a04d18510a00f571",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 183.75,
-      "submitted_at": "2026-11-14T21:50:16.217206+00:00",
-      "expires_at": "2026-11-14T23:20:16.217206+00:00",
-      "book_bid": 183.75,
-      "book_ask": 183.76,
-      "symbol": "TAOUSDT",
-      "liq_long_z": 2.089,
-      "liq_long_usd": 1014448.0
-    },
-    "ADAUSDT": {
-      "order_id": "70636422ab7041d28caa7d87e9eaeb7c",
-      "status": "submitted",
-      "side": "buy",
-      "requested_notional": 200.0,
-      "limit_price": 0.1473,
-      "submitted_at": "2026-11-14T21:50:17.128759+00:00",
-      "expires_at": "2026-11-14T23:20:17.128759+00:00",
-      "book_bid": 0.1473,
-      "book_ask": 0.1474,
-      "symbol": "ADAUSDT",
-      "liq_long_z": 2.06,
-      "liq_long_usd": 2031763.0
-    }
-  },
+  "last_update": "2026-11-14T22:50:03.373447+00:00",
+  "pending_orders": {},
   "execution": {
     "submitted": 40,
-    "filled": 46,
+    "filled": 49,
     "partial": 0,
     "expired": 14,
     "rejected": 0
