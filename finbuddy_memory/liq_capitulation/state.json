@@ -1,27 +1,13 @@
 {
-  "positions": {
-    "ADAUSDT": {
-      "symbol": "ADAUSDT",
-      "side": "long",
-      "entry_price": 0.1473,
-      "notional": 200.0,
-      "entry_liq_z": 2.06,
-      "entry_liq_long_usd": 2031763.0,
-      "opened_at": "2026-11-14T22:50:02.932043+00:00",
-      "fees_paid": 0.04,
-      "entry_slippage_cost": 0.04,
-      "execution_model": "book_v1",
-      "entry_fill_ratio": 1.0
-    }
-  },
-  "realized_pnl": 41.568212,
-  "wins": 36,
+  "positions": {},
+  "realized_pnl": 45.606678,
+  "wins": 37,
   "losses": 37,
-  "last_update": "2026-11-15T02:50:17.362123+00:00",
+  "last_update": "2026-11-15T03:50:16.121072+00:00",
   "pending_orders": {},
   "execution": {
     "submitted": 40,
-    "filled": 51,
+    "filled": 52,
     "partial": 0,
     "expired": 14,
     "rejected": 0
