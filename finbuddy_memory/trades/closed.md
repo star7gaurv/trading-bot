@@ -1063,3 +1063,4 @@
 | 2026-11-14 08:01:10 | APT/USDT:USDT | SHORT | 2h00m | +2.27% | +1.21 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-11-14 15:00:32 | APT/USDT:USDT | SHORT | 5h00m | +4.83% | +2.58 | exit_signal | BEAR | freqai_regression_v23_sh |
 | 2026-11-15 13:11:06 | XRP/USDT:USDT | SHORT | 6h10m | -1.63% | -0.87 | time_limit_exit | BEAR | freqai_regression_v23_sh |
+| 2026-11-15 20:10:17 | XRP/USDT:USDT | SHORT | 6h00m | +0.68% | +0.36 | time_limit_exit | BEAR | freqai_regression_v23_sh |
