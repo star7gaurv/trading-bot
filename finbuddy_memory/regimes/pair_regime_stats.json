@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-16T05:00:01.826638+00:00",
+  "updated": "2026-11-16T05:30:01.865252+00:00",
   "lookback_days": 30,
   "block_rule": {
     "min_trades": 5,
@@ -225,13 +225,13 @@
     },
     "POL/USDT:USDT": {
       "BEAR": {
-        "n": 1,
-        "wins": 0,
+        "n": 2,
+        "wins": 1,
         "losses": 1,
-        "wr": 0.0,
-        "pf": 0.0,
-        "profit_usdt": -0.29,
-        "avg_profit_pct": -0.55
+        "wr": 0.5,
+        "pf": 2.31,
+        "profit_usdt": 0.38,
+        "avg_profit_pct": 0.35
       }
     }
   },
