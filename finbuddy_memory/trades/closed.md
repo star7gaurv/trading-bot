@@ -1066,3 +1066,4 @@
 | 2026-11-15 20:10:17 | XRP/USDT:USDT | SHORT | 6h00m | +0.68% | +0.36 | time_limit_exit | BEAR | freqai_regression_v23_sh |
 | 2026-11-15 22:11:24 | POL/USDT:USDT | SHORT | 6h10m | -0.55% | -0.29 | time_limit_exit | BEAR | freqai_regression_v23_sh |
 | 2026-11-16 05:00:33 | POL/USDT:USDT | SHORT | 6h00m | +1.25% | +0.67 | time_limit_exit | BEAR | freqai_regression_v23_sh |
+| 2026-11-16 10:00:27 | POL/USDT:USDT | SHORT | 1h50m | +0.45% | +0.24 | exit_signal | BEAR | freqai_regression_v23_sh |
